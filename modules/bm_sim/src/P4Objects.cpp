@@ -19,6 +19,7 @@
  */
 
 #include "bm_sim/P4Objects.h"
+#include "bm_sim/topo_sorting.h"
 
 using std::unique_ptr;
 
@@ -63,6 +64,122 @@ void P4Objects::build_conditional(const Json::Value &json_expression,
     assert(0);
   }
 }
+
+// namespace {
+
+// class TempParseGraph {
+//   friend class TempVisitor;
+//   friend P4Objects;
+// public:
+//   void add_edge(const p4object_id_t ps1, const p4object_id_t ps2) {
+//     vertex_t from_vertex = add_vertex(ps1);
+//     vertex_t to_vertex = add_vertex(ps2);
+//     boost::add_edge(from_vertex, to_vertex, g);
+//   }
+
+//   void add_extract(const p4object_id_t ps, const header_id_t hdr) {
+//     assert(has_vertex(ps));
+//     vertex_t v = vmap[ps];
+//     g[v].hdrs.push_back(hdr);
+//   }
+
+//   void remove_empty_states() {
+//     vertex_t v;
+//     while(find_empty_state(&v)) {
+//       auto be = boost::adjacent_vertices(v, g);
+//       auto eip = boost::edges(g);
+//       for(auto ei = eip.first; ei != eip.second; ++ei) {
+// 	if(boost::target(*ei, g) != v) continue;
+// 	for (auto beit = be.first; beit != be.second; ++beit)
+// 	  boost::add_edge(boost::source(*ei, g), *beit, g);
+//       }
+//       boost::remove_vertex(v, g);
+//     }
+//     vmap.clear();
+//     auto vip = boost::vertices(g);
+//     for(auto vi = vip.first; vi != vip.second; ++vi) {
+//       vmap[g[*vi].id] = *vi;
+//     }
+//   }
+
+// private:
+//   struct Vertex {
+//     p4object_id_t id;
+//     std::vector<header_id_t> hdrs{};
+//   };
+
+// private:
+//   typedef boost::property<boost::vertex_index_t, int, Vertex> vertex_prop;
+//   typedef boost::adjacency_list<boost::setS, boost::vecS, boost::directedS,
+// 				vertex_prop> Graph;
+//   typedef boost::graph_traits<Graph>::vertex_descriptor vertex_t;
+//   typedef boost::graph_traits<Graph>::edge_descriptor edge_t;
+//   typedef boost::graph_traits<Graph>::vertex_iterator vertex_iter;
+//   typedef boost::graph_traits<Graph>::edge_iterator edge_iter;
+
+// private:
+//   bool has_vertex(p4object_id_t ps) {
+//     auto search = vmap.find(ps);
+//     return (search != vmap.end());
+//   }
+
+//   vertex_t add_vertex(p4object_id_t ps) {
+//     auto search = vmap.find(ps);
+//     if(search != vmap.end()) return search->second;
+//     vertex_t v = boost::add_vertex(g);
+//     g[v].id = ps;
+//     vmap[ps] = v;
+//     return v;
+//   }
+
+//   bool find_empty_state(vertex_t *v) {
+//     auto vip = boost::vertices(g);
+//     for(auto vi = vip.first; vi != vip.second; ++vi) {
+//       if(g[*vi].hdrs.empty()) {
+// 	*v = *vi;
+// 	return true;
+//       }
+//     }
+//     return false;
+//   }
+
+// private:
+//   Graph g{};
+//   std::unordered_map<p4object_id_t, vertex_t> vmap;    
+// };
+
+// class TempVisitor : public boost::default_dfs_visitor
+// {
+//   typedef TempParseGraph::vertex_t vertex_t;
+//   typedef TempParseGraph::edge_t edge_t;
+//   typedef TempParseGraph::Graph Graph;
+// public:
+//   TempVisitor(MyParseGraph graph)
+//     : graph(graph) { }
+
+//   void discover_vertex(vertex_t u, const Graph &g) {
+//     const std::vector<header_id_t> &hdrs = g[u].hdrs;
+//     assert(!hdrs.empty());
+//     if(hdrs.size() <= 1) return;
+//     for(auto it = hdrs.begin(); it != hdrs.end() - 1; ++it) {
+//       graph.add_edge(*it, *(it + 1));
+//     }
+//   }
+
+//   void examine_edge(edge_t e, const Graph &g) {
+//     vertex_t sv = boost::source(e, g);
+//     vertex_t dv = boost::target(e, g);
+//     const std::vector<header_id_t> &src_hdrs = g[sv].hdrs;
+//     const std::vector<header_id_t> &dst_hdrs = g[dv].hdrs;
+//     assert(!src_hdrs.empty()); assert(!dst_hdrs.empty());
+//     graph.add_edge(src_hdrs.back(), dst_hdrs.front());
+//   }
+
+// private:
+//   MyParseGraph &graph;
+// };
+
+// }
 
 void P4Objects::init_objects(std::istream &is) {
   Json::Value cfg_root;

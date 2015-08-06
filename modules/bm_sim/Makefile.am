@@ -34,7 +34,8 @@ src/calculations.cpp \
 src/meters.cpp \
 src/dev_mgr.cpp \
 src/options_parse.cpp \
-src/ageing.cpp
+src/ageing.cpp \
+src/topo_sorting.cpp
 
 common_include = \
 include/bm_sim/actions.h \
@@ -70,6 +71,7 @@ include/bm_sim/switch.h \
 include/bm_sim/tables.h \
 include/bm_sim/learning.h \
 include/bm_sim/simple_pre.h \
-include/bm_sim/transport.h
+include/bm_sim/transport.h \
+include/bm_sim/topo_sorting.h
 
 libbmsim_la_SOURCES = $(common_source) $(common_include)
