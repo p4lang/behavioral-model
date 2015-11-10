@@ -32,10 +32,10 @@
 #include "SimplePre_server.ipp"
 #include "SimplePreLAG_server.ipp"
 
-using namespace ::apache::thrift;
-using namespace ::apache::thrift::protocol;
-using namespace ::apache::thrift::transport;
-using namespace ::apache::thrift::server;
+using namespace ::p4::thrift;
+using namespace ::p4::thrift::protocol;
+using namespace ::p4::thrift::transport;
+using namespace ::p4::thrift::server;
 
 using boost::shared_ptr;
 

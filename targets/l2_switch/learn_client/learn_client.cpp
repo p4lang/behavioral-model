@@ -30,9 +30,9 @@ typedef struct {
 
 using namespace bm_runtime::standard;
 
-using namespace apache::thrift;
-using namespace apache::thrift::protocol;
-using namespace apache::thrift::transport;
+using namespace p4::thrift;
+using namespace p4::thrift::protocol;
+using namespace p4::thrift::transport;
 
 int main() {
 
