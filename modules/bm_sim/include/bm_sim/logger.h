@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef _BM_LOGGER_H_
-#define _BM_LOGGER_H_
+#ifndef BM_SIM_INCLUDE_BM_SIM_LOGGER_H_
+#define BM_SIM_INCLUDE_BM_SIM_LOGGER_H_
 
 #ifdef BMLOG_DEBUG_ON
 #define SPDLOG_DEBUG_ON
@@ -34,12 +34,12 @@
 #include "spdlog/spdlog.h"
 
 class Logger {
-public:
+ public:
   enum class LogLevel {
     TRACE, DEBUG, INFO, NOTICE, WARN, ERROR, CRITICAL, ALERT, EMERG, OFF
   };
 
-public:
+ public:
   static spdlog::logger *get() {
     static spdlog::logger *logger_ = init_logger();
     (void) logger_;
@@ -52,7 +52,7 @@ public:
 
   static void set_logger_file(const std::string &filename);
 
-private:
+ private:
   static spdlog::logger *init_logger();
 
   static spdlog::level::level_enum to_spd_level(LogLevel level);
@@ -61,7 +61,7 @@ private:
 
   static void unset_logger();
 
-private:
+ private:
   static spdlog::logger *logger;
 };
 
@@ -69,11 +69,11 @@ private:
 #define BMLOG_TRACE(...) SPDLOG_TRACE(Logger::get(), __VA_ARGS__)
 
 #define BMLOG_DEBUG_PKT(pkt, s, ...) \
-  SPDLOG_DEBUG(Logger::get(), "[{}] " s, (pkt).get_unique_id(), __VA_ARGS__)
+  SPDLOG_DEBUG(Logger::get(), "[{}] " s, (pkt).get_unique_id(), ##__VA_ARGS__)
 #define BMLOG_TRACE_PKT(pkt, s, ...) \
-  SPDLOG_TRACE(Logger::get(), "[{}] " s, (pkt).get_unique_id(), __VA_ARGS__)
+  SPDLOG_TRACE(Logger::get(), "[{}] " s, (pkt).get_unique_id(), ##__VA_ARGS__)
 
 #undef SPDLOG_DEBUG_ON
 #undef SPDLOG_TRACE_ON
 
-#endif
+#endif  // BM_SIM_INCLUDE_BM_SIM_LOGGER_H_

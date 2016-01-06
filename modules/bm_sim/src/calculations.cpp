@@ -20,10 +20,21 @@
 
 #include <netinet/in.h>
 
+#include <string>
+#include <algorithm>
+
 #include "bm_sim/calculations.h"
 
 #include "xxhash.h"
 #include "crc_tables.h"
+
+namespace hash {
+
+uint64_t xxh64(const char *buffer, size_t s) {
+  return XXH64(buffer, s, 0);
+}
+
+}  // namespace hash
 
 namespace {
 
@@ -46,88 +57,149 @@ uint32_t reflect(uint32_t data, int nBits) {
   return reflection;
 }
 
-}
-
-namespace hash {
-
-template <typename T,
-	  typename std::enable_if<std::is_unsigned<T>::value, int>::type = 0>
-T xxh64(const char *buf, size_t len) {
-  return static_cast<T>(XXH64(buf, len, 0));
-}
-
-template <typename T,
-	  typename std::enable_if<std::is_unsigned<T>::value, int>::type = 0>
-T crc16(const char *buf, size_t len) {
-  uint16_t remainder = 0x0000;
-  uint16_t final_xor_value = 0x0000;
-  for(unsigned int byte = 0; byte < len; byte++) {
-    int data = reflect(buf[byte], 8) ^ (remainder >> 8);
-    remainder = table_crc16[data] ^ (remainder << 8);
+struct xxh64 {
+  uint64_t operator()(const char *buf, size_t len) const {
+    return XXH64(buf, len, 0);
   }
-  /* why is the ntohs() call needed?
-     the input buf is made of bytes, yet we return an integer value
-     so either I call this function, or I return bytes...
-     is returning an integer really the right thing to do?
-  */
-  return static_cast<T>(ntohs(reflect(remainder, 16) ^ final_xor_value));
-}
+};
 
-template <typename T,
-	  typename std::enable_if<std::is_unsigned<T>::value, int>::type = 0>
-T cksum16(const char *buf, size_t len) {
-  uint64_t sum = 0;
-  uint64_t *b = (uint64_t *) buf;
-  uint32_t t1, t2;
-  uint16_t t3, t4;
-  uint8_t *tail;
-  /* Main loop - 8 bytes at a time */
-  while (len >= sizeof(uint64_t)) {
+REGISTER_HASH(xxh64);
+
+struct crc16 {
+  uint16_t operator()(const char *buf, size_t len) const {
+    uint16_t remainder = 0x0000;
+    uint16_t final_xor_value = 0x0000;
+    for (unsigned int byte = 0; byte < len; byte++) {
+      int data = reflect(buf[byte], 8) ^ (remainder >> 8);
+      remainder = table_crc16[data] ^ (remainder << 8);
+    }
+    /* why is the ntohs() call needed?
+       the input buf is made of bytes, yet we return an integer value
+       so either I call this function, or I return bytes...
+       is returning an integer really the right thing to do?
+    */
+    uint16_t result = reflect(remainder, 16) ^ final_xor_value;
+    return ntohs(result);
+  }
+};
+
+REGISTER_HASH(crc16);
+
+struct crc32 {
+  uint32_t operator()(const char *buf, size_t len) const {
+    uint32_t remainder = 0xFFFFFFFF;
+    uint32_t final_xor_value = 0xFFFFFFFF;
+    for (unsigned int byte = 0; byte < len; byte++) {
+      int data = reflect(buf[byte], 8) ^ (remainder >> 24);
+      remainder = table_crc16[data] ^ (remainder << 8);
+    }
+    return ntohl(reflect(remainder, 32) ^ final_xor_value);
+  }
+};
+
+REGISTER_HASH(crc32);
+
+struct crcCCITT {
+  uint16_t operator()(const char *buf, size_t len) const {
+    uint16_t remainder = 0xFFFF;
+    uint16_t final_xor_value = 0x0000;
+    for (unsigned int byte = 0; byte < len; byte++) {
+      int data = buf[byte] ^ (remainder >> 8);
+      remainder = table_crcCCITT[data] ^ (remainder << 8);
+    }
+    return ntohs(remainder ^ final_xor_value);
+  }
+};
+
+REGISTER_HASH(crcCCITT);
+
+struct cksum16 {
+  uint16_t operator()(const char *buf, size_t len) const {
+    uint64_t sum = 0;
+    const uint64_t *b = reinterpret_cast<const uint64_t *>(buf);
+    uint32_t t1, t2;
+    uint16_t t3, t4;
+    const uint8_t *tail;
+    /* Main loop - 8 bytes at a time */
+    while (len >= sizeof(uint64_t)) {
       uint64_t s = *b++;
       sum += s;
       if (sum < s) sum++;
       len -= 8;
-  }
-  /* Handle tail less than 8-bytes long */
-  tail = (uint8_t *) b;
-  if (len & 4) {
-      uint32_t s = *(uint32_t *)tail;
+    }
+    /* Handle tail less than 8-bytes long */
+    tail = reinterpret_cast<const uint8_t *>(b);
+    if (len & 4) {
+      uint32_t s = *reinterpret_cast<const uint32_t *>(tail);
       sum += s;
       if (sum < s) sum++;
       tail += 4;
-  }
-  if (len & 2) {
-      uint16_t s = *(uint16_t *) tail;
+    }
+    if (len & 2) {
+      uint16_t s = *reinterpret_cast<const uint16_t *>(tail);
       sum += s;
       if (sum < s) sum++;
       tail += 2;
-  }
-  if (len & 1) {
-      uint8_t s = *(uint8_t *) tail;
+    }
+    if (len & 1) {
+      uint8_t s = *reinterpret_cast<const uint8_t *>(tail);
       sum += s;
       if (sum < s) sum++;
+    }
+    /* Fold down to 16 bits */
+    t1 = sum;
+    t2 = sum >> 32;
+    t1 += t2;
+    if (t1 < t2) t1++;
+    t3 = t1;
+    t4 = t1 >> 16;
+    t3 += t4;
+    if (t3 < t4) t3++;
+    return ntohs(~t3);
   }
-  /* Fold down to 16 bits */
-  t1 = sum;
-  t2 = sum >> 32;
-  t1 += t2;
-  if (t1 < t2) t1++;
-  t3 = t1;
-  t4 = t1 >> 16;
-  t3 += t4;
-  if (t3 < t4) t3++;
-  return static_cast<T>(ntohs(~t3));
+};
+
+REGISTER_HASH(cksum16);
+
+struct csum16 {
+  uint16_t operator()(const char *buf, size_t len) const {
+    return cksum16()(buf, len);
+  }
+};
+
+REGISTER_HASH(csum16);
+
+struct identity {
+  uint64_t operator()(const char *buf, size_t len) const {
+    uint64_t res = 0ULL;
+    for (size_t i = 0; i < std::min(sizeof(res), len); i++) {
+      if (i > 0) res <<= 8;
+      res += static_cast<uint8_t>(buf[i]);
+    }
+    return res;
+  }
+};
+
+REGISTER_HASH(identity);
+
+}  // namespace
+
+CalculationsMap * CalculationsMap::get_instance() {
+  static CalculationsMap map;
+  return &map;
 }
 
-template unsigned int xxh64<unsigned int>(const char *, size_t);
-template uint64_t xxh64<uint64_t>(const char *, size_t);
-
-template unsigned int crc16<unsigned int>(const char *, size_t);
-template uint64_t crc16<uint64_t>(const char *, size_t);
-
-template unsigned int cksum16<unsigned int>(const char *, size_t);
-template uint64_t cksum16<uint64_t>(const char *, size_t);
-
+bool CalculationsMap::register_one(const char *name, std::unique_ptr<MyC> c) {
+  const std::string str_name = std::string(name);
+  auto it = map_.find(str_name);
+  if (it != map_.end()) return false;
+  map_[str_name] = std::move(c);
+  return true;
 }
 
-
+std::unique_ptr<CalculationsMap::MyC>
+CalculationsMap::get_copy(const std::string &name) {
+  auto it = map_.find(name);
+  if (it == map_.end()) return nullptr;
+  return it->second->clone();
+}

@@ -13,25 +13,26 @@
  * limitations under the License.
  */
 
-#ifndef _BM_PACKET_HANDLER_H_
-#define _BM_PACKET_HANDLER_H_
+#ifndef BM_SIM_INCLUDE_BM_SIM_PACKET_HANDLER_H_
+#define BM_SIM_INCLUDE_BM_SIM_PACKET_HANDLER_H_
 
-class PacketDispatcherInterface
-{
-public:
-  typedef std::function<void(int port_num, const char *buffer, int len, void* cookie)> PacketHandler;
+class PacketDispatcherIface {
+ public:
+  typedef std::function<void(int port_num, const char *buffer,
+                             int len, void* cookie)> PacketHandler;
   enum class ReturnCode {
-   SUCCESS,
-   ERROR
+    SUCCESS,
+    UNSUPPORTED,
+    ERROR
   };
-    
-  virtual ReturnCode set_packet_handler(PacketHandler handler, void* cookie) = 0;
+
+  virtual ReturnCode set_packet_handler(const PacketHandler &handler,
+                                        void* cookie) = 0;
 };
 
-class PacketReceiverInterface
-{
-public:
+class PacketReceiverIface {
+ public:
   virtual void send_packet(int port_num, const char* buffer, int len) = 0;
 };
 
-#endif
+#endif  // BM_SIM_INCLUDE_BM_SIM_PACKET_HANDLER_H_

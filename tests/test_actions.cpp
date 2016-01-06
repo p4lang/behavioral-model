@@ -148,7 +148,7 @@ protected:
 
   virtual void SetUp() {
     Packet::set_phv_factory(phv_factory);
-    pkt = std::unique_ptr<Packet>(new Packet());
+    pkt = std::unique_ptr<Packet>(new Packet(Packet::make_new()));
     phv = pkt->get_phv();
   }
 
@@ -277,14 +277,14 @@ TEST_F(ActionsTest, CopyHeader) {
   ASSERT_FALSE(hdr1.is_valid());
   ASSERT_FALSE(hdr2.is_valid());
   for(unsigned int i = 0; i < hdr2.size(); i++) {
-    ASSERT_EQ(0, hdr1[i]);
+    ASSERT_EQ(0u, hdr1[i].get_uint());
   }
 
   hdr2.mark_valid();
   testActionFnEntry(pkt.get());
   ASSERT_TRUE(hdr1.is_valid());
   for(unsigned int i = 0; i < hdr1.size(); i++) {
-    ASSERT_EQ(i + 1, hdr1[i]);
+    ASSERT_EQ(i + 1, hdr1[i].get_uint());
   }
 }
 
@@ -322,7 +322,7 @@ TEST_F(ActionsTest, ModifyFieldWithHashBasedOffset) {
   BufBuilder builder;
   builder.push_back_field(testHeader1, 0);
   builder.push_back_field(testHeader1, 4);
-  NamedCalculation calculation("test_calculation", 0, builder);
+  NamedCalculation calculation("test_calculation", 0, builder, "xxh64");
 
   ModifyFieldWithHashBasedOffset primitive;
   testActionFn.push_back_primitive(&primitive);

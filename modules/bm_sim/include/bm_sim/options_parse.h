@@ -18,51 +18,58 @@
  *
  */
 
-/* TODO: does this code really belong in this module */
+/* TODO(antonin): does this code really belong in this module */
 
-#ifndef _BM_OPTIONS_PARSE_H_
-#define _BM_OPTIONS_PARSE_H_
+#ifndef BM_SIM_INCLUDE_BM_SIM_OPTIONS_PARSE_H_
+#define BM_SIM_INCLUDE_BM_SIM_OPTIONS_PARSE_H_
 
 #include <string>
 #include <map>
 
 class InterfaceList {
-public:
+ public:
   typedef std::map<int, std::string>::iterator iterator;
   typedef std::map<int, std::string>::const_iterator const_iterator;
 
-public:
+ public:
   void add(int port, const std::string &iface) {
     ifaces[port] = iface;
   }
   bool empty() { return ifaces.empty(); }
+  void clear() { ifaces.clear(); }
   // iterators
   iterator begin() { return ifaces.begin(); }
   const_iterator begin() const { return ifaces.begin(); }
   iterator end() { return ifaces.end(); }
   const_iterator end() const { return ifaces.end(); }
 
-private:
+ private:
   std::map<int, std::string> ifaces{};
 };
 
 class OptionsParser {
   friend class Switch;
 
-public:
+ public:
   void parse(int argc, char *argv[]);
 
-private:
+ private:
   std::string config_file_path{};
   InterfaceList ifaces{};
   bool pcap{false};
   int thrift_port{};
   int device_id{};
-  bool useFiles{false}; // if true read/write packets from files instead of interfaces
-  int waitTime{0};      // Time to wait (in seconds) before starting packet processing
+  // if true read/write packets from files instead of interfaces
+  bool use_files{false};
+  // time to wait (in seconds) before starting packet processing
+  int wait_time{0};
+  // if true read/write packets from nanomsg socket instead of interfaces
+  bool packet_in{false};
+  std::string packet_in_addr{};
   std::string event_logger_addr{};
   std::string file_logger{};
   bool console_logging{false};
+  std::string notifications_addr{};
 };
 
-#endif
+#endif  // BM_SIM_INCLUDE_BM_SIM_OPTIONS_PARSE_H_

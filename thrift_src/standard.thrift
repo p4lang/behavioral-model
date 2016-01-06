@@ -98,11 +98,12 @@ enum TableOperationErrorCode {
   GRP_STILL_USED = 14,
   EMPTY_GRP = 15,
   DUPLICATE_ENTRY = 16,
-  ERROR = 17,
+  BAD_MATCH_KEY = 17,
+  ERROR = 18,
 }
 
 exception InvalidTableOperation {
-  1:TableOperationErrorCode what
+  1:TableOperationErrorCode code
 }
 
 enum CounterOperationErrorCode {
@@ -112,7 +113,7 @@ enum CounterOperationErrorCode {
 }
 
 exception InvalidCounterOperation {
-  1:CounterOperationErrorCode what
+  1:CounterOperationErrorCode code
 }
 
 enum SwapOperationErrorCode {
@@ -122,7 +123,7 @@ enum SwapOperationErrorCode {
 }
 
 exception InvalidSwapOperation {
-  1:SwapOperationErrorCode what
+  1:SwapOperationErrorCode code
 }
 
 enum MeterOperationErrorCode {
@@ -134,7 +135,18 @@ enum MeterOperationErrorCode {
 }
 
 exception InvalidMeterOperation {
- 1:MeterOperationErrorCode what
+ 1:MeterOperationErrorCode code
+}
+
+typedef i64 BmRegisterValue
+
+enum RegisterOperationErrorCode {
+  INVALID_INDEX = 1,
+  ERROR = 2
+}
+
+exception InvalidRegisterOperation {
+ 1:RegisterOperationErrorCode code
 }
 
 // TODO
@@ -143,7 +155,7 @@ enum DevMgrErrorCode {
 }
 
 exception InvalidDevMgrOperation {
- 1:DevMgrErrorCode what
+ 1:DevMgrErrorCode code
 }
 
 service Standard {
@@ -338,6 +350,21 @@ service Standard {
     2:i32 index,
     3:list<BmMeterRateConfig> rates
   ) throws (1:InvalidMeterOperation ouch)
+
+
+  // registers
+
+  BmRegisterValue bm_register_read(
+    1:string register_array_name,
+    2:i32 idx
+  ) throws (1:InvalidRegisterOperation ouch)
+
+  void bm_register_write(
+    1:string register_array_name,
+    2:i32 index,
+    3:BmRegisterValue value
+  ) throws (1:InvalidRegisterOperation ouch)
+
 
   // device manager
 

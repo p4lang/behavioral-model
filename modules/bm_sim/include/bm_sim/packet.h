@@ -18,36 +18,61 @@
  *
  */
 
-#ifndef _BM_PACKET_H_
-#define _BM_PACKET_H_
+#ifndef BM_SIM_INCLUDE_BM_SIM_PACKET_H_
+#define BM_SIM_INCLUDE_BM_SIM_PACKET_H_
 
+#include <array>
 #include <memory>
 #include <mutex>
 #include <chrono>
+#include <string>
+#include <vector>
+#include <atomic>
 
 #include <cassert>
 
 #include "packet_buffer.h"
 #include "phv.h"
 
-typedef unsigned long long packet_id_t;
+typedef uint64_t packet_id_t;
+typedef uint64_t copy_id_t;
+
+class CopyIdGenerator {
+ private:
+  static constexpr size_t W = 4096;
+
+ public:
+  copy_id_t add_one(packet_id_t packet_id) {
+    int idx = static_cast<int>(packet_id % W);
+    return ++arr[idx];
+  }
+
+  void remove_one(packet_id_t packet_id) {
+    int idx = static_cast<int>(packet_id % W);
+    --arr[idx];
+  }
+
+  copy_id_t get(packet_id_t packet_id) {
+    int idx = static_cast<int>(packet_id % W);
+    return arr[idx];
+  }
+
+  void reset(packet_id_t packet_id) {
+    int idx = static_cast<int>(packet_id % W);
+    arr[idx] = 0;
+  }
+
+ private:
+  std::array<std::atomic<int>, W> arr{{}};
+};
 
 class Packet {
-public:
+ public:
   typedef std::chrono::system_clock clock;
 
   typedef PacketBuffer::state_t buffer_state_t;
 
-public:
-  Packet();
-
-  Packet(int ingress_port, packet_id_t id, packet_id_t copy_id,
-	 int ingress_length, PacketBuffer &&buffer);
-
-  Packet(int ingress_port, packet_id_t id, packet_id_t copy_id,
-	 int ingress_length, PacketBuffer &&buffer, const PHV &src_phv);
-
-  ~Packet();
+  virtual ~Packet();
 
   packet_id_t get_packet_id() const { return packet_id; }
 
@@ -56,14 +81,15 @@ public:
   int get_ingress_port() const { return ingress_port; }
 
   void set_egress_port(int port) { egress_port = port; }
+  void set_ingress_port(int port) { ingress_port = port; }
 
-  packet_id_t get_copy_id() const { return copy_id; }
+  copy_id_t get_copy_id() const { return copy_id; }
 
   const std::string get_unique_id() const {
     return std::to_string(packet_id) + "." + std::to_string(copy_id);
   }
 
-  void set_copy_id(packet_id_t id) { copy_id = id; }
+  void set_copy_id(copy_id_t id) { copy_id = id; }
 
   int get_ingress_length() const { return ingress_length; }
 
@@ -85,12 +111,12 @@ public:
     buffer.restore_state(state);
   }
 
-  char *payload() { 
+  char *payload() {
     assert(payload_size > 0);
     return buffer.end() - payload_size;
   }
 
-  const char *payload() const { 
+  const char *payload() const {
     assert(payload_size > 0);
     return buffer.end() - payload_size;
   }
@@ -102,21 +128,20 @@ public:
     return buffer.pop(bytes);
   }
 
-  unsigned long long get_signature() const {
+  uint64_t get_signature() const {
     return signature;
   }
-
   const PacketBuffer &get_packet_buffer() const { return buffer; }
 
   uint64_t get_ingress_ts_ms() const { return ingress_ts_ms; }
 
-  // TODO: use references instead?
+  // TODO(antonin): use references instead?
   PHV *get_phv() { return phv.get(); }
   const PHV *get_phv() const { return phv.get(); }
 
-  Packet clone(packet_id_t new_copy_id) const;
-  Packet clone_and_reset_metadata(packet_id_t new_copy_id) const;
-  Packet clone_no_phv(packet_id_t new_copy_id) const;
+  Packet clone() const;
+  Packet clone_and_reset_metadata() const;
+  Packet clone_no_phv() const;
 
   Packet(const Packet &other) = delete;
   Packet &operator=(const Packet &other) = delete;
@@ -124,18 +149,36 @@ public:
   Packet(Packet &&other) noexcept;
   Packet &operator=(Packet &&other) noexcept;
 
-private:
-  void update_signature(unsigned long long seed = 0);
+  // cpplint false positive for rvalue references
+  static Packet make_new(int ingress_port, packet_id_t id, int ingress_length,
+  // NOLINTNEXTLINE(whitespace/operators)
+                         PacketBuffer &&buffer);
+  static Packet make_new(int ingress_port, packet_id_t id, int ingress_length,
+  // NOLINTNEXTLINE(whitespace/operators)
+                         PacketBuffer &&buffer,
+                         const PHV &src_phv);
+  // for testing
+  static Packet make_new(packet_id_t id = 0);
+
+ protected:
+  Packet(int ingress_port, packet_id_t id, copy_id_t copy_id,
+         int ingress_length, PacketBuffer &&buffer);
+
+  Packet(int ingress_port, packet_id_t id, copy_id_t copy_id,
+         int ingress_length, PacketBuffer &&buffer, const PHV &src_phv);
+
+  explicit Packet(packet_id_t id);
+
+  void update_signature(uint64_t seed = 0);
   void set_ingress_ts();
 
-private:
   int ingress_port{-1};
   int egress_port{-1};
   packet_id_t packet_id{0};
-  packet_id_t copy_id{0};
+  copy_id_t copy_id{0};
   int ingress_length{0};
 
-  unsigned long long signature{0};
+  uint64_t signature{0};
 
   PacketBuffer buffer{};
 
@@ -146,29 +189,31 @@ private:
 
   std::unique_ptr<PHV> phv{nullptr};
 
-private:
+ private:
   class PHVPool {
-  public:
-    PHVPool(const PHVFactory &phv_factory);
+   public:
+    explicit PHVPool(const PHVFactory &phv_factory);
     std::unique_ptr<PHV> get();
     void release(std::unique_ptr<PHV> phv);
 
-  private:
+   private:
     mutable std::mutex mutex{};
     std::vector<std::unique_ptr<PHV> > phvs{};
     const PHVFactory &phv_factory;
   };
 
-public:
+ public:
   static void set_phv_factory(const PHVFactory &phv_factory);
   static void unset_phv_factory();
   static void swap_phv_factory(const PHVFactory &phv_factory);
 
-private:
+ private:
   // static variable
   // Google style guidelines stipulate that we have to use a raw pointer and
   // leak the memory
   static PHVPool *phv_pool;
+
+  static CopyIdGenerator *copy_id_gen;
 };
 
-#endif
+#endif  // BM_SIM_INCLUDE_BM_SIM_PACKET_H_

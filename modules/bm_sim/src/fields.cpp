@@ -21,45 +21,12 @@
 #include <algorithm>
 
 #include "bm_sim/fields.h"
+#include "extract.h"
 
 int Field::extract(const char *data, int hdr_offset) {
-  if(hdr_offset == 0 && nbits % 8 == 0) {
-    std::copy(data, data + nbytes, bytes.begin());
-    if(arith) sync_value();
-    return nbits;
-  }
+  extract::generic_extract(data, hdr_offset, nbits, bytes.data());
 
-  int field_offset = (nbytes << 3) - nbits;
-  int i;
-
-  // necessary to ensure correct behavior when shifting right (no sign extension)
-  unsigned char *udata = (unsigned char *) data;
-  
-  int offset = hdr_offset - field_offset;
-  if (offset == 0) {
-    std::copy(udata, udata + nbytes, bytes.begin());
-    bytes[0] &= (0xFF >> field_offset);
-  }
-  else if (offset > 0) { /* shift left */
-    for (i = 0; i < nbytes - 1; i++) {
-      bytes[i] = (udata[i] << offset) | (udata[i + 1] >> (8 - offset));
-    }
-    bytes[0] &= (0xFF >> field_offset);
-    bytes[i] = udata[i] << offset;
-    if((hdr_offset + nbits) > (nbytes << 3)) {
-      bytes[i] |= (udata[i + 1] >> (8 - offset));
-    }
-  }
-  else { /* shift right */
-    offset = -offset;
-    bytes[0] = udata[0] >> offset;
-    bytes[0] &= (0xFF >> field_offset);
-    for (i = 1; i < nbytes; i++) {
-      bytes[i] = (udata[i - 1] << (8 - offset)) | (udata[i] >> offset);
-    }
-  }
-
-  if(arith) sync_value();
+  if (arith) sync_value();
 
   return nbits;
 }
@@ -73,7 +40,7 @@ int Field::extract_VL(const char *data, int hdr_offset, int computed_nbits) {
 }
 
 int Field::deparse(char *data, int hdr_offset) const {
-  if(hdr_offset == 0 && nbits % 8 == 0) {
+  if (hdr_offset == 0 && nbits % 8 == 0) {
     std::copy(bytes.begin(), bytes.end(), data);
     return nbits;
   }
@@ -83,9 +50,10 @@ int Field::deparse(char *data, int hdr_offset) const {
 
   int i;
 
-  // necessary to ensure correct behavior when shifting right (no sign extension)
+  /* necessary to ensure correct behavior when shifting right (no sign
+     extension) */
   unsigned char *ubytes = (unsigned char *) bytes.data();
-  
+
   // zero out bits we are going to write in data[0]
   data[0] &= (~(0xFF >> hdr_offset));
 
@@ -93,25 +61,23 @@ int Field::deparse(char *data, int hdr_offset) const {
   if (offset == 0) {
     std::copy(bytes.begin() + 1, bytes.begin() + hdr_bytes, data + 1);
     data[0] |= ubytes[0];
-  }
-  else if (offset > 0) { /* shift left */
+  } else if (offset > 0) { /* shift left */
     /* this assumes that the packet was memset to 0, TODO: improve */
-    for(i = 0; i < hdr_bytes - 1; i++) {
+    for (i = 0; i < hdr_bytes - 1; i++) {
       data[i] = (ubytes[i] << offset) | (ubytes[i + 1] >> (8 - offset));
     }
-    if(i > 0) data[i] = 0;
+    if (i > 0) data[i] = 0;
     data[i] |= ubytes[i] << offset;
-  }
-  else { /* shift right */
+  } else { /* shift right */
     offset = -offset;
     data[0] |= (ubytes[0] >> offset);
-    if(nbytes == 1) {
+    if (nbytes == 1) {
       /* data[1] is always valid, otherwise we would not need to shift the field
-	 to the right */
+         to the right */
       data[1] = ubytes[0] << (8 - offset);
       return nbits;
     }
-    for(i = 1; i < hdr_bytes - 1; i++) {
+    for (i = 1; i < hdr_bytes - 1; i++) {
       data[i] = (ubytes[i - 1] << (8 - offset)) | (ubytes[i] >> offset);
     }
     int tail_offset = (hdr_bytes << 3) - (hdr_offset + nbits);

@@ -18,17 +18,19 @@
  *
  */
 
-#ifndef _BM_SIMPLELOG_H
-#define _BM_SIMPLELOG_H_
+#include <gtest/gtest.h>
 
-#include <iostream>
+#include "bm_sim/packet.h"
 
-#ifndef ENABLE_SIMPLELOG
-#define ENABLE_SIMPLELOG false
-#endif
-
-#define SIMPLELOG \
-  if (!ENABLE_SIMPLELOG) ; \
-  else std::cout
-
-#endif
+TEST(CopyIdGenerator, Test) {
+  CopyIdGenerator gen;
+  packet_id_t packet_id = 0;
+  ASSERT_EQ(0u, gen.get(packet_id));
+  ASSERT_EQ(1u, gen.add_one(packet_id));
+  ASSERT_EQ(1u, gen.get(packet_id));
+  ASSERT_EQ(2u, gen.add_one(packet_id));
+  gen.remove_one(packet_id);
+  ASSERT_EQ(1u, gen.get(packet_id));
+  gen.reset(packet_id);
+  ASSERT_EQ(0u, gen.get(packet_id));
+}

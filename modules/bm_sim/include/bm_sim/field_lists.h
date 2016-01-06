@@ -18,22 +18,43 @@
  *
  */
 
+#ifndef BM_SIM_INCLUDE_BM_SIM_FIELD_LISTS_H_
+#define BM_SIM_INCLUDE_BM_SIM_FIELD_LISTS_H_
+
+#include <boost/functional/hash.hpp>
+
+#include <utility>  // for pair<>
 #include <vector>
+#include <unordered_set>
 
 #include "phv.h"
 
-class FieldList
-{
-public:
-  typedef std::vector<std::pair<header_id_t, int> >::iterator iterator;
-  typedef std::vector<std::pair<header_id_t, int> >::const_iterator const_iterator;
-  typedef std::vector<std::pair<header_id_t, int> >::reference reference;
-  typedef std::vector<std::pair<header_id_t, int> >::const_reference const_reference;
+class FieldList {
+ public:
+  struct field_t {
+    header_id_t header;
+    int offset;
+
+    bool operator==(const field_t& other) const {
+      return header == other.header && offset == other.offset;
+    }
+
+    bool operator!=(const field_t& other) const {
+      return !(*this == other);
+    }
+  };
+
+ public:
+  typedef std::vector<field_t>::iterator iterator;
+  typedef std::vector<field_t>::const_iterator const_iterator;
+  typedef std::vector<field_t>::reference reference;
+  typedef std::vector<field_t>::const_reference const_reference;
   typedef size_t size_type;
 
-public:
+ public:
   void push_back_field(header_id_t header, int field_offset) {
-    fields.push_back(std::make_pair(header, field_offset));
+    fields.push_back({header, field_offset});
+    fields_set.insert({header, field_offset});
   }
 
   // iterators
@@ -45,6 +66,25 @@ public:
 
   const_iterator end() const { return fields.end(); }
 
-private:
-  std::vector<std::pair<header_id_t, int> > fields;
+  bool contains(header_id_t header, int field_offset) const {
+    auto it = fields_set.find({header, field_offset});
+    return it != fields_set.end();
+  }
+
+ private:
+  struct FieldKeyHash {
+    std::size_t operator()(const field_t& f) const {
+      std::size_t seed = 0;
+      boost::hash_combine(seed, f.header);
+      boost::hash_combine(seed, f.offset);
+
+      return seed;
+    }
+  };
+
+ private:
+  std::vector<field_t> fields{};
+  std::unordered_set<field_t, FieldKeyHash> fields_set{};
 };
+
+#endif  // BM_SIM_INCLUDE_BM_SIM_FIELD_LISTS_H_

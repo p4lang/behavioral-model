@@ -8,7 +8,7 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or pimpied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -19,178 +19,184 @@
  */
 
 #include <cassert>
-#include <stdexcept>
-#include <iostream>
 #include <thread>
+#include <string>
+#include <unordered_set>
 
 #define UNUSED(x) (void)(x)
 
 #include "bm_sim/dev_mgr.h"
+#include "bm_sim/logger.h"
+#include "bm_sim/pcap_file.h"
+#include "bm_sim/nn.h"
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-// These are private implementations
-
-// Implementation that uses the BMI to send/receive packets
-// from true interfaces
-class BmiDevMgrImplementation
-    : public DevMgrInterface
-{
-public:
-  BmiDevMgrImplementation()
-  {
-     assert(!bmi_port_create_mgr(&port_mgr));
-  }
-
-  ~BmiDevMgrImplementation()
-  {
-     bmi_port_destroy_mgr(port_mgr);
-  } 
-    
-  ReturnCode port_add(const std::string &iface_name, port_t port_num,
-		      const char *in_pcap, const char*out_pcap)
-  {
-     assert(!bmi_port_interface_add(port_mgr, iface_name.c_str(), port_num, in_pcap, out_pcap));
-     return ReturnCode::SUCCESS;
-  }
-    
-  ReturnCode port_remove(port_t port_num)
-  {
-     assert(!bmi_port_interface_remove(port_mgr, port_num));
-     return ReturnCode::SUCCESS;
-  }
-
-  void transmit_fn(int port_num, const char *buffer, int len)
-  {
-     bmi_port_send(port_mgr, port_num, buffer, len);
-  }
-
-  void start()
-  {
-     assert(port_mgr);
-     int exitCode = bmi_start_mgr(port_mgr);
-     if (exitCode != 0)
-        bm_fatal_error("Could not start thread receiving packets");
-  }
-
-  ReturnCode set_packet_handler(PacketHandler handler, void* cookie)
-  {
-      typedef void function_t(int, const char *, int, void *);
-      function_t** ptr_fun = handler.target<function_t *>();
-      assert(ptr_fun);
-      assert(*ptr_fun);
-      assert(!bmi_set_packet_handler(port_mgr, *ptr_fun, cookie));
-      return ReturnCode::SUCCESS;
-  }
-      
-private:
-  bmi_port_mgr_t *port_mgr{nullptr};
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 // Implementation which uses Pcap files to read/write packets
-class FilesDevMgrImplementation
-    : public DevMgrInterface
-{
-public:
-  FilesDevMgrImplementation(bool respectTiming, unsigned wait_time_in_seconds)
-      : reader(respectTiming, wait_time_in_seconds)
-  {}
+class FilesDevMgrImp : public DevMgrIface {
+ public:
+  FilesDevMgrImp(bool respectTiming, unsigned wait_time_in_seconds)
+      : reader(respectTiming, wait_time_in_seconds) {
+    p_monitor = PortMonitorIface::make_dummy();
+  }
 
-  ReturnCode port_add(const std::string &iface_name, port_t port_num,
-		      const char *in_pcap, const char*out_pcap)
-  {
-     UNUSED(iface_name);
-     reader.addFile(port_num, std::string(in_pcap));
-     writer.addFile(port_num, std::string(out_pcap));
-     return ReturnCode::SUCCESS;
+ private:
+  ReturnCode port_add_(const std::string &iface_name, port_t port_num,
+                       const char *in_pcap, const char *out_pcap) {
+    UNUSED(iface_name);
+    reader.addFile(port_num, std::string(in_pcap));
+    writer.addFile(port_num, std::string(out_pcap));
+    ports.insert(port_num);
+    return ReturnCode::SUCCESS;
   }
-    
-  ReturnCode port_remove(port_t port_num)
-  {
-     UNUSED(port_num);
-     bm_fatal_error("Removing ports not implemented when reading pcap files");
-     return ReturnCode::ERROR; // unreachable
+
+  ReturnCode port_remove_(port_t port_num) override {
+    UNUSED(port_num);
+    Logger::get()->warn("Removing ports not possible when reading pcap files");
+    return ReturnCode::UNSUPPORTED;
   }
-    
-  void transmit_fn(int port_num, const char *buffer, int len)
-  {
+
+  void transmit_fn_(int port_num, const char *buffer, int len) override {
     writer.send_packet(port_num, buffer, len);
   }
 
-  void start()
-  {
+  void start_() override {
     reader_thread = std::thread(&PcapFilesReader::start, &reader);
     reader_thread.detach();
   }
-    
-  ReturnCode set_packet_handler(PacketHandler handler, void* cookie)
-  {
+
+  ReturnCode set_packet_handler_(const PacketHandler &handler, void *cookie)
+      override {
     reader.set_packet_handler(handler, cookie);
     return ReturnCode::SUCCESS;
   }
-      
-private:
+
+  bool port_is_up_(port_t port)
+      override {
+    return ports.find(port) != ports.end();
+  }
+
+ private:
   PcapFilesReader reader;
   PcapFilesWriter writer;
   std::thread reader_thread;
+  std::unordered_set<port_t> ports{};
 };
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
-DevMgr::DevMgr()
-    : impl(nullptr)
-{}
+DevMgrIface::~DevMgrIface() {
+  p_monitor->stop();
+}
 
-void
-DevMgr::start()
-{
-  assert(impl);
-  impl->start();
+PacketDispatcherIface::ReturnCode
+DevMgrIface::port_add(const std::string &iface_name, port_t port_num,
+                      const char *in_pcap, const char *out_pcap) {
+  assert(p_monitor);
+  p_monitor->notify(port_num, PortStatus::PORT_ADDED);
+  return port_add_(iface_name, port_num, in_pcap, out_pcap);
+}
+
+PacketDispatcherIface::ReturnCode
+DevMgrIface::port_remove(port_t port_num) {
+  assert(p_monitor);
+  p_monitor->notify(port_num, PortStatus::PORT_REMOVED);
+  return port_remove_(port_num);
 }
 
 void
-DevMgr::setUseFiles(bool useFiles, unsigned wait_time_in_seconds)
-{
-  assert(!impl);
-  if (useFiles)
-  {
-    impl = std::unique_ptr<DevMgrInterface>(
-            new FilesDevMgrImplementation(
-                                          false /* no real-time packet replay */,
-                                          wait_time_in_seconds));
-  }
-  else
-    impl = std::unique_ptr<DevMgrInterface>(new BmiDevMgrImplementation());
+DevMgrIface::start() {
+  assert(p_monitor);
+  p_monitor->start(
+      std::bind(&DevMgrIface::port_is_up, this, std::placeholders::_1));
+  start_();
 }
 
-PacketDispatcherInterface::ReturnCode
+PacketDispatcherIface::ReturnCode
+DevMgrIface::set_packet_handler(const PacketHandler &handler, void *cookie) {
+  return set_packet_handler_(handler, cookie);
+}
+
+bool
+DevMgrIface::port_is_up(port_t port_num) {
+  return port_is_up_(port_num);
+}
+
+PacketDispatcherIface::ReturnCode
+DevMgrIface::register_status_cb(const PortStatus &type,
+                                const PortStatusCb &port_cb) {
+  assert(p_monitor);
+  p_monitor->register_cb(type, port_cb);
+  return ReturnCode::SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+DevMgr::DevMgr() { }
+
+DevMgr::~DevMgr() { }
+
+void
+DevMgr::set_dev_mgr(std::unique_ptr<DevMgrIface> my_pimp) {
+  assert(!pimp);
+  pimp = std::move(my_pimp);
+}
+
+void
+DevMgr::set_dev_mgr_files(unsigned wait_time_in_seconds) {
+  assert(!pimp);
+  pimp = std::unique_ptr<DevMgrIface>(new FilesDevMgrImp(
+      false /* no real-time packet replay */, wait_time_in_seconds));
+}
+
+void
+DevMgr::start() {
+  assert(pimp);
+  pimp->start();
+}
+
+PacketDispatcherIface::ReturnCode
 DevMgr::port_add(const std::string &iface_name, port_t port_num,
-		 const char *pcap_in, const char* pcap_out)
-{
-  // TODO: check if port is taken...
-  assert(impl);
-  return impl->port_add(iface_name, port_num, pcap_in, pcap_out);
+                 const char *pcap_in, const char *pcap_out) {
+  assert(pimp);
+  BMLOG_DEBUG("Adding interface {} as port {}", iface_name, port_num);
+  ReturnCode rc = pimp->port_add(iface_name, port_num, pcap_in, pcap_out);
+  if (rc != ReturnCode::SUCCESS)
+    Logger::get()->error("Add port operation failed");
+  return rc;
 }
 
 void
-DevMgr::transmit_fn(int port_num, const char *buffer, int len)
-{
-  assert(impl);
-  impl->transmit_fn(port_num, buffer, len);
+DevMgr::transmit_fn(int port_num, const char *buffer, int len) {
+  assert(pimp);
+  pimp->transmit_fn(port_num, buffer, len);
 }
 
-PacketDispatcherInterface::ReturnCode
-DevMgr::port_remove(port_t port_num)
-{
-  assert(impl);
-  return impl->port_remove(port_num);
+PacketDispatcherIface::ReturnCode
+DevMgr::port_remove(port_t port_num) {
+  assert(pimp);
+  BMLOG_DEBUG("Removing port {}", port_num);
+  ReturnCode rc = pimp->port_remove(port_num);
+  if (rc != ReturnCode::SUCCESS)
+    Logger::get()->error("Remove port operation failed");
+  return rc;
 }
 
-PacketDispatcherInterface::ReturnCode
-DevMgr::set_packet_handler(PacketHandler handler, void *cookie)
-{
-  assert(impl);
-  return impl->set_packet_handler(handler, cookie);
+PacketDispatcherIface::ReturnCode
+DevMgr::set_packet_handler(const PacketHandler &handler, void *cookie) {
+  assert(pimp);
+  return pimp->set_packet_handler(handler, cookie);
+}
+
+PacketDispatcherIface::ReturnCode
+DevMgr::register_status_cb(const PortStatus &type,
+                           const PortStatusCb &port_cb) {
+  assert(pimp);
+  return pimp->register_status_cb(type, port_cb);
+}
+
+bool
+DevMgr::port_is_up(port_t port_num) {
+  assert(pimp);
+  return pimp->port_is_up(port_num);
 }

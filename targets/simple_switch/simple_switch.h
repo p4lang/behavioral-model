@@ -18,12 +18,13 @@
  *
  */
 
-#ifndef _BM_SIMPLE_SWITCH_SIMPLE_SWITCH_H_
-#define _BM_SIMPLE_SWITCH_SIMPLE_SWITCH_H_
+#ifndef SIMPLE_SWITCH_SIMPLE_SWITCH_H_
+#define SIMPLE_SWITCH_SIMPLE_SWITCH_H_
 
 #include <memory>
 #include <chrono>
 #include <thread>
+#include <vector>
 
 #include "bm_sim/queue.h"
 #include "bm_sim/packet.h"
@@ -31,23 +32,22 @@
 #include "bm_sim/event_logger.h"
 #include "bm_sim/simple_pre_lag.h"
 
-using std::chrono::microseconds;
+using ts_res = std::chrono::microseconds;
 using std::chrono::duration_cast;
 using ticks = std::chrono::nanoseconds;
 
-class PacketQueue : public Queue<std::unique_ptr<Packet> >
-{
-private:
+class PacketQueue : public Queue<std::unique_ptr<Packet> > {
+ private:
   typedef std::chrono::high_resolution_clock clock;
 
-public:
+ public:
   PacketQueue()
     : Queue<std::unique_ptr<Packet> >(1024, WriteReturn, ReadBlock),
       last_sent(clock::now()), pkt_delay_ticks(0) { }
 
   void set_queue_rate(const uint64_t pps) {
     using std::chrono::duration;
-    if(pps == 0) {
+    if (pps == 0) {
       pkt_delay_ticks = ticks::zero();
       return;
     }
@@ -63,33 +63,45 @@ public:
     last_sent = clock::now();
   }
 
-private:
+ private:
   uint64_t queue_rate_pps;
   clock::time_point last_sent;
   ticks pkt_delay_ticks{};
 };
 
 class SimpleSwitch : public Switch {
-public:
+ public:
   typedef int mirror_id_t;
 
-private:
+ private:
   typedef std::chrono::high_resolution_clock clock;
 
-public:
-  SimpleSwitch(int max_port = 256);
+ public:
+  explicit SimpleSwitch(int max_port = 256);
 
   int receive(int port_num, const char *buffer, int len) {
     static int pkt_id = 0;
 
-    Packet *packet =
-      new Packet(port_num, pkt_id++, 0, len, PacketBuffer(2048, buffer, len));
+    Packet *packet = new Packet(Packet::make_new(
+        port_num, pkt_id++, len, PacketBuffer(2048, buffer, len)));
 
     ELOGGER->packet_in(*packet);
 
+    PHV *phv = packet->get_phv();
     // many current P4 programs assume this
     // it is also part of the original P4 spec
-    packet->get_phv()->reset_metadata();
+    phv->reset_metadata();
+
+    // setting standard metadata
+    phv->get_field("standard_metadata.ingress_port").set(port_num);
+    phv->get_field("standard_metadata.packet_length").set(len);
+    Field &f_instance_type = phv->get_field("standard_metadata.instance_type");
+    f_instance_type.set(PKT_INSTANCE_TYPE_NORMAL);
+
+    if (phv->has_field("intrinsic_metadata.ingress_global_timestamp")) {
+      phv->get_field("intrinsic_metadata.ingress_global_timestamp")
+        .set(get_ts().count());
+    }
 
     input_buffer.push_front(std::unique_ptr<Packet>(packet));
     return 0;
@@ -107,42 +119,51 @@ public:
   }
 
   int set_egress_queue_depth(const size_t depth_pkts) {
-    for(int i = 0; i < max_port; i++) {
+    for (int i = 0; i < max_port; i++) {
       egress_buffers[i].set_capacity(depth_pkts);
     }
     return 0;
   }
 
   int set_egress_queue_rate(const uint64_t rate_pps) {
-    for(int i = 0; i < max_port; i++) {
+    for (int i = 0; i < max_port; i++) {
       egress_buffers[i].set_queue_rate(rate_pps);
     }
     return 0;
   }
 
-private:
+ private:
   enum PktInstanceType {
     PKT_INSTANCE_TYPE_NORMAL,
     PKT_INSTANCE_TYPE_INGRESS_CLONE,
     PKT_INSTANCE_TYPE_EGRESS_CLONE,
     PKT_INSTANCE_TYPE_COALESCED,
-    PKT_INSTANCE_TYPE_INGRESS_RECIRC,
+    PKT_INSTANCE_TYPE_RECIRC,
     PKT_INSTANCE_TYPE_REPLICATION,
     PKT_INSTANCE_TYPE_RESUBMIT,
   };
 
-private:
+ private:
   void ingress_thread();
   void egress_thread(int port);
   void transmit_thread();
 
   int get_mirroring_mapping(mirror_id_t mirror_id) const {
     const auto it = mirroring_map.find(mirror_id);
-    if(it == mirroring_map.end()) return -1;
+    if (it == mirroring_map.end()) return -1;
     return it->second;
   }
 
-private:
+  ts_res get_ts() const;
+
+  // TODO(antonin): switch to pass by value?
+  void enqueue(int egress_port, std::unique_ptr<Packet> &&pkt);
+
+  std::unique_ptr<Packet> copy_ingress_pkt(
+      const std::unique_ptr<Packet> &pkt,
+      PktInstanceType copy_type, p4object_id_t field_list_id);
+
+ private:
   int max_port;
   Queue<std::unique_ptr<Packet> > input_buffer;
   std::vector<PacketQueue> egress_buffers{};
@@ -150,8 +171,6 @@ private:
   std::shared_ptr<McSimplePreLAG> pre;
   clock::time_point start;
   std::unordered_map<mirror_id_t, int> mirroring_map;
-  std::mt19937 gen;
-  std::uniform_int_distribution<packet_id_t> copy_id_dis{};
 };
 
-#endif
+#endif  // SIMPLE_SWITCH_SIMPLE_SWITCH_H_

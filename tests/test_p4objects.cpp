@@ -121,6 +121,33 @@ TEST(P4Objects, UnknownPrimitive) {
   EXPECT_EQ(expected, os.str());
 }
 
+TEST(P4Objects, PrimitiveBadParamCount) {
+  std::istringstream is("{\"actions\":[{\"name\":\"_drop\",\"id\":2,\"runtime_data\":[],\"primitives\":[{\"op\":\"drop\",\"parameters\":[{\"type\":\"hexstr\",\"value\":\"0xab\"}]}]}]}");
+  std::stringstream os;
+  P4Objects objects(os);
+  std::string expected("Invalid number of parameters for primitive action drop: expected 0 but got 1\n");
+  ASSERT_NE(0, objects.init_objects(is));
+  EXPECT_EQ(expected, os.str());
+}
+
+TEST(P4Objects, UnknownHash) {
+  std::istringstream is("{\"calculations\":[{\"name\":\"calc\",\"id\":0,\"input\":[],\"algo\":\"bad_hash_1\"}]}");
+  std::stringstream os;
+  P4Objects objects(os);
+  std::string expected("Unknown hash algorithm: bad_hash_1\n");
+  ASSERT_NE(0, objects.init_objects(is));
+  EXPECT_EQ(expected, os.str());
+}
+
+TEST(P4Objects, UnknownHashSelector) {
+  std::istringstream is("{\"pipelines\":[{\"name\":\"ingress\",\"id\":0,\"init_table\":\"t1\",\"tables\":[{\"name\":\"t1\",\"id\":0,\"match_type\":\"exact\",\"type\":\"indirect_ws\",\"selector\":{\"algo\":\"bad_hash_2\",\"input\":[]},\"max_size\":1024,\"with_counters\":false,\"key\":[],\"actions\":[\"_drop\"],\"next_tables\":{\"_drop\":null},\"default_action\":null}]}]}");
+  std::stringstream os;
+  P4Objects objects(os);
+  std::string expected("Unknown hash algorithm: bad_hash_2\n");
+  ASSERT_NE(0, objects.init_objects(is));
+  EXPECT_EQ(expected, os.str());
+}
+
 TEST(P4Objects, RequiredField) {
   std::istringstream is("{}");
   std::set<P4Objects::header_field_pair> required_fields;
@@ -128,6 +155,7 @@ TEST(P4Objects, RequiredField) {
   std::stringstream os;
   P4Objects objects(os);
   std::string expected("Field standard_metadata.egress_port is required by switch target but is not defined\n");
-  ASSERT_NE(0, objects.init_objects(is, required_fields));
+  // 0 for device_id, nullptr for transport
+  ASSERT_NE(0, objects.init_objects(is, 0, nullptr, required_fields));
   EXPECT_EQ(expected, os.str());
 }

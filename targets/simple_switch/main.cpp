@@ -18,13 +18,29 @@
  *
  */
 
-#ifndef _BM_SIMPLE_ROUTER_H_
-#define _BM_SIMPLE_ROUTER_H_
+/* Switch instance */
 
-int packet_accept(int port_num, const char *buffer, int len);
+#include "simple_switch.h"
 
-typedef void (*transmit_fn_t)(int port_num, const char *buffer, int len);
+#include "bm_runtime/bm_runtime.h"
 
-void start_processing(transmit_fn_t transmit_fn);
+#include "SimpleSwitch_server.ipp"
 
-#endif
+static SimpleSwitch *simple_switch;
+
+int
+main(int argc, char* argv[]) {
+  simple_switch = new SimpleSwitch();
+  int status = simple_switch->init_from_command_line_options(argc, argv);
+  if (status != 0) std::exit(status);
+
+  int thrift_port = simple_switch->get_runtime_port();
+  bm_runtime::start_server(simple_switch, thrift_port);
+  bm_runtime::add_service<SimpleSwitchHandler, SimpleSwitchProcessor>(
+    "simple_switch");
+  simple_switch->start_and_return();
+
+  while (true) std::this_thread::sleep_for(std::chrono::seconds(100));
+
+  return 0;
+}

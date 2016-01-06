@@ -85,7 +85,7 @@ protected:
 
   Packet get_pkt(int length) {
     // dummy packet, won't be parsed
-    Packet packet(0, 0, 0, length, PacketBuffer(length * 2));
+    Packet packet = Packet::make_new(0, 0, length, PacketBuffer(length * 2));
     packet.get_phv()->get_header(testHeader1).mark_valid();
     packet.get_phv()->get_header(testHeader2).mark_valid();
     return packet;
@@ -481,7 +481,7 @@ protected:
 
   Packet get_pkt(int length) {
     // dummy packet, won't be parsed
-    Packet packet(0, 0, 0, length, PacketBuffer(length * 2));
+    Packet packet = Packet::make_new(0, 0, length, PacketBuffer(length * 2));
     packet.get_phv()->get_header(testHeader1).mark_valid();
     packet.get_phv()->get_header(testHeader2).mark_valid();
     return packet;
@@ -711,7 +711,6 @@ class TableIndirectWS : public ::testing::Test {
 protected:
   typedef MatchTableIndirect::mbr_hdl_t mbr_hdl_t;
   typedef MatchTableIndirectWS::grp_hdl_t grp_hdl_t;
-  typedef MatchTableIndirectWS::hash_t hash_t;
 
 protected:
   PHVFactory phv_factory;
@@ -750,8 +749,7 @@ protected:
     builder.push_back_field(testHeader2, 0); // h2.f16
     builder.push_back_field(testHeader2, 1); // h2.f48
 
-    std::unique_ptr<Calculation<hash_t> > calc(new Calculation<hash_t>(builder));
-    calc->set_compute_fn(hash::xxh64<hash_t>);
+    std::unique_ptr<Calculation> calc(new Calculation(builder, "xxh64"));
 
     table->set_hash(std::move(calc));
   }
@@ -780,7 +778,7 @@ protected:
 
   Packet get_pkt(int length) {
     // dummy packet, won't be parsed
-    Packet packet(0, 0, 0, length, PacketBuffer(length * 2));
+    Packet packet = Packet::make_new(0, 0, length, PacketBuffer(length * 2));
     packet.get_phv()->get_header(testHeader1).mark_valid();
     packet.get_phv()->get_header(testHeader2).mark_valid();
     return packet;

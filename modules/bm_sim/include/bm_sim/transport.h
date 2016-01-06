@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef _BM_TRANSPORT_H_
-#define _BM_TRANSPORT_H_
+#ifndef BM_SIM_INCLUDE_BM_SIM_TRANSPORT_H_
+#define BM_SIM_INCLUDE_BM_SIM_TRANSPORT_H_
 
 #include <string>
 #include <mutex>
@@ -28,22 +28,36 @@
 #include "nn.h"
 
 class TransportIface {
-public:
+ public:
   struct MsgBuf {
     char *buf;
     unsigned int len;
   };
 
-public:
+ public:
   virtual ~TransportIface() { }
 
-  virtual int open(const std::string &name) = 0;
+  int open(const std::string &name) {
+    if (opened) return 1;
+    opened = true;
+    return open_(name);
+  }
 
-  virtual int send(const std::string &msg) const = 0;
-  virtual int send(const char *msg, int len) const = 0;
+  int send(const std::string &msg) const {
+    return send_(msg);
+  }
 
-  virtual int send_msgs(const std::initializer_list<std::string> &msgs) const = 0;
-  virtual int send_msgs(const std::initializer_list<MsgBuf> &msgs) const = 0;
+  int send(const char *msg, int len) const {
+    return send_(msg, len);
+  }
+
+  int send_msgs(const std::initializer_list<std::string> &msgs) const {
+    return send_msgs_(msgs);
+  }
+
+  int send_msgs(const std::initializer_list<MsgBuf> &msgs) const {
+    return send_msgs_(msgs);
+  }
 
   template <typename T>
   static std::unique_ptr<T> create_instance(const std::string &name) {
@@ -51,62 +65,83 @@ public:
     transport->open(name);
     return std::unique_ptr<T>(transport);
   }
+
+ private:
+  virtual int open_(const std::string &name) = 0;
+
+  virtual int send_(const std::string &msg) const = 0;
+  virtual int send_(const char *msg, int len) const = 0;
+
+  virtual int send_msgs_(
+      const std::initializer_list<std::string> &msgs) const = 0;
+  virtual int send_msgs_(const std::initializer_list<MsgBuf> &msgs) const = 0;
+
+  bool opened{false};
 };
 
 class TransportNanomsg : public TransportIface {
-public:
+ public:
   TransportNanomsg();
 
-  int open(const std::string &name) override;
+ private:
+  int open_(const std::string &name) override;
 
-  int send(const std::string &msg) const override;
-  int send(const char *msg, int len) const override;
+  int send_(const std::string &msg) const override;
+  int send_(const char *msg, int len) const override;
 
-  int send_msgs(const std::initializer_list<std::string> &msgs) const override;
-  int send_msgs(const std::initializer_list<MsgBuf> &msgs) const override;
+  int send_msgs_(const std::initializer_list<std::string> &msgs) const override;
+  int send_msgs_(const std::initializer_list<MsgBuf> &msgs) const override;
 
-private:
+ private:
   nn::socket s;
 };
 
 class TransportSTDOUT : public TransportIface {
-public:
-  int open(const std::string &name) override;
+ public:
+  TransportSTDOUT() { }
 
-  int send(const std::string &msg) const override;
-  int send(const char *msg, int len) const override;
+ private:
+  int open_(const std::string &name) override;
 
-  int send_msgs(const std::initializer_list<std::string> &msgs) const override;
-  int send_msgs(const std::initializer_list<MsgBuf> &msgs) const override;
+  int send_(const std::string &msg) const override;
+  int send_(const char *msg, int len) const override;
+
+  int send_msgs_(const std::initializer_list<std::string> &msgs) const override;
+  int send_msgs_(const std::initializer_list<MsgBuf> &msgs) const override;
 };
 
 class TransportNULL : public TransportIface {
-public:
-  int open(const std::string &name) override {
-    (void) name; // compiler warning
+ public:
+  TransportNULL() { }
+
+ private:
+  int open_(const std::string &name) override {
+    (void) name;  // compiler warning
     return 0;
   }
 
-  int send(const std::string &msg) const override {
-    (void) msg; // compiler warning
+  int send_(const std::string &msg) const override {
+    (void) msg;  // compiler warning
     return 0;
   }
 
-  int send(const char *msg, int len) const override {
-    (void) msg; // compiler warning
+  int send_(const char *msg, int len) const override {
+    (void) msg;  // compiler warning
     (void) len;
     return 0;
   }
 
-  int send_msgs(const std::initializer_list<std::string> &msgs) const override {
-    (void) msgs; // compiler warning
+  int send_msgs_(
+      const std::initializer_list<std::string> &msgs) const override {
+    (void) msgs;  // compiler warning
     return 0;
   }
 
-  int send_msgs(const std::initializer_list<MsgBuf> &msgs) const override {
-    (void) msgs; // compiler warning
+  int send_msgs_(
+      const std::initializer_list<MsgBuf> &msgs) const override {
+    (void) msgs;  // compiler warning
     return 0;
   }
 };
 
-#endif
+#endif  // BM_SIM_INCLUDE_BM_SIM_TRANSPORT_H_

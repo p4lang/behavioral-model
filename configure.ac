@@ -34,10 +34,15 @@ PICKY_CFLAGS=""
 # It interfers with Thrift's config.h and it's too much work to do that cleanly
 DEBUG_CPPFLAGS=""
 # DEBUG_CPPFLAGS="$DEBUG_CPPFLAGS -g"
-# DEBUG_CPPFLAGS="$DEBUG_CPPFLAGS -DENABLE_SIMPLELOG"
 AC_SUBST([PICKY_CXXFLAGS])
 AC_SUBST([PICKY_CFLAGS])
 AC_SUBST([DEBUG_CPPFLAGS])
+
+AC_SUBST([AM_CPPFLAGS], ["-I\$(top_srcdir)/modules/bf_lpm_trie/include \
+                          -isystem\$(top_srcdir)/third_party/jsoncpp/include \
+                          -isystem\$(top_srcdir)/third_party/spdlog/include \
+                          -I\$(top_srcdir)/modules/BMI/include"])
+
 
 # Checks for header files.
 AC_LANG_PUSH(C)
@@ -70,6 +75,7 @@ AC_CHECK_HEADER([boost/thread.hpp], [], [AC_MSG_ERROR([Boost threading headers n
 AC_CHECK_HEADER([boost/multiprecision/gmp.hpp], [], [AC_MSG_ERROR([Missing boost Multiprecision headers])])
 AC_CHECK_HEADER([boost/program_options.hpp], [], [AC_MSG_ERROR([Missing boost program options header])])
 AC_CHECK_HEADER([boost/functional/hash.hpp], [], [AC_MSG_ERROR([Missing boost functional hash header])])
+AC_CHECK_HEADER([boost/filesystem.hpp], [], [AC_MSG_ERROR([Missing boost filesystem header])])
 AC_CHECK_HEADER([thrift/Thrift.h], [], [AC_MSG_ERROR([Thrift headers not found. Install Thrift from http://thrift.apache.org/docs/install/])])
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -91,10 +97,14 @@ AC_CONFIG_FILES([Makefile
 		modules/bm_sim/Makefile
 		modules/bm_runtime/Makefile
 		modules/BMI/Makefile
+		modules/bm_apps/Makefile
+		modules/bm_apps/include/Makefile
+		modules/bm_apps/examples/Makefile
 		targets/Makefile
 		targets/simple_router/Makefile
 		targets/l2_switch/Makefile
 		targets/l2_switch/learn_client/Makefile
 		targets/simple_switch/Makefile
+		targets/simple_switch/tests/Makefile
 		tests/Makefile])
 AC_OUTPUT

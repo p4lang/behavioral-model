@@ -18,13 +18,15 @@
  *
  */
 
-#ifndef _BM_SIMPLE_ROUTER_H_
-#define _BM_SIMPLE_ROUTER_H_
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-int packet_accept(int port_num, const char *buffer, int len);
+#include <gtest/gtest.h>
 
-typedef void (*transmit_fn_t)(int port_num, const char *buffer, int len);
+bool WITH_VALGRIND = false;
 
-void start_processing(transmit_fn_t transmit_fn);
-
-#endif
+int main(int argc, char* argv[]) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
