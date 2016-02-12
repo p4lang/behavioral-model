@@ -39,7 +39,7 @@ PICKY_CFLAGS=""
 # I do not want work to use AC_DEFINE cause I do not want to include config.h
 # It interfers with Thrift's config.h and it's too much work to do that cleanly
 DEBUG_CPPFLAGS=""
-# DEBUG_CPPFLAGS="$DEBUG_CPPFLAGS -g"
+DEBUG_CPPFLAGS="$DEBUG_CPPFLAGS -g -O1"
 AC_SUBST([PICKY_CXXFLAGS])
 AC_SUBST([PICKY_CFLAGS])
 AC_SUBST([DEBUG_CPPFLAGS])

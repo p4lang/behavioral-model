@@ -15,7 +15,13 @@ AM_CPPFLAGS += \
 -I$(top_srcdir)/modules/bm_sim/include \
 -I$(top_srcdir)/modules/bm_runtime/include \
 -I$(srcdir)/thrift/src/ \
--I$(builddir)/gen-cpp
+-I$(srcdir)/gen-cpp \
+$(DEBUG_CPPFLAGS)
+
+noinst_LTLIBRARIES = libsimpleswitch.la
+
+libsimpleswitch_la_SOURCES = \
+simple_switch.cpp simple_switch.h primitives.cpp
 
 libsimpleswitch_la_LIBADD = \
 $(top_builddir)/modules/bm_sim/libbmsim.la \
@@ -26,16 +32,11 @@ $(top_builddir)/third_party/jsoncpp/libjson.la \
 
 libsimpleswitch_la_LDFLAGS = -pthread
 
-noinst_LTLIBRARIES = libsimpleswitch.la
-
-libsimpleswitch_la_SOURCES = \
-simple_switch.cpp simple_switch.h primitives.cpp
-
-bin_PROGRAMS = simple_switch
+sbin_PROGRAMS = simple_switch
 
 simple_switch_LDADD = \
 $(top_builddir)/modules/bm_runtime/libbmruntime.la \
-$(top_builddir)/thrift_src/libruntimestubs.la \
+$(top_builddir)/thrift_src/libbmthrift.la \
 libsimpleswitch.la \
 libsimpleswitch_thrift.la
 
