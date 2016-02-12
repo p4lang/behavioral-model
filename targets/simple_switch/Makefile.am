@@ -76,7 +76,7 @@ $(BUILT_SOURCES): thrift_files.ts
 	  fi; \
 	fi
 
-pkginclude_HEADERS = \
+include_HEADERS = \
 gen-cpp/simple_switch_constants.h \
 gen-cpp/SimpleSwitch.h \
 gen-cpp/simple_switch_types.h
