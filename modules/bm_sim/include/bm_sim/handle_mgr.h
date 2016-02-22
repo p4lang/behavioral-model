@@ -149,7 +149,7 @@ class HandleMgr {
   : handles(other.handles) {}
 
   ~HandleMgr() {
-    Word_t bytes_freed;
+    int bytes_freed;
     J1FA(bytes_freed, handles);
   }
 
@@ -210,7 +210,7 @@ class HandleMgr {
   }
 
   void clear() {
-    Word_t Rc_word;
+    int Rc_word;
     J1FA(Rc_word, handles);
   }
 
