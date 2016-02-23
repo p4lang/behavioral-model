@@ -134,7 +134,7 @@ class RandAccessUIntSet {
     : members((Pvoid_t) NULL) { }
 
   ~RandAccessUIntSet() {
-    Word_t bytes_freed;
+    int bytes_freed;
     J1FA(bytes_freed, members);
   }
 
