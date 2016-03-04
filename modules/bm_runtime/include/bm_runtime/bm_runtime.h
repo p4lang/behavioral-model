@@ -7,9 +7,15 @@
 
 namespace bm_runtime {
 
-using namespace ::p4::thrift;
-using namespace ::p4::thrift::protocol;
-using namespace ::p4::thrift::transport;
+#ifdef P4THRIFT
+  using namespace ::p4::thrift;
+  using namespace ::p4::thrift::protocol;
+  using namespace ::p4::thrift::transport;
+#else
+  using namespace ::apache::thrift;
+  using namespace ::apache::thrift::protocol;
+  using namespace ::apache::thrift::transport;
+#endif
 using boost::shared_ptr;
 
 extern TMultiplexedProcessor *processor_;

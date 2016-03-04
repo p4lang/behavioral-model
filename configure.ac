@@ -46,7 +46,10 @@ AC_SUBST([AM_CPPFLAGS], ["-I\$(top_srcdir)/modules/bf_lpm_trie/include \
 # Thrift
 AC_ARG_WITH([thrift],
     [AS_HELP_STRING([--with-thrift], [Thrift selector])],
-    [THRIFT=$withval],
+    [
+        THRIFT=$withval,
+        AM_CONDITIONAL([P4THRIFT], [test "x" = "x"]) 
+    ],
     [AC_PATH_PROG([THRIFT], [thrift], [])])
 AS_IF([test x"$THRIFT" = x],
 [AC_MSG_ERROR([cannot find thrift])])

@@ -85,12 +85,22 @@ LearnListener::ack_buffer(cxt_id_t cxt_id, list_id_t list_id,
 
 void
 LearnListener::start() {
+#ifdef P4THRIFT
   using p4::thrift::protocol::TProtocol;
   using p4::thrift::protocol::TBinaryProtocol;
   using p4::thrift::protocol::TMultiplexedProtocol;
   using p4::thrift::transport::TSocket;
   using p4::thrift::transport::TTransport;
   using p4::thrift::transport::TBufferedTransport;
+#else
+  using apache::thrift::protocol::TProtocol;
+  using apache::thrift::protocol::TBinaryProtocol;
+  using apache::thrift::protocol::TMultiplexedProtocol;
+  using apache::thrift::transport::TSocket;
+  using apache::thrift::transport::TTransport;
+  using apache::thrift::transport::TBufferedTransport;
+#endif
+
 
   boost::shared_ptr<TTransport> tsocket(new TSocket("localhost", 9090));
   boost::shared_ptr<TTransport> transport(new TBufferedTransport(tsocket));
