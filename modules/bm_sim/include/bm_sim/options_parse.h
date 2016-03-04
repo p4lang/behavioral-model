@@ -26,6 +26,10 @@
 #include <string>
 #include <map>
 
+#include "logger.h"
+
+namespace bm {
+
 class InterfaceList {
  public:
   typedef std::map<int, std::string>::iterator iterator;
@@ -69,8 +73,13 @@ class OptionsParser {
   std::string event_logger_addr{};
   std::string file_logger{};
   bool console_logging{false};
+  // by default everything is logged
+  Logger::LogLevel log_level{Logger::LogLevel::TRACE};
   std::string notifications_addr{};
   bool debugger{false};
+  std::string debugger_addr{};
 };
+
+}  // namespace bm
 
 #endif  // BM_SIM_INCLUDE_BM_SIM_OPTIONS_PARSE_H_

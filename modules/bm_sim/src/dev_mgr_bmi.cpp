@@ -20,12 +20,16 @@
 
 #include <string>
 #include <cassert>
+#include <mutex>
+#include <map>
 
 #include "bm_sim/dev_mgr.h"
 
 extern "C" {
 #include "BMI/bmi_port.h"
 }
+
+namespace bm {
 
 // These are private implementations
 
@@ -37,10 +41,12 @@ extern "C" {
 
 class BmiDevMgrImp : public DevMgrIface {
  public:
-  BmiDevMgrImp() {
+  BmiDevMgrImp(int device_id,
+               std::shared_ptr<TransportIface> notifications_transport) {
     assert(!bmi_port_create_mgr(&port_mgr));
 
-    p_monitor = PortMonitorIface::make_active();
+    p_monitor = PortMonitorIface::make_active(device_id,
+                                              notifications_transport);
   }
 
  private:
@@ -53,12 +59,24 @@ class BmiDevMgrImp : public DevMgrIface {
     if (bmi_port_interface_add(port_mgr, iface_name.c_str(), port_num, in_pcap,
                                out_pcap))
       return ReturnCode::ERROR;
+
+    PortInfo p_info(port_num, iface_name);
+    if (in_pcap) p_info.add_extra("in_pcap", std::string(in_pcap));
+    if (out_pcap) p_info.add_extra("out_pcap", std::string(out_pcap));
+
+    Lock lock(mutex);
+    port_info.emplace(port_num, std::move(p_info));
+
     return ReturnCode::SUCCESS;
   }
 
   ReturnCode port_remove_(port_t port_num) override {
     if (bmi_port_interface_remove(port_mgr, port_num))
       return ReturnCode::ERROR;
+
+    Lock lock(mutex);
+    port_info.erase(port_num);
+
     return ReturnCode::SUCCESS;
   }
 
@@ -81,7 +99,7 @@ class BmiDevMgrImp : public DevMgrIface {
     return ReturnCode::SUCCESS;
   }
 
-  bool port_is_up_(port_t port) override {
+  bool port_is_up_(port_t port) const override {
     bool is_up = false;
     assert(port_mgr);
     int rval = bmi_port_interface_is_up(port_mgr, port, &is_up);
@@ -89,12 +107,33 @@ class BmiDevMgrImp : public DevMgrIface {
     return is_up;
   }
 
+  std::map<port_t, PortInfo> get_port_info_() const override {
+    std::map<port_t, PortInfo> info;
+    {
+      Lock lock(mutex);
+      info = port_info;
+    }
+    for (auto &pi : info) {
+      pi.second.is_up = port_is_up_(pi.first);
+    }
+    return info;
+  }
+
  private:
+  using Mutex = std::mutex;
+  using Lock = std::lock_guard<std::mutex>;
+
   bmi_port_mgr_t *port_mgr{nullptr};
+  mutable Mutex mutex;
+  std::map<port_t, DevMgrIface::PortInfo> port_info;
 };
 
 void
-DevMgr::set_dev_mgr_bmi() {
+DevMgr::set_dev_mgr_bmi(
+    int device_id, std::shared_ptr<TransportIface> notifications_transport) {
   assert(!pimp);
-  pimp = std::unique_ptr<DevMgrIface>(new BmiDevMgrImp());
+  pimp = std::unique_ptr<DevMgrIface>(
+      new BmiDevMgrImp(device_id, notifications_transport));
 }
+
+}  // namespace bm

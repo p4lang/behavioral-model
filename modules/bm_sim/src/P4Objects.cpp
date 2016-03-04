@@ -25,10 +25,23 @@
 #include <vector>
 #include <set>
 
+namespace bm {
+
 using std::unique_ptr;
 using std::string;
 
 typedef unsigned char opcode_t;
+
+namespace {
+
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
+T hexstr_to_int(const std::string &hexstr) {
+  // TODO(antonin): temporary trick to avoid code duplication
+  return Data(hexstr).get<T>();
+}
+
+}  // namespace
 
 void
 P4Objects::build_expression(const Json::Value &json_expression,
@@ -41,11 +54,21 @@ P4Objects::build_expression(const Json::Value &json_expression,
     const Json::Value json_left = json_value["left"];
     const Json::Value json_right = json_value["right"];
 
-    build_expression(json_left, expr);
-    build_expression(json_right, expr);
+    if (op == "?") {
+      const Json::Value json_cond = json_value["cond"];
+      build_expression(json_cond, expr);
 
-    ExprOpcode opcode = ExprOpcodesMap::get_opcode(op);
-    expr->push_back_op(opcode);
+      Expression e1, e2;
+      build_expression(json_left, &e1);
+      build_expression(json_right, &e2);
+      expr->push_back_ternary_op(e1, e2);
+    } else {
+      build_expression(json_left, expr);
+      build_expression(json_right, expr);
+
+      ExprOpcode opcode = ExprOpcodesMap::get_opcode(op);
+      expr->push_back_op(opcode);
+    }
   } else if (type == "header") {
     header_id_t header_id = get_header_id(json_value.asString());
     expr->push_back_load_header(header_id);
@@ -63,6 +86,22 @@ P4Objects::build_expression(const Json::Value &json_expression,
     expr->push_back_load_const(Data(json_value.asString()));
   } else if (type == "local") {  // runtime data for expressions in actions
     expr->push_back_load_local(json_value.asInt());
+  } else if (type == "register") {
+    // TODO(antonin): cheap optimization
+    // this may not be worth doing, and probably does not belong here
+    const string register_array_name = json_value[0].asString();
+    auto &json_index = json_value[1];
+    assert(json_index.size() == 2);
+    if (json_index["type"].asString() == "hexstr") {
+      const unsigned int idx = hexstr_to_int<unsigned int>(
+          json_index["value"].asString());
+      expr->push_back_load_register_ref(
+          get_register_array(register_array_name), idx);
+    } else {
+      build_expression(json_index, expr);
+      expr->push_back_load_register_gen(
+          get_register_array(register_array_name));
+    }
   } else {
     assert(0);
   }
@@ -77,8 +116,8 @@ P4Objects::init_objects(std::istream *is, int device_id, size_t cxt_id,
   (*is) >> cfg_root;
 
   if (!notifications_transport) {
-    notifications_transport = std::make_shared<TransportNULL>();
-    notifications_transport->open("dummy");
+    notifications_transport = std::shared_ptr<TransportIface>(
+        TransportIface::make_dummy());
   }
 
   // header types
@@ -158,6 +197,70 @@ P4Objects::init_objects(std::istream *is, int device_id, size_t cxt_id,
     phv_factory.push_back_header_stack(header_stack_name, header_stack_id,
                                        *header_stack_type, header_ids);
     add_header_stack_id(header_stack_name, header_stack_id);
+  }
+
+  if (cfg_root.isMember("field_aliases")) {
+    const Json::Value &cfg_field_aliases = cfg_root["field_aliases"];
+
+    for (const auto &cfg_alias : cfg_field_aliases) {
+      const auto from = cfg_alias[0].asString();
+      const auto tgt = cfg_alias[1];
+      const auto header_name = tgt[0].asString();
+      const auto field_name = tgt[1].asString();
+      assert(field_exists(header_name, field_name));
+      const auto to = header_name + "." + field_name;
+      phv_factory.add_field_alias(from, to);
+
+      field_aliases[from] = header_field_pair(header_name, field_name);
+    }
+  }
+
+  // extern instances
+
+  const Json::Value &cfg_extern_instances = cfg_root["extern_instances"];
+  for (const auto &cfg_extern_instance : cfg_extern_instances) {
+    const string extern_instance_name = cfg_extern_instance["name"].asString();
+    const p4object_id_t extern_instance_id = cfg_extern_instance["id"].asInt();
+
+    const string extern_type_name = cfg_extern_instance["type"].asString();
+    auto instance = ExternFactoryMap::get_instance()->get_extern_instance(
+        extern_type_name);
+    if (instance == nullptr) {
+      outstream << "Invalid reference to extern type '"
+                << extern_type_name << "'\n";
+      return 1;
+    }
+
+    instance->_register_attributes();
+
+    instance->_set_name_and_id(extern_instance_name, extern_instance_id);
+
+    const Json::Value &cfg_extern_attributes =
+        cfg_extern_instance["attribute_values"];
+    for (const auto &cfg_extern_attribute : cfg_extern_attributes) {
+      // only hexstring accepted
+      const string name = cfg_extern_attribute["name"].asString();
+      const string type = cfg_extern_attribute["type"].asString();
+
+      if (!instance->_has_attribute(name)) {
+        outstream << "Extern type '" << extern_type_name
+                  << "' has no attribute '" << name << "'\n";
+        return 1;
+      }
+
+      if (type == "hexstr") {
+        const string value_hexstr = cfg_extern_attribute["value"].asString();
+        instance->_set_attribute<Data>(name, Data(value_hexstr));
+      } else {
+        outstream << "Only attributes of type 'hexstr' are supported for extern"
+                  << " instance attribute initialization\n";
+        return 1;
+      }
+    }
+
+    instance->init();
+
+    add_extern_instance(extern_instance_name, std::move(instance));
   }
 
   // parsers
@@ -359,7 +462,32 @@ P4Objects::init_objects(std::istream *is, int device_id, size_t cxt_id,
     add_named_calculation(name, unique_ptr<NamedCalculation>(calculation));
   }
 
+  // counter arrays
+
+  const Json::Value &cfg_counter_arrays = cfg_root["counter_arrays"];
+  for (const auto &cfg_counter_array : cfg_counter_arrays) {
+    const string name = cfg_counter_array["name"].asString();
+    const p4object_id_t id = cfg_counter_array["id"].asInt();
+    const size_t size = cfg_counter_array["size"].asUInt();
+    const Json::Value false_value(false);
+    const bool is_direct =
+      cfg_counter_array.get("is_direct", false_value).asBool();
+    if (is_direct) continue;
+
+    CounterArray *counter_array = new CounterArray(name, id, size);
+    add_counter_array(name, unique_ptr<CounterArray>(counter_array));
+  }
+
   // meter arrays
+
+  // store direct meter info until the table gets created
+  struct DirectMeterArray {
+    MeterArray *meter;
+    header_id_t header;
+    int offset;
+  };
+
+  std::unordered_map<std::string, DirectMeterArray> direct_meters;
 
   const Json::Value &cfg_meter_arrays = cfg_root["meter_arrays"];
   for (const auto &cfg_meter_array : cfg_meter_arrays) {
@@ -380,22 +508,20 @@ P4Objects::init_objects(std::istream *is, int device_id, size_t cxt_id,
     MeterArray *meter_array = new MeterArray(name, id,
                                              meter_type, rate_count, size);
     add_meter_array(name, unique_ptr<MeterArray>(meter_array));
-  }
 
-  // counter arrays
-
-  const Json::Value &cfg_counter_arrays = cfg_root["counter_arrays"];
-  for (const auto &cfg_counter_array : cfg_counter_arrays) {
-    const string name = cfg_counter_array["name"].asString();
-    const p4object_id_t id = cfg_counter_array["id"].asInt();
-    const size_t size = cfg_counter_array["size"].asUInt();
-    const Json::Value false_value(false);
     const bool is_direct =
-      cfg_counter_array.get("is_direct", false_value).asBool();
-    if (is_direct) continue;
+        cfg_meter_array.get("is_direct", Json::Value(false)).asBool();
+    if (is_direct) {
+      const Json::Value &cfg_target_field = cfg_meter_array["result_target"];
+      const string header_name = cfg_target_field[0].asString();
+      header_id_t header_id = get_header_id(header_name);
+      const string field_name = cfg_target_field[1].asString();
+      int field_offset = get_field_offset(header_id, field_name);
 
-    CounterArray *counter_array = new CounterArray(name, id, size);
-    add_counter_array(name, unique_ptr<CounterArray>(counter_array));
+      DirectMeterArray direct_meter =
+          {get_meter_array(name), header_id, field_offset};
+      direct_meters.emplace(name, direct_meter);
+    }
   }
 
   // register arrays
@@ -494,13 +620,37 @@ P4Objects::init_objects(std::istream *is, int device_id, size_t cxt_id,
           header_id_t header_stack_id = get_header_stack_id(header_stack_name);
           action_fn->parameter_push_back_header_stack(header_stack_id);
         } else if (type == "expression") {
-          // TODO(Antonin): shold this make the field case (and other) obsolete
+          // TODO(Antonin): should this make the field case (and other) obsolete
           // maybe if we can optimize this case
           ArithExpression *expr = new ArithExpression();
           build_expression(cfg_parameter["value"], expr);
           expr->build();
           action_fn->parameter_push_back_expression(
             std::unique_ptr<ArithExpression>(expr));
+        } else if (type == "register") {
+          // TODO(antonin): cheap optimization
+          // this may not be worth doing, and probably does not belong here
+          const Json::Value &cfg_register = cfg_parameter["value"];
+          const string register_array_name = cfg_register[0].asString();
+          auto &json_index = cfg_register[1];
+          assert(json_index.size() == 2);
+          if (json_index["type"].asString() == "hexstr") {
+            const unsigned int idx = hexstr_to_int<unsigned int>(
+                json_index["value"].asString());
+            action_fn->parameter_push_back_register_ref(
+                get_register_array(register_array_name), idx);
+          } else {
+            ArithExpression *idx_expr = new ArithExpression();
+            build_expression(json_index, idx_expr);
+            idx_expr->build();
+            action_fn->parameter_push_back_register_gen(
+                get_register_array(register_array_name),
+                std::unique_ptr<ArithExpression>(idx_expr));
+          }
+        } else if (type == "extern") {
+          const string name = cfg_parameter["value"].asString();
+          ExternType *extern_instance = get_extern_instance(name);
+          action_fn->parameter_push_back_extern_instance(extern_instance);
         } else {
           assert(0 && "parameter not supported");
         }
@@ -514,11 +664,16 @@ P4Objects::init_objects(std::istream *is, int device_id, size_t cxt_id,
   ageing_monitor = std::unique_ptr<AgeingMonitor>(
       new AgeingMonitor(device_id, cxt_id, notifications_transport));
 
+  std::unordered_map<std::string, MatchKeyParam::Type> map_name_to_match_type =
+      { {"exact", MatchKeyParam::Type::EXACT},
+        {"lpm", MatchKeyParam::Type::LPM},
+        {"ternary", MatchKeyParam::Type::TERNARY},
+        {"valid", MatchKeyParam::Type::VALID} };
+
   const Json::Value &cfg_pipelines = cfg_root["pipelines"];
   for (const auto &cfg_pipeline : cfg_pipelines) {
     const string pipeline_name = cfg_pipeline["name"].asString();
     p4object_id_t pipeline_id = cfg_pipeline["id"].asInt();
-    const string first_node_name = cfg_pipeline["init_table"].asString();
 
     // pipelines -> tables
 
@@ -529,20 +684,53 @@ P4Objects::init_objects(std::istream *is, int device_id, size_t cxt_id,
 
       MatchKeyBuilder key_builder;
       const Json::Value &cfg_match_key = cfg_table["key"];
+
+      auto add_f = [this, &key_builder, &map_name_to_match_type](
+          const Json::Value &cfg_f) {
+        const Json::Value &cfg_key_field = cfg_f["target"];
+        const string header_name = cfg_key_field[0].asString();
+        header_id_t header_id = get_header_id(header_name);
+        const string field_name = cfg_key_field[1].asString();
+        int field_offset = get_field_offset(header_id, field_name);
+        const auto mtype = map_name_to_match_type.at(
+            cfg_f["match_type"].asString());
+        const std::string name = header_name + "." + field_name;
+        if ((!cfg_f.isMember("mask")) || cfg_f["mask"].isNull()) {
+          key_builder.push_back_field(header_id, field_offset,
+                                      get_field_bits(header_id, field_offset),
+                                      mtype, name);
+        } else {
+          const Json::Value &cfg_key_mask = cfg_f["mask"];
+          key_builder.push_back_field(header_id, field_offset,
+                                      get_field_bits(header_id, field_offset),
+                                      ByteContainer(cfg_key_mask.asString()),
+                                      mtype, name);
+        }
+      };
+
+      // sanity checking, really necessary?
+      bool has_lpm = false;
       for (const auto &cfg_key_entry : cfg_match_key) {
         const string match_type = cfg_key_entry["match_type"].asString();
-        const Json::Value &cfg_key_field = cfg_key_entry["target"];
+        if (match_type == "lpm") {
+          if (has_lpm) {
+            outstream << "Table " << table_name << "features 2 LPM match fields"
+                      << std::endl;
+            return 1;
+          }
+          has_lpm = true;
+        }
+      }
+
+      for (const auto &cfg_key_entry : cfg_match_key) {
+        const string match_type = cfg_key_entry["match_type"].asString();
         if (match_type == "valid") {
+          const Json::Value &cfg_key_field = cfg_key_entry["target"];
           const string header_name = cfg_key_field.asString();
           header_id_t header_id = get_header_id(header_name);
-          key_builder.push_back_valid_header(header_id);
+          key_builder.push_back_valid_header(header_id, header_name);
         } else {
-          const string header_name = cfg_key_field[0].asString();
-          header_id_t header_id = get_header_id(header_name);
-          const string field_name = cfg_key_field[1].asString();
-          int field_offset = get_field_offset(header_id, field_name);
-          key_builder.push_back_field(header_id, field_offset,
-                                      get_field_bits(header_id, field_offset));
+          add_f(cfg_key_entry);
         }
       }
 
@@ -608,6 +796,15 @@ P4Objects::init_objects(std::istream *is, int device_id, size_t cxt_id,
         assert(0 && "invalid table type");
       }
 
+      // maintains backwards compatibility
+      if (cfg_table.isMember("direct_meters") &&
+          !cfg_table["direct_meters"].isNull()) {
+        const std::string meter_name = cfg_table["direct_meters"].asString();
+        const DirectMeterArray &direct_meter = direct_meters[meter_name];
+        table->get_match_table()->set_direct_meters(
+            direct_meter.meter, direct_meter.header, direct_meter.offset);
+      }
+
       if (with_ageing) ageing_monitor->add_table(table->get_match_table());
 
       add_match_action_table(table_name, std::move(table));
@@ -638,14 +835,30 @@ P4Objects::init_objects(std::istream *is, int device_id, size_t cxt_id,
       const Json::Value &cfg_next_nodes = cfg_table["next_tables"];
       const Json::Value &cfg_actions = cfg_table["actions"];
 
+      auto get_next_node = [this](const Json::Value &cfg_next_node)
+          -> const ControlFlowNode *{
+        if (cfg_next_node.isNull())
+          return nullptr;
+        return get_control_node(cfg_next_node.asString());
+      };
+
       for (const auto &cfg_action : cfg_actions) {
         const string action_name = cfg_action.asString();
+        // note that operator[] creates a null member if action_name does not
+        // exist
         const Json::Value &cfg_next_node = cfg_next_nodes[action_name];
-        const ControlFlowNode *next_node = nullptr;
-        if (!cfg_next_node.isNull()) {
-          next_node = get_control_node(cfg_next_node.asString());
-        }
+        const ControlFlowNode *next_node = get_next_node(cfg_next_node);
         table->set_next_node(get_action(action_name)->get_id(), next_node);
+      }
+
+      if (cfg_next_nodes.isMember("__HIT__"))
+        table->set_next_node_hit(get_next_node(cfg_next_nodes["__HIT__"]));
+      if (cfg_next_nodes.isMember("__MISS__"))
+        table->set_next_node_miss(get_next_node(cfg_next_nodes["__MISS__"]));
+
+      if (cfg_table.isMember("base_default_next")) {
+        table->set_next_node_miss_default(
+            get_next_node(cfg_table["base_default_next"]));
       }
     }
 
@@ -669,7 +882,12 @@ P4Objects::init_objects(std::istream *is, int device_id, size_t cxt_id,
       }
     }
 
-    ControlFlowNode *first_node = get_control_node(first_node_name);
+    ControlFlowNode *first_node = nullptr;
+    if (!cfg_pipeline["init_table"].isNull()) {
+      const string first_node_name = cfg_pipeline["init_table"].asString();
+      first_node = get_control_node(first_node_name);
+    }
+
     Pipeline *pipeline = new Pipeline(pipeline_name, pipeline_id, first_node);
     add_pipeline(pipeline_name, unique_ptr<Pipeline>(pipeline));
   }
@@ -782,8 +1000,11 @@ P4Objects::init_objects(std::istream *is, int device_id, size_t cxt_id,
 
   for (const auto &p : arith_fields) {
     if (!field_exists(p.first, p.second)) {
-      outstream << "field " << p.first << "." << p.second
-                << " does not exist but required for arith, ignoring\n";
+      continue;
+      // TODO(antonin): skipping warning for now, but maybe it would be nice to
+      // leave the choice to the person calling force_arith_field
+      // outstream << "field " << p.first << "." << p.second
+      //           << " does not exist but required for arith, ignoring\n";
     } else {
       const auto field = field_info(p.first, p.second);
       phv_factory.enable_field_arith(std::get<0>(field), std::get<1>(field));
@@ -798,8 +1019,17 @@ P4Objects::init_objects(std::istream *is, int device_id, size_t cxt_id,
 void
 P4Objects::reset_state() {
   // TODO(antonin): is this robust?
-  for (auto &table : match_action_tables_map) {
-    table.second->get_match_table()->reset_state();
+  for (const auto &e : match_action_tables_map) {
+    e.second->get_match_table()->reset_state();
+  }
+  for (const auto &e : meter_arrays) {
+    e.second->reset_state();
+  }
+  for (const auto &e : counter_arrays) {
+    e.second->reset_state();
+  }
+  for (const auto &e : register_arrays) {
+    e.second->reset_state();
   }
   learn_engine->reset_state();
   ageing_monitor->reset_state();
@@ -831,13 +1061,20 @@ P4Objects::get_header_bits(header_id_t header_id) {
 
 std::tuple<header_id_t, int>
 P4Objects::field_info(const string &header_name, const string &field_name) {
+  auto it = field_aliases.find(header_name + "." + field_name);
+  if (it != field_aliases.end())
+    return field_info(std::get<0>(it->second), std::get<1>(it->second));
   header_id_t header_id = get_header_id(header_name);
   return std::make_tuple(header_id, get_field_offset(header_id, field_name));
 }
 
 bool
 P4Objects::field_exists(const string &header_name,
-                        const string &field_name) {
+                        const string &field_name) const {
+  // TODO(antonin): the alias feature, while correcty-handled during packet
+  // processing in phv.cpp is kind of hacky here and needs to be improved.
+  if (field_aliases.find(header_name + "." + field_name) != field_aliases.end())
+    return true;
   const auto it = header_to_type_map.find(header_name);
   if (it == header_to_type_map.end()) return false;
   const HeaderType *header_type = it->second;
@@ -864,3 +1101,5 @@ P4Objects::check_hash(const std::string &name) const {
   if (!h) outstream << "Unknown hash algorithm: " << name  << std::endl;
   return h;
 }
+
+}  // namespace bm

@@ -18,6 +18,8 @@
  *
  */
 
+//! @file learning.h
+
 #ifndef BM_SIM_INCLUDE_BM_SIM_LEARNING_H_
 #define BM_SIM_INCLUDE_BM_SIM_LEARNING_H_
 
@@ -37,10 +39,23 @@
 #include "bytecontainer.h"
 #include "transport.h"
 
+namespace bm {
+
+// TODO(antonin): automate learning (i.e. make it target-independent)?
+
+//! Enables learning in the switch. For now it is the responsibility of the
+//! switch (look at the simple switch target for an example) to invoke the
+//! learn() method, which will send out the learning notifications.
 class LearnEngine {
  public:
   typedef int list_id_t;
   typedef uint64_t buffer_id_t;
+
+  enum LearnErrorCode {
+    SUCCESS = 0,
+    INVALID_LIST_ID,
+    ERROR
+  };
 
   typedef struct {
     char sub_topic[4];
@@ -72,12 +87,23 @@ class LearnEngine {
 
   void list_init(list_id_t list_id);
 
+  LearnErrorCode list_set_timeout(list_id_t list_id, unsigned int timeout_ms);
+
+  LearnErrorCode list_set_max_samples(list_id_t list_id, size_t max_samples);
+
+  //! Performs learning on the packet. Needs to be called by the target after a
+  //! learning-enabled pipeline has been applied on the packet. See the simple
+  //! switch implementation for an example.
+  //!
+  //! The \p list_id should be mapped to a field list in the JSON fed into the
+  //! switch. Since learning is still not well-standardized in P4, this process
+  //! is a little bit hacky for now.
   void learn(list_id_t list_id, const Packet &pkt);
 
-  void ack(list_id_t list_id, buffer_id_t buffer_id, int sample_id);
-  void ack(list_id_t list_id, buffer_id_t buffer_id,
-           const std::vector<int> &sample_ids);
-  void ack_buffer(list_id_t list_id, buffer_id_t buffer_id);
+  LearnErrorCode ack(list_id_t list_id, buffer_id_t buffer_id, int sample_id);
+  LearnErrorCode ack(list_id_t list_id, buffer_id_t buffer_id,
+                     const std::vector<int> &sample_ids);
+  LearnErrorCode ack_buffer(list_id_t list_id, buffer_id_t buffer_id);
 
   void reset_state();
 
@@ -139,6 +165,10 @@ class LearnEngine {
     void push_back_field(header_id_t header_id, int field_offset);
     void push_back_constant(const std::string &hexstring);
 
+    void set_timeout(unsigned int timeout_ms);
+
+    void set_max_samples(size_t max_samples);
+
     void add_sample(const PHV &phv);
 
     void ack(buffer_id_t buffer_id, const std::vector<int> &sample_ids);
@@ -152,12 +182,17 @@ class LearnEngine {
     LearnList &operator=(LearnList &&other) = delete;
 
    private:
+    using MutexType = std::mutex;
+    using LockType = std::unique_lock<MutexType>;
+
+   private:
     void swap_buffers();
+    void process_full_buffer(LockType &lock);  // NOLINT(runtime/references)
     void buffer_transmit_loop();
     void buffer_transmit();
 
    private:
-    mutable std::mutex mutex{};
+    mutable MutexType mutex{};
 
     list_id_t list_id;
 
@@ -169,16 +204,17 @@ class LearnEngine {
     buffer_id_t buffer_id{0};
     // size_t sample_size{0};
     size_t num_samples{0};
-    const size_t max_samples;
+    size_t max_samples;
     clock::time_point buffer_started{};
     clock::time_point last_sent{};
-    const milliseconds timeout;
-    const bool with_timeout;
+    milliseconds timeout;
+    bool with_timeout;
 
     LearnFilter filter{};
     std::unordered_map<buffer_id_t, FilterPtrs> old_buffers{};
 
     std::vector<char> buffer_tmp{};
+    size_t num_samples_tmp{0};
     mutable std::condition_variable b_can_swap{};
     mutable std::condition_variable b_can_send{};
     std::thread transmit_thread{};
@@ -196,10 +232,14 @@ class LearnEngine {
   };
 
  private:
+  LearnList *get_learn_list(list_id_t list_id);
+
   int device_id{};
   int cxt_id{};
   // LearnList is not movable because of the mutex, I am using pointers
   std::unordered_map<list_id_t, std::unique_ptr<LearnList> > learn_lists{};
 };
+
+}  // namespace bm
 
 #endif  // BM_SIM_INCLUDE_BM_SIM_LEARNING_H_

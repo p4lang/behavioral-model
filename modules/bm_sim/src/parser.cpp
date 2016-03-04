@@ -22,6 +22,8 @@
 #include "bm_sim/debugger.h"
 #include "extract.h"
 
+namespace bm {
+
 ParserLookAhead::ParserLookAhead(int offset, int bitwidth)
   : byte_offset(offset / 8), bit_offset(offset % 8),
     bitwidth(bitwidth), nbytes((bitwidth + 7) / 8) { }
@@ -137,8 +139,13 @@ ParseState::find_next_state(Packet *pkt, const char *data,
                             size_t *bytes_parsed) const {
   // execute parser ops
   PHV *phv = pkt->get_phv();
+
+  register_sync.lock_registers();
+
   for (auto &parser_op : parser_ops)
     (*parser_op)(pkt, data + *bytes_parsed, bytes_parsed);
+
+  register_sync.unlock_registers();
 
   if (!has_switch) {
     BMLOG_DEBUG_PKT(
@@ -184,7 +191,7 @@ ParseState::operator()(Packet *pkt, const char *data,
 
 void
 Parser::parse(Packet *pkt) const {
-  ELOGGER->parser_start(*pkt, *this);
+  BMELOG(parser_start, *pkt, *this);
   // TODO(antonin)
   // this is temporary while we experiment with the debugger
   DEBUGGER_NOTIFY_CTR(
@@ -200,9 +207,11 @@ Parser::parse(Packet *pkt) const {
     BMLOG_TRACE("Bytes parsed: {}", bytes_parsed);
   }
   pkt->remove(bytes_parsed);
-  ELOGGER->parser_done(*pkt, *this);
+  BMELOG(parser_done, *pkt, *this);
   DEBUGGER_NOTIFY_CTR(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
       DBG_CTR_EXIT(DBG_CTR_PARSER) | get_id());
   BMLOG_DEBUG_PKT(*pkt, "Parser '{}': end", get_name());
 }
+
+}  // namespace bm

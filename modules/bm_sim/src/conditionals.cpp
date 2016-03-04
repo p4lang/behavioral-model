@@ -23,6 +23,8 @@
 #include "bm_sim/conditionals.h"
 #include "bm_sim/event_logger.h"
 
+namespace bm {
+
 const ControlFlowNode *
 Conditional::operator()(Packet *pkt) const {
   // TODO(antonin)
@@ -32,7 +34,7 @@ Conditional::operator()(Packet *pkt) const {
       DBG_CTR_CONDITION | get_id());
   PHV *phv = pkt->get_phv();
   bool result = eval(*phv);
-  ELOGGER->condition_eval(*pkt, *this, result);
+  BMELOG(condition_eval, *pkt, *this, result);
   DEBUGGER_NOTIFY_UPDATE_V(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
       Debugger::FIELD_COND, result);
@@ -42,3 +44,4 @@ Conditional::operator()(Packet *pkt) const {
   return result ? true_next : false_next;
 }
 
+}  // namespace bm

@@ -52,16 +52,16 @@ information on the Ubuntu 12.04 dependencies.
     2. ./configure
     3. make
 
-To enable logging, you probably want to use the following flags when running
-configure:
+Debug logging is enabled by default. If you want to disable it for performance
+reasons, you can pass `--disable-logging-macros` to the `configure` script.
 
-    ./configure 'CPPFLAGS=-DBMLOG_DEBUG_ON'
+In 'debug mode', you probably want to disable compiler optimization and enable
+symbols in the binary:
 
-In 'debug mode', you probably want to also use the following as well:
+    ./configure 'CXXFLAGS=-O0 -g'
 
-    'CXXFLAGS=-O0 -g'
-
-The new bmv2 debugger can be enabled by adding `-DBMDEBUG_ON` to the `CPPFLAGS`.
+The new bmv2 debugger can be enabled by passing `--enable-debugger` to
+`configure`.
 
 ## Running the tests
 
@@ -127,9 +127,9 @@ used.
 
 ## Using the debugger
 
-To enable the debugger, make sure that you added `-DBMDEBUG_ON` to the
-`CPPFLAGS` when running `./configure`. You will also need to use the
-`--debugger` command line flag when starting the switch.
+To enable the debugger, make sure that you passed the `--enable-debugger` flag
+to `configure`. You will also need to use the `--debugger` command line flag
+when starting the switch.
 
 Use [tools/p4dbg.py](tools/p4dbg.py) as follows when the switch is running to
 attach the debugger to the switch:
@@ -194,8 +194,13 @@ Now the switch is running and the tables have been populated. You can run
 
 ### How do program my own target / switch architecture using bmv2 ?
 
-You can take a look at the targets/ directory. We will soon publish a separate
-document with detailed information.
+You can take a look at the `targets/ directory` first. We have also started
+writing some doxygen documentation specifically targetted at programmers who
+want to implement their own switch model using the bmv2 building blocks. You can
+generate this documentation yourself (if you have doxygen installed) by running
+`doxygen Doxyfile`. The output can be found under the `doxygen-out`
+directory. You can also browse this documentation [online]
+(http://104.236.137.35/).
 
 ### What else is new in bmv2 ?
 
@@ -209,12 +214,8 @@ document with detailed information.
 
 ### Are all features supported yet ?
 
-No. Some features described in the P4 spec are missing compared to the original
-behavioral model:
-
-- resubmit
-- direct meters
-- parse value sets
+At this time, the only missing feature that we are aware of is *parse value
+sets*. This P4 feature was scarcely used in bmv1 and is not present in bmv2.
 
 If you find more missing features or if you would like to request that a
 specific feature be added, please send us an email (p4-dev@p4.org) or submit an

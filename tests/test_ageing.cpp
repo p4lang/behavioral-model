@@ -33,6 +33,8 @@
 
 #include "utils.h"
 
+using namespace bm;
+
 using std::chrono::milliseconds;
 using std::chrono::duration_cast;
 using std::this_thread::sleep_for;
@@ -74,7 +76,7 @@ protected:
     phv_factory.push_back_header("test1", testHeader1, testHeaderType);
     phv_factory.push_back_header("test2", testHeader2, testHeaderType);
 
-    key_builder.push_back_field(testHeader1, 0, 16);
+    key_builder.push_back_field(testHeader1, 0, 16, MatchKeyParam::Type::EXACT);
 
     typedef MatchTableAbstract::ActionEntry ActionEntry;
     typedef MatchUnitExact<ActionEntry> MUExact;

@@ -30,6 +30,9 @@
 #include "actions.h"
 #include "ras.h"
 #include "calculations.h"
+#include "control_flow.h"
+
+namespace bm {
 
 class MatchTableAbstract : public NamedP4Object {
  public:
@@ -63,10 +66,7 @@ class MatchTableAbstract : public NamedP4Object {
  public:
   MatchTableAbstract(const std::string &name, p4object_id_t id,
                      size_t size, bool with_counters, bool with_ageing,
-                     MatchUnitAbstract_ *mu)
-    : NamedP4Object(name, id), size(size),
-      with_counters(with_counters), with_ageing(with_ageing),
-      match_unit_(mu) { }
+                     MatchUnitAbstract_ *mu);
 
   virtual ~MatchTableAbstract() { }
 
@@ -81,12 +81,23 @@ class MatchTableAbstract : public NamedP4Object {
 
   virtual void dump(std::ostream *stream) const = 0;
 
+  std::string dump_entry_string(entry_handle_t handle) const;
+
   void reset_state();
 
-  void set_next_node(p4object_id_t action_id,
-                     const ControlFlowNode *next_node) {
-    next_nodes[action_id] = next_node;
-  }
+  void set_next_node(p4object_id_t action_id, const ControlFlowNode *next_node);
+  void set_next_node_hit(const ControlFlowNode *next_node);
+  // one of set_next_node_miss / set_next_node_miss_default has to be called
+  // set_next_node_miss: if the P4 program has a table-action switch statement
+  // with a 'miss' case
+  // set_next_node_miss_default: in the general case
+  // it is ok to call both, in which case set_next_node_miss will take priority
+  void set_next_node_miss(const ControlFlowNode *next_node);
+  void set_next_node_miss_default(const ControlFlowNode *next_node);
+
+  void set_direct_meters(MeterArray *meter_array,
+                         header_id_t target_header,
+                         int target_offset);
 
   MatchErrorCode query_counters(entry_handle_t handle,
                                 counter_value_t *bytes,
@@ -95,6 +106,10 @@ class MatchTableAbstract : public NamedP4Object {
   MatchErrorCode write_counters(entry_handle_t handle,
                                 counter_value_t bytes,
                                 counter_value_t packets);
+
+  MatchErrorCode set_meter_rates(
+      entry_handle_t handle,
+      const std::vector<Meter::rate_config_t> &configs) const;
 
   MatchErrorCode set_entry_ttl(entry_handle_t handle, unsigned int ttl_ms);
 
@@ -111,9 +126,8 @@ class MatchTableAbstract : public NamedP4Object {
   typedef boost::unique_lock<boost::shared_mutex> WriteLock;
 
  protected:
-  const ControlFlowNode *get_next_node(p4object_id_t action_id) const {
-    return next_nodes.at(action_id);
-  }
+  const ControlFlowNode *get_next_node(p4object_id_t action_id) const;
+  const ControlFlowNode *get_next_node_default(p4object_id_t action_id) const;
 
   ReadLock lock_read() const { return ReadLock(t_mutex); }
   WriteLock lock_write() const { return WriteLock(t_mutex); }
@@ -123,13 +137,35 @@ class MatchTableAbstract : public NamedP4Object {
  protected:
   size_t size{0};
 
+  // Not sure these guys need to be atomic with the current code
+  // TODO(antonin): check
   std::atomic_bool with_counters{false};
+  std::atomic_bool with_meters{false};
   std::atomic_bool with_ageing{false};
 
   std::unordered_map<p4object_id_t, const ControlFlowNode *> next_nodes{};
+  const ControlFlowNode *next_node_hit{nullptr};
+  // next node if table is a miss
+  const ControlFlowNode *next_node_miss{nullptr};
+  // true if the P4 program explictly specified a table switch statement with a
+  // "miss" case
+  bool has_next_node_hit{false};
+  bool has_next_node_miss{false};
+  // stores default next node for miss case, used in case we want to reset a
+  // table miss behavior
+  const ControlFlowNode *next_node_miss_default{nullptr};
+
+  header_id_t meter_target_header{};
+  int meter_target_offset{};
 
  private:
   virtual void reset_state_() = 0;
+
+  virtual MatchErrorCode dump_entry(std::ostream *out,
+                                    entry_handle_t handle) const = 0;
+
+  // the internal (_int) version does not acquire the lock
+  std::string dump_entry_string_int(entry_handle_t handle) const;
 
  private:
   mutable boost::shared_mutex t_mutex{};
@@ -145,11 +181,7 @@ class MatchTable : public MatchTableAbstract {
  public:
   MatchTable(const std::string &name, p4object_id_t id,
              std::unique_ptr<MatchUnitAbstract<ActionEntry> > match_unit,
-             bool with_counters = false, bool with_ageing = false)
-    : MatchTableAbstract(name, id, match_unit->get_size(),
-                         with_counters, with_ageing,
-                         match_unit.get()),
-      match_unit(std::move(match_unit)) { }
+             bool with_counters = false, bool with_ageing = false);
 
   MatchErrorCode add_entry(const std::vector<MatchKeyParam> &match_key,
                            const ActionFn *action_fn,
@@ -166,6 +198,12 @@ class MatchTable : public MatchTableAbstract {
   MatchErrorCode set_default_action(const ActionFn *action_fn,
                                     ActionData action_data);
 
+  MatchErrorCode get_entry(entry_handle_t handle,
+                           std::vector<MatchKeyParam> *match_key,
+                           const ActionFn **action_fn,
+                           ActionData *action_data,
+                           int *priority = nullptr) const;
+
   const ActionEntry &lookup(const Packet &pkt, bool *hit,
                             entry_handle_t *handle) override;
 
@@ -178,6 +216,9 @@ class MatchTable : public MatchTableAbstract {
   }
 
   void dump(std::ostream *stream) const override;
+
+  MatchErrorCode dump_entry(std::ostream *out,
+                            entry_handle_t handle) const override;
 
  public:
   static std::unique_ptr<MatchTable> create(
@@ -216,6 +257,11 @@ class MatchTableIndirect : public MatchTableAbstract {
         (*stream) << "group(" << get() << ")";
       else
         (*stream) << "member(" << get() << ")";
+    }
+
+    friend std::ostream& operator<<(std::ostream &out, const IndirectIndex &i) {
+      i.dump(&out);
+      return out;
     }
 
     static IndirectIndex make_mbr_index(unsigned int index) {
@@ -283,11 +329,7 @@ class MatchTableIndirect : public MatchTableAbstract {
   MatchTableIndirect(
       const std::string &name, p4object_id_t id,
       std::unique_ptr<MatchUnitAbstract<IndirectIndex> > match_unit,
-      bool with_counters = false, bool with_ageing = false)
-    : MatchTableAbstract(name, id, match_unit->get_size(),
-                         with_counters, with_ageing,
-                         match_unit.get()),
-      match_unit(std::move(match_unit)) { }
+      bool with_counters = false, bool with_ageing = false);
 
   MatchErrorCode add_member(const ActionFn *action_fn,
                             ActionData action_data,  // move it
@@ -310,6 +352,14 @@ class MatchTableIndirect : public MatchTableAbstract {
 
   MatchErrorCode set_default_member(mbr_hdl_t mbr);
 
+  MatchErrorCode get_entry(entry_handle_t handle,
+                           std::vector<MatchKeyParam> *match_key,
+                           mbr_hdl_t *mbr,
+                           int *priority = nullptr) const;
+
+  MatchErrorCode get_member(mbr_hdl_t mbr, const ActionFn **action_fn,
+                            ActionData *action_data) const;
+
   const ActionEntry &lookup(const Packet &pkt, bool *hit,
                             entry_handle_t *handle) override;
 
@@ -322,6 +372,9 @@ class MatchTableIndirect : public MatchTableAbstract {
   }
 
   void dump(std::ostream *stream) const override;
+
+  MatchErrorCode dump_entry(std::ostream *out,
+                            entry_handle_t handle) const override;
 
   size_t get_num_members() const {
     return num_members;
@@ -343,12 +396,17 @@ class MatchTableIndirect : public MatchTableAbstract {
 
   void dump_(std::ostream *stream) const;
 
+  MatchErrorCode dump_entry_(std::ostream *stream, entry_handle_t handle,
+                             const IndirectIndex **index) const;
+
  protected:
   IndirectIndex default_index{};
   IndirectIndexRefCount index_ref_count{};
   HandleMgr mbr_handles{};
   std::unique_ptr<MatchUnitAbstract<IndirectIndex> > match_unit;
   std::vector<ActionEntry> action_entries{};
+  bool default_set{false};
+  ActionEntry empty_action{};
 
  private:
   void entries_insert(mbr_hdl_t mbr, ActionEntry &&entry);
@@ -367,9 +425,7 @@ class MatchTableIndirectWS : public MatchTableIndirect {
   MatchTableIndirectWS(
       const std::string &name, p4object_id_t id,
       std::unique_ptr<MatchUnitAbstract<IndirectIndex> > match_unit,
-      bool with_counters = false, bool with_ageing = false)
-    : MatchTableIndirect(name, id, std::move(match_unit),
-                         with_counters, with_ageing) { }
+      bool with_counters = false, bool with_ageing = false);
 
   void set_hash(std::unique_ptr<Calculation> h) {
     hash = std::move(h);
@@ -392,6 +448,16 @@ class MatchTableIndirectWS : public MatchTableIndirect {
 
   MatchErrorCode set_default_group(grp_hdl_t grp);
 
+  // If the entry points to a member, grp will be set to its maximum possible
+  // value, i.e. std::numeric_limits<grp_hdl_t>::max(). If the entry points to a
+  // group, it will be mbr that will be set to its max possible value.
+  MatchErrorCode get_entry(entry_handle_t handle,
+                           std::vector<MatchKeyParam> *match_key,
+                           mbr_hdl_t *mbr, grp_hdl_t *grp,
+                           int *priority = nullptr) const;
+
+  MatchErrorCode get_group(grp_hdl_t grp, std::vector<mbr_hdl_t> *mbrs) const;
+
   const ActionEntry &lookup(const Packet &pkt, bool *hit,
                             entry_handle_t *handle) override;
 
@@ -402,6 +468,9 @@ class MatchTableIndirectWS : public MatchTableIndirect {
   MatchErrorCode get_num_members_in_group(grp_hdl_t grp, size_t *nb) const;
 
   void dump(std::ostream *stream) const override;
+
+  MatchErrorCode dump_entry(std::ostream *out,
+                            entry_handle_t handle) const override;
 
  public:
   static std::unique_ptr<MatchTableIndirectWS> create(
@@ -456,5 +525,7 @@ class MatchTableIndirectWS : public MatchTableIndirect {
   std::vector<GroupInfo> group_entries{};
   std::unique_ptr<Calculation> hash{nullptr};
 };
+
+}  // namespace bm
 
 #endif  // BM_SIM_INCLUDE_BM_SIM_MATCH_TABLES_H_

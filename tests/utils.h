@@ -21,7 +21,9 @@
 #ifndef TESTS_UTILS_H_
 #define TESTS_UTILS_H_
 
-class MemoryAccessor : public TransportIface {
+#include "bm_sim/transport.h"
+
+class MemoryAccessor : public bm::TransportIface {
  public:
   enum class Status { CAN_READ, CAN_WRITE };
  public:
@@ -49,8 +51,7 @@ class MemoryAccessor : public TransportIface {
   }
 
  private:
-  int open_(const std::string &name) override {
-    (void) name;
+  int open_() override {
     return 0;
   }
 

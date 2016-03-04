@@ -27,6 +27,8 @@
 
 #include "bm_sim/phv.h"
 
+using namespace bm;
+
 // Google Test fixture for PHV tests
 class PHVTest : public ::testing::Test {
 protected:
@@ -51,6 +53,10 @@ protected:
 
   // virtual void TearDown() {}
 };
+
+TEST_F(PHVTest, NumHeaders) {
+  ASSERT_EQ(2u, phv->num_headers());
+}
 
 TEST_F(PHVTest, CopyHeaders) {
   std::unique_ptr<PHV> phv_2 = phv_factory.create();
@@ -84,3 +90,95 @@ TEST_F(PHVTest, CopyHeaders) {
   ASSERT_EQ(f48, f48_2);
 }
 
+TEST_F(PHVTest, FieldAlias) {
+  phv_factory.add_field_alias("best.alias.ever", "test1.f16");
+  std::unique_ptr<PHV> phv_2 = phv_factory.create();
+
+  const Field &f = phv_2->get_field("test1.f16");
+  const Field &f_alias = phv_2->get_field("best.alias.ever");
+  const Field &f_other = phv_2->get_field("test1.f48");
+
+  ASSERT_NE(&f_other, &f);
+  ASSERT_NE(&f_other, &f_alias);
+
+  ASSERT_EQ(&f, &f_alias);
+}
+
+using testing::Types;
+
+template <typename IteratorType>
+struct PHVRef { };
+
+template <>
+struct PHVRef<PHV::header_name_iterator> { typedef PHV& type; };
+
+template <>
+struct PHVRef<PHV::const_header_name_iterator> { typedef const PHV& type; };
+
+template <typename IteratorType>
+class PHVHeaderNameIteratorTest : public PHVTest {
+  virtual void SetUp() {
+    PHVTest::SetUp();
+    phv = phv_factory.create();
+  }
+
+};
+
+typedef Types<PHV::header_name_iterator,
+              PHV::const_header_name_iterator> NameIteratorTypes;
+
+TYPED_TEST_CASE(PHVHeaderNameIteratorTest, NameIteratorTypes);
+
+TYPED_TEST(PHVHeaderNameIteratorTest, Iterate) {
+  typename PHVRef<TypeParam>::type phv_ref = *(this->phv).get();
+  for (TypeParam it = phv_ref.header_name_begin();
+       it != phv_ref.header_name_end(); ++it) {
+    const std::string &header_name = it->first;
+    Header &header = it->second;
+    const std::string &header_name_2 = header.get_name();
+    ASSERT_EQ(header_name, header_name_2);
+  }
+  ASSERT_EQ(
+      phv_ref.num_headers(),
+      std::distance(phv_ref.header_name_begin(), phv_ref.header_name_end()));
+}
+
+template <>
+struct PHVRef<PHV::header_iterator> { typedef PHV& type; };
+
+template <>
+struct PHVRef<PHV::const_header_iterator> { typedef const PHV& type; };
+
+template <typename IteratorType>
+class PHVHeaderIteratorTest : public PHVTest {
+  virtual void SetUp() {
+    PHVTest::SetUp();
+    phv = phv_factory.create();
+  }
+
+};
+
+typedef Types<PHV::header_iterator, PHV::const_header_iterator> IteratorTypes;
+
+TYPED_TEST_CASE(PHVHeaderIteratorTest, IteratorTypes);
+
+template <typename IteratorType>
+struct HeaderRef { };
+
+template <>
+struct HeaderRef<PHV::header_iterator> { typedef Header& type; };
+
+template <>
+struct HeaderRef<PHV::const_header_iterator> { typedef const Header& type; };
+
+TYPED_TEST(PHVHeaderIteratorTest, Iterate) {
+  typename PHVRef<TypeParam>::type phv_ref = *(this->phv).get();
+  for (TypeParam it = phv_ref.header_begin();
+       it != phv_ref.header_end(); ++it) {
+    typename HeaderRef<TypeParam>::type &header = *it;
+    (void) header;
+  }
+  ASSERT_EQ(
+      phv_ref.num_headers(),
+      std::distance(phv_ref.header_name_begin(), phv_ref.header_name_end()));
+}

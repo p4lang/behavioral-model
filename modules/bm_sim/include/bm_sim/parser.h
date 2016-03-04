@@ -18,6 +18,8 @@
  *
  */
 
+//! @file parser.h
+
 #ifndef BM_SIM_INCLUDE_BM_SIM_PARSER_H_
 #define BM_SIM_INCLUDE_BM_SIM_PARSER_H_
 
@@ -33,6 +35,9 @@
 #include "event_logger.h"
 #include "logger.h"
 #include "expressions.h"
+#include "stateful.h"
+
+namespace bm {
 
 struct field_t {
   header_id_t header;
@@ -70,7 +75,7 @@ struct ParserOpExtract : ParserOp {
   void operator()(Packet *pkt, const char *data,
                   size_t *bytes_parsed) const override {
     PHV *phv = pkt->get_phv();
-    ELOGGER->parser_extract(*pkt, header);
+    BMELOG(parser_extract, *pkt, header);
     BMLOG_DEBUG_PKT(*pkt, "Extracting header {}", header);
     Header &hdr = phv->get_header(header);
     hdr.extract(data, *phv);
@@ -91,7 +96,7 @@ struct ParserOpExtractStack : ParserOp {
     PHV *phv = pkt->get_phv();
     HeaderStack &stack = phv->get_header_stack(header_stack);
     Header &next_hdr = stack.get_next();  // TODO(antonin): will assert if full
-    ELOGGER->parser_extract(*pkt, next_hdr.get_id());
+    BMELOG(parser_extract, *pkt, next_hdr.get_id());
     BMLOG_DEBUG_PKT(*pkt, "Extracting to header stack {}, next header is {}",
                     header_stack, next_hdr.get_id());
     next_hdr.extract(data, *phv);
@@ -271,6 +276,8 @@ class ParseState : public NamedP4Object {
 
   void add_set_from_expression(header_id_t dst_header, int dst_offset,
                                const ArithExpression &expr) {
+    expr.grab_register_accesses(&register_sync);
+
     parser_ops.emplace_back(
       new ParserOpSet<ArithExpression>(dst_header, dst_offset, expr));
   }
@@ -325,12 +332,14 @@ class ParseState : public NamedP4Object {
                                     size_t *bytes_parsed) const;
 
   std::vector<std::unique_ptr<ParserOp> > parser_ops{};
+  RegisterSync register_sync{};
   bool has_switch;
   ParseSwitchKeyBuilder key_builder{};
   std::vector<ParseSwitchCase> parser_switch{};
   const ParseState *default_next_state{nullptr};
 };
 
+//! Implements a P4 parser.
 class Parser : public NamedP4Object {
  public:
   Parser(const std::string &name, p4object_id_t id)
@@ -340,16 +349,27 @@ class Parser : public NamedP4Object {
     init_state = state;
   }
 
+  //! Extracts Packet headers as specified by the parse graph. When the parser
+  //! extracts a header to the PHV, the header is marked as valid. After parsing
+  //! a packet, you can send it to the appropriate match-action Pipeline for
+  //! processing. Depending on how your target is organized, you could also
+  //! send it to another Parser for deeper parsing.
   void parse(Packet *pkt) const;
 
+  //! Deleted copy constructor
   Parser(const Parser &other) = delete;
+  //! Deleted copy assignment operator
   Parser &operator=(const Parser &other) = delete;
 
+  //! Default move constructor
   Parser(Parser &&other) /*noexcept*/ = default;
+  //! Default move assignment operator
   Parser &operator=(Parser &&other) /*noexcept*/ = default;
 
  private:
   const ParseState *init_state;
 };
+
+}  // namespace bm
 
 #endif  // BM_SIM_INCLUDE_BM_SIM_PARSER_H_

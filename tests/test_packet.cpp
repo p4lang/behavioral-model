@@ -24,6 +24,8 @@
 
 #include "bm_sim/packet.h"
 
+using namespace bm;
+
 TEST(CopyIdGenerator, Test) {
   CopyIdGenerator gen;
   packet_id_t packet_id = 0;
@@ -53,6 +55,7 @@ class PHVSourceTest : public PHVSourceIface {
  private:
   std::unique_ptr<PHV> get_(size_t cxt) override {
     assert(phv_factories[cxt]);
+    ++count;
     ++created.at(cxt);
     return phv_factories[cxt]->create();
   }
@@ -60,6 +63,7 @@ class PHVSourceTest : public PHVSourceIface {
   void release_(size_t cxt, std::unique_ptr<PHV> phv) override {
     // let the PHV be destroyed
     (void) cxt; (void) phv;
+    --count;
     ++destroyed.at(cxt);
   }
 
@@ -67,7 +71,12 @@ class PHVSourceTest : public PHVSourceIface {
     phv_factories.at(cxt) = factory;
   }
 
+  size_t phvs_in_use_(size_t cxt) override {
+    return count;
+  }
+
   std::vector<const PHVFactory *> phv_factories;
+  size_t count{0};
   std::vector<size_t> created;
   std::vector<size_t> destroyed;
 };
@@ -116,4 +125,50 @@ TEST_F(PacketTest, ChangeContext) {
   ASSERT_EQ(1u, phv_source->get_destroyed(first_cxt));
   ASSERT_EQ(1u, phv_source->get_created(other_cxt));
   ASSERT_EQ(0u, phv_source->get_destroyed(other_cxt));
+}
+
+TEST_F(PacketTest, Truncate) {
+  const size_t cxt = 0;
+  const size_t first_length = 128;
+  std::vector<char> data;
+  data.reserve(first_length);
+  for (size_t i = 0; i < first_length; i++) {
+    data.push_back(static_cast<char>(i));
+  }
+
+  Packet pkt_1 = Packet::make_new(
+      cxt, 0, 0, 0, 0,
+      PacketBuffer(first_length, data.data(), first_length),
+      phv_source.get());
+
+  const size_t truncated_length_small = 47;
+  ASSERT_LT(truncated_length_small, first_length);
+  pkt_1.truncate(truncated_length_small);
+  ASSERT_EQ(truncated_length_small, pkt_1.get_data_size());
+  ASSERT_TRUE(std::equal(
+      data.begin(), data.begin() + pkt_1.get_data_size(), pkt_1.data()));
+
+  Packet pkt_2 = Packet::make_new(
+      cxt, 0, 0, 0, 0,
+      PacketBuffer(first_length, data.data(), first_length),
+      phv_source.get());
+
+  const size_t truncated_length_big = 200;
+  ASSERT_GT(truncated_length_big, first_length);
+  pkt_2.truncate(truncated_length_big);
+  ASSERT_EQ(first_length, pkt_2.get_data_size());
+  ASSERT_TRUE(std::equal(
+      data.begin(), data.begin() + pkt_2.get_data_size(), pkt_2.data()));
+}
+
+TEST_F(PacketTest, PacketRegisters) {
+  const uint64_t v1 = 0u;
+  const uint64_t v2 = 6789u;
+  const size_t idx = 0u;
+  ASSERT_LT(idx, Packet::nb_registers);
+  auto packet = get_packet(0);
+  packet.set_register(idx, v1);
+  ASSERT_EQ(v1, packet.get_register(idx));
+  packet.set_register(idx, v2);
+  ASSERT_EQ(v2, packet.get_register(idx));
 }

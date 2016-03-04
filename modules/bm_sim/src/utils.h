@@ -18,31 +18,30 @@
  *
  */
 
-#ifndef SIMPLE_ROUTER_PRIMITIVES_H_
-#define SIMPLE_ROUTER_PRIMITIVES_H_
+#ifndef BM_SIM_SRC_UTILS_H_
+#define BM_SIM_SRC_UTILS_H_
 
-class modify_field : public ActionPrimitive<Field &, const Data &> {
-  void operator ()(Field &f, const Data &d) {
-    f.set(d);
+namespace bm {
+
+namespace utils {
+
+// Saves the internal state of a stream and restores it in the destructor
+struct StreamStateSaver final {
+  explicit StreamStateSaver(std::ios &s)  // NOLINT(runtime/references)
+      : ref(s) {
+    state.copyfmt(s);
   }
+
+  ~StreamStateSaver() {
+    ref.copyfmt(state);
+  }
+
+  std::ios &ref;
+  std::ios state{nullptr};
 };
 
-REGISTER_PRIMITIVE(modify_field);
+}  // namespace utils
 
-class add_to_field : public ActionPrimitive<Field &, const Data &> {
-  void operator ()(Field &f, const Data &d) {
-    f.add(f, d);
-  }
-};
+}  // namespace bm
 
-REGISTER_PRIMITIVE(add_to_field);
-
-class drop : public ActionPrimitive<> {
-  void operator ()() {
-    get_field("standard_metadata.egress_port").set(511);
-  }
-};
-
-REGISTER_PRIMITIVE(drop);
-
-#endif  // SIMPLE_ROUTER_PRIMITIVES_H_
+#endif  // BM_SIM_SRC_UTILS_H_

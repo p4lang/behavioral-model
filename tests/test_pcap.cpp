@@ -15,14 +15,24 @@
 
 #include <gtest/gtest.h>
 
+#include <boost/filesystem.hpp>
+
 #include "bm_sim/pcap_file.h"
 #include <stdio.h>
+
+using namespace bm;
+
+namespace fs = boost::filesystem;
+
+#ifndef TESTDATADIR
+#define TESTDATADIR "testdata"
+#endif
 
 // Google Test fixture for pcap tests
 class PcapTest : public ::testing::Test {
 protected:
   PcapTest()
-    : testDataFolder("testdata"), testfile1("en0.pcap"), testfile2("lo0.pcap"),
+    : testDataFolder(TESTDATADIR), testfile1("en0.pcap"), testfile2("lo0.pcap"),
       tmpfile("tmp.pcap"), received(0), receiver(nullptr) {}
 
   virtual void SetUp()  {}
@@ -33,15 +43,18 @@ protected:
   }
 
   std::string getFile1() {
-    return testDataFolder + "/" + testfile1;
+    fs::path path = fs::path(testDataFolder) / fs::path(testfile1);
+    return path.string();
   }
 
   std::string getFile2() {
-    return testDataFolder + "/" + testfile2;
+    fs::path path = fs::path(testDataFolder) / fs::path(testfile2);
+    return path.string();
   }
 
   std::string getTmpFile() {
-    return testDataFolder + "/" + tmpfile;
+    fs::path path = fs::path(tmpfile);
+    return path.string();
   }
 
   void setReceiver(PacketReceiverIface* recv) {
@@ -53,6 +66,7 @@ public:
     received++;
     if (receiver != nullptr)
       receiver->send_packet(port_num, buffer, len);
+    return received;
   }
 
 protected:

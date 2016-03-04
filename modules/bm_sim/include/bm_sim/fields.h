@@ -18,6 +18,8 @@
  *
  */
 
+//! @file fields.h
+
 #ifndef BM_SIM_INCLUDE_BM_SIM_FIELDS_H_
 #define BM_SIM_INCLUDE_BM_SIM_FIELDS_H_
 
@@ -30,6 +32,13 @@
 #include "bignum.h"
 #include "debugger.h"
 
+namespace bm {
+
+//! Field objects are used to represent P4 fields. Each Field instance belongs
+//! to a Header instance. When defining your own target, you will have to
+//! manipulate Field objects to set and access the target's intrinsic metadata.
+//! Most of the interesting methods for a target designer are inherited from
+//! Data.
 class Field : public Data {
  public:
   // Data() is called automatically
@@ -54,14 +63,21 @@ class Field : public Data {
     DEBUGGER_NOTIFY_UPDATE(*packet_id, my_id, bytes.data(), nbits);
   }
 
+  //! Return the byte representation of this field. Note that this returns a
+  //! reference to a byte container, which is only valid as long as the Field
+  //! instance is alive.
   const ByteContainer &get_bytes() const {
     return bytes;
   }
 
+  //! Get the number of bytes occupied by this field, not based on its layout in
+  //! the packet header, but assuming a byte boundary alignment for the most
+  //! significant bit. `nbytes = (nbits + 7) / 8`
   int get_nbytes() const {
     return nbytes;
   }
 
+  //! Get the number of bits occupied by this field in the packet header
   int get_nbits() const {
     return nbits;
   }
@@ -97,6 +113,13 @@ class Field : public Data {
   void set_id(uint64_t id) { my_id = id; }
   void set_packet_id(const Debugger::PacketId *id) { packet_id = id; }
 
+  void copy_value(const Field &src) {
+    // it's important to have a way of copying a field value without the
+    // packet_id pointer. This is used by PHV::copy_headers().
+    value = src.value;
+    bytes = src.bytes;
+  }
+
  private:
   int nbits;
   int nbytes;
@@ -105,5 +128,7 @@ class Field : public Data {
   uint64_t my_id{};
   const Debugger::PacketId *packet_id{&Debugger::dummy_PacketId};
 };
+
+}  // namespace bm
 
 #endif  // BM_SIM_INCLUDE_BM_SIM_FIELDS_H_

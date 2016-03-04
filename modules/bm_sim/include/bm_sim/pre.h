@@ -25,6 +25,8 @@
 #include <string>
 #include <bitset>
 
+namespace bm {
+
 namespace McPre {
 
 template <size_t set_size>
@@ -41,12 +43,14 @@ class Set {
   bool operator[] (size_t pos) const { return port_map[pos]; }
   reference operator[] (size_t pos) { return port_map[pos]; }
 
-  constexpr size_t size() noexcept { return port_map.size(); }
+  constexpr size_t size() const noexcept { return port_map.size(); }
 
  private:
   std::bitset<set_size> port_map{};
 };
 
 }  // namespace McPre
+
+}  // namespace bm
 
 #endif  // BM_SIM_INCLUDE_BM_SIM_PRE_H_

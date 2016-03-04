@@ -13,222 +13,33 @@
  * limitations under the License.
  */
 
+/*
+ * Antonin Bas (antonin@barefootnetworks.com)
+ *
+ */
+
 #include <gtest/gtest.h>
 
 #include <boost/filesystem.hpp>
 
-#include <nanomsg/pubsub.h>
-
 #include <string>
 #include <memory>
 #include <vector>
-#include <mutex>
-#include <unordered_map>
-#include <chrono>
-#include <condition_variable>
-#include <algorithm>  // for copy
-
-#include <iostream>
 
 #include "bm_apps/packet_pipe.h"
 
 #include "simple_switch.h"
 
+#include "utils.h"
+
 namespace fs = boost::filesystem;
 
+using bm::MatchErrorCode;
+using bm::ActionData;
+using bm::MatchKeyParam;
+using bm::entry_handle_t;
+
 namespace {
-
-class NNEventListener {
- public:
-  enum NNEventType {
-    TABLE_HIT = 12,
-    TABLE_MISS = 13,
-    ACTION_EXECUTE = 14
-  };
-
-  struct NNEvent {
-    NNEventType type;
-    int id;
-  };
-
-  explicit NNEventListener(const std::string &addr)
-      : addr(addr), s(AF_SP, NN_SUB) {
-    s.connect(addr.c_str());
-    int rcv_timeout_ms = 100;
-    s.setsockopt(NN_SOL_SOCKET, NN_RCVTIMEO,
-                 &rcv_timeout_ms, sizeof(rcv_timeout_ms));
-    s.setsockopt(NN_SUB, NN_SUB_SUBSCRIBE, "", 0);
-  }
-
-  ~NNEventListener() {
-    {
-      std::unique_lock<std::mutex> lock(mutex);
-      if (!started) return;
-      stop_receive_thread = true;
-    }
-    receive_thread.join();
-  }
-
-  void start() {
-    if (started || stop_receive_thread)
-      return;
-    receive_thread = std::thread(&NNEventListener::receive_loop, this);
-    started = true;
-  }
-
-  void get_and_remove_events(const std::string &pid,
-                             std::vector<NNEvent> *pevents,
-                             size_t num_events,
-                             unsigned int timeout_ms = 1000) {
-    typedef std::chrono::system_clock clock;
-    clock::time_point tp_start = clock::now();
-    clock::time_point tp_end = tp_start + std::chrono::milliseconds(timeout_ms);
-    std::unique_lock<std::mutex> lock(mutex);
-    while (true) {
-      if (clock::now() > tp_end) {
-        *pevents = {};
-        return;
-      }
-      auto it = events.find(pid);
-      if (it == events.end() || it->second.size() < num_events) {
-        cond_new_event.wait_until(lock, tp_end);
-      } else {
-        *pevents = it->second;
-        events.erase(it);
-        return;
-      }
-    }
-  }
-
- private:
-  void receive_loop();
-
-  std::string addr{};
-  nn::socket s;
-  std::unordered_map<std::string, std::vector<NNEvent> > events;
-
-  std::thread receive_thread{};
-  bool stop_receive_thread{false};
-  bool started{false};
-  mutable std::mutex mutex{};
-  mutable std::condition_variable cond_new_event{};
-};
-
-void
-NNEventListener::receive_loop() {
-  struct msg_hdr_t {
-    int type;
-    int switch_id;
-    int cxt_id;
-    uint64_t sig;
-    uint64_t id;
-    uint64_t copy_id;
-  } __attribute__((packed));
-
-  while (true) {
-    std::aligned_storage<128>::type storage;
-    msg_hdr_t *msg_hdr = reinterpret_cast<msg_hdr_t *>(&storage);
-    char *buf = reinterpret_cast<char *>(&storage);
-
-    if (s.recv(buf, sizeof(storage), 0) <= 0) {
-      std::unique_lock<std::mutex> lock(mutex);
-      if (stop_receive_thread) return;
-      continue;
-    }
-
-    int object_id;
-
-    switch (msg_hdr->type) {
-      case TABLE_HIT:
-        {
-          struct msg_t : msg_hdr_t {
-            int table_id;
-            int entry_hdl;
-          } __attribute__((packed));
-          msg_t *msg = reinterpret_cast<msg_t *>(&storage);
-          object_id = msg->table_id;
-        }
-        break;
-      case TABLE_MISS:
-        {
-          struct msg_t : msg_hdr_t {
-            int table_id;
-          } __attribute__((packed));
-          msg_t *msg = reinterpret_cast<msg_t *>(&storage);
-          object_id = msg->table_id;
-        }
-        break;
-      case ACTION_EXECUTE:
-        {
-          struct msg_t : msg_hdr_t {
-            int action_id;
-          } __attribute__((packed));
-          msg_t *msg = reinterpret_cast<msg_t *>(&storage);
-          object_id = msg->action_id;
-        }
-        break;
-      default:
-        continue;
-    }
-
-    std::string pid =
-        std::to_string(msg_hdr->id) + "." + std::to_string(msg_hdr->copy_id);
-
-    std::unique_lock<std::mutex> lock(mutex);
-    events[pid].push_back({static_cast<NNEventType>(msg_hdr->type), object_id});
-    cond_new_event.notify_all();
-  }
-}
-
-class PacketInReceiver {
- public:
-  enum class Status { CAN_READ, CAN_RECEIVE };
-
-  explicit PacketInReceiver(size_t max_size)
-      : max_size(max_size) {
-    buffer_.reserve(max_size);
-  }
-
-  void receive(int port_num, const char *buffer, int len, void *cookie) {
-    (void) cookie;
-    if (len > max_size) return;
-    std::unique_lock<std::mutex> lock(mutex);
-    while (status != Status::CAN_RECEIVE) {
-      can_receive.wait(lock);
-    }
-    buffer_.insert(buffer_.end(), buffer, buffer + len);
-    port = port_num;
-    status = Status::CAN_READ;
-    can_read.notify_one();
-  }
-
-  void read(char *dst, size_t len, int *recv_port) {
-    len = (len > max_size) ? max_size : len;
-    std::unique_lock<std::mutex> lock(mutex);
-    while (status != Status::CAN_READ) {
-      can_read.wait(lock);
-    }
-    std::copy(buffer_.begin(), buffer_.begin() + len, dst);
-    buffer_.clear();
-    *recv_port = port;
-    status = Status::CAN_RECEIVE;
-    can_receive.notify_one();
-  }
-
-  Status check_status() {
-    std::unique_lock<std::mutex> lock(mutex);
-    return status;
-  }
-
- private:
-  size_t max_size;
-  std::vector<char> buffer_;
-  int port;
-  Status status{Status::CAN_RECEIVE};
-  mutable std::mutex mutex{};
-  mutable std::condition_variable can_receive{};
-  mutable std::condition_variable can_read{};
-};
 
 void
 packet_handler(int port_num, const char *buffer, int len, void *cookie) {
@@ -241,6 +52,8 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
  protected:
   static constexpr size_t kMaxBufSize = 512;
 
+  static constexpr int device_id{0};
+
   SimpleSwitch_PacketRedirectP4()
       : packet_inject(packet_in_addr),
         events(event_logger_addr) { }
@@ -249,11 +62,10 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
   // We make the switch a shared resource for all tests. This is mainly because
   // the simple_switch target detaches threads
   static void SetUpTestCase() {
-    // Logger::set_logger_console();
-    // TODO(antonin): remove when event-logger cleaned-up
-    delete event_logger;
-    event_logger = new EventLogger(
-        TransportIface::create_instance<TransportNanomsg>(event_logger_addr));
+    // bm::Logger::set_logger_console();
+    auto event_transport = bm::TransportIface::make_nanomsg(event_logger_addr);
+    event_transport->open();
+    bm::EventLogger::init(std::move(event_transport));
 
     test_switch = new SimpleSwitch(8);  // 8 ports
 
@@ -262,7 +74,7 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
     test_switch->init_objects(json_path.string());
 
     // packet in - packet out
-    test_switch->set_dev_mgr_packet_in(packet_in_addr);
+    test_switch->set_dev_mgr_packet_in(device_id, packet_in_addr, nullptr);
     test_switch->Switch::start();  // there is a start member in SimpleSwitch
     test_switch->set_packet_handler(packet_handler,
                                     static_cast<void *>(test_switch));
@@ -271,8 +83,6 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
 
   // Per-test-case tear-down.
   static void TearDownTestCase() {
-    delete event_logger;
-    event_logger = nullptr;
     delete test_switch;
   }
 
@@ -281,8 +91,8 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
 
     packet_inject.start();
     auto cb = std::bind(&PacketInReceiver::receive, &receiver,
-                          std::placeholders::_1, std::placeholders::_2,
-                          std::placeholders::_3, std::placeholders::_4);
+                        std::placeholders::_1, std::placeholders::_2,
+                        std::placeholders::_3, std::placeholders::_4);
     packet_inject.set_packet_receiver(cb, nullptr);
 
     events.start();
@@ -321,7 +131,7 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
   static const std::string packet_in_addr;
   static SimpleSwitch *test_switch;
   bm_apps::PacketInject packet_inject;
-  PacketInReceiver receiver{kMaxBufSize};
+  PacketInReceiver receiver{};
   NNEventListener events;
 
  private:
@@ -329,6 +139,12 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
   static const std::string test_json;
 };
 
+// In theory, I could be using an 'inproc' transport here. However, I observe a
+// high number of packet drops when switching to 'inproc', which is obviosuly
+// causing the tests to fail. PUB/SUB is not a reliable protocol and therefore
+// packet drops are to be expected when the phblisher is faster than the
+// consummer. However, I do not believe my consummer is that slow and I never
+// observe the drops with 'ipc'
 const std::string SimpleSwitch_PacketRedirectP4::event_logger_addr =
     "ipc:///tmp/test_events_abc123";
 const std::string SimpleSwitch_PacketRedirectP4::packet_in_addr =
@@ -336,7 +152,7 @@ const std::string SimpleSwitch_PacketRedirectP4::packet_in_addr =
 
 SimpleSwitch *SimpleSwitch_PacketRedirectP4::test_switch = nullptr;
 
-const std::string SimpleSwitch_PacketRedirectP4::testdata_dir = "testdata";
+const std::string SimpleSwitch_PacketRedirectP4::testdata_dir = TESTDATADIR;
 const std::string SimpleSwitch_PacketRedirectP4::test_json =
     "packet_redirect.json";
 
@@ -361,6 +177,7 @@ TEST_F(SimpleSwitch_PacketRedirectP4, Baseline) {
   receiver.read(recv_buffer, sizeof(pkt), &recv_port);
   ASSERT_EQ(port_out, recv_port);
 
+#ifdef BMELOG_ON
   // event check
   std::vector<NNEventListener::NNEvent> pevents;
   events.get_and_remove_events("0.0", &pevents, 6u);
@@ -371,6 +188,7 @@ TEST_F(SimpleSwitch_PacketRedirectP4, Baseline) {
   ASSERT_TRUE(check_event_action_execute(pevents[3], "_nop"));
   ASSERT_TRUE(check_event_table_miss(pevents[4], "t_egress"));
   ASSERT_TRUE(check_event_action_execute(pevents[5], "_nop"));
+#endif
 }
 
 TEST_F(SimpleSwitch_PacketRedirectP4, Multicast) {
@@ -423,6 +241,7 @@ TEST_F(SimpleSwitch_PacketRedirectP4, Multicast) {
   ASSERT_TRUE((recv_port_1 == 1 && recv_port_2 == 2) ||
               (recv_port_1 == 2 && recv_port_2 == 1));
 
+#ifdef BMELOG_ON
   // event check
   std::vector<NNEventListener::NNEvent> pevents;
 
@@ -442,6 +261,7 @@ TEST_F(SimpleSwitch_PacketRedirectP4, Multicast) {
   ASSERT_EQ(2u, pevents.size());
   ASSERT_TRUE(check_event_table_miss(pevents[0], "t_egress"));
   ASSERT_TRUE(check_event_action_execute(pevents[1], "_nop"));
+#endif
 
   // reset PRE
   ASSERT_EQ(McSimplePreLAG::SUCCESS, pre_ptr->mc_node_destroy(node_1));
@@ -492,6 +312,7 @@ TEST_F(SimpleSwitch_PacketRedirectP4, CloneI2E) {
 
   test_switch->mirroring_mapping_delete(mirror_id);
 
+#ifdef BMELOG_ON
   // event check
   std::vector<NNEventListener::NNEvent> pevents;
 
@@ -508,6 +329,7 @@ TEST_F(SimpleSwitch_PacketRedirectP4, CloneI2E) {
   ASSERT_EQ(2u, pevents.size());
   ASSERT_TRUE(check_event_table_miss(pevents[0], "t_egress"));
   ASSERT_TRUE(check_event_action_execute(pevents[1], "_nop"));
+#endif
 }
 
 TEST_F(SimpleSwitch_PacketRedirectP4, CloneE2E) {
@@ -553,6 +375,7 @@ TEST_F(SimpleSwitch_PacketRedirectP4, CloneE2E) {
 
   test_switch->mirroring_mapping_delete(mirror_id);
 
+#ifdef BMELOG_ON
   // event check
   std::vector<NNEventListener::NNEvent> pevents;
 
@@ -569,6 +392,7 @@ TEST_F(SimpleSwitch_PacketRedirectP4, CloneE2E) {
   ASSERT_EQ(2u, pevents.size());
   ASSERT_TRUE(check_event_table_miss(pevents[0], "t_egress"));
   ASSERT_TRUE(check_event_action_execute(pevents[1], "_nop"));
+#endif
 }
 
 TEST_F(SimpleSwitch_PacketRedirectP4, Resubmit) {
@@ -617,6 +441,7 @@ TEST_F(SimpleSwitch_PacketRedirectP4, Resubmit) {
   receiver.read(recv_buffer, sizeof(pkt), &recv_port);
   ASSERT_EQ(port_out_2, recv_port);
 
+#ifdef BMELOG_ON
   // event check
   std::vector<NNEventListener::NNEvent> pevents;
 
@@ -637,6 +462,7 @@ TEST_F(SimpleSwitch_PacketRedirectP4, Resubmit) {
   ASSERT_TRUE(check_event_action_execute(pevents[3], "_nop"));
   ASSERT_TRUE(check_event_table_miss(pevents[4], "t_egress"));
   ASSERT_TRUE(check_event_action_execute(pevents[5], "_nop"));
+#endif
 }
 
 TEST_F(SimpleSwitch_PacketRedirectP4, Recirculate) {
@@ -683,6 +509,7 @@ TEST_F(SimpleSwitch_PacketRedirectP4, Recirculate) {
   receiver.read(recv_buffer, sizeof(pkt), &recv_port);
   ASSERT_EQ(port_out_2, recv_port);
 
+#ifdef BMELOG_ON
   // event check
   std::vector<NNEventListener::NNEvent> pevents;
 
@@ -705,4 +532,5 @@ TEST_F(SimpleSwitch_PacketRedirectP4, Recirculate) {
   ASSERT_TRUE(check_event_action_execute(pevents[3], "_nop"));
   ASSERT_TRUE(check_event_table_miss(pevents[4], "t_egress"));
   ASSERT_TRUE(check_event_action_execute(pevents[5], "_nop"));
+#endif
 }

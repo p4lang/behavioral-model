@@ -24,11 +24,14 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <unordered_map>
 
 #include <cassert>
 
 #include "bm_sim/options_parse.h"
 #include "bm_sim/event_logger.h"
+
+namespace bm {
 
 struct interface {
   interface(const std::string &name, int port)
@@ -101,11 +104,21 @@ OptionsParser::parse(int argc, char *argv[]) {
        "Enable logging on stdout")
       ("log-file", po::value<std::string>(),
        "Enable logging to given file")
+      ("log-level,L", po::value<std::string>(),
+       "Set log level, supported values are "
+       "'trace', 'debug', 'info', 'warn', 'error', off'")
       ("notifications-addr", po::value<std::string>(),
        "Specify the nanomsg address to use for notifications "
        "(e.g. learning, ageing, ...); "
        "default is ipc:///tmp/bmv2-<device-id>-notifications.ipc")
-      ("debugger", "Activate debugger");
+#ifdef BMDEBUG_ON
+      ("debugger", "Activate debugger")
+      ("debugger-addr", po::value<std::string>(),
+       "Specify the nanomsg address to use for debugger communication; "
+       "there is no need to use --debugger in addition to this option; "
+       "default is ipc:///tmp/bmv2-<device-id>-debug.ipc")
+#endif
+      ;  // NOLINT(whitespace/semicolon)
 
   po::options_description hidden;
   hidden.add_options()
@@ -156,15 +169,17 @@ OptionsParser::parse(int argc, char *argv[]) {
         + std::to_string(device_id) + std::string("-notifications.ipc");
   }
 
-  // TODO(antonin): clean this up
-  // event_logger_addr = std::string("ipc:///tmp/bm-")
-  //   .append(std::to_string(device_id))
-  //   .append("-log.ipc");
   if (vm.count("nanolog")) {
+#ifndef BMELOG_ON
+    std::cout << "Warning: you requested the nanomsg event logger, but bmv2 "
+              << "was compiled without -DBMELOG, and the event logger cannot "
+              << "be activated\n";
+#else
     event_logger_addr = vm["nanolog"].as<std::string>();
-    event_logger = new EventLogger(
-        TransportIface::create_instance<TransportNanomsg>(event_logger_addr),
-        device_id);
+    auto event_transport = TransportIface::make_nanomsg(event_logger_addr);
+    event_transport->open();
+    EventLogger::init(std::move(event_transport), device_id);
+#endif
   }
 
   if (vm.count("log-console") && vm.count("log-file")) {
@@ -178,6 +193,23 @@ OptionsParser::parse(int argc, char *argv[]) {
 
   if (vm.count("log-file")) {
     file_logger = vm["log-file"].as<std::string>();
+  }
+
+  if (vm.count("log-level")) {
+    const std::string log_level_str = vm["log-level"].as<std::string>();
+    std::unordered_map<std::string, Logger::LogLevel> levels_map = {
+      {"trace", Logger::LogLevel::TRACE},
+      {"debug", Logger::LogLevel::DEBUG},
+      {"info", Logger::LogLevel::INFO},
+      {"warn", Logger::LogLevel::WARN},
+      {"error", Logger::LogLevel::ERROR},
+      {"off", Logger::LogLevel::OFF} };
+    if (!levels_map.count(log_level_str)) {
+      std::cout << "Invalid value " << log_level_str << " for --log-level\n"
+                << "Run with -h to see possible values\n";
+      exit(1);
+    }
+    log_level = levels_map[log_level_str];
   }
 
   if (vm.count("interface")) {
@@ -209,8 +241,13 @@ OptionsParser::parse(int argc, char *argv[]) {
     exit(1);
   }
 
-  if (vm.count("debugger")) {
+  if (vm.count("debugger-addr")) {
     debugger = true;
+    debugger_addr = vm["debugger-addr"].as<std::string>();
+  } else if (vm.count("debugger")) {
+    debugger = true;
+    debugger_addr = std::string("ipc:///tmp/bmv2-")
+        + std::to_string(device_id) + std::string("-debug.ipc");
   }
 
   assert(vm.count("input-config"));
@@ -226,3 +263,5 @@ OptionsParser::parse(int argc, char *argv[]) {
     thrift_port = default_thrift_port;
   }
 }
+
+}  // namespace bm

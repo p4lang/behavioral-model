@@ -24,6 +24,8 @@
 #include <vector>
 #include <set>
 
+namespace bm {
+
 Context::Context() {
   p4objects = std::make_shared<P4Objects>();
   p4objects_rt = p4objects;
@@ -337,6 +339,17 @@ Context::mt_write_counters(const std::string &table_name,
   return abstract_table->write_counters(handle, bytes, packets);
 }
 
+MatchErrorCode
+Context::mt_set_meter_rates(const std::string &table_name,
+                            entry_handle_t handle,
+                            const std::vector<Meter::rate_config_t> &configs) {
+  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  MatchTableAbstract *abstract_table =
+    p4objects_rt->get_abstract_match_table(table_name);
+  assert(abstract_table);
+  return abstract_table->set_meter_rates(handle, configs);
+}
+
 Counter::CounterErrorCode
 Context::read_counters(const std::string &counter_name,
                        size_t index,
@@ -395,6 +408,7 @@ Context::register_read(const std::string &register_name,
     p4objects_rt->get_register_array(register_name);
   if (!register_array) return Register::ERROR;
   if (idx >= register_array->size()) return Register::INVALID_INDEX;
+  auto register_lock = register_array->unique_lock();
   value->set((*register_array)[idx]);
   return Register::SUCCESS;
 }
@@ -407,6 +421,7 @@ Context::register_write(const std::string &register_name,
     p4objects_rt->get_register_array(register_name);
   if (!register_array) return Register::ERROR;
   if (idx >= register_array->size()) return Register::INVALID_INDEX;
+  auto register_lock = register_array->unique_lock();
   (*register_array)[idx].set(std::move(value));
   return Register::SUCCESS;
 }
@@ -464,9 +479,10 @@ int
 Context::init_objects(std::istream *is,
                       const std::set<header_field_pair> &required_fields,
                       const std::set<header_field_pair> &arith_fields) {
-  int status = p4objects->init_objects(is, device_id, cxt_id,
-                                       notifications_transport,
-                                       required_fields, arith_fields);
+  // initally p4objects_rt == p4objects, so this works
+  int status = p4objects_rt->init_objects(is, device_id, cxt_id,
+                                          notifications_transport,
+                                          required_fields, arith_fields);
   if (status) return status;
   if (force_arith)
     get_phv_factory().enable_all_arith();
@@ -480,26 +496,26 @@ Context::load_new_config(
     const std::set<header_field_pair> &arith_fields) {
   boost::unique_lock<boost::shared_mutex> lock(request_mutex);
   // check that there is no ongoing config swap
-  if (p4objects != p4objects_rt) return ONGOING_SWAP;
+  if (p4objects != p4objects_rt) return ErrorCode::ONGOING_SWAP;
   p4objects_rt = std::make_shared<P4Objects>();
   init_objects(is, required_fields, arith_fields);
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 Context::ErrorCode
 Context::swap_configs() {
   boost::unique_lock<boost::shared_mutex> lock(request_mutex);
   // no ongoing swap
-  if (p4objects == p4objects_rt) return NO_ONGOING_SWAP;
+  if (p4objects == p4objects_rt) return ErrorCode::NO_ONGOING_SWAP;
   swap_ordered = true;
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 Context::ErrorCode
 Context::reset_state() {
   boost::unique_lock<boost::shared_mutex> lock(request_mutex);
   p4objects_rt->reset_state();
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 int
@@ -510,3 +526,5 @@ Context::do_swap() {
   swap_ordered = false;
   return 0;
 }
+
+}  // namespace bm

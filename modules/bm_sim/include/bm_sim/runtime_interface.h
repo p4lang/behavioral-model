@@ -24,17 +24,24 @@
 #include <string>
 #include <vector>
 
-#include "context.h"
+#include "match_tables.h"
+
+namespace bm {
 
 class RuntimeInterface {
  public:
-  typedef Context::mbr_hdl_t mbr_hdl_t;
-  typedef Context::grp_hdl_t grp_hdl_t;
+  typedef MatchTableIndirect::mbr_hdl_t mbr_hdl_t;
+  typedef MatchTableIndirectWS::grp_hdl_t grp_hdl_t;
 
-  typedef Context::MeterErrorCode MeterErrorCode;
-  typedef Context::RegisterErrorCode RegisterErrorCode;
+  typedef Meter::MeterErrorCode MeterErrorCode;
+  typedef Register::RegisterErrorCode RegisterErrorCode;
 
-  typedef Context::ErrorCode ErrorCode;
+  enum ErrorCode {
+    SUCCESS = 0,
+    CONFIG_SWAP_DISABLED,
+    ONGOING_SWAP,
+    NO_ONGOING_SWAP
+  };
 
  public:
   virtual ~RuntimeInterface() { }
@@ -179,6 +186,12 @@ class RuntimeInterface {
                     MatchTableAbstract::counter_value_t bytes,
                     MatchTableAbstract::counter_value_t packets) = 0;
 
+  virtual MatchErrorCode
+  mt_set_meter_rates(size_t cxt_id,
+                     const std::string &table_name,
+                     entry_handle_t handle,
+                     const std::vector<Meter::rate_config_t> &configs) = 0;
+
   virtual Counter::CounterErrorCode
   read_counters(size_t cxt_id,
                 const std::string &counter_name,
@@ -232,5 +245,7 @@ class RuntimeInterface {
              const std::string& table_name,
              std::ostream *stream) const = 0;
 };
+
+}  // namespace bm
 
 #endif  // BM_SIM_INCLUDE_BM_SIM_RUNTIME_INTERFACE_H_

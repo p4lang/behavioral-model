@@ -20,8 +20,11 @@
 
 #include <vector>
 #include <mutex>
+#include <iostream>
 
 #include "bm_sim/phv_source.h"
+
+namespace bm {
 
 class PHVSourceContextPools : public PHVSourceIface {
  public:
@@ -33,11 +36,14 @@ class PHVSourceContextPools : public PHVSourceIface {
    public:
     void set_phv_factory(const PHVFactory *factory) {
       std::unique_lock<std::mutex> lock(mutex);
+      assert(count == 0);
       phv_factory = factory;
+      phvs.clear();
     }
 
     std::unique_ptr<PHV> get() {
       std::unique_lock<std::mutex> lock(mutex);
+      count++;
       if (phvs.size() == 0) {
         lock.unlock();
         return phv_factory->create();
@@ -49,13 +55,20 @@ class PHVSourceContextPools : public PHVSourceIface {
 
     void release(std::unique_ptr<PHV> phv) {
       std::unique_lock<std::mutex> lock(mutex);
+      count--;
       phvs.push_back(std::move(phv));
+    }
+
+    size_t phvs_in_use() {
+      std::unique_lock<std::mutex> lock(mutex);
+      return count;
     }
 
    private:
     mutable std::mutex mutex{};
     std::vector<std::unique_ptr<PHV> > phvs{};
     const PHVFactory *phv_factory{nullptr};
+    size_t count{0};
   };
 
   std::unique_ptr<PHV> get_(size_t cxt) override {
@@ -70,6 +83,10 @@ class PHVSourceContextPools : public PHVSourceIface {
     phv_pools.at(cxt).set_phv_factory(factory);
   }
 
+  size_t phvs_in_use_(size_t cxt) override {
+    return phv_pools.at(cxt).phvs_in_use();
+  }
+
   std::vector<PHVPool> phv_pools;
 };
 
@@ -78,3 +95,5 @@ PHVSourceIface::make_phv_source(size_t size) {
   return std::unique_ptr<PHVSourceContextPools>(
       new PHVSourceContextPools(size));
 }
+
+}  // namespace bm

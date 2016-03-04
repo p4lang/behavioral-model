@@ -25,6 +25,8 @@
 
 #include "bm_sim/meters.h"
 
+using namespace bm;
+
 using std::chrono::milliseconds;
 using std::chrono::duration_cast;
 using std::this_thread::sleep_for;
@@ -58,13 +60,8 @@ class MetersTest : public ::testing::Test {
   }
 };
 
-extern bool WITH_VALGRIND; // defined in main.cpp
-
 // 2 rate 3 color marker
 TEST_F(MetersTest, trTCM) {
-  // Valgrind screws up the timing and cause the test to fail
-  if(WITH_VALGRIND) {SUCCEED(); return;}
-
   const color_t GREEN = 0;
   const color_t YELLOW = 1;
   const color_t RED = 2;
@@ -83,7 +80,6 @@ TEST_F(MetersTest, trTCM) {
 
   Meter::reset_global_clock();
 
-  clock::time_point start = clock::now();
   clock::time_point next_stop = clock::now();
 
   color_t color;

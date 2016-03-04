@@ -23,6 +23,8 @@
 #include "bm_sim/parser.h"
 #include "bm_sim/deparser.h"
 
+using namespace bm;
+
 /* Frame (66 bytes) */
 static const unsigned char raw_tcp_pkt[66] = {
   0x00, 0x18, 0x0a, 0x05, 0x5a, 0x10, 0xa0, 0x88, /* ....Z... */
@@ -1058,10 +1060,12 @@ TEST_F(IPv4TLVParsingTest, BothOptions) {
   const ByteContainer f1("0x00a1");
   const ByteContainer f2("0x000000a2");
 
-  for(const auto order: {"AB", "BA"}) {
+  enum class Order { AB, BA };
+
+  for(const auto order: {Order::AB, Order::BA}) {
     ByteContainer buf = get_ipv4_base();
 
-    if(order == "AB") {
+    if(order == Order::AB) {
       add_optionA(&buf, f1, f2);
       add_optionB(&buf);
     }

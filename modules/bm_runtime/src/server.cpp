@@ -55,7 +55,7 @@ using ::bm_runtime::simple_pre_lag::SimplePreLAGProcessor;
 
 namespace bm_runtime {
 
-SwitchWContexts *switch_;
+bm::SwitchWContexts *switch_;
 TMultiplexedProcessor *processor_;
 
 namespace {
@@ -80,7 +80,7 @@ int serve(int port) {
     shared_ptr<TProcessor>(new StandardProcessor(standard_handler))
   );
 
-  if(switch_has_component<McSimplePre>()) {
+  if(switch_has_component<bm::McSimplePre>()) {
     shared_ptr<SimplePreHandler> simple_pre_handler(new SimplePreHandler(switch_));
     processor->registerProcessor(
       "simple_pre",
@@ -88,7 +88,7 @@ int serve(int port) {
     );
   }
 
-  if(switch_has_component<McSimplePreLAG>()) {
+  if(switch_has_component<bm::McSimplePreLAG>()) {
     shared_ptr<SimplePreLAGHandler> simple_pre_handler(new SimplePreLAGHandler(switch_));
     processor->registerProcessor(
       "simple_pre_lag",
@@ -113,7 +113,7 @@ int serve(int port) {
 
 }
 
-int start_server(SwitchWContexts *sw, int port) {
+int start_server(bm::SwitchWContexts *sw, int port) {
   switch_ = sw;
   std::thread server_thread(serve, port);
   printf("Thrift server was started\n");

@@ -86,20 +86,22 @@ enum TableOperationErrorCode {
   INVALID_HANDLE = 2,
   EXPIRED_HANDLE = 3,
   COUNTERS_DISABLED = 4,
-  AGEING_DISABLED = 5,
-  INVALID_TABLE_NAME = 6,
-  INVALID_ACTION_NAME = 7,
-  WRONG_TABLE_TYPE = 8,
-  INVALID_MBR_HANDLE = 9,
-  MBR_STILL_USED = 10,
-  MBR_ALREADY_IN_GRP = 11,
-  MBR_NOT_IN_GRP = 12,
-  INVALID_GRP_HANDLE = 13,
-  GRP_STILL_USED = 14,
-  EMPTY_GRP = 15,
-  DUPLICATE_ENTRY = 16,
-  BAD_MATCH_KEY = 17,
-  ERROR = 18,
+  METERS_DISABLED = 5,
+  AGEING_DISABLED = 6,
+  INVALID_TABLE_NAME = 7,
+  INVALID_ACTION_NAME = 8,
+  WRONG_TABLE_TYPE = 9,
+  INVALID_MBR_HANDLE = 10,
+  MBR_STILL_USED = 11,
+  MBR_ALREADY_IN_GRP = 12,
+  MBR_NOT_IN_GRP = 13,
+  INVALID_GRP_HANDLE = 14,
+  GRP_STILL_USED = 15,
+  EMPTY_GRP = 16,
+  DUPLICATE_ENTRY = 17,
+  BAD_MATCH_KEY = 18,
+  INVALID_METER_OPERATION = 19,
+  ERROR = 20,
 }
 
 exception InvalidTableOperation {
@@ -149,6 +151,15 @@ exception InvalidRegisterOperation {
  1:RegisterOperationErrorCode code
 }
 
+enum LearnOperationErrorCode {
+  INVALID_LIST_ID = 1,
+  ERROR = 2
+}
+
+exception InvalidLearnOperation {
+ 1:LearnOperationErrorCode code
+}
+
 // TODO
 enum DevMgrErrorCode {
   ERROR = 1
@@ -156,6 +167,13 @@ enum DevMgrErrorCode {
 
 exception InvalidDevMgrOperation {
  1:DevMgrErrorCode code
+}
+
+struct DevMgrPortInfo {
+  1:i32 port_num;
+  2:string iface_name;
+  3:bool is_up;
+  4:map<string, string> extra;
 }
 
 service Standard {
@@ -319,7 +337,14 @@ service Standard {
     1:i32 cxt_id,
     2:string table_name,
     3:BmEntryHandle entry_handle,
-    4:BmCounterValue value,
+    4:BmCounterValue value
+  ) throws (1:InvalidTableOperation ouch),
+
+  void bm_mt_set_meter_rates(
+    1:i32 cxt_id,
+    2:string table_name,
+    3:BmEntryHandle entry_handle,
+    4:list<BmMeterRateConfig> rates
   ) throws (1:InvalidTableOperation ouch),
 
   // indirect counters
@@ -349,13 +374,25 @@ service Standard {
     2:BmLearningListId list_id,
     3:BmLearningBufferId buffer_id,
     4:list<BmLearningSampleId> sample_ids
-  ),
+  ) throws (1:InvalidLearnOperation ouch),
 
   void bm_learning_ack_buffer(
     1:i32 cxt_id,
     2:BmLearningListId list_id,
     3:BmLearningBufferId buffer_id
-  ),
+  ) throws (1:InvalidLearnOperation ouch),
+
+  void bm_learning_set_timeout(
+    1:i32 cxt_id,
+    2:BmLearningListId list_id,
+    3:i32 timeout_ms
+  ) throws (1:InvalidLearnOperation ouch),
+
+  void bm_learning_set_buffer_size(
+    1:i32 cxt_id,
+    2:BmLearningListId list_id,
+    3:i32 nb_samples
+  ) throws (1:InvalidLearnOperation ouch),
 
   // swap configs
 
@@ -364,7 +401,6 @@ service Standard {
   ) throws (1:InvalidSwapOperation ouch),
 
   void bm_swap_configs() throws (1:InvalidSwapOperation ouch),
-
   
   // meters
 
@@ -408,6 +444,9 @@ service Standard {
 
   void bm_dev_mgr_remove_port(
     1:i32 port_num
+  ) throws (1:InvalidDevMgrOperation ouch)
+
+  list<DevMgrPortInfo> bm_dev_mgr_show_ports(
   ) throws (1:InvalidDevMgrOperation ouch)
 
   // debug functions

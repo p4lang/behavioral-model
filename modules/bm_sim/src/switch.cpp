@@ -30,6 +30,8 @@
 #include "bm_sim/logger.h"
 #include "bm_sim/debugger.h"
 
+namespace bm {
+
 static void
 packet_handler(int port_num, const char *buffer, int len, void *cookie) {
   // static_cast<Switch *> if okay here because cookie was obtained by casting a
@@ -61,7 +63,7 @@ SwitchWContexts::force_arith_field(const std::string &header_name,
 
 int
 SwitchWContexts::init_objects(const std::string &json_path, int dev_id,
-                            std::shared_ptr<TransportIface> transport) {
+                              std::shared_ptr<TransportIface> transport) {
   std::ifstream fs(json_path, std::ios::in);
   if (!fs) {
     std::cout << "JSON input file " << json_path << " cannot be opened\n";
@@ -71,10 +73,10 @@ SwitchWContexts::init_objects(const std::string &json_path, int dev_id,
   device_id = dev_id;
 
   if (!transport) {
-    notifications_transport = std::make_shared<TransportNULL>();
-    notifications_transport->open("dummy");
+    notifications_transport = std::shared_ptr<TransportIface>(
+        TransportIface::make_dummy());
   } else {
-    notifications_transport = transport;
+    notifications_transport = std::move(transport);
   }
 
   for (size_t cxt_id = 0; cxt_id < nb_cxts; cxt_id++) {
@@ -97,15 +99,16 @@ SwitchWContexts::init_from_command_line_options(int argc, char *argv[]) {
   parser.parse(argc, argv);
 
   notifications_addr = parser.notifications_addr;
-  auto transport = std::make_shared<TransportNanomsg>();
-  transport->open(notifications_addr);
+  auto transport = std::shared_ptr<TransportIface>(
+      TransportIface::make_nanomsg(notifications_addr));
+  transport->open();
 
 #ifdef BMDEBUG_ON
   // has to be before init_objects because forces arith
   if (parser.debugger) {
     for (Context &c : contexts)
       c.set_force_arith(true);
-    Debugger::init_debugger();
+    Debugger::init_debugger(parser.debugger_addr);
   }
 #endif
 
@@ -119,12 +122,14 @@ SwitchWContexts::init_from_command_line_options(int argc, char *argv[]) {
   if (parser.file_logger != "")
     Logger::set_logger_file(parser.file_logger);
 
+  Logger::set_log_level(parser.log_level);
+
   if (parser.use_files)
     set_dev_mgr_files(parser.wait_time);
   else if (parser.packet_in)
-    set_dev_mgr_packet_in(parser.packet_in_addr);
+    set_dev_mgr_packet_in(device_id, parser.packet_in_addr, transport);
   else
-    set_dev_mgr_bmi();
+    set_dev_mgr_bmi(device_id, transport);
 
   for (const auto &iface : parser.ifaces) {
     std::cout << "Adding interface " << iface.second
@@ -210,14 +215,21 @@ SwitchWContexts::swap_requested() {
   return false;
 }
 
-// we assume no concurrent calls to do_swap()
 int
 SwitchWContexts::do_swap() {
   int rc = 1;
-  for (auto &cxt : contexts) {
-    // we only confirm that a swap has been requested once all contexts are
-    // ready
-    rc &= cxt.do_swap();
+  if (!enable_swap || !swap_requested()) return rc;
+  boost::unique_lock<boost::shared_mutex> lock(ongoing_swap_mutex);
+  for (size_t cxt_id = 0; cxt_id < nb_cxts; cxt_id++) {
+    auto &cxt = contexts[cxt_id];
+    if (!cxt.swap_requested()) continue;
+    // TODO(antonin): we spin until no more packets exist for this context, is
+    // there a better way of doing this?
+    while (phv_source->phvs_in_use(cxt_id) > 0) { }
+    int swap_done = cxt.do_swap();
+    if (swap_done == 0)
+      phv_source->set_phv_factory(cxt_id, &cxt.get_phv_factory());
+    rc &= swap_done;
   }
   return rc;
 }
@@ -226,3 +238,5 @@ SwitchWContexts::do_swap() {
 
 Switch::Switch(bool enable_swap)
     : SwitchWContexts(1u, enable_swap) { }
+
+}  // namespace bm

@@ -27,14 +27,19 @@
 
 #include "data.h"
 #include "phv_forward.h"
+#include "stateful.h"
+
+namespace bm {
 
 enum class ExprOpcode {
   LOAD_FIELD, LOAD_HEADER, LOAD_BOOL, LOAD_CONST, LOAD_LOCAL,
+  LOAD_REGISTER_REF, LOAD_REGISTER_GEN,
   ADD, SUB, MOD, MUL, SHIFT_LEFT, SHIFT_RIGHT,
   EQ_DATA, NEQ_DATA, GT_DATA, LT_DATA, GET_DATA, LET_DATA,
   AND, OR, NOT,
   BIT_AND, BIT_OR, BIT_XOR, BIT_NEG,
-  VALID_HEADER
+  VALID_HEADER,
+  TERNARY_OP, SKIP
 };
 
 class ExprOpcodesMap {
@@ -68,6 +73,19 @@ struct Op {
     int const_offset;
 
     int local_offset;
+
+    // In theory, if registers cannot be resized, I could directly store a
+    // pointer to the correct register cell, i.e. &(*array)[idx]. However, this
+    // gives me more flexibility in case I want to be able to resize the
+    // registers arbitrarily in the future.
+    struct {
+      RegisterArray *array;
+      unsigned int idx;
+    } register_ref;
+
+    RegisterArray *register_array;
+
+    int skip_num;
   };
 };
 
@@ -80,9 +98,15 @@ class Expression {
   void push_back_load_header(header_id_t header);
   void push_back_load_const(const Data &data);
   void push_back_load_local(const int offset);
+  void push_back_load_register_ref(RegisterArray *register_array,
+                                   unsigned int idx);
+  void push_back_load_register_gen(RegisterArray *register_array);
   void push_back_op(ExprOpcode opcode);
+  void push_back_ternary_op(const Expression &e1, const Expression &e2);
 
   void build();
+
+  void grab_register_accesses(RegisterSync *register_sync) const;
 
   bool eval_bool(const PHV &phv, const std::vector<Data> &locals = {}) const;
   Data eval_arith(const PHV &phv, const std::vector<Data> &locals = {}) const;
@@ -104,6 +128,8 @@ class Expression {
   void eval_(const PHV &phv, ExprType expr_type,
              const std::vector<Data> &locals,
              bool *b_res, Data *d_res) const;
+  size_t get_num_ops() const;
+  void append_expression(const Expression &e);
 
  private:
   std::vector<Op> ops{};
@@ -123,6 +149,7 @@ class ArithExpression : public Expression {
   }
 };
 
+
 class VLHeaderExpression {
  public:
   explicit VLHeaderExpression(const ArithExpression &expr);
@@ -135,5 +162,7 @@ class VLHeaderExpression {
   ArithExpression expr;
   std::vector<int> offsets{};
 };
+
+}  // namespace bm
 
 #endif  // BM_SIM_INCLUDE_BM_SIM_EXPRESSIONS_H_

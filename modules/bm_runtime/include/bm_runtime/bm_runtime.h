@@ -19,7 +19,7 @@ namespace bm_runtime {
 using boost::shared_ptr;
 
 extern TMultiplexedProcessor *processor_;
-extern SwitchWContexts *switch_;
+extern bm::SwitchWContexts *switch_;
 
 template <typename Handler, typename Processor, typename S>
 int add_service(const std::string &service_name) {
@@ -27,9 +27,10 @@ int add_service(const std::string &service_name) {
   shared_ptr<Handler> handler(new Handler(static_cast<S *>(switch_)));
   processor_->registerProcessor(service_name,
 				shared_ptr<TProcessor>(new Processor(handler)));
+  return 0;
 }
 
-int start_server(SwitchWContexts *sw, int port);
+int start_server(bm::SwitchWContexts *sw, int port);
 
 }
 

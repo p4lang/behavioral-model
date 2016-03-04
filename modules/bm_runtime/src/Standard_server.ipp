@@ -21,8 +21,11 @@
 #include "Standard.h"
 
 #include <bm_sim/switch.h>
+#include <bm_sim/logger.h>
 
 namespace bm_runtime { namespace standard {
+
+using namespace bm;
 
 typedef RuntimeInterface::mbr_hdl_t mbr_hdl_t;
 typedef RuntimeInterface::grp_hdl_t grp_hdl_t;
@@ -42,6 +45,8 @@ public:
       return TableOperationErrorCode::EXPIRED_HANDLE;
     case MatchErrorCode::COUNTERS_DISABLED:
       return TableOperationErrorCode::COUNTERS_DISABLED;
+    case MatchErrorCode::METERS_DISABLED:
+      return TableOperationErrorCode::METERS_DISABLED;
     case MatchErrorCode::AGEING_DISABLED:
       return TableOperationErrorCode::AGEING_DISABLED;
     case MatchErrorCode::INVALID_TABLE_NAME:
@@ -68,6 +73,8 @@ public:
       return TableOperationErrorCode::DUPLICATE_ENTRY;
     case MatchErrorCode::BAD_MATCH_KEY:
       return TableOperationErrorCode::BAD_MATCH_KEY;
+    case MatchErrorCode::INVALID_METER_OPERATION:
+      return TableOperationErrorCode::INVALID_METER_OPERATION;
     case MatchErrorCode::ERROR:
       return TableOperationErrorCode::ERROR;
     default:
@@ -103,7 +110,7 @@ public:
   }
 
   BmEntryHandle bm_mt_add_entry(const int32_t cxt_id, const std::string& table_name, const BmMatchParams& match_key, const std::string& action_name, const BmActionData& action_data, const BmAddEntryOptions& options) {
-    printf("bm_table_add_entry\n");
+    Logger::get()->trace("bm_table_add_entry");
     entry_handle_t entry_handle;
     std::vector<MatchKeyParam> params;
     build_match_key(params, match_key);
@@ -123,7 +130,7 @@ public:
   }
 
   void bm_mt_set_default_action(const int32_t cxt_id, const std::string& table_name, const std::string& action_name, const BmActionData& action_data) {
-    printf("bm_set_default_action\n");
+    Logger::get()->trace("bm_set_default_action");
     ActionData data;
     for(const std::string &d : action_data) {
       data.push_back_action_data(d.data(), d.size());
@@ -138,7 +145,7 @@ public:
   }
 
   void bm_mt_delete_entry(const int32_t cxt_id, const std::string& table_name, const BmEntryHandle entry_handle) {
-    printf("bm_table_delete_entry\n");
+    Logger::get()->trace("bm_table_delete_entry");
     MatchErrorCode error_code = switch_->mt_delete_entry(
         cxt_id, table_name, entry_handle);
     if(error_code != MatchErrorCode::SUCCESS) {
@@ -149,7 +156,7 @@ public:
   }
 
   void bm_mt_modify_entry(const int32_t cxt_id, const std::string& table_name, const BmEntryHandle entry_handle, const std::string &action_name, const BmActionData& action_data) {
-    printf("bm_table_modify_entry\n");
+    Logger::get()->trace("bm_table_modify_entry");
     ActionData data;
     for(const std::string &d : action_data) {
       data.push_back_action_data(d.data(), d.size());
@@ -164,7 +171,7 @@ public:
   }
 
   void bm_mt_set_entry_ttl(const int32_t cxt_id, const std::string& table_name, const BmEntryHandle entry_handle, const int32_t timeout_ms) {
-    printf("bm_mt_set_entry_ttl\n");
+    Logger::get()->trace("bm_mt_set_entry_ttl");
     MatchErrorCode error_code = switch_->mt_set_entry_ttl(
         cxt_id, table_name, entry_handle,
         static_cast<unsigned int>(timeout_ms));
@@ -176,7 +183,7 @@ public:
   }
 
   BmMemberHandle bm_mt_indirect_add_member(const int32_t cxt_id, const std::string& table_name, const std::string& action_name, const BmActionData& action_data) {
-    printf("bm_mt_indirect_add_member\n");
+    Logger::get()->trace("bm_mt_indirect_add_member");
     mbr_hdl_t mbr_handle;
     ActionData data;
     for(const std::string &d : action_data) {
@@ -193,7 +200,7 @@ public:
   }
 
   void bm_mt_indirect_delete_member(const int32_t cxt_id, const std::string& table_name, const BmMemberHandle mbr_handle) {
-    printf("bm_mt_indirect_delete_member\n");
+    Logger::get()->trace("bm_mt_indirect_delete_member");
     MatchErrorCode error_code = switch_->mt_indirect_delete_member(
         cxt_id, table_name, mbr_handle);
     if(error_code != MatchErrorCode::SUCCESS) {
@@ -204,7 +211,7 @@ public:
   }
 
   void bm_mt_indirect_modify_member(const int32_t cxt_id, const std::string& table_name, const BmMemberHandle mbr_handle, const std::string& action_name, const BmActionData& action_data) {
-    printf("bm_mt_indirect_modify_member\n");
+    Logger::get()->trace("bm_mt_indirect_modify_member");
     ActionData data;
     for(const std::string &d : action_data) {
       data.push_back_action_data(d.data(), d.size());
@@ -219,7 +226,7 @@ public:
   }
 
   BmEntryHandle bm_mt_indirect_add_entry(const int32_t cxt_id, const std::string& table_name, const BmMatchParams& match_key, const BmMemberHandle mbr_handle, const BmAddEntryOptions& options) {
-    printf("bm_mt_indirect_add_entry\n");
+    Logger::get()->trace("bm_mt_indirect_add_entry");
     entry_handle_t entry_handle;
     std::vector<MatchKeyParam> params;
     build_match_key(params, match_key);
@@ -235,7 +242,7 @@ public:
   }
 
   void bm_mt_indirect_modify_entry(const int32_t cxt_id, const std::string& table_name, const BmEntryHandle entry_handle, const BmMemberHandle mbr_handle) {
-    printf("bm_mt_indirect_modify_entry\n");
+    Logger::get()->trace("bm_mt_indirect_modify_entry");
     MatchErrorCode error_code = switch_->mt_indirect_modify_entry(
         cxt_id, table_name, entry_handle, mbr_handle);
     if(error_code != MatchErrorCode::SUCCESS) {
@@ -246,7 +253,7 @@ public:
   }
 
   void bm_mt_indirect_delete_entry(const int32_t cxt_id, const std::string& table_name, const BmEntryHandle entry_handle) {
-    printf("bm_mt_indirect_delete_entry\n");
+    Logger::get()->trace("bm_mt_indirect_delete_entry");
     MatchErrorCode error_code = switch_->mt_indirect_delete_entry(
         cxt_id, table_name, entry_handle);
     if(error_code != MatchErrorCode::SUCCESS) {
@@ -257,7 +264,7 @@ public:
   }
 
   void bm_mt_indirect_set_entry_ttl(const int32_t cxt_id, const std::string& table_name, const BmEntryHandle entry_handle, const int32_t timeout_ms) {
-    printf("bm_mt_indirect_set_entry_ttl\n");
+    Logger::get()->trace("bm_mt_indirect_set_entry_ttl");
     MatchErrorCode error_code = switch_->mt_indirect_set_entry_ttl(
         cxt_id, table_name, entry_handle,
         static_cast<unsigned int>(timeout_ms));
@@ -269,7 +276,7 @@ public:
   }
 
   void bm_mt_indirect_set_default_member(const int32_t cxt_id, const std::string& table_name, const BmMemberHandle mbr_handle) {
-    printf("bm_mt_indirect_set_default_member\n");
+    Logger::get()->trace("bm_mt_indirect_set_default_member");
     MatchErrorCode error_code = switch_->mt_indirect_set_default_member(
         cxt_id, table_name, mbr_handle);
     if(error_code != MatchErrorCode::SUCCESS) {
@@ -280,7 +287,7 @@ public:
   }
 
   BmGroupHandle bm_mt_indirect_ws_create_group(const int32_t cxt_id, const std::string& table_name) {
-    printf("bm_mt_indirect_ws_create_group\n");
+    Logger::get()->trace("bm_mt_indirect_ws_create_group");
     grp_hdl_t grp_handle;
     MatchErrorCode error_code = switch_->mt_indirect_ws_create_group(
         cxt_id, table_name, &grp_handle);
@@ -293,7 +300,7 @@ public:
   }
 
   void bm_mt_indirect_ws_delete_group(const int32_t cxt_id, const std::string& table_name, const BmGroupHandle grp_handle) {
-    printf("bm_mt_indirect_ws_delete_group\n");
+    Logger::get()->trace("bm_mt_indirect_ws_delete_group");
     MatchErrorCode error_code = switch_->mt_indirect_ws_delete_group(
         cxt_id, table_name, grp_handle);
     if(error_code != MatchErrorCode::SUCCESS) {
@@ -304,7 +311,7 @@ public:
   }
 
   void bm_mt_indirect_ws_add_member_to_group(const int32_t cxt_id, const std::string& table_name, const BmMemberHandle mbr_handle, const BmGroupHandle grp_handle) {
-    printf("bm_mt_indirect_ws_add_member_to_group\n");
+    Logger::get()->trace("bm_mt_indirect_ws_add_member_to_group");
     MatchErrorCode error_code = switch_->mt_indirect_ws_add_member_to_group(
         cxt_id, table_name, mbr_handle, grp_handle);
     if(error_code != MatchErrorCode::SUCCESS) {
@@ -315,7 +322,7 @@ public:
   }
 
   void bm_mt_indirect_ws_remove_member_from_group(const int32_t cxt_id, const std::string& table_name, const BmMemberHandle mbr_handle, const BmGroupHandle grp_handle) {
-    printf("bm_mt_indirect_ws_remove_member_from_group\n");
+    Logger::get()->trace("bm_mt_indirect_ws_remove_member_from_group");
     MatchErrorCode error_code = switch_->mt_indirect_ws_remove_member_from_group(
         cxt_id, table_name, mbr_handle, grp_handle);
     if(error_code != MatchErrorCode::SUCCESS) {
@@ -326,7 +333,7 @@ public:
   }
 
   BmEntryHandle bm_mt_indirect_ws_add_entry(const int32_t cxt_id, const std::string& table_name, const BmMatchParams& match_key, const BmGroupHandle grp_handle, const BmAddEntryOptions& options) {
-    printf("bm_mt_indirect_ws_add_entry\n");
+    Logger::get()->trace("bm_mt_indirect_ws_add_entry");
     entry_handle_t entry_handle;
     std::vector<MatchKeyParam> params;
     build_match_key(params, match_key);
@@ -342,7 +349,7 @@ public:
   }
 
   void bm_mt_indirect_ws_modify_entry(const int32_t cxt_id, const std::string& table_name, const BmEntryHandle entry_handle, const BmGroupHandle grp_handle) {
-    printf("bm_mt_indirect_ws_modify_entry\n");
+    Logger::get()->trace("bm_mt_indirect_ws_modify_entry");
     MatchErrorCode error_code = switch_->mt_indirect_ws_modify_entry(
         cxt_id, table_name, entry_handle, grp_handle);
     if(error_code != MatchErrorCode::SUCCESS) {
@@ -353,7 +360,7 @@ public:
   }
 
   void bm_mt_indirect_ws_set_default_group(const int32_t cxt_id, const std::string& table_name, const BmGroupHandle grp_handle) {
-    printf("bm_mt_indirect_ws_set_default_group\n");
+    Logger::get()->trace("bm_mt_indirect_ws_set_default_group");
     MatchErrorCode error_code = switch_->mt_indirect_ws_set_default_group(
         cxt_id, table_name, grp_handle);
     if(error_code != MatchErrorCode::SUCCESS) {
@@ -364,7 +371,7 @@ public:
   }
 
   void bm_mt_read_counter(BmCounterValue& _return, const int32_t cxt_id, const std::string& table_name, const BmEntryHandle entry_handle) {
-    printf("bm_mt_read_counter\n");
+    Logger::get()->trace("bm_mt_read_counter");
     MatchTable::counter_value_t bytes; // unsigned
     MatchTable::counter_value_t packets;
     MatchErrorCode error_code = switch_->mt_read_counters(
@@ -379,7 +386,7 @@ public:
   }
 
   void bm_mt_reset_counters(const int32_t cxt_id, const std::string& table_name) {
-    printf("bm_mt_reset_counters\n");
+    Logger::get()->trace("bm_mt_reset_counters");
     MatchErrorCode error_code = switch_->mt_reset_counters(
         cxt_id, table_name);
     if(error_code != MatchErrorCode::SUCCESS) {
@@ -390,7 +397,7 @@ public:
   }
 
   void bm_mt_write_counter(const int32_t cxt_id, const std::string& table_name, const BmEntryHandle entry_handle, const BmCounterValue& value) {
-    printf("bm_mt_write_counters\n");
+    Logger::get()->trace("bm_mt_write_counters");
     MatchTable::counter_value_t bytes = (uint64_t) value.bytes;
     MatchTable::counter_value_t packets = (uint64_t) value.packets;
     MatchErrorCode error_code = switch_->mt_write_counters(
@@ -402,8 +409,26 @@ public:
     }
   }
 
+  void bm_mt_set_meter_rates(const int32_t cxt_id, const std::string& table_name, const BmEntryHandle entry_handle, const std::vector<BmMeterRateConfig> & rates) {
+    Logger::get()->trace("bm_mt_set_meter_rates");
+    std::vector<Meter::rate_config_t> rates_;
+    rates_.reserve(rates.size());
+    for(const auto &rate : rates) {
+      rates_.push_back(
+        {rate.units_per_micros, static_cast<size_t>(rate.burst_size)}
+      );
+    }
+    MatchErrorCode error_code = switch_->mt_set_meter_rates(
+        cxt_id, table_name, entry_handle, rates_);
+    if(error_code != MatchErrorCode::SUCCESS) {
+      InvalidTableOperation ito;
+      ito.code = get_exception_code(error_code);
+      throw ito;
+    }
+  }
+
   void bm_counter_read(BmCounterValue& _return, const int32_t cxt_id, const std::string& counter_name, const int32_t index) {
-    printf("bm_counter_read\n");
+    Logger::get()->trace("bm_counter_read");
     MatchTable::counter_value_t bytes; // unsigned
     MatchTable::counter_value_t packets;
     Counter::CounterErrorCode error_code = switch_->read_counters(
@@ -418,7 +443,7 @@ public:
   }
 
   void bm_counter_reset_all(const int32_t cxt_id, const std::string& counter_name) {
-    printf("bm_counter_reset_all\n");
+    Logger::get()->trace("bm_counter_reset_all");
     Counter::CounterErrorCode error_code = switch_->reset_counters(
         cxt_id, counter_name);
     if(error_code != Counter::CounterErrorCode::SUCCESS) {
@@ -429,7 +454,7 @@ public:
   }
 
   void bm_counter_write(const int32_t cxt_id, const std::string& counter_name, const int32_t index, const BmCounterValue& value) {
-    printf("bm_counter_write\n");
+    Logger::get()->trace("bm_counter_write");
     MatchTable::counter_value_t bytes = (uint64_t) value.bytes;
     MatchTable::counter_value_t packets = (uint64_t) value.packets;
     Counter::CounterErrorCode error_code = switch_->write_counters(
@@ -442,17 +467,53 @@ public:
   }
 
   void bm_learning_ack(const int32_t cxt_id, const BmLearningListId list_id, const BmLearningBufferId buffer_id, const std::vector<BmLearningSampleId> & sample_ids) {
-    printf("bm_learning_ack\n");
-    switch_->get_learn_engine(cxt_id)->ack(list_id, buffer_id, sample_ids);
+    Logger::get()->trace("bm_learning_ack");
+    LearnEngine::LearnErrorCode error_code =
+        switch_->get_learn_engine(cxt_id)->ack(list_id, buffer_id, sample_ids);
+    if (error_code != LearnEngine::LearnErrorCode::SUCCESS) {
+      InvalidLearnOperation ilo;
+      ilo.code = (LearnOperationErrorCode::type) error_code;
+      throw ilo;
+    }
   }
 
   void bm_learning_ack_buffer(const int32_t cxt_id, const BmLearningListId list_id, const BmLearningBufferId buffer_id) {
-    printf("bm_learning_ack_buffer\n");
-    switch_->get_learn_engine(cxt_id)->ack_buffer(list_id, buffer_id);
+    Logger::get()->trace("bm_learning_ack_buffer");
+    LearnEngine::LearnErrorCode error_code =
+        switch_->get_learn_engine(cxt_id)->ack_buffer(list_id, buffer_id);
+    if (error_code != LearnEngine::LearnErrorCode::SUCCESS) {
+      InvalidLearnOperation ilo;
+      ilo.code = (LearnOperationErrorCode::type) error_code;
+      throw ilo;
+    }
+  }
+
+  void bm_learning_set_timeout(const int32_t cxt_id, const BmLearningListId list_id, const int32_t timeout_ms) {
+    Logger::get()->trace("bm_learning_set_timeout");
+    LearnEngine::LearnErrorCode error_code =
+        switch_->get_learn_engine(cxt_id)->list_set_timeout(
+            list_id, timeout_ms);
+    if (error_code != LearnEngine::LearnErrorCode::SUCCESS) {
+      InvalidLearnOperation ilo;
+      ilo.code = (LearnOperationErrorCode::type) error_code;
+      throw ilo;
+    }
+  }
+
+  void bm_learning_set_buffer_size(const int32_t cxt_id, const BmLearningListId list_id, const int32_t nb_samples) {
+    Logger::get()->trace("bm_learning_set_buffer_size");
+    LearnEngine::LearnErrorCode error_code =
+        switch_->get_learn_engine(cxt_id)->list_set_max_samples(
+            list_id, nb_samples);
+    if (error_code != LearnEngine::LearnErrorCode::SUCCESS) {
+      InvalidLearnOperation ilo;
+      ilo.code = (LearnOperationErrorCode::type) error_code;
+      throw ilo;
+    }
   }
 
   void bm_load_new_config(const std::string& config_str) {
-    printf("bm_load_new_config\n");
+    Logger::get()->trace("bm_load_new_config");
     RuntimeInterface::ErrorCode error_code =
       switch_->load_new_config(config_str);
     if(error_code != RuntimeInterface::ErrorCode::SUCCESS) {
@@ -463,7 +524,7 @@ public:
   }
 
   void bm_swap_configs() {
-    printf("bm_swap_configs\n");
+    Logger::get()->trace("bm_swap_configs");
     RuntimeInterface::ErrorCode error_code = switch_->swap_configs();
     if(error_code != RuntimeInterface::ErrorCode::SUCCESS) {
       InvalidSwapOperation iso;
@@ -473,7 +534,7 @@ public:
   }
 
   void bm_meter_array_set_rates(const int32_t cxt_id, const std::string& meter_array_name, const std::vector<BmMeterRateConfig> & rates) {
-    printf("bm_meter_array_set_rates\n");
+    Logger::get()->trace("bm_meter_array_set_rates");
     std::vector<Meter::rate_config_t> rates_;
     rates_.reserve(rates.size());
     for(const auto &rate : rates) {
@@ -491,7 +552,7 @@ public:
   }
 
   void bm_meter_set_rates(const int32_t cxt_id, const std::string& meter_array_name, const int32_t index, const std::vector<BmMeterRateConfig> & rates) {
-    printf("bm_meter_set_rates\n");
+    Logger::get()->trace("bm_meter_set_rates");
     std::vector<Meter::rate_config_t> rates_;
     rates_.reserve(rates.size());
     for(const auto &rate : rates) {
@@ -510,7 +571,7 @@ public:
   }
 
   BmRegisterValue bm_register_read(const int32_t cxt_id, const std::string& register_name, const int32_t index) {
-    printf("bm_register_read\n");
+    Logger::get()->trace("bm_register_read");
     Data value; // make it thread_local ?
     Register::RegisterErrorCode error_code = switch_->register_read(
         cxt_id, register_name, (size_t) index, &value);
@@ -523,7 +584,7 @@ public:
   }
 
   void bm_register_write(const int32_t cxt_id, const std::string& register_name, const int32_t index, const BmRegisterValue value) {
-    printf("bm_register_write\n");
+    Logger::get()->trace("bm_register_write");
     Register::RegisterErrorCode error_code = switch_->register_write(
         cxt_id, register_name, (size_t) index, Data(value));
     if(error_code != Register::RegisterErrorCode::SUCCESS) {
@@ -534,7 +595,7 @@ public:
   }
 
   void bm_dev_mgr_add_port(const std::string& iface_name, const int32_t port_num, const std::string& pcap_path) {
-    printf("bm_dev_mgr_add_port\n");
+    Logger::get()->trace("bm_dev_mgr_add_port");
     const char *pcap = NULL;
     if(pcap_path != "") pcap = pcap_path.c_str();
     DevMgr::ReturnCode error_code;
@@ -547,7 +608,7 @@ public:
   }
 
   void bm_dev_mgr_remove_port(const int32_t port_num) {
-    printf("bm_dev_mgr_remove_port\n");
+    Logger::get()->trace("bm_dev_mgr_remove_port");
     DevMgr::ReturnCode error_code;
     error_code = switch_->port_remove(port_num);
     if(error_code != DevMgr::ReturnCode::SUCCESS) {
@@ -557,15 +618,29 @@ public:
     }
   }
 
+  void bm_dev_mgr_show_ports(std::vector<DevMgrPortInfo> & _return) {
+    Logger::get()->trace("bm_dev_mgr_show_ports");
+    _return.clear();
+    for (auto &e : switch_->get_port_info()) {
+      DevMgrIface::PortInfo &p_i = e.second;
+      DevMgrPortInfo p_i_;
+      p_i_.port_num = p_i.port_num;
+      p_i_.iface_name = std::move(p_i.iface_name);
+      p_i_.is_up = p_i.is_up;
+      p_i_.extra = std::move(p_i.extra);
+      _return.push_back(std::move(p_i_));
+    }
+  }
+
   void bm_dump_table(std::string& _return, const int32_t cxt_id, const std::string& table_name) {
-    printf("dump_table\n");
+    Logger::get()->trace("dump_table");
     std::ostringstream stream;
     switch_->dump_table(cxt_id, table_name, &stream);
     _return.append(stream.str());
   }
 
   void bm_reset_state() {
-    printf("bm_reset_state\n");
+    Logger::get()->trace("bm_reset_state");
     switch_->reset_state();
   }
 

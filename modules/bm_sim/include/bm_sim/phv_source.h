@@ -25,6 +25,8 @@
 
 #include "phv.h"
 
+namespace bm {
+
 class PHVSourceIface {
  public:
   virtual ~PHVSourceIface() { }
@@ -41,6 +43,10 @@ class PHVSourceIface {
     set_phv_factory_(cxt, factory);
   }
 
+  size_t phvs_in_use(size_t cxt) {
+    return phvs_in_use_(cxt);
+  }
+
   static std::unique_ptr<PHVSourceIface> make_phv_source(size_t size = 1);
 
  private:
@@ -49,6 +55,10 @@ class PHVSourceIface {
   virtual void release_(size_t cxt, std::unique_ptr<PHV> phv) = 0;
 
   virtual void set_phv_factory_(size_t cxt, const PHVFactory *factory) = 0;
+
+  virtual size_t phvs_in_use_(size_t cxt) = 0;
 };
+
+}  // namespace bm
 
 #endif  // BM_SIM_INCLUDE_BM_SIM_PHV_SOURCE_H_

@@ -47,6 +47,9 @@
 #include "stateful.h"
 #include "ageing.h"
 #include "field_lists.h"
+#include "extern.h"
+
+namespace bm {
 
 class P4Objects {
  public:
@@ -78,56 +81,63 @@ class P4Objects {
   void reset_state();
 
   ActionFn *get_action(const std::string &name) {
-    return actions_map[name].get();
+    return actions_map.at(name).get();
   }
 
   Parser *get_parser(const std::string &name) {
-    return parsers[name].get();
+    return parsers.at(name).get();
   }
 
   Deparser *get_deparser(const std::string &name) {
-    return deparsers[name].get();
+    return deparsers.at(name).get();
   }
 
   MatchTableAbstract *get_abstract_match_table(const std::string &name) {
-    return match_action_tables_map[name]->get_match_table();
+    return match_action_tables_map.at(name)->get_match_table();
   }
 
   MatchActionTable *get_match_action_table(const std::string &name) {
-    return match_action_tables_map[name].get();
+    return match_action_tables_map.at(name).get();
   }
 
   Conditional *get_conditional(const std::string &name) {
-    return conditionals_map[name].get();
+    return conditionals_map.at(name).get();
   }
 
   ControlFlowNode *get_control_node(const std::string &name) {
-    return control_nodes_map[name];
+    return control_nodes_map.at(name);
   }
 
   Pipeline *get_pipeline(const std::string &name) {
-    return pipelines_map[name].get();
+    return pipelines_map.at(name).get();
   }
 
   MeterArray *get_meter_array(const std::string &name) {
-    return meter_arrays[name].get();
+    return meter_arrays.at(name).get();
   }
 
   CounterArray *get_counter_array(const std::string &name) {
-    return counter_arrays[name].get();
+    return counter_arrays.at(name).get();
   }
 
   RegisterArray *get_register_array(const std::string &name) {
-    return register_arrays[name].get();
+    return register_arrays.at(name).get();
   }
 
   NamedCalculation *get_named_calculation(const std::string &name) {
-    return calculations[name].get();
+    return calculations.at(name).get();
   }
 
   FieldList *get_field_list(const p4object_id_t field_list_id) {
-    return field_lists[field_list_id].get();
+    return field_lists.at(field_list_id).get();
   }
+
+  ExternType *get_extern_instance(const std::string &name) {
+    return extern_instances.at(name).get();
+  }
+
+  bool field_exists(const std::string &header_name,
+                    const std::string &field_name) const;
 
  private:
   void add_header_type(const std::string &name,
@@ -136,7 +146,7 @@ class P4Objects {
   }
 
   HeaderType *get_header_type(const std::string &name) {
-    return header_types_map[name].get();
+    return header_types_map.at(name).get();
   }
 
   void add_header_id(const std::string &name, header_id_t header_id) {
@@ -149,11 +159,11 @@ class P4Objects {
   }
 
   header_id_t get_header_id(const std::string &name) {
-    return header_ids_map[name];
+    return header_ids_map.at(name);
   }
 
   header_stack_id_t get_header_stack_id(const std::string &name) {
-    return header_stack_ids_map[name];
+    return header_stack_ids_map.at(name);
   }
 
   void add_action(const std::string &name, std::unique_ptr<ActionFn> action) {
@@ -213,6 +223,11 @@ class P4Objects {
   void add_field_list(const p4object_id_t field_list_id,
                       std::unique_ptr<FieldList> field_list) {
     field_lists[field_list_id] = std::move(field_list);
+  }
+
+  void add_extern_instance(const std::string &name,
+                           std::unique_ptr<ExternType> extern_instance) {
+    extern_instances[name] = std::move(extern_instance);
   }
 
   void build_expression(const Json::Value &json_expression, Expression *expr);
@@ -276,7 +291,13 @@ class P4Objects {
     calculations{};
 
   // field lists
-  std::unordered_map<p4object_id_t, std::unique_ptr<FieldList> > field_lists;
+  std::unordered_map<p4object_id_t, std::unique_ptr<FieldList> > field_lists{};
+
+  // extern instances
+  std::unordered_map<std::string, std::unique_ptr<ExternType> >
+    extern_instances{};
+
+  std::unordered_map<std::string, header_field_pair> field_aliases{};
 
  public:
   // public to be accessed by test class
@@ -289,8 +310,6 @@ class P4Objects {
   size_t get_header_bits(header_id_t header_id);
   std::tuple<header_id_t, int> field_info(const std::string &header_name,
                                           const std::string &field_name);
-  bool field_exists(const std::string &header_name,
-                    const std::string &field_name);
   bool check_required_fields(
       const std::set<header_field_pair> &required_fields);
 
@@ -298,5 +317,6 @@ class P4Objects {
       const std::string &name) const;
 };
 
+}  // namespace bm
 
 #endif  // BM_SIM_INCLUDE_BM_SIM_P4OBJECTS_H_

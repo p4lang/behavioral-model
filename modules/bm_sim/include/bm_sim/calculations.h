@@ -18,6 +18,39 @@
  *
  */
 
+//! @file calculations.h
+//!
+//! Each hash algorithm supported by the target needs to be declared as a
+//! functor. This is how you declare one:
+//! @code
+//! struct hash_ex {
+//!   uint32_t operator()(const char *buf, size_t s) const {
+//!     const int p = 16777619;
+//!     int hash = 2166136261;
+
+//!     for (size_t i = 0; i < s; i++)
+//!       hash = (hash ^ buf[i]) * p;
+
+//!     hash += hash << 13;
+//!     hash ^= hash >> 7;
+//!     hash += hash << 3;
+//!     hash ^= hash >> 17;
+//!     hash += hash << 5;
+//!     return static_cast<uint32_t>(hash);
+//!   }
+//! };
+//! @endcode
+//! Note that the signature of the functor must exactly match the one of the
+//! example: `uint32_t(const char *buf, size_t s) const`. Otherwise, you will
+//! get a compilation error.
+//!
+//! You can then register your hash function like this:
+//! @code
+//! REGISTER_HASH(hash_ex)
+//! @endcode
+//! In P4 v1.0.2, hash algorithms are used by `field_list_calculation` objects
+
+
 #ifndef BM_SIM_INCLUDE_BM_SIM_CALCULATIONS_H_
 #define BM_SIM_INCLUDE_BM_SIM_CALCULATIONS_H_
 
@@ -34,6 +67,7 @@
 #include "phv.h"
 #include "packet.h"
 
+namespace bm {
 
 /* Used to determine whether a class overloads the '()' operator */
 template <typename T>
@@ -234,7 +268,7 @@ struct BufBuilder {
 
     char *extend(int more_bits) {
       int nbits_ = nbits + more_bits;
-      buf->resize((nbits_ + 7) / 8);
+      buf->resize((nbits_ + 7) / 8, '\x00');
       char *ptr = buf->data() + (nbits / 8);
       nbits = nbits_;
       // needed ?
@@ -251,7 +285,8 @@ struct BufBuilder {
       if (!header.is_valid()) return;
       const Field &field = header.get_field(f.field_offset);
       // taken from headers.cpp::deparse
-      field.deparse(extend(field.get_nbits()), get_offset());
+      const int offset = get_offset();
+      field.deparse(extend(field.get_nbits()), offset);
     }
 
     void operator()(const constant_t &c) {
@@ -360,18 +395,24 @@ class NamedCalculation : public NamedP4Object, public Calculation_<uint64_t> {
 };
 
 
-#define REGISTER_HASH(hash_name)\
-  bool hash_name##_create_ =\
-    CalculationsMap::get_instance()->register_one(\
-        #hash_name, \
-        std::unique_ptr<CalculationsMap::MyC>(\
-          new RawCalculation<uint64_t, hash_name>(hash_name())));
+//! When implementing an hash operation for a target, this macro needs to be
+//! called to make this module aware of the hash existence.
+//! When calling this macro from an anonymous namespace, some compiler may give
+//! you a warning.
+#define REGISTER_HASH(hash_name)                                        \
+  bool hash_name##_create_ =                                            \
+      bm::CalculationsMap::get_instance()->register_one(                \
+          #hash_name,                                                   \
+          std::unique_ptr<bm::CalculationsMap::MyC>(                    \
+              new bm::RawCalculation<uint64_t, hash_name>(hash_name())));
 
 
 namespace hash {
 
 uint64_t xxh64(const char *buffer, size_t s);
 
-}
+}  // namespace hash
+
+}  // namespace bm
 
 #endif  // BM_SIM_INCLUDE_BM_SIM_CALCULATIONS_H_

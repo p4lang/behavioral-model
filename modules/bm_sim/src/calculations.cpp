@@ -28,6 +28,8 @@
 #include "xxhash.h"
 #include "crc_tables.h"
 
+namespace bm {
+
 namespace hash {
 
 uint64_t xxh64(const char *buffer, size_t s) {
@@ -63,8 +65,6 @@ struct xxh64 {
   }
 };
 
-REGISTER_HASH(xxh64);
-
 struct crc16 {
   uint16_t operator()(const char *buf, size_t len) const {
     uint16_t remainder = 0x0000;
@@ -83,8 +83,6 @@ struct crc16 {
   }
 };
 
-REGISTER_HASH(crc16);
-
 struct crc32 {
   uint32_t operator()(const char *buf, size_t len) const {
     uint32_t remainder = 0xFFFFFFFF;
@@ -97,8 +95,6 @@ struct crc32 {
   }
 };
 
-REGISTER_HASH(crc32);
-
 struct crcCCITT {
   uint16_t operator()(const char *buf, size_t len) const {
     uint16_t remainder = 0xFFFF;
@@ -110,8 +106,6 @@ struct crcCCITT {
     return ntohs(remainder ^ final_xor_value);
   }
 };
-
-REGISTER_HASH(crcCCITT);
 
 struct cksum16 {
   uint16_t operator()(const char *buf, size_t len) const {
@@ -159,15 +153,11 @@ struct cksum16 {
   }
 };
 
-REGISTER_HASH(cksum16);
-
 struct csum16 {
   uint16_t operator()(const char *buf, size_t len) const {
     return cksum16()(buf, len);
   }
 };
-
-REGISTER_HASH(csum16);
 
 struct identity {
   uint64_t operator()(const char *buf, size_t len) const {
@@ -180,9 +170,17 @@ struct identity {
   }
 };
 
-REGISTER_HASH(identity);
-
 }  // namespace
+
+// if REGISTER_HASH calls placed in the anonymous namespace, some compiler can
+// give an unused variable warning
+REGISTER_HASH(xxh64);
+REGISTER_HASH(crc16);
+REGISTER_HASH(crc32);
+REGISTER_HASH(crcCCITT);
+REGISTER_HASH(cksum16);
+REGISTER_HASH(csum16);
+REGISTER_HASH(identity);
 
 CalculationsMap * CalculationsMap::get_instance() {
   static CalculationsMap map;
@@ -203,3 +201,5 @@ CalculationsMap::get_copy(const std::string &name) {
   if (it == map_.end()) return nullptr;
   return it->second->clone();
 }
+
+}  // namespace bm
