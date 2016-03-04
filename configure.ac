@@ -48,9 +48,13 @@ AC_ARG_WITH([thrift],
     [AS_HELP_STRING([--with-thrift], [Thrift selector])],
     [
         THRIFT=$withval,
-        AM_CONDITIONAL([P4THRIFT], [test "x" = "x"]) 
+        WITH_THRIFT="true"
     ],
-    [AC_PATH_PROG([THRIFT], [thrift], [])])
+    [
+        AC_PATH_PROG([THRIFT], [thrift], []),
+        WITH_THRIFT=""
+    ])
+AM_CONDITIONAL([P4THRIFT], [test "x$WITH_THRIFT" != "x"])
 AS_IF([test x"$THRIFT" = x],
 [AC_MSG_ERROR([cannot find thrift])])
 
