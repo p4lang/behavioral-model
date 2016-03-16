@@ -3,7 +3,7 @@ AM_CPPFLAGS += \
 -I$(top_builddir)/thrift_src/gen-cpp
 
 if P4THRIFT
-  AM_CPPFLAGS += -DP4THRIFT $(THRIFT_INC)
+  AM_CPPFLAGS += -DP4THRIFT 
 endif
 
 AM_CXXFLAGS = $(PICKY_CXXFLAGS)

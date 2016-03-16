@@ -1,7 +1,7 @@
 AM_CPPFLAGS = -I$(top_srcdir)/modules/bm_apps/include
 
 if P4THRIFT
-  AM_CPPFLAGS+=$(THRIFT_INC) $(THRIFT_LIB)
+  AM_CPPFLAGS+= $(THRIFT_LIB)
   ifndef AM_LDFLAGS
     AM_LDFLAGS=$(THRIFT_LIB)
   else

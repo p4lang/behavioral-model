@@ -1,7 +1,3 @@
-if P4THRIFT
-  AM_CPPFLAGS+=$(THRIFT_INC)
-endif
-
 standard_thrift_py_files = \
 gen-py/bm_runtime/standard/constants.py \
 gen-py/bm_runtime/standard/__init__.py \

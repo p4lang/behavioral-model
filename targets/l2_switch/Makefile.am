@@ -1,7 +1,7 @@
 SUBDIRS = . learn_client
 
 if P4THRIFT
-  AM_CPPFLAGS += -DP4THRIFT $(THRIFT_INC)
+  AM_CPPFLAGS += -DP4THRIFT 
 endif
 
 AM_CPPFLAGS += \

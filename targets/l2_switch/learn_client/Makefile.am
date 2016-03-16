@@ -3,7 +3,7 @@ AM_CPPFLAGS = \
 -I$(top_srcdir)/modules/bm_apps/include
 
 if P4THRIFT
-  AM_CPPFLAGS += -DP4THRIFT $(THRIFT_INC)
+  AM_CPPFLAGS += -DP4THRIFT 
 endif
 
 noinst_PROGRAMS = learn_client

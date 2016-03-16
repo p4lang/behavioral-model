@@ -1,7 +1,7 @@
 SUBDIRS = . tests
 
 if P4THRIFT
-  AM_CPPFLAGS += -DP4THRIFT $(THRIFT_INC)
+  AM_CPPFLAGS += -DP4THRIFT 
 endif
 
 simple_switch_thrift_py_files = \
