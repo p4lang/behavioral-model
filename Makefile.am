@@ -1,9 +1,5 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 
-if P4THRIFT
-  AM_CPPFLAGS += -DP4THRIFT
-endif
-
 if COND_TARGETS
     MAYBE_TARGETS = targets
 endif
