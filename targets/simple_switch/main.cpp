@@ -30,11 +30,6 @@ static SimpleSwitch *simple_switch;
 
 int
 main(int argc, char* argv[]) {
-#ifdef P4THRIFT
-  printf("P4THRIFT is running...\n\n");
-#else
-  printf("P4THRIFT is NOT running...\n\n");
-#endif
   simple_switch = new SimpleSwitch();
   int status = simple_switch->init_from_command_line_options(argc, argv);
   if (status != 0) std::exit(status);
