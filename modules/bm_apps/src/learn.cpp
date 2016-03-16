@@ -18,7 +18,21 @@
  *
  */
 
-#include <thrift_includes.h>
+#ifdef P4THRIFT
+#include <p4thrift/protocol/TBinaryProtocol.h>
+#include <p4thrift/transport/TSocket.h>
+#include <p4thrift/transport/TTransportUtils.h>
+#include <p4thrift/processor/TMultiplexedProcessor.h>
+
+namespace thrift_provider = p4::thrift;
+#else
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/transport/TSocket.h>
+#include <thrift/transport/TTransportUtils.h>
+#include <thrift/processor/TMultiplexedProcessor.h>
+
+namespace thrift_provider = apache::thrift;
+#endif
 
 #include "bm_apps/learn.h"
 
