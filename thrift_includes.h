@@ -12,7 +12,7 @@
 namespace thrift_provider = p4::thrift;
 #else
 #include <thrift/protocol/TBinaryProtocol.h>
-#include <p4thrift/protocol/TMultiplexedProtocol.h>
+#include <thrift/protocol/TMultiplexedProtocol.h>
 #include <thrift/server/TSimpleServer.h>
 #include <thrift/server/TThreadedServer.h>
 #include <thrift/transport/TServerSocket.h>
