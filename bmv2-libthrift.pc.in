@@ -6,5 +6,5 @@ includedir=/usr/include
 Name: bmv2-libthrift
 Description: P4 BMv2 thrift interface libraries
 Version: 0.1
-Libs: -L${libdir} -lbmthrift -lsimpleswitch_thrift.la
+Libs: -L${libdir} -lbmthrift -lsimpleswitch_thrift
 Cflags: -I${includedir}
