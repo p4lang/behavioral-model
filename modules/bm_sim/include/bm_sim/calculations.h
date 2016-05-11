@@ -396,8 +396,14 @@ class NamedCalculation : public NamedP4Object, public Calculation_<uint64_t> {
 
 //! When implementing an hash operation for a target, this macro needs to be
 //! called to make this module aware of the hash existence.
+#ifdef __GNUC__
+#define VARIABLE_IS_NOT_USED __attribute__ ((unused))
+#else
+#define VARIABLE_IS_NOT_USED
+#endif
+
 #define REGISTER_HASH(hash_name)                                        \
-  bool hash_name##_create_ =                                            \
+  bool VARIABLE_IS_NOT_USED hash_name##_create_ =                                            \
       bm::CalculationsMap::get_instance()->register_one(                \
           #hash_name,                                                   \
           std::unique_ptr<bm::CalculationsMap::MyC>(                    \
