@@ -59,7 +59,7 @@ class MemoryAccessor : public bm::TransportIface {
   }
 
   int send_(const char *buffer, int len) const override {
-    if(len > max_size) return -1;
+    if(static_cast<size_t>(len) > max_size) return -1;
     std::unique_lock<std::mutex> lock(mutex);
     while(status != Status::CAN_WRITE) {
       can_write.wait(lock);
@@ -70,7 +70,7 @@ class MemoryAccessor : public bm::TransportIface {
     return 0;
   }
 
-  int send_(const std::string &msg) const override {
+  int send_(const std::string &/* msg */) const override {
     // unused for learning
     assert(0);
     return 0;
@@ -96,7 +96,7 @@ class MemoryAccessor : public bm::TransportIface {
   }
 
   int send_msgs_(
-      const std::initializer_list<std::string> &msgs) const override {
+      const std::initializer_list<std::string> & /* msgs */) const override {
     // unused for learning
     assert(0);
     return 0;
