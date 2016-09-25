@@ -49,7 +49,7 @@ public:
     //             ^~~~~~~~~~                                ~
 	// Disabling the warning seems more appropriate than removing the move
 #pragma GCC diagnostic push
-#ifdef __clang__
+#if defined(__clang__) && (__clang_major__ > 7)
 #pragma GCC diagnostic ignored "-Wpessimizing-move"
 #endif // __clang__
 	p_monitor = std::move(PortMonitorIface::make_active(0));
