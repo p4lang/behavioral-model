@@ -164,7 +164,7 @@ TEST_F(HeaderStackTest, PushFrontNum) {
   Header &h2 = phv->get_header(testHeader_2);
 
   Field &f0_0 = h0.get_field(0);
-  Field &f1_0 = h1.get_field(0);
+//  Field &f1_0 = h1.get_field(0);
   Field &f2_0 = h2.get_field(0);
 
   unsigned int v0 = 10u;
@@ -199,7 +199,7 @@ TEST_F(HeaderStackTest, PopFront) {
 
   Field &f0_0 = h0.get_field(0);
   Field &f1_0 = h1.get_field(0);
-  Field &f2_0 = h2.get_field(0);
+//  Field &f2_0 = h2.get_field(0);
 
   const unsigned int v0 = 10u; const unsigned int v1 = 11u;
   const std::string v1_hex("0x000b");

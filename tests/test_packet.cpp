@@ -72,7 +72,7 @@ class PHVSourceTest : public PHVSourceIface {
     phv_factories.at(cxt) = factory;
   }
 
-  size_t phvs_in_use_(size_t cxt) override {
+  size_t phvs_in_use_(size_t /* cxt */) override {
     return count;
   }
 

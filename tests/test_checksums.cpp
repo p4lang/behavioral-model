@@ -40,6 +40,7 @@ static const unsigned char raw_tcp_pkt[66] = {
   0x21, 0x9b                                      /* !. */
 };
 
+#if ENABLE_ME_WHEN_USED
 /* Frame (82 bytes) */
 static const unsigned char raw_udp_pkt[82] = {
   0x8c, 0x04, 0xff, 0xac, 0x28, 0xa0, 0xa0, 0x88, /* ....(... */
@@ -54,6 +55,7 @@ static const unsigned char raw_udp_pkt[82] = {
   0x6d, 0x03, 0x63, 0x6f, 0x6d, 0x00, 0x00, 0x01, /* m.com... */
   0x00, 0x01                                      /* .. */
 };
+#endif // ENABLE_ME_WHEN_USED
 
 // Google Test fixture for checksums tests
 class ChecksumTest : public ::testing::Test {
@@ -126,7 +128,7 @@ class ChecksumTest : public ::testing::Test {
     BufBuilder tcp_cksum_engine_builder;
     tcp_cksum_engine_builder.push_back_field(ipv4Header, 10); // ipv4.srcAddr
     tcp_cksum_engine_builder.push_back_field(ipv4Header, 11); // ipv4.dstAddr
-    tcp_cksum_engine_builder.push_back_constant(ByteContainer({'\x00'}), 8);
+    tcp_cksum_engine_builder.push_back_constant(ByteContainer('\x00'), 8);
     tcp_cksum_engine_builder.push_back_field(ipv4Header, 8); // ipv4.protocol
     tcp_cksum_engine_builder.push_back_field(metaHeader, 0); // for tcpLength
     tcp_cksum_engine_builder.push_back_field(tcpHeader, 0); // tcp.srcPort

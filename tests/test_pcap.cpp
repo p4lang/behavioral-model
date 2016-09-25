@@ -32,8 +32,9 @@ namespace fs = boost::filesystem;
 class PcapTest : public ::testing::Test {
 protected:
   PcapTest()
-    : testDataFolder(TESTDATADIR), testfile1("en0.pcap"), testfile2("lo0.pcap"),
-      tmpfile("tmp.pcap"), received(0), receiver(nullptr) {}
+    : receiver(nullptr), received(0), 
+      testDataFolder(TESTDATADIR), testfile1("en0.pcap"), testfile2("lo0.pcap"),
+      tmpfile("tmp.pcap") {}
 
   virtual void SetUp()  {}
 
