@@ -666,7 +666,7 @@ class ActionsTestRegisterProtection : public ActionsTest {
   ActionsTestRegisterProtection()
       : ActionsTest(),
         register_array_1("register_test_1", 0, register_size, register_bw),
-  	    testActionFn_2("test_action_2", 1),
+        testActionFn_2("test_action_2", 1),
         testActionFnEntry_2(&testActionFn_2) {
     configure_one_action(&testActionFn, &register_array_1);
   }

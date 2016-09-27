@@ -170,8 +170,7 @@ namespace {
 
 class TwoCompV {
  public:
-  TwoCompV(int v, int bitwidth)
-      /* : nbits_(bitwidth) */ {
+  TwoCompV(int v, int bitwidth) {
     assert(bitwidth <= 24);
     const char *v_ = reinterpret_cast<char *>(&v);
     if (bitwidth > 16)
@@ -196,7 +195,6 @@ class TwoCompV {
 
  private:
   ByteContainer bits_{};
-  // int nbits_{0};
 };
 
 }  // namespace

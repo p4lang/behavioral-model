@@ -342,8 +342,6 @@ TEST(HashTest, Crc32) {
 }
 
 TEST(HashTest, Crc16Custom) {
-  // typedef CustomCrcMgr<uint16_t>::crc_config_t crc16_config_t;
-
   auto ptr = CalculationsMap::get_instance()->get_copy("crc16_custom");
   ASSERT_NE(nullptr, ptr);
 
@@ -387,8 +385,6 @@ TEST(HashTest, Crc16Custom) {
 }
 
 TEST(HashTest, Crc32Custom) {
-  // typedef CustomCrcMgr<uint32_t>::crc_config_t crc32_config_t;
-
   auto ptr = CalculationsMap::get_instance()->get_copy("crc32_custom");
   ASSERT_NE(nullptr, ptr);
 

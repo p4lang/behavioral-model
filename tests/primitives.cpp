@@ -47,8 +47,10 @@ class add_to_field : public ActionPrimitive<Field &, const Data &> {
 REGISTER_PRIMITIVE(add_to_field);
 
 class generate_digest : public ActionPrimitive<const Data &, const Data &> {
-  void operator ()(const Data &/* receiver */, const Data & /* learn_id */) {
+  void operator ()(const Data &receiver, const Data &learn_id) {
     // stub only
+		(void)receiver;
+		(void)learn_id;
   }
 };
 

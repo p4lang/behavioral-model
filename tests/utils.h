@@ -70,7 +70,8 @@ class MemoryAccessor : public bm::TransportIface {
     return 0;
   }
 
-  int send_(const std::string &/* msg */) const override {
+  int send_(const std::string &msg) const override {
+		(void)msg;
     // unused for learning
     assert(0);
     return 0;
@@ -96,7 +97,8 @@ class MemoryAccessor : public bm::TransportIface {
   }
 
   int send_msgs_(
-      const std::initializer_list<std::string> & /* msgs */) const override {
+      const std::initializer_list<std::string> &msgs) const override {
+		(void)msgs;
     // unused for learning
     assert(0);
     return 0;

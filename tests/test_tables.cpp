@@ -51,7 +51,8 @@ struct DummyNode: public ControlFlowNode {
   DummyNode()
       : ControlFlowNode("", 0) { }
 
-  const ControlFlowNode *operator()(Packet * /* pkt */) const {
+  const ControlFlowNode *operator()(Packet * pkt) const {
+    (void)pkt;
     return nullptr;
   }
 };
@@ -1356,8 +1357,6 @@ TEST_F(TableIndirectWS, EntryWS) {
   MatchErrorCode rc;
   grp_hdl_t grp;
   mbr_hdl_t mbr_1;
-  // mbr_hdl_t mbr_bad = 999u;
-  // mbr_hdl_t grp_bad = 999u;
   entry_handle_t handle;
   std::string key = "\x0a\xba";
   unsigned int data = 666u;
@@ -2764,7 +2763,6 @@ TEST_F(TableRangeMatch, TwoRanges) {
   ActionData action_data;
   std::vector<MatchKeyParam> match_key;
   unsigned int start_1 = 0xab, start_2 = 0x8888;
-  // unsigned int end_1 = 0x041d, end_2 = 0x8889;
   int priority = 1;
   match_key.emplace_back(MatchKeyParam::Type::RANGE,
                          std::string("\x00\xab", 2),

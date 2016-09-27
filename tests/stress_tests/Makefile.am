@@ -1,7 +1,6 @@
 AM_CPPFLAGS += \
 -isystem $(top_srcdir)/third_party \
 -DTESTDATADIR=\"$(abs_srcdir)/testdata\"
-# AM_CXXFLAGS = -pthread
 LDADD = \
 $(top_builddir)/third_party/gtest/libgtest.la \
 $(top_builddir)/src/bm_apps/libbmapps.la \

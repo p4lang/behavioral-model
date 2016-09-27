@@ -111,7 +111,7 @@ cstdio string sys/stat.h sys/types.h ctime tuple unistd.h unordered_map \
 utility vector], [], [AC_MSG_ERROR([Missing header file])])
 
 # Check for pthread, libjudy, libgmp, libnanomsg, libpcap
-AC_CHECK_LIB([pthread], [pthread_create], [], [AC_MSG_ERROR([Missing pthread library])])
+AX_PTHREAD([,AC_MSG_ERROR([Missing pthread library])])
 AC_CHECK_LIB([Judy], [Judy1Next], [], [AC_MSG_ERROR([Missing libJudy])])
 AC_CHECK_LIB([gmp], [__gmpz_init], [], [AC_MSG_ERROR([Missing libgmp])])
 AC_CHECK_LIB([nanomsg], [nn_errno], [], [AC_MSG_ERROR([Missing libnanomsg])])

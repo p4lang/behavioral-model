@@ -39,21 +39,7 @@ class TestDevMgrImp : public DevMgrIface {
 public:
   TestDevMgrImp() {
     // 0 is device_id
-    // clang++ complains as follows:
-    // ../../tests/test_devmgr.cpp:42:17: error: moving a temporary object prevents
-    //   copy elision [-Werror,-Wpessimizing-move]
-    // p_monitor = std::move(PortMonitorIface::make_active(0));
-    //             ^
-    // ../../tests/test_devmgr.cpp:42:17: note: remove std::move call here
-    // p_monitor = std::move(PortMonitorIface::make_active(0));
-    //             ^~~~~~~~~~                                ~
-	// Disabling the warning seems more appropriate than removing the move
-#pragma GCC diagnostic push
-#if defined(__clang__) && (__clang_major__ > 7)
-#pragma GCC diagnostic ignored "-Wpessimizing-move"
-#endif // __clang__
-	p_monitor = std::move(PortMonitorIface::make_active(0));
-#pragma GCC diagnostic pop
+		p_monitor = PortMonitorIface::make_active(0);
   }
 
   // Not part of public interface, just for testing
@@ -121,7 +107,11 @@ private:
     return ReturnCode::SUCCESS;
   }
 
-  void transmit_fn_(int /* port_num */, const char * /* buffer */, int /* len */) override {}
+  void transmit_fn_(int port_num, const char *buffer, int len) override {
+  	(void)port_num;
+		(void)buffer;
+		(void)len;
+  }
 
   void start_() override {}
 
@@ -132,8 +122,9 @@ private:
 class DevMgrTest : public ::testing::Test {
 public:
 
-  void port_status(DevMgrIface::port_t /* port_num */,
+  void port_status(DevMgrIface::port_t port_num,
                    const DevMgrIface::PortStatus status) {
+    (void)port_num;
     std::lock_guard<std::mutex> lock(cnt_mutex);
     cb_counts[status]++;
   }
@@ -359,8 +350,9 @@ class PacketInDevMgrPortStatusTest : public PacketInDevMgrTest {
   virtual void TearDown() {
   }
 
-  void port_status(DevMgrIface::port_t /* port_num */,
+  void port_status(DevMgrIface::port_t port_num,
                    const DevMgrIface::PortStatus status) {
+		(void)port_num;
     std::lock_guard<std::mutex> lock(cnt_mutex);
     cb_counts[status]++;
   }
@@ -515,7 +507,8 @@ PortMonitorTest<PMActive>::make_monitor() {
 
 template<>
 bool
-PortMonitorTest<PMPassive>::port_is_up(port_t /* port */) {
+PortMonitorTest<PMPassive>::port_is_up(port_t port) {
+  (void)port;
   assert(0);
   return false;
 }
