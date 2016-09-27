@@ -201,12 +201,12 @@ TEST_F(ChecksumTest, IPv4ChecksumVerify) {
   Packet packet = get_ipv4_pkt(&cksum);
   PHV *phv = packet.get_phv();
   parser.parse(&packet);
-  
+
   IPv4Checksum cksum_engine("ipv4_checksum", 0, ipv4Header, 9);
   ASSERT_TRUE(cksum_engine.verify(packet));
 
   Field &ipv4_checksum = phv->get_field(ipv4Header, 9);
-  ipv4_checksum.set(0);  
+  ipv4_checksum.set(0);
   ASSERT_FALSE(cksum_engine.verify(packet));
 }
 
@@ -259,7 +259,7 @@ TEST_F(ChecksumTest, TCPChecksumVerify) {
   ASSERT_TRUE(tcp_cksum_engine->verify(packet));
 
   Field &tcp_checksum = phv->get_field(tcpHeader, 8);
-  tcp_checksum.set(0);  
+  tcp_checksum.set(0);
   ASSERT_FALSE(tcp_cksum_engine->verify(packet));
 }
 

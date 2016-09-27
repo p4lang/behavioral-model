@@ -84,7 +84,7 @@ TEST_F(HeaderStackTest, PushBack) {
     ASSERT_EQ(1u, stack.push_back());
     ASSERT_EQ(i + 1, stack.get_count());
   }
-  
+
   ASSERT_EQ(0u, stack.push_back());
   ASSERT_EQ(stack_depth, stack.get_count());
 

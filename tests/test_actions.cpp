@@ -427,7 +427,7 @@ TEST_F(ActionsTest, CopyHeader) {
   testActionFn.push_back_primitive(&primitive);
   testActionFn.parameter_push_back_header(testHeader1);
   testActionFn.parameter_push_back_header(testHeader2);
-  
+
   testActionFnEntry(pkt.get());
   ASSERT_FALSE(hdr1.is_valid());
   ASSERT_FALSE(hdr2.is_valid());

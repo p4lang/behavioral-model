@@ -39,7 +39,7 @@ class TestDevMgrImp : public DevMgrIface {
 public:
   TestDevMgrImp() {
     // 0 is device_id
-		p_monitor = PortMonitorIface::make_active(0);
+    p_monitor = PortMonitorIface::make_active(0);
   }
 
   // Not part of public interface, just for testing
@@ -108,9 +108,9 @@ private:
   }
 
   void transmit_fn_(int port_num, const char *buffer, int len) override {
-  	(void)port_num;
-		(void)buffer;
-		(void)len;
+    (void)port_num;
+    (void)buffer;
+    (void)len;
   }
 
   void start_() override {}
@@ -352,7 +352,7 @@ class PacketInDevMgrPortStatusTest : public PacketInDevMgrTest {
 
   void port_status(DevMgrIface::port_t port_num,
                    const DevMgrIface::PortStatus status) {
-		(void)port_num;
+    (void)port_num;
     std::lock_guard<std::mutex> lock(cnt_mutex);
     cb_counts[status]++;
   }

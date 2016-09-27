@@ -82,7 +82,7 @@ class FieldSerializeTest : public TestWithParam< std::tuple<int, int> > {
   int bitwidth{0};
   int hdr_offset{0};
   int step = 1;
-  
+
   virtual void SetUp() {
     bitwidth = std::get<0>(GetParam());
     hdr_offset = std::get<1>(GetParam());
