@@ -79,4 +79,4 @@ script:
 # code coverage
 after_success:
   - if [ "$GCOV" != "" ]; then (cd src/bm_sim; $GCOV -p -r -o .libs/ *.cpp; rm *third_party*); fi
-  - if [ "$GCOV" != "" ]; then bash <(curl -s https://codecov.io/bash); fi
+  - if [ "$GCOV" != "" ]; then bash <(curl -s https://codecov.io/bash) -x $GCOV -p src/bm_sim; fi
