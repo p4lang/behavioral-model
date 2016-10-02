@@ -34,15 +34,6 @@ brew link --overwrite --force bison
 # we need realpath from coreutils
 brews_dir=`realpath $tools_dir`/brews
 
-#  libcli (https://github.com/dparrish/libcli)
-brew install ${brews_dir}/libcli.rb
-
-#  libjson-c (https://github.com/json-c/json-c)
-brew install ${brews_dir}/libjsonc.rb
-
-#  libcrafter (https://github.com/pellegre/libcrafter)
-brew install ${brews_dir}/libcrafter.rb
-
 # thrift
 brew install --HEAD ${brews_dir}/thrift.rb --with-python --with-libevent
 
