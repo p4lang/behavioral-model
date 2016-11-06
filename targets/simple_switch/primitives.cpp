@@ -268,8 +268,8 @@ class modify_field_with_hash_based_offset
     if (size.get<uint64_t>() == 0) {
       v = hash.output(get_packet()) + base.get<uint64_t>();
     } else {
-      v =
-        (hash.output(get_packet()) % size.get<uint64_t>()) + base.get<uint64_t>();
+      auto mod_hash = hash.output(get_packet()) % size.get<uint64_t>();
+      v = mod_hash + base.get<uint64_t>();
     }
     dst.set(v);
   }
