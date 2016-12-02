@@ -64,8 +64,8 @@ class ExternFactoryMap {
            [](){ return std::unique_ptr<ExternType>(new extern_name()); });
 
 #define BM_REGISTER_EXTERN_W_NAME(extern_name, extern__)                \
-  static_assert(std::is_default_constructible<extern__>::value,          \
-                "User-defined extern type " #extern__                    \
+  static_assert(std::is_default_constructible<extern__>::value,         \
+                "User-defined extern type " #extern__                   \
                 " needs to be default-constructible");                  \
   int _extern_##extern_name##_create_ =                                 \
       ::bm::ExternFactoryMap::get_instance()->register_extern_type(     \
@@ -97,8 +97,9 @@ class ExternFactoryMap {
     }                                                                                     \
   };                                                                                      \
   struct _##extern__##_##extern_method_name                                               \
-      : public _##extern__##_##extern_method_name##_0<__VA_ARGS__> {};                 \
-  REGISTER_PRIMITIVE_W_NAME(TO_STRING(_##extern_name##_##extern_method_name), _##extern__##_##extern_method_name)
+      : public _##extern__##_##extern_method_name##_0<__VA_ARGS__> {};                    \
+  REGISTER_PRIMITIVE_W_NAME(TO_STRING(_##extern_name##_##extern_method_name),             \
+                            _##extern__##_##extern_method_name)
 
 #define BM_EXTERN_ATTRIBUTES void _register_attributes() override
 
