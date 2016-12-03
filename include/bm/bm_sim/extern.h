@@ -64,25 +64,36 @@ class ExternFactoryMap {
            [](){ return std::unique_ptr<ExternType>(new extern__()); });
 
 #define BM_REGISTER_EXTERN(extern_name) \
-    BM_REGISTER_EXTERN_W_NAME(extern_name, extern_name)
+  BM_REGISTER_EXTERN_W_NAME(extern_name, extern_name)
 
-#define BM_REGISTER_EXTERN_W_NAME_METHOD(extern_name, extern__, extern_method_name, ...)  \
-  template <typename... Args>                                                             \
-  struct _##extern__##_##extern_method_name##_0                                           \
-      : public ::bm::ActionPrimitive<::bm::ExternType *, Args...> {                       \
-    void operator ()(::bm::ExternType *instance, Args... args) override {                 \
-      auto lock = instance->_unique_lock();                                               \
-      instance->_set_packet_ptr(&this->get_packet());                                     \
-      dynamic_cast<extern__ *>(instance)->extern_method_name(args...);                    \
-    }                                                                                     \
-  };                                                                                      \
-  struct _##extern__##_##extern_method_name                                               \
-      : public _##extern__##_##extern_method_name##_0<__VA_ARGS__> {};                    \
-  REGISTER_PRIMITIVE_W_NAME(_BM_EXTERN_TO_STRING(_##extern_name##_##extern_method_name),  \
-                            _##extern__##_##extern_method_name)
+#define BM_REGISTER_EXTERN_W_NAME_METHOD(extern_name, extern__, extern_method_name, ...) \
+  template <typename... Args>                                                            \
+  struct _##extern_name##_##extern_method_name##_0                                       \
+      : public ::bm::ActionPrimitive<::bm::ExternType *, Args...> {                      \
+    void operator ()(::bm::ExternType *instance, Args... args) override {                \
+      auto lock = instance->_unique_lock();                                              \
+      instance->_set_packet_ptr(&this->get_packet());                                    \
+      dynamic_cast<extern__ *>(instance)->extern_method_name(args...);                   \
+    }                                                                                    \
+  };                                                                                     \
+  struct _##extern_name##_##extern_method_name                                           \
+      : public _##extern_name##_##extern_method_name##_0<__VA_ARGS__> {};                \
+  REGISTER_PRIMITIVE_W_NAME(_BM_EXTERN_TO_STRING(_##extern_name##_##extern_method_name), \
+                            _##extern_name##_##extern_method_name)
 
 #define BM_REGISTER_EXTERN_METHOD(extern_name, extern_method_name, ...)   \
-    BM_REGISTER_EXTERN_W_NAME_METHOD(extern_name, extern_name, extern_method_name, ...)
+  template <typename... Args>                                             \
+  struct _##extern_name##_##extern_method_name##_0                        \
+      : public ::bm::ActionPrimitive<::bm::ExternType *, Args...> {       \
+    void operator ()(::bm::ExternType *instance, Args... args) override { \
+      auto lock = instance->_unique_lock();                               \
+      instance->_set_packet_ptr(&this->get_packet());                     \
+      dynamic_cast<extern_name *>(instance)->extern_method_name(args...); \
+    }                                                                     \
+  };                                                                      \
+  struct _##extern_name##_##extern_method_name                            \
+      : public _##extern_name##_##extern_method_name##_0<__VA_ARGS__> {}; \
+  REGISTER_PRIMITIVE(_##extern_name##_##extern_method_name)
 
 #define BM_EXTERN_ATTRIBUTES void _register_attributes() override
 
