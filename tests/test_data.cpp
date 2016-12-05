@@ -73,6 +73,12 @@ TEST(Data, AddDestIsSrc) {
   ASSERT_EQ((unsigned) 33, d1.get_uint());
 }
 
+TEST(Data, Increment) {
+  Data d1(1);
+  d1.increment();
+  ASSERT_EQ((unsigned) 2, d1,get_uint());
+}
+
 TEST(Data, Add) {
   Data d1(11);
   Data d2(22);

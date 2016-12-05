@@ -218,6 +218,12 @@ class Data {
 
   // TODO(antonin): overload operators for those ?
 
+  void increment() {
+    assert(arith);
+    value++;
+    export_bytes();
+  }
+
   //! NC
   void add(const Data &src1, const Data &src2) {
     assert(src1.arith && src2.arith);
