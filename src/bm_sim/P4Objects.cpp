@@ -648,6 +648,8 @@ P4Objects::init_objects(std::istream *is,
         return 1;
       }
 
+      primitive->_set_p4objects(this);
+
       for (const auto &cfg_parameter : cfg_primitive_parameters) {
         const string type = cfg_parameter["type"].asString();
 

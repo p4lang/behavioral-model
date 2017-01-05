@@ -83,6 +83,7 @@
 #include "counters.h"
 #include "stateful.h"
 #include "expressions.h"
+//#include "P4Objects.h"
 
 namespace bm {
 
@@ -424,6 +425,8 @@ struct unpack_caller {
   }
 };
 
+class P4Objects;
+
 class ActionPrimitive_ {
  public:
   virtual ~ActionPrimitive_() { }
@@ -434,6 +437,10 @@ class ActionPrimitive_ {
 
   virtual size_t get_num_params() = 0;
 
+  void _set_p4objects(P4Objects *p4objects) {
+    p4objects = p4objects;
+  }
+
  protected:
   // This used to be regular members in ActionPrimitive, but there could be a
   // race condition. Making them thread_local solves the issue. I moved these
@@ -442,6 +449,13 @@ class ActionPrimitive_ {
   // (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60056).
   static thread_local Packet *pkt;
   static thread_local PHV *phv;
+
+  P4Objects *get_p4objects() {
+    return p4objects;
+  }
+
+ private:
+  P4Objects *p4objects;
 };
 
 //! This acts as the base class for all target-specific action primitives. It
