@@ -437,7 +437,7 @@ class ActionPrimitive_ {
   virtual size_t get_num_params() = 0;
 
   void _set_p4objects(P4Objects *p4objects) {
-    p4objects = p4objects;
+    this->p4objects = p4objects;
   }
 
  protected:
