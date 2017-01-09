@@ -424,8 +424,6 @@ struct unpack_caller {
   }
 };
 
-class P4Objects;
-
 class ActionPrimitive_ {
  public:
   virtual ~ActionPrimitive_() { }
