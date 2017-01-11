@@ -29,6 +29,7 @@
 #include <functional>
 
 #include <cassert>
+#include <string>
 
 using namespace bm;
 

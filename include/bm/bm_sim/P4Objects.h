@@ -433,7 +433,8 @@ class P4Objects {
   ConfigOptionMap config_options{};
 
   // maps primitive names to primitive instances
-  std::unordered_map<std::string, std::unique_ptr<ActionPrimitive_> > primitives{};
+  std::unordered_map<std::string, std::unique_ptr<ActionPrimitive_>>
+      primitives{};
 
  private:
   int get_field_offset(header_id_t header_id,
@@ -453,7 +454,6 @@ class P4Objects {
 
   std::unique_ptr<Calculation> process_cfg_selector(
       const Json::Value &cfg_selector) const;
-
 };
 
 }  // namespace bm

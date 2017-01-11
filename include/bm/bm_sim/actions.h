@@ -595,7 +595,9 @@ class ActionFnEntry {
   ActionFnEntry(const ActionFnEntry &other) = default;
   ActionFnEntry &operator=(const ActionFnEntry &other) = default;
 
+  // NOLINTNEXTLINE(whitespace/operators)
   ActionFnEntry(ActionFnEntry &&other) /*noexcept*/ = default;
+  // NOLINTNEXTLINE(whitespace/operators)
   ActionFnEntry &operator=(ActionFnEntry &&other) /*noexcept*/ = default;
 
  private:
