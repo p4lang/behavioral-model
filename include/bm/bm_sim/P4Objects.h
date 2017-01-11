@@ -216,6 +216,9 @@ class P4Objects {
 
   bool header_exists(const std::string &header_name) const;
 
+  // public to be accessed by test class
+  ActionPrimitive_ *get_primitive(const std::string &name);
+
   ConfigOptionMap get_config_options() const;
 
   // public to be accessed by test class
@@ -429,6 +432,9 @@ class P4Objects {
 
   ConfigOptionMap config_options{};
 
+  // maps primitive names to primitive instances
+  std::unordered_map<std::string, std::unique_ptr<ActionPrimitive_> > primitives{};
+
  private:
   int get_field_offset(header_id_t header_id,
                        const std::string &field_name) const;
@@ -447,6 +453,7 @@ class P4Objects {
 
   std::unique_ptr<Calculation> process_cfg_selector(
       const Json::Value &cfg_selector) const;
+
 };
 
 }  // namespace bm
