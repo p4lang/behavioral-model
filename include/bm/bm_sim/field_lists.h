@@ -30,7 +30,7 @@
 #include <vector>
 #include <unordered_set>
 
-#include "phv.h"
+#include "phv_forward.h"
 
 namespace bm {
 
@@ -63,12 +63,12 @@ class FieldList {
   };
 
  public:
-  typedef boost::variant<field_t, constant_t> field_list_member_t;
-  typedef std::vector<field_list_member_t>::iterator iterator;
-  typedef std::vector<field_list_member_t>::const_iterator const_iterator;
-  typedef std::vector<field_list_member_t>::reference reference;
-  typedef std::vector<field_list_member_t>::const_reference const_reference;
-  typedef size_t size_type;
+  using field_list_member_t = boost::variant<field_t, constant_t>;
+  using iterator = std::vector<field_list_member_t>::iterator;
+  using const_iterator = std::vector<field_list_member_t>::const_iterator;
+  using reference = std::vector<field_list_member_t>::reference;
+  using const_reference = std::vector<field_list_member_t>::const_reference;
+  using size_type = size_t;
 
  public:
   void push_back_field(header_id_t header, int field_offset) {

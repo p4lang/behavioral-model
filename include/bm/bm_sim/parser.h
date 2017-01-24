@@ -30,16 +30,17 @@
 
 #include <cassert>
 
-#include "packet.h"
 #include "phv.h"
 #include "named_p4object.h"
-#include "event_logger.h"
-#include "logger.h"
-#include "expressions.h"
 #include "stateful.h"
 #include "parser_error.h"
 
 namespace bm {
+
+class Packet;
+
+class BoolExpression;
+class ArithExpression;
 
 struct field_t {
   header_id_t header;
@@ -265,7 +266,8 @@ class ParseState : public NamedP4Object {
   void add_set_from_expression(header_id_t dst_header, int dst_offset,
                                const ArithExpression &expr);
 
-  void add_verify(const BoolExpression &condition, const ErrorCode &error);
+  void add_verify(const BoolExpression &condition,
+                  const ArithExpression &error_expr);
 
   void set_key_builder(const ParseSwitchKeyBuilder &builder);
 

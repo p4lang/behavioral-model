@@ -26,18 +26,17 @@
 #include <string>
 #include <memory>
 
-#include "packet.h"
-#include "phv.h"
-#include "pipeline.h"
-#include "checksums.h"
+#include "phv_forward.h"
 #include "transport.h"
 
 namespace bm {
 
-/* Forward declarations of P4 object classes. This is ugly, but:
-   1) I don't have to worry about circular dependencies
-   2) If I decide to switch from id to name for msgs, I won't have to modify the
-   EventLogger interface */
+class Packet;
+
+// Forward declarations of P4 object classes. This is ugly, but:
+// 1) I don't have to worry about circular dependencies
+// 2) If I decide to switch from id to name for msgs, I won't have to modify the
+// EventLogger interface
 class Parser;
 class Deparser;
 class MatchTableAbstract;
@@ -46,9 +45,9 @@ class ActionFn;
 struct ActionData;
 class Conditional;
 class Checksum;
-class ActionFn;
+class Pipeline;
 
-typedef uint32_t entry_handle_t;
+using entry_handle_t = uint32_t;
 
 //! Signals significant packet event by publishing a message on a
 //! transport. This is meant to be used with the nanomsg PUB/SUB transport.

@@ -21,6 +21,9 @@
 #include <gtest/gtest.h>
 
 #include <bm/bm_sim/meters.h>
+#include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/phv.h>
+#include <bm/bm_sim/phv_source.h>
 
 #include <thread>
 #include <chrono>
@@ -36,9 +39,9 @@ using std::this_thread::sleep_until;
 // Google Test fixture for meters tests
 class MetersTest : public ::testing::Test {
  protected:
-  typedef std::chrono::high_resolution_clock clock;
-  typedef Meter::MeterType MeterType;
-  typedef Meter::color_t color_t;
+  using clock = std::chrono::high_resolution_clock;
+  using MeterType = Meter::MeterType;
+  using color_t = Meter::color_t;
 
  protected:
   PHVFactory phv_factory;

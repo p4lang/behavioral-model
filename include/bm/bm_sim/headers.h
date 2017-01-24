@@ -30,13 +30,14 @@
 
 #include "fields.h"
 #include "named_p4object.h"
-#include "expressions.h"
+#include "phv_forward.h"
 
 namespace bm {
 
-typedef p4object_id_t header_type_id_t;
+using header_type_id_t = p4object_id_t;
 
-class PHV;
+class VLHeaderExpression;
+class ArithExpression;
 
 class HeaderType : public NamedP4Object {
  public:
@@ -110,17 +111,9 @@ class HeaderType : public NamedP4Object {
     return (VL_expr_raw != nullptr);
   }
 
-  std::unique_ptr<ArithExpression> resolve_VL_expr(
-      header_id_t header_id) const {
-    if (!is_VL_header()) return nullptr;
-    std::unique_ptr<ArithExpression> expr(new ArithExpression());
-    *expr = VL_expr_raw->resolve(header_id);
-    return expr;
-  }
+  std::unique_ptr<ArithExpression> resolve_VL_expr(header_id_t header_id) const;
 
-  const std::vector<int> &get_VL_input_offsets() const {
-    return VL_expr_raw->get_input_offsets();
-  }
+  const std::vector<int> &get_VL_input_offsets() const;
 
   int get_VL_offset() const {
     return VL_offset;
@@ -137,11 +130,11 @@ class HeaderType : public NamedP4Object {
 //! objects.
 class Header : public NamedP4Object {
  public:
-  typedef std::vector<Field>::iterator iterator;
-  typedef std::vector<Field>::const_iterator const_iterator;
-  typedef std::vector<Field>::reference reference;
-  typedef std::vector<Field>::const_reference const_reference;
-  typedef size_t size_type;
+  using iterator = std::vector<Field>::iterator;
+  using const_iterator = std::vector<Field>::const_iterator;
+  using reference = std::vector<Field>::reference;
+  using const_reference = std::vector<Field>::const_reference;
+  using size_type = size_t;
 
   friend class PHV;
 

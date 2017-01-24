@@ -23,6 +23,7 @@
 
 #include <string>
 #include <vector>
+#include <iosfwd>
 
 #include "action_profile.h"
 #include "match_tables.h"
@@ -31,11 +32,11 @@ namespace bm {
 
 class RuntimeInterface {
  public:
-  typedef MatchTableIndirect::mbr_hdl_t mbr_hdl_t;
-  typedef MatchTableIndirectWS::grp_hdl_t grp_hdl_t;
+  using mbr_hdl_t = MatchTableIndirect::mbr_hdl_t;
+  using grp_hdl_t = MatchTableIndirectWS::grp_hdl_t;
 
-  typedef Meter::MeterErrorCode MeterErrorCode;
-  typedef Register::RegisterErrorCode RegisterErrorCode;
+  using MeterErrorCode = Meter::MeterErrorCode;
+  using RegisterErrorCode = Register::RegisterErrorCode;
 
   enum ErrorCode {
     SUCCESS = 0,

@@ -61,20 +61,23 @@
 #include <tuple>
 #include <vector>
 #include <algorithm>   // for std::copy
-#include <ostream>
+#include <iosfwd>
 
 #include "boost/variant.hpp"
 
-#include "phv.h"
-#include "packet.h"
+#include "bytecontainer.h"
+#include "named_p4object.h"
+#include "phv_forward.h"
 
 namespace bm {
+
+class Packet;
 
 /* Used to determine whether a class overloads the '()' operator */
 template <typename T>
 struct defines_functor_operator {
-  typedef char (& yes)[1];
-  typedef char (& no)[2];
+  using yes = char (&)[1];
+  using no = char (&)[2];
 
   // we need a template here to enable SFINAE
   template <typename U>
@@ -137,8 +140,8 @@ struct check_functor_signature {
 template <typename H>
 struct HashChecker<true, H> {
  private:
-  typedef typename callable_traits<H>::return_type return_type;
-  typedef typename callable_traits<H>::argument_type argument_type;
+  using return_type = typename callable_traits<H>::return_type;
+  using argument_type = typename callable_traits<H>::argument_type;
 
   static bool constexpr v1 = std::is_unsigned<return_type>::value;
   static bool constexpr v2 =
@@ -202,7 +205,7 @@ class RawCalculation
     return ptr;
   }
 
-  typedef HashChecker<defines_functor_operator<HashFn>::value, HashFn> HC;
+  using HC = HashChecker<defines_functor_operator<HashFn>::value, HashFn>;
 
   static_assert(defines_functor_operator<HashFn>::value,
                 "HashFn needs to overload '()' operator");
@@ -284,7 +287,7 @@ class Calculation_ {
 
 class CalculationsMap {
  public:
-  typedef RawCalculationIface<uint64_t> MyC;
+  using MyC = RawCalculationIface<uint64_t>;
 
   static CalculationsMap *get_instance();
   bool register_one(const char *name, std::unique_ptr<MyC> c);
@@ -351,26 +354,28 @@ enum class CustomCrcErrorCode {
   INVALID_CONFIG,
 };
 
+namespace detail {
+
+template <typename T>
+struct crc_config_t {
+  T polynomial;
+  T initial_remainder;
+  T final_xor_value;
+  bool data_reflected;
+  bool remainder_reflected;
+};
+
+template <typename T>
+std::ostream &operator<<(std::ostream &out, const crc_config_t<T> &c);
+
+}  // namespace detail
+
 // can be used for crc16, with T == uint16_t
 // can be used for crc32, with T uint32_t
 template <typename T>
 class CustomCrcMgr {
  public:
-  struct crc_config_t {
-    T polynomial;
-    T initial_remainder;
-    T final_xor_value;
-    bool data_reflected;
-    bool remainder_reflected;
-
-    friend std::ostream &operator<<(std::ostream &out, const crc_config_t &c) {
-      out << "polynomial: " << c.polynomial << ", initial_remainder: "
-          << c.initial_remainder << ", final_xor_value: " << c.final_xor_value
-          << ", data_reflected: " << c.data_reflected
-          << ", remainder_reflected: " << c.remainder_reflected;
-      return out;
-    }
-  };
+  using crc_config_t = detail::crc_config_t<T>;
 
   static CustomCrcErrorCode update_config(NamedCalculation *calculation,
                                           const crc_config_t &config);

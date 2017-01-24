@@ -70,7 +70,7 @@
 #include <memory>
 #include <unordered_map>
 #include <string>
-#include <iostream>
+#include <iosfwd>
 #include <limits>
 #include <tuple>
 
@@ -78,16 +78,18 @@
 
 #include "phv.h"
 #include "named_p4object.h"
-#include "packet.h"
-#include "calculations.h"
-#include "meters.h"
-#include "counters.h"
-#include "stateful.h"
 #include "expressions.h"
+#include "stateful.h"
 
 namespace bm {
 
 class P4Objects;  // forward declaration for deserialize
+
+// some forward declarations for needed p4 objects
+class Packet;
+class NamedCalculation;
+class MeterArray;
+class CounterArray;
 
 // forward declaration of ActionPrimitive_
 class ActionPrimitive_;
@@ -97,8 +99,8 @@ class ActionPrimitive_;
 // them in this map using the REGISTER_PRIMITIVE(primitive_name) macro.
 class ActionOpcodesMap {
  public:
-  typedef std::function<std::unique_ptr<ActionPrimitive_>()>
-      ActionPrimitiveFactoryFn;
+  using ActionPrimitiveFactoryFn =
+      std::function<std::unique_ptr<ActionPrimitive_>()>;
   static ActionOpcodesMap *get_instance();
   bool register_primitive(const char *name, ActionPrimitiveFactoryFn primitive);
 
@@ -158,9 +160,7 @@ struct ActionEngineState {
 
   ActionEngineState(Packet *pkt,
                     const ActionData &action_data,
-                    const std::vector<Data> &const_values)
-    : pkt(*pkt), phv(*pkt->get_phv()),
-      action_data(action_data), const_values(const_values) {}
+                    const std::vector<Data> &const_values);
 };
 
 class ExternType;

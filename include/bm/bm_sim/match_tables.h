@@ -26,12 +26,11 @@
 
 #include <vector>
 #include <type_traits>
-#include <iostream>
+#include <iosfwd>
 #include <string>
 
 #include "match_units.h"
 #include "actions.h"
-#include "calculations.h"
 #include "control_flow.h"
 #include "lookup_structures.h"
 #include "action_entry.h"

@@ -18,31 +18,33 @@
  *
  */
 
-#include <bm/bm_sim/conditionals.h>
-#include <bm/bm_sim/event_logger.h>
-#include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/tables.h>
+#include <bm/bm_sim/debugger.h>
+#include <bm/bm_sim/logger.h>
 
-#include <cassert>
+#include <string>
 
 namespace bm {
 
+MatchActionTable::MatchActionTable(
+    const std::string &name, p4object_id_t id,
+    std::unique_ptr<MatchTableAbstract> match_table)
+    : ControlFlowNode(name, id),
+      match_table(std::move(match_table)) { }
+
 const ControlFlowNode *
-Conditional::operator()(Packet *pkt) const {
+MatchActionTable::operator()(Packet *pkt) const {
   // TODO(antonin)
   // this is temporary while we experiment with the debugger
   DEBUGGER_NOTIFY_CTR(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
-      DBG_CTR_CONDITION | get_id());
-  PHV *phv = pkt->get_phv();
-  bool result = eval(*phv);
-  BMELOG(condition_eval, *pkt, *this, result);
-  DEBUGGER_NOTIFY_UPDATE_V(
-      Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
-      Debugger::FIELD_COND, result);
+      DBG_CTR_TABLE | get_id());
+  BMLOG_TRACE_PKT(*pkt, "Applying table '{}'", get_name());
+  const auto next = match_table->apply_action(pkt);
   DEBUGGER_NOTIFY_CTR(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
-      DBG_CTR_EXIT(DBG_CTR_CONDITION) | get_id());
-  return result ? true_next : false_next;
+      DBG_CTR_EXIT(DBG_CTR_TABLE) | get_id());
+  return next;
 }
 
 }  // namespace bm

@@ -21,6 +21,9 @@
 #include <gtest/gtest.h>
 
 #include <bm/bm_sim/counters.h>
+#include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/phv.h>
+#include <bm/bm_sim/phv_source.h>
 
 #include <random>
 
@@ -29,7 +32,7 @@ using namespace bm;
 // Google Test fixture for counter tests
 class CountersTest : public ::testing::Test {
  protected:
-  typedef Counter::counter_value_t counter_value_t;
+  using counter_value_t = Counter::counter_value_t;
 
  protected:
   PHVFactory phv_factory;

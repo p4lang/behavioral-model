@@ -19,7 +19,10 @@
  */
 
 #include <bm/bm_sim/P4Objects.h>
+#include <bm/bm_sim/phv.h>
 
+#include <istream>
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -540,16 +543,24 @@ P4Objects::init_objects(std::istream *is,
           }
         } else if (op_type == "verify") {
           assert(cfg_parameters.size() == 2);
-          BoolExpression expr;
-          build_expression(cfg_parameters[0], &expr);
-          expr.build();
-          auto error_code = static_cast<ErrorCode::type_t>(
-              cfg_parameters[1].asInt());
-          if (!error_codes.exists(error_code)) {
-            outstream << "Invalid error code in verify statement\n";
-            return 1;
+          BoolExpression cond_expr;
+          build_expression(cfg_parameters[0], &cond_expr);
+          cond_expr.build();
+          ArithExpression error_expr;
+          const auto &j_error_expr = cfg_parameters[1];
+          if (j_error_expr.isInt()) {  // backward-compatibility
+            auto error_code =  static_cast<ErrorCode::type_t>(
+                j_error_expr.asInt());
+            if (!error_codes.exists(error_code)) {
+              outstream << "Invalid error code in verify statement\n";
+              return 1;
+            }
+            error_expr.push_back_load_const(Data(error_code));
+          } else {
+            build_expression(j_error_expr, &error_expr);
           }
-          parse_state->add_verify(expr, ErrorCode(error_code));
+          error_expr.build();
+          parse_state->add_verify(cond_expr, error_expr);
         } else {
           assert(0 && "parser op not supported");
         }
@@ -1633,6 +1644,141 @@ const std::string &
 P4Objects::get_enum_name(const std::string &enum_name,
                          EnumMap::type_t entry_value) const {
   return enums.to_name(enum_name, entry_value);
+}
+
+void
+P4Objects::add_header_type(const std::string &name,
+                           std::unique_ptr<HeaderType> header_type) {
+  header_types_map[name] = std::move(header_type);
+}
+
+HeaderType *
+P4Objects::get_header_type(const std::string &name) {
+  return header_types_map.at(name).get();
+}
+
+void
+P4Objects::add_header_id(const std::string &name, header_id_t header_id) {
+  header_ids_map[name] = header_id;
+}
+
+void
+P4Objects::add_header_stack_id(const std::string &name,
+                               header_stack_id_t header_stack_id) {
+  header_stack_ids_map[name] = header_stack_id;
+}
+
+header_id_t
+P4Objects::get_header_id(const std::string &name) const {
+  return header_ids_map.at(name);
+}
+
+header_stack_id_t
+P4Objects::get_header_stack_id(const std::string &name) const {
+  return header_stack_ids_map.at(name);
+}
+
+void
+P4Objects::add_action(p4object_id_t id, std::unique_ptr<ActionFn> action) {
+  actions_map[id] = std::move(action);
+}
+
+void
+P4Objects::add_action_to_table(
+    const std::string &table_name,
+    const std::string &action_name, ActionFn *action) {
+  t_actions_map[std::make_pair(table_name, action_name)] = action;
+}
+
+void
+P4Objects::add_action_to_act_prof(const std::string &act_prof_name,
+                                  const std::string &action_name,
+                                  ActionFn *action) {
+  aprof_actions_map[std::make_pair(act_prof_name, action_name)] = action;
+}
+
+void
+P4Objects::add_parser(const std::string &name, std::unique_ptr<Parser> parser) {
+  parsers[name] = std::move(parser);
+}
+
+void
+P4Objects::add_parse_vset(const std::string &name,
+                          std::unique_ptr<ParseVSet> parse_vset) {
+  parse_vsets[name] = std::move(parse_vset);
+}
+
+void
+P4Objects::add_deparser(const std::string &name,
+                        std::unique_ptr<Deparser> deparser) {
+  deparsers[name] = std::move(deparser);
+}
+
+void
+P4Objects::add_match_action_table(const std::string &name,
+                                  std::unique_ptr<MatchActionTable> table) {
+  add_control_node(name, table.get());
+  match_action_tables_map[name] = std::move(table);
+}
+
+void
+P4Objects::add_action_profile(const std::string &name,
+                              std::unique_ptr<ActionProfile> action_profile) {
+  action_profiles_map[name] = std::move(action_profile);
+}
+
+void
+P4Objects::add_conditional(const std::string &name,
+                           std::unique_ptr<Conditional> conditional) {
+  add_control_node(name, conditional.get());
+  conditionals_map[name] = std::move(conditional);
+}
+
+void
+P4Objects::add_control_node(const std::string &name, ControlFlowNode *node) {
+  control_nodes_map[name] = node;
+}
+
+void
+P4Objects::add_pipeline(const std::string &name,
+                        std::unique_ptr<Pipeline> pipeline) {
+  pipelines_map[name] = std::move(pipeline);
+}
+
+void
+P4Objects::add_meter_array(const std::string &name,
+                           std::unique_ptr<MeterArray> meter_array) {
+  meter_arrays[name] = std::move(meter_array);
+}
+
+void
+P4Objects::add_counter_array(const std::string &name,
+                             std::unique_ptr<CounterArray> counter_array) {
+  counter_arrays[name] = std::move(counter_array);
+}
+
+void
+P4Objects::add_register_array(const std::string &name,
+                              std::unique_ptr<RegisterArray> register_array) {
+  register_arrays[name] = std::move(register_array);
+}
+
+void
+P4Objects::add_named_calculation(
+    const std::string &name, std::unique_ptr<NamedCalculation> calculation) {
+  calculations[name] = std::move(calculation);
+}
+
+void
+P4Objects::add_field_list(const p4object_id_t field_list_id,
+                          std::unique_ptr<FieldList> field_list) {
+  field_lists[field_list_id] = std::move(field_list);
+}
+
+void
+P4Objects::add_extern_instance(const std::string &name,
+                               std::unique_ptr<ExternType> extern_instance) {
+  extern_instances[name] = std::move(extern_instance);
 }
 
 }  // namespace bm

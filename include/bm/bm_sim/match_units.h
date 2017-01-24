@@ -24,20 +24,20 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <iostream>
 #include <atomic>
 #include <utility>  // for pair<>
 #include <memory>
+#include <iosfwd>
 
 #include "match_key_types.h"
 #include "match_error_codes.h"
 #include "lookup_structures.h"
 #include "bytecontainer.h"
-#include "phv.h"
 #include "packet.h"
 #include "handle_mgr.h"
 #include "counters.h"
 #include "meters.h"
+#include "phv_forward.h"
 
 namespace bm {
 
@@ -206,7 +206,7 @@ struct AtomicTimestamp {
 };
 
 struct EntryMeta {
-  typedef Packet::clock clock;
+  using clock = Packet::clock;
 
   AtomicTimestamp ts{};
   uint32_t timeout_ms{0};
@@ -436,7 +436,7 @@ class MatchUnitAbstract : public MatchUnitAbstract_ {
 template <typename K, typename V>
 class MatchUnitGeneric : public MatchUnitAbstract<V> {
  public:
-  typedef typename MatchUnitAbstract<V>::MatchUnitLookup MatchUnitLookup;
+  using MatchUnitLookup = typename MatchUnitAbstract<V>::MatchUnitLookup;
   struct Entry {
     Entry() {}
     Entry(K key, V value)

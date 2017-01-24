@@ -20,12 +20,15 @@
 
 #include <bm/bm_sim/calculations.h>
 #include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/phv.h>
 
 #include <netinet/in.h>
 
 #include <string>
 #include <algorithm>
 #include <mutex>
+#include <ostream>
 
 #include "xxhash.h"
 #include "crc_tables.h"
@@ -195,7 +198,7 @@ template <typename T>
 struct crc_custom {
   static constexpr size_t width = sizeof(T) * 8;
   static constexpr size_t kTEntries = 256u;
-  typedef typename CustomCrcMgr<T>::crc_config_t crc_config_t;
+  using crc_config_t = typename CustomCrcMgr<T>::crc_config_t;
 
   crc_custom() {
     std::memcpy(crc_table, crc_custom_init<T>::crc_table, sizeof(crc_table));
@@ -354,10 +357,23 @@ REGISTER_HASH(cksum16);
 REGISTER_HASH(csum16);
 REGISTER_HASH(identity);
 
-typedef crc_custom<uint16_t> crc16_custom;
+using crc16_custom = crc_custom<uint16_t>;
 REGISTER_HASH(crc16_custom);
-typedef crc_custom<uint32_t> crc32_custom;
+using crc32_custom = crc_custom<uint32_t>;
 REGISTER_HASH(crc32_custom);
+
+namespace detail {
+
+template <typename T>
+std::ostream &operator<<(std::ostream &out, const crc_config_t<T> &c) {
+  out << "polynomial: " << c.polynomial << ", initial_remainder: "
+      << c.initial_remainder << ", final_xor_value: " << c.final_xor_value
+      << ", data_reflected: " << c.data_reflected
+      << ", remainder_reflected: " << c.remainder_reflected;
+  return out;
+}
+
+}  // namespace detail
 
 template <typename T>
 CustomCrcErrorCode
@@ -373,7 +389,7 @@ template <typename T>
 CustomCrcErrorCode
 CustomCrcMgr<T>::update_config(RawCalculationIface<uint64_t> *c,
                                const crc_config_t &config) {
-  typedef RawCalculation<uint64_t, crc_custom<T> > ExpectedCType;
+  using ExpectedCType = RawCalculation<uint64_t, crc_custom<T> >;
   auto raw_c = dynamic_cast<ExpectedCType *>(c);
   if (!raw_c) return CustomCrcErrorCode::WRONG_TYPE_CALCULATION;
   raw_c->get_hash_fn().update_config(config);

@@ -20,7 +20,9 @@
 
 #include <bm/bm_sim/action_profile.h>
 #include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/packet.h>
 
+#include <iostream>
 #include <string>
 #include <vector>
 
