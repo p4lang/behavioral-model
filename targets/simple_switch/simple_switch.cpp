@@ -268,8 +268,12 @@ SimpleSwitch::copy_ingress_pkt(
   FieldList *field_list = this->get_field_list(field_list_id);
   const PHV *phv = packet->get_phv();
   for (const auto &p : *field_list) {
-    phv_copy->get_field(p.header, p.offset)
-        .set(phv->get_field(p.header, p.offset));
+    if (p.type() == typeid(FieldList::field_t)) {
+      auto f = boost::get<FieldList::field_t>(p);
+      phv_copy->get_field(f.header, f.offset)
+          .set(phv->get_field(f.header, f.offset));
+    }
+    // TODO(pierce): is handling constant type meaningful here?
   }
   phv_copy->get_field("standard_metadata.instance_type").set(copy_type);
   return packet_copy;
@@ -476,8 +480,11 @@ SimpleSwitch::egress_thread(size_t worker_id) {
         PHV *phv_copy = packet_copy->get_phv();
         FieldList *field_list = this->get_field_list(field_list_id);
         for (const auto &p : *field_list) {
-          phv_copy->get_field(p.header, p.offset)
-            .set(phv->get_field(p.header, p.offset));
+          if (p.type() == typeid(FieldList::field_t)) {
+            auto f = boost::get<FieldList::field_t>(p);
+            phv_copy->get_field(f.header, f.offset)
+              .set(phv->get_field(f.header, f.offset));
+          }
         }
         phv_copy->get_field("standard_metadata.instance_type")
             .set(PKT_INSTANCE_TYPE_EGRESS_CLONE);
@@ -508,8 +515,11 @@ SimpleSwitch::egress_thread(size_t worker_id) {
         PHV *phv_copy = packet_copy->get_phv();
         phv_copy->reset_metadata();
         for (const auto &p : *field_list) {
-          phv_copy->get_field(p.header, p.offset)
-              .set(phv->get_field(p.header, p.offset));
+          if (p.type() == typeid(FieldList::field_t)) {
+            auto f = boost::get<FieldList::field_t>(p);
+            phv_copy->get_field(f.header, f.offset)
+                .set(phv->get_field(f.header, f.offset));
+          }
         }
         phv_copy->get_field("standard_metadata.instance_type")
             .set(PKT_INSTANCE_TYPE_RECIRC);

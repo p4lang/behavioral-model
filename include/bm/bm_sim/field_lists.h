@@ -24,6 +24,7 @@
 #define BM_BM_SIM_FIELD_LISTS_H_
 
 #include <boost/functional/hash.hpp>
+#include <boost/variant.hpp>
 
 #include <utility>  // for pair<>
 #include <vector>
@@ -46,23 +47,40 @@ class FieldList {
     bool operator==(const field_t& other) const {
       return header == other.header && offset == other.offset;
     }
-
     bool operator!=(const field_t& other) const {
       return !(*this == other);
     }
   };
 
+  struct constant_t {
+    int value;
+    bool operator==(const constant_t& other) const {
+      return value == other.value;
+    }
+    bool operator!=(const constant_t& other) const {
+      return !(*this == other);
+    }
+  };
+
  public:
-  typedef std::vector<field_t>::iterator iterator;
-  typedef std::vector<field_t>::const_iterator const_iterator;
-  typedef std::vector<field_t>::reference reference;
-  typedef std::vector<field_t>::const_reference const_reference;
+  typedef boost::variant<field_t, constant_t> field_list_member_t;
+  typedef std::vector<field_list_member_t>::iterator iterator;
+  typedef std::vector<field_list_member_t>::const_iterator const_iterator;
+  typedef std::vector<field_list_member_t>::reference reference;
+  typedef std::vector<field_list_member_t>::const_reference const_reference;
   typedef size_t size_type;
 
  public:
   void push_back_field(header_id_t header, int field_offset) {
-    fields.push_back({header, field_offset});
-    fields_set.insert({header, field_offset});
+    field_t f = {header, field_offset};
+    fields.push_back(field_list_member_t(f));
+    fields_set.insert(field_list_member_t(f));
+  }
+
+  void push_back_constant(int value) {
+    constant_t c = {value};
+    fields.push_back(field_list_member_t(c));
+    fields_set.insert(field_list_member_t(c));
   }
 
   // iterators
@@ -82,24 +100,30 @@ class FieldList {
   //! Returns true if the FieldList contains the given field, identified by the
   //! header id and the offset of the field in the header
   bool contains(header_id_t header, int field_offset) const {
-    auto it = fields_set.find({header, field_offset});
+    field_t f = {header, field_offset};
+    auto it = fields_set.find(field_list_member_t(f));
     return it != fields_set.end();
   }
 
  private:
   struct FieldKeyHash {
-    std::size_t operator()(const field_t& f) const {
+    std::size_t operator()(const field_list_member_t& flm) const {
       std::size_t seed = 0;
-      boost::hash_combine(seed, f.header);
-      boost::hash_combine(seed, f.offset);
-
+      if (flm.type() == typeid(field_t)) {
+        field_t f = boost::get<field_t>(flm);
+        boost::hash_combine(seed, f.header);
+        boost::hash_combine(seed, f.offset);
+      } else if (flm.type() == typeid(constant_t)) {
+        constant_t c = boost::get<constant_t>(flm);
+        boost::hash_combine(seed, c.value);
+      }
       return seed;
     }
   };
 
  private:
-  std::vector<field_t> fields{};
-  std::unordered_set<field_t, FieldKeyHash> fields_set{};
+  std::vector<field_list_member_t> fields{};
+  std::unordered_set<field_list_member_t, FieldKeyHash> fields_set{};
 };
 
 }  // namespace bm
