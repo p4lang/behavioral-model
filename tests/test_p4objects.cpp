@@ -534,7 +534,7 @@ class JsonBuilder {
     enums.append(enum_);
   }
 
-  // adds a constant and f8 field from table_name to field_list fl_name 
+  // adds a constant and f8 field from table_name to field_list fl_name
   void add_field_list(const std::string &fl_name,
                       const std::string &table_name) {
     auto &field_lists = json["field_lists"];
@@ -551,7 +551,7 @@ class JsonBuilder {
     elements.append(f1);
     Json::Value constant_field(Json::objectValue);
     constant_field["type"] = "hexstr";
-    constant_field["value"] = "0x1"; 
+    constant_field["value"] = "0x1";
     elements.append(constant_field);
     fl["elements"] = elements;
     field_lists.append(fl);
