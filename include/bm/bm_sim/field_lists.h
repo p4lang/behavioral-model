@@ -54,8 +54,10 @@ class FieldList {
 
   struct constant_t {
     int value;
+    size_t nbits;
+
     bool operator==(const constant_t& other) const {
-      return value == other.value;
+      return value == other.value && nbits == other.nbits;
     }
     bool operator!=(const constant_t& other) const {
       return !(*this == other);
@@ -77,8 +79,8 @@ class FieldList {
     fields_set.insert(field_list_member_t(f));
   }
 
-  void push_back_constant(int value) {
-    constant_t c = {value};
+  void push_back_constant(int value, size_t nbits) {
+    constant_t c = {value, nbits};
     fields.push_back(field_list_member_t(c));
     fields_set.insert(field_list_member_t(c));
   }
@@ -116,6 +118,7 @@ class FieldList {
       } else if (flm.type() == typeid(constant_t)) {
         constant_t c = boost::get<constant_t>(flm);
         boost::hash_combine(seed, c.value);
+        boost::hash_combine(seed, c.nbits);
       }
       return seed;
     }

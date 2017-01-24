@@ -560,6 +560,7 @@ class JsonBuilder {
     Json::Value constant_field(Json::objectValue);
     constant_field["type"] = "hexstr";
     constant_field["value"] = "0x1";
+    constant_field["bitwidth"] = 8;
     elements.append(constant_field);
     fl["elements"] = elements;
     field_lists.append(fl);
