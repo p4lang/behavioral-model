@@ -34,8 +34,6 @@
 #include "phv_forward.h"
 #include "bytecontainer.h"
 
-using bm::ByteContainer;
-
 namespace bm {
 
 //! Corresponds to a `field_list` object in P4 v1.0.2. Some targets -this is the
