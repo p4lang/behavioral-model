@@ -1326,7 +1326,9 @@ P4Objects::init_objects(std::istream *is,
         field_list->push_back_field(header_id, field_offset);
       } else if (type == "hexstr") {
         const Json::Value &cfg_value_hexstr = cfg_element["value"];
-        field_list->push_back_constant(cfg_value_hexstr.asString());
+        const Json::Value &cfg_value_bitwidth = cfg_element["bitwidth"];
+        field_list->push_back_constant(
+            cfg_value_hexstr.asString(), cfg_value_bitwidth.asInt());
       } else {
         assert(0);  // TODO(antonin): other types
       }

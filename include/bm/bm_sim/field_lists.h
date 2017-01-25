@@ -56,6 +56,7 @@ class FieldList {
 
   struct constant_t {
     ByteContainer value;
+    size_t bitwidth;
 
     bool operator==(const constant_t& other) const {
       return value == other.value;
@@ -77,8 +78,8 @@ class FieldList {
     fields_set.insert(f);
   }
 
-  void push_back_constant(const std::string &hexstr) {
-    constant_t c = {ByteContainer(hexstr)};
+  void push_back_constant(const std::string &hexstr, size_t bitwidth) {
+    constant_t c = {ByteContainer(hexstr), bitwidth};
     fields.push_back(field_list_member_t(c));
   }
 
