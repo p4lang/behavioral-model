@@ -1096,9 +1096,12 @@ TEST_F(IPv4TLVParsingTest, BothOptions) {
 }
 
 
+using ::testing::TestWithParam;
+using ::testing::Range;
+
 // Google Test fixture for IPv4 Variable Length parsing test
 // This test parses the options as one VL field
-class IPv4VLParsingTest : public ::testing::Test {
+class IPv4VLParsingTest : public TestWithParam<int> {
  protected:
   PHVFactory phv_factory;
 
@@ -1218,52 +1221,31 @@ class IPv4VLParsingTest : public ::testing::Test {
     ASSERT_EQ(v, f_options.get_bytes());
   }
 
-  template<size_t OptionWords>
-  void test() {
-    const ByteContainer buf = get_ipv4_bytes(OptionWords);
-    Packet packet = get_pkt(buf);
-    const PHV &phv = *packet.get_phv();
-
-    parser.parse(&packet);
-
-    check_base(phv, OptionWords);
-    ByteContainer expected_value = option_value(OptionWords);
-    check_option(phv, OptionWords, expected_value);
-  }
-
   // virtual void TearDown() { }
 };
 
-TEST_F(IPv4VLParsingTest, NoOption) {
-  test<0u>();
-}
+TEST_P(IPv4VLParsingTest, ParseAndDeparse) {
+  const auto OptionWords = GetParam();
 
-TEST_F(IPv4VLParsingTest, SmallOption) {
-  test<3u>();
-}
-
-TEST_F(IPv4VLParsingTest, BigOption) {
-  test<9u>();  // max value
-}
-
-TEST_F(IPv4VLParsingTest, Deparser) {
-  const size_t option_words = 4;
-  const ByteContainer buf = get_ipv4_bytes(option_words);
+  const ByteContainer buf = get_ipv4_bytes(OptionWords);
   const ByteContainer buf_save = buf;
   Packet packet = get_pkt(buf);
   const PHV &phv = *packet.get_phv();
 
   parser.parse(&packet);
 
-  check_base(phv, option_words);
-  ByteContainer expected_value = option_value(option_words);
-  check_option(phv, option_words, expected_value);
+  check_base(phv, OptionWords);
+  ByteContainer expected_value = option_value(OptionWords);
+  check_option(phv, OptionWords, expected_value);
 
   deparser.deparse(&packet);
 
   ASSERT_EQ(buf_save.size(), packet.get_data_size());
   ASSERT_EQ(0, memcmp(buf_save.data(), packet.data(), buf_save.size()));
 }
+
+INSTANTIATE_TEST_CASE_P(IPv4VLOptionWords, IPv4VLParsingTest,
+                        Range(0, 10));
 
 
 class ParseVSetTest : public ::testing::Test {
