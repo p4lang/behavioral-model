@@ -99,14 +99,17 @@ class TableSizeTwo : public ::testing::Test {
 
   HeaderType testHeaderType;
   header_id_t testHeader1{0}, testHeader2{1};
-  ActionFn action_fn;
+  p4object_id_t action_id{0}, action_id_1{1};
+  ActionFn action_fn, action_fn_1;
 
   std::unique_ptr<PHVSourceIface> phv_source{nullptr};
 
   DummyNode node_miss_default{};
 
   TableSizeTwo()
-      : testHeaderType("test_t", 0), action_fn("actionA", 0),
+      : testHeaderType("test_t", 0),
+        action_fn("action", action_id, 0  /* no param */),
+        action_fn_1("action_1", action_id_1, 1  /* 1 param */),
         phv_source(PHVSourceIface::make_phv_source()) {
     testHeaderType.push_back_field("f16", 16);
     testHeaderType.push_back_field("f48", 48);
@@ -127,14 +130,16 @@ class TableSizeTwo : public ::testing::Test {
         new MUType(t_size, key_builder, &lookup_factory));
     table = std::unique_ptr<MatchTable>(
       new MatchTable("test_table", 0, std::move(match_unit), true));
-    table->set_next_node(0, nullptr);
+    table->set_next_node(action_id, nullptr);
+    table->set_next_node(action_id_1, nullptr);
     table->set_next_node_miss_default(&node_miss_default);
 
     match_unit = std::unique_ptr<MUType>(
         new MUType(t_size, key_builder_w_valid, &lookup_factory));
     table_w_valid = std::unique_ptr<MatchTable>(
         new MatchTable("test_table", 0, std::move(match_unit)));
-    table_w_valid->set_next_node(0, nullptr);
+    table_w_valid->set_next_node(action_id, nullptr);
+    table_w_valid->set_next_node(action_id_1, nullptr);
     table_w_valid->set_next_node_miss_default(&node_miss_default);
   }
 
@@ -495,7 +500,7 @@ TYPED_TEST(TableSizeTwo, ConstDefaultActionFn) {
   Field &f = pkt.get_phv()->get_field(this->testHeader1, 0);
   f.set("0xaba");
 
-  ActionFn bad_action_fn("bad_action", 1);
+  ActionFn bad_action_fn("bad_action", 1, 0);
   this->table->set_next_node(1, nullptr);
 
   this->table->set_const_default_action_fn(&this->action_fn);
@@ -522,7 +527,7 @@ TYPED_TEST(TableSizeTwo, ConstDefaultEntry) {
   Field &f = pkt.get_phv()->get_field(this->testHeader1, 0);
   f.set("0xaba");
 
-  ActionFn bad_action_fn("bad_action", 1);
+  ActionFn bad_action_fn("bad_action", 1, 0);
   this->table->set_next_node(1, nullptr);
 
   auto change_default_entry = [this, &bad_action_fn](
@@ -584,8 +589,9 @@ TYPED_TEST(TableSizeTwo, ModifyEntry) {
   // we modify the entry, this time using some action data
   ActionData new_action_data;
   new_action_data.push_back_action_data(0xaba);
-  this->table->modify_entry(handle, &(this->action_fn),
-                            std::move(new_action_data));
+  rc = this->table->modify_entry(handle, &this->action_fn_1,
+                                 std::move(new_action_data));
+  ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
   const ActionEntry &entry_2 = this->table->lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
@@ -965,7 +971,7 @@ class TableIndirect : public ::testing::Test {
 
   TableIndirect()
       : action_profile("test_act_prof", 0, false),
-        testHeaderType("test_t", 0), action_fn("actionA", 0),
+        testHeaderType("test_t", 0), action_fn("actionA", 0, 1  /* 1 param */),
         phv_source(PHVSourceIface::make_phv_source()) {
     testHeaderType.push_back_field("f16", 16);
     testHeaderType.push_back_field("f48", 48);
@@ -1370,7 +1376,7 @@ class TableIndirectWS : public ::testing::Test {
 
   TableIndirectWS()
       : action_profile("test_act_prof", 0, true),
-        testHeaderType("test_t", 0), action_fn("actionA", 0),
+        testHeaderType("test_t", 0), action_fn("actionA", 0, 1  /* 1 param */),
         phv_source(PHVSourceIface::make_phv_source()) {
     testHeaderType.push_back_field("f16", 16);
     testHeaderType.push_back_field("f48", 48);
@@ -1799,7 +1805,7 @@ class TableBigMask : public ::testing::Test {
   void make_key_builder();
 
   TableBigMask()
-      : testHeaderType("test_t", 0), action_fn("actionA", 0),
+      : testHeaderType("test_t", 0), action_fn("actionA", 0, 0),
         phv_source(PHVSourceIface::make_phv_source()) {
     testHeaderType.push_back_field("f16", 16);
     testHeaderType.push_back_field("f48", 48);
@@ -2080,7 +2086,7 @@ class AdvancedTest : public ::testing::Test {
   std::unique_ptr<PHVSourceIface> phv_source{nullptr};
 
   AdvancedTest()
-      : testHeaderType("test_t", 0), action_fn("actionA", 0),
+      : testHeaderType("test_t", 0), action_fn("actionA", 0, 0),
         phv_source(PHVSourceIface::make_phv_source()) {
     testHeaderType.push_back_field("f16", 16);
     testHeaderType.push_back_field("f48", 48);
@@ -2361,7 +2367,7 @@ class TableEntryDebug : public ::testing::Test {
   int priority = 12;
 
   TableEntryDebug()
-      : testHeaderType("test_t", 0), action_fn("actionA", 0) {
+      : testHeaderType("test_t", 0), action_fn("actionA", 0, 1  /* 1 param */) {
     testHeaderType.push_back_field("f16", 16);
     testHeaderType.push_back_field("f48", 48);
     testHeaderType.push_back_field("f17", 17);
@@ -2678,7 +2684,7 @@ class TableDeadlock : public ::testing::Test {
   std::unique_ptr<PHVSourceIface> phv_source{nullptr};
 
   TableDeadlock()
-      : testHeaderType("test_t", 0), action_fn("actionA", 0),
+      : testHeaderType("test_t", 0), action_fn("actionA", 0, 1  /* 1 param */),
         phv_source(PHVSourceIface::make_phv_source()) {
     testHeaderType.push_back_field("f16", 16);
     phv_factory.push_back_header("test1", testHeader1, testHeaderType);
@@ -2774,7 +2780,7 @@ class TableBadInputKey : public ::testing::Test {
   std::unique_ptr<PHVSourceIface> phv_source{nullptr};
 
   TableBadInputKey()
-      : testHeaderType("test_t", 0), action_fn("actionA", 0),
+      : testHeaderType("test_t", 0), action_fn("actionA", 0, 0),
         phv_source(PHVSourceIface::make_phv_source()) {
     // non-aligned, to expose potential issues
     testHeaderType.push_back_field("f14", 14);
@@ -2936,7 +2942,7 @@ class TableRangeMatch : public ::testing::Test {
   std::unique_ptr<PHVSourceIface> phv_source{nullptr};
 
   TableRangeMatch()
-      : testHeaderType("test_t", 0), action_fn("actionA", 0),
+      : testHeaderType("test_t", 0), action_fn("actionA", 0, 0),
         phv_source(PHVSourceIface::make_phv_source()) {
     testHeaderType.push_back_field("f16", 16);
     testHeaderType.push_back_field("f48", 48);
@@ -3042,4 +3048,186 @@ TEST_F(TableRangeMatch, TwoRanges) {
   check_one(start_1, 1, false);
   check_one(1, 1, false);
   // TODO(antonin): more checks?
+}
+
+
+namespace {
+
+class MaskBitBuilder {
+ public:
+  MaskBitBuilder(size_t nbytes)
+      : bits_(nbytes, '\0') { }
+
+  void append_one(bool bit) {
+    int offset = nbits_ % 8;
+    if (bit) bits_[nbits_ / 8] |= (1 << (7 - offset));
+    nbits_ += 1;
+  }
+
+  const std::string &bytes() const { return bits_; }
+
+ private:
+  std::string bits_{};
+  int nbits_{0};
+};
+
+}  // namespace
+
+class TableTernaryCache : public ::testing::Test {
+ protected:
+  static constexpr size_t t_size = 1024u;
+
+  PHVFactory phv_factory;
+
+  HeaderType testHeaderType;
+  header_id_t testHeader{0};
+  ActionFn action_fn;
+
+  std::unique_ptr<PHVSourceIface> phv_source{nullptr};
+
+  TableTernaryCache()
+      : testHeaderType("test_t", 0), action_fn("actionA", 0, 0),
+        phv_source(PHVSourceIface::make_phv_source()) {
+    testHeaderType.push_back_field("f128", 128);
+    phv_factory.push_back_header("testHdr", testHeader, testHeaderType);
+  }
+
+  Packet get_pkt(const std::string &binary_str) {
+    // dummy packet, won't be parsed
+    Packet packet = Packet::make_new(128, PacketBuffer(256), phv_source.get());
+    auto phv = packet.get_phv();
+    auto &hdr = phv->get_header(testHeader);
+    hdr.mark_valid();
+    hdr.get_field(0).set(binary_str.data(), binary_str.size());  // f128
+    return packet;
+  }
+
+  std::unique_ptr<MatchTable> create_table(LookupStructureFactory *factory) {
+    MatchKeyBuilder key_builder;
+    key_builder.push_back_field(testHeader, 0, 128,
+                                MatchKeyParam::Type::TERNARY);
+    std::unique_ptr<MUTernary> match_unit(
+        new MUTernary(t_size, key_builder, factory));
+
+    std::unique_ptr<MatchTable> table(
+        new MatchTable("test_table", 0, std::move(match_unit), false));
+    table->set_next_node(0, nullptr);
+    return table;
+  }
+
+  MatchErrorCode add_entry(MatchTable *table,
+                           const std::string &binary_key,
+                           const std::string &binary_mask,
+                           int priority, entry_handle_t *h) {
+    std::vector<MatchKeyParam> match_key;
+    match_key.emplace_back(MatchKeyParam::Type::TERNARY, binary_key,
+                           binary_mask);
+    return table->add_entry(match_key, &action_fn, ActionData(), h, priority);
+  }
+
+  // add entries of the form binary_key && 11111...0000
+  // for a key of 128 bits, there are 128 such enties
+  // the last entry has the lowest prioiry value (1), which translates into the
+  // highest priority for lookup; its handle is returned
+  void add_base_entries(MatchTable *table, const std::string &binary_key,
+                        entry_handle_t *last_handle) {
+    // cache is activated if more than 16 entries in table
+    size_t num_entries_to_add = binary_key.size() * 8;
+    MaskBitBuilder mask_builder(binary_key.size());
+    for (size_t i = 0; i < num_entries_to_add; i++) {
+      int priority = num_entries_to_add - i;
+      mask_builder.append_one(true);
+      auto rc = add_entry(table, binary_key, mask_builder.bytes(), priority,
+                          last_handle);
+      ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
+    }
+  }
+
+  void lookup(MatchTable *table, const std::string &binary_key,
+              entry_handle_t *lookup_handle) {
+    bool hit;
+    auto pkt = get_pkt(binary_key);
+    table->lookup(pkt, &hit, lookup_handle);
+    ASSERT_TRUE(hit);
+  }
+
+  void run_test(bool enable_cache, size_t num_packets) {
+    LookupStructureFactory factory(enable_cache);
+    auto table = create_table(&factory);
+
+    constexpr size_t nbytes = 128 / 8;
+    const std::string binary_key(nbytes, '\xff');
+    entry_handle_t h;
+    add_base_entries(table.get(), binary_key, &h);
+
+    for (size_t i = 0; i < num_packets; i++) {
+      entry_handle_t lookup_handle;
+      lookup(table.get(), binary_key, &lookup_handle);
+      ASSERT_EQ(h, lookup_handle);
+    }
+  }
+
+  virtual void SetUp() {
+    phv_source->set_phv_factory(0, &phv_factory);
+  }
+
+  // virtual void TearDown() { }
+};
+
+TEST_F(TableTernaryCache, LookupWithCache) {
+  run_test(true  /* with cache */, 1);
+}
+
+TEST_F(TableTernaryCache, LookupWithoutCache) {
+  run_test(false  /* without cache */, 1);
+}
+
+TEST_F(TableTernaryCache, LookupCmp) {
+  auto run = [this](bool enable_cache) {
+    using clock = std::chrono::high_resolution_clock;
+    using std::chrono::milliseconds;
+    using std::chrono::duration_cast;
+
+    auto tp1 = clock::now();
+    run_test(enable_cache, 1000);
+    auto tp2 = clock::now();
+    return duration_cast<milliseconds>(tp2 - tp1).count();
+  };
+
+  auto time_with = run(true);
+  auto time_without = run(false);
+
+  if (!WITH_VALGRIND) {
+    // on my machine, compiling with O0, time_with = 10ms, time_without = 60ms
+    EXPECT_LT(time_with, time_without);
+  }
+}
+
+// test cache correctness when an entry is added then removed
+TEST_F(TableTernaryCache, CacheUpdate) {
+    LookupStructureFactory factory(true  /* with cache */);
+    auto table = create_table(&factory);
+
+    constexpr size_t nbytes = 128 / 8;
+    const std::string binary_key(nbytes, '\xff');
+    entry_handle_t h;
+    add_base_entries(table.get(), binary_key, &h);
+
+    entry_handle_t lookup_handle;
+    lookup(table.get(), binary_key, &lookup_handle);  // cache hit
+    ASSERT_EQ(h, lookup_handle);
+
+    // add a new entry, check that it is being hit
+    entry_handle_t new_h;
+    // priority 0 is lower than all the other ones in the table
+    ASSERT_EQ(MatchErrorCode::SUCCESS,
+              add_entry(table.get(), binary_key, binary_key, 0, &new_h));
+    ASSERT_NE(h, new_h);
+    lookup(table.get(), binary_key, &lookup_handle);
+    ASSERT_EQ(new_h, lookup_handle);
+
+    // remove new entry, check that old entry is used again
+    ASSERT_EQ(MatchErrorCode::SUCCESS, table->delete_entry(new_h));
+    lookup(table.get(), binary_key, &lookup_handle);
+    ASSERT_EQ(h, lookup_handle);
 }

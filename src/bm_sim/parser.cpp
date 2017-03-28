@@ -61,8 +61,10 @@ ParserOpSet<field_t>::operator()(Packet *pkt, const char *data,
   f_dst.set(f_src);
   BMLOG_DEBUG_PKT(
     *pkt,
-    "Parser set: setting field ({}, {}) from field ({}, {}) ({})",
-    dst.header, dst.offset, src.header, src.offset, f_dst);
+    "Parser set: setting field '{}' from field '{}' ({})",
+    phv->get_field_name(dst.header, dst.offset),
+    phv->get_field_name(src.header, src.offset),
+    f_dst);
 }
 
 template<>
@@ -73,8 +75,8 @@ ParserOpSet<Data>::operator()(Packet *pkt, const char *data,
   auto phv = pkt->get_phv();
   auto &f_dst = phv->get_field(dst.header, dst.offset);
   f_dst.set(src);
-  BMLOG_DEBUG_PKT(*pkt, "Parser set: setting field ({}, {}) to {}",
-                  dst.header, dst.offset, f_dst);
+  BMLOG_DEBUG_PKT(*pkt, "Parser set: setting field '{}' to {}",
+                  phv->get_field_name(dst.header, dst.offset), f_dst);
 }
 
 template<>
@@ -105,9 +107,9 @@ ParserOpSet<ParserLookAhead>::operator()(Packet *pkt, const char *data,
   }
   BMLOG_DEBUG_PKT(
     *pkt,
-    "Parser set: setting field ({}, {}) from lookahead ({}, {}), "
-    "new value is {}",
-    dst.header, dst.offset, src.bit_offset, src.bitwidth, f_dst);
+    "Parser set: setting field '{}' from lookahead ({}, {}), new value is {}",
+    phv->get_field_name(dst.header, dst.offset), src.bit_offset, src.bitwidth,
+    f_dst);
 }
 
 template<>
@@ -120,8 +122,8 @@ ParserOpSet<ArithExpression>::operator()(Packet *pkt, const char *data,
   src.eval(*phv, &f_dst);
   BMLOG_DEBUG_PKT(
     *pkt,
-    "Parser set: setting field ({}, {}) from expression, new value is {}",
-    dst.header, dst.offset, f_dst);
+    "Parser set: setting field '{}' from expression, new value is {}",
+    phv->get_field_name(dst.header, dst.offset), f_dst);
 }
 
 ParseSwitchKeyBuilder::Entry
@@ -283,6 +285,21 @@ struct ParserOpMethodCall : ParserOp {
     BMLOG_DEBUG_PKT(*pkt, "Executing method {}",
                     action.get_action_fn()->get_name());
     action.execute(pkt);
+  }
+};
+
+struct ParserOpShift : ParserOp {
+  size_t shift_bytes;
+
+  explicit ParserOpShift(size_t shift_bytes)
+      : shift_bytes(shift_bytes) { }
+
+  void operator()(Packet *pkt, const char *data,
+                  size_t *bytes_parsed) const override {
+    (void) data;
+    if (pkt->get_ingress_length() - *bytes_parsed < shift_bytes)
+      throw parser_exception_core(ErrorCodeMap::Core::PacketTooShort);
+    *bytes_parsed += shift_bytes;
   }
 };
 
@@ -670,6 +687,11 @@ void
 ParseState::add_method_call(ActionFn *action_fn) {
   action_fn->grab_register_accesses(&register_sync);
   parser_ops.emplace_back(new ParserOpMethodCall(action_fn));
+}
+
+void
+ParseState::add_shift(size_t shift_bytes) {
+  parser_ops.emplace_back(new ParserOpShift(shift_bytes));
 }
 
 void
