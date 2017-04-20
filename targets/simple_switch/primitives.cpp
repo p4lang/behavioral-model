@@ -263,8 +263,13 @@ class modify_field_with_hash_based_offset
                            const NamedCalculation &, const Data &> {
   void operator ()(Data &dst, const Data &base,
                    const NamedCalculation &hash, const Data &size) {
-    uint64_t v =
-      (hash.output(get_packet()) % size.get<uint64_t>()) + base.get<uint64_t>();
+    uint64_t v;
+    if (size.get<uint64_t>() == 0) {
+      v = hash.output(get_packet()) + base.get<uint64_t>();
+    } else {
+      auto mod_hash = hash.output(get_packet()) % size.get<uint64_t>();
+      v = mod_hash + base.get<uint64_t>();
+    }
     dst.set(v);
   }
 };
