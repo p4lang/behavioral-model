@@ -1518,6 +1518,17 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
       p4object_id_t conditional_id = cfg_conditional["id"].asInt();
       Conditional *conditional = new Conditional(conditional_name,
                                                  conditional_id);
+      if (cfg_conditional["source_info"].isNull()) {
+          conditional = new Conditional(conditional_name, conditional_id);
+      } else {
+          const string filename = cfg_conditional["source_info"]["filename"].asString();
+          unsigned line = cfg_conditional["source_info"]["line"].asInt();
+          unsigned column = cfg_conditional["source_info"]["column"].asInt();
+          const string source_fragment = cfg_conditional["source_info"]["source_fragment"].asString();
+          conditional = new Conditional(conditional_name, conditional_id,
+                                        filename, line, column,
+                                        source_fragment);
+      }
 
       const Json::Value &cfg_expression = cfg_conditional["expression"];
       build_expression(cfg_expression, conditional);

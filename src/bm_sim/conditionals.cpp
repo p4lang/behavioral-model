@@ -21,6 +21,7 @@
 #include <bm/bm_sim/conditionals.h>
 #include <bm/bm_sim/event_logger.h>
 #include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/logger.h>
 
 #include <cassert>
 
@@ -36,6 +37,20 @@ Conditional::operator()(Packet *pkt) const {
   PHV *phv = pkt->get_phv();
   bool result = eval(*phv);
   BMELOG(condition_eval, *pkt, *this, result);
+
+  // It would be nicer to see the following additional info in the log:
+  //
+  // + The full expression even if it spans multiple lines.
+  // + The current values of all variables involved in evaluating the
+  //   expression.
+  if (get_has_source_info()) {
+      BMLOG_TRACE_PKT(*pkt, "{}({}): Condition \"{}\" is {}",
+                      get_filename(), get_line(), get_source_fragment(),
+                      result);
+  } else {
+      BMLOG_TRACE_PKT(*pkt, "Condition {} is {}",
+                      get_name(), result);
+  }
   DEBUGGER_NOTIFY_UPDATE_V(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
       Debugger::FIELD_COND, result);
