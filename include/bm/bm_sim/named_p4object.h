@@ -37,8 +37,12 @@ class NamedP4Object {
  public:
   NamedP4Object(const std::string &name, p4object_id_t id)
       : name(name), id(id), has_source_info(false) {}
-  NamedP4Object(const std::string &name, p4object_id_t id, const std::string &filename, unsigned line, unsigned column, const std::string &source_fragment)
-      : name(name), id(id), has_source_info(true), filename(filename), line(line), column(column), source_fragment(source_fragment) {}
+  NamedP4Object(const std::string &name, p4object_id_t id,
+                const std::string &filename, unsigned line,
+                unsigned column, const std::string &source_fragment)
+      : name(name), id(id), has_source_info(true),
+        filename(filename), line(line),
+        column(column), source_fragment(source_fragment) {}
 
   virtual ~NamedP4Object() { }
 

@@ -34,7 +34,9 @@ class Conditional
  public:
   Conditional(const std::string &name, p4object_id_t id)
     : ControlFlowNode(name, id) {}
-  Conditional(const std::string &name, p4object_id_t id, const std::string &filename, unsigned line, unsigned column, const std::string &source_fragment)
+  Conditional(const std::string &name, p4object_id_t id,
+              const std::string &filename, unsigned line,
+              unsigned column, const std::string &source_fragment)
     : ControlFlowNode(name, id, filename, line, column, source_fragment) {}
 
   bool eval(const PHV &phv) const {
