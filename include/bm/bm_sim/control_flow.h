@@ -34,9 +34,8 @@ class ControlFlowNode : public NamedP4Object {
   ControlFlowNode(const std::string &name, p4object_id_t id)
       : NamedP4Object(name, id) { }
   ControlFlowNode(const std::string &name, p4object_id_t id,
-                  const std::string &filename, unsigned line,
-                  unsigned column, const std::string &source_fragment)
-    : NamedP4Object(name, id, filename, line, column, source_fragment) {}
+                  const SourceInfo *source_info)
+    : NamedP4Object(name, id, source_info) {}
   virtual ~ControlFlowNode() { }
   virtual const ControlFlowNode *operator()(Packet *pkt) const = 0;
 };

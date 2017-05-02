@@ -24,6 +24,8 @@
 #define BM_BM_SIM_NAMED_P4OBJECT_H_
 
 #include <string>
+#include <sstream>
+#include <bm/bm_sim/source_info.h>
 
 namespace bm {
 
@@ -36,13 +38,10 @@ using p4object_id_t = int;
 class NamedP4Object {
  public:
   NamedP4Object(const std::string &name, p4object_id_t id)
-      : name(name), id(id), has_source_info(false) {}
+    : name(name), id(id), source_info(nullptr) {}
   NamedP4Object(const std::string &name, p4object_id_t id,
-                const std::string &filename, unsigned line,
-                unsigned column, const std::string &source_fragment)
-      : name(name), id(id), has_source_info(true),
-        filename(filename), line(line),
-        column(column), source_fragment(source_fragment) {}
+                const SourceInfo *source_info)
+    : name(name), id(id), source_info(source_info) {}
 
   virtual ~NamedP4Object() { }
 
@@ -66,15 +65,13 @@ class NamedP4Object {
   unsigned get_line() const { return line; }
   unsigned get_column() const { return column; }
   const std::string &get_source_fragment() const { return source_fragment; }
+  bool has_source_info() const { return (source_info != nullptr); }
+  const SourceInfo *get_source_info() const { return source_info; }
 
  protected:
   const std::string name;
   p4object_id_t id;
-  bool has_source_info;
-  const std::string filename;
-  unsigned line;
-  unsigned column;
-  const std::string source_fragment;
+  const SourceInfo *source_info;
 };
 
 }  // namespace bm

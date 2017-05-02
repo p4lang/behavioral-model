@@ -43,14 +43,11 @@ Conditional::operator()(Packet *pkt) const {
   // + The full expression even if it spans multiple lines.
   // + The current values of all variables involved in evaluating the
   //   expression.
-  if (get_has_source_info()) {
-      BMLOG_TRACE_PKT(*pkt, "{}({}): Condition \"{}\" is {}",
-                      get_filename(), get_line(), get_source_fragment(),
-                      result);
-  } else {
-      BMLOG_TRACE_PKT(*pkt, "Condition {} is {}",
-                      get_name(), result);
-  }
+  BMLOG_TRACE_SI_PKT(*pkt, get_source_info(), "Condition is {}", result);
+  //SourceInfo source_info = get_source_info();
+  //BMLOG_TRACE_PKT(*pkt, "{}: Condition \"{}\" is {}",
+  //                source_info.toString(), source_info.get_source_fragment(),
+  //                result);
   DEBUGGER_NOTIFY_UPDATE_V(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
       Debugger::FIELD_COND, result);
