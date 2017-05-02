@@ -1518,10 +1518,8 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
       p4object_id_t conditional_id = cfg_conditional["id"].asInt();
       const Json::Value &cfg_source_info = cfg_conditional["source_info"];
       Conditional *conditional =
-          new Conditional(conditional_name,
-                          conditional_id,
+          new Conditional(conditional_name, conditional_id,
                           SourceInfo::newFromJson(cfg_source_info));
-
       const Json::Value &cfg_expression = cfg_conditional["expression"];
       build_expression(cfg_expression, conditional);
       conditional->build();
