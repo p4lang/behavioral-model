@@ -290,8 +290,8 @@ ActionFnEntry::execute(Packet *pkt) const {
   auto &primitives = action_fn->primitives;
   size_t param_offset = 0;
   // primitives is a vector of pointers
-  const SourceInfo *si = action_fn->get_source_info();
-  BMLOG_TRACE_SI_PKT(*pkt, si, "Executing action {}", action_fn->get_name());
+  BMLOG_TRACE_SI_PKT(*pkt, action_fn->get_source_info(),
+                     "Executing action {}", action_fn->get_name());
   for (auto primitive : primitives) {
     primitive->execute(&state, &(action_fn->params[param_offset]));
     param_offset += primitive->get_num_params();

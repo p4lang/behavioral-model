@@ -26,7 +26,6 @@
 //! the JSON file produced by the compiler.
 
 #include <string>
-#include <sstream>
 
 namespace bm {
 
@@ -39,21 +38,21 @@ class SourceInfo {
     : filename(filename),
       line(line),
       column(column),
-      source_fragment(source_fragment) { }
-
-  std::string toString() const {
-    std::stringstream result;
-    result << filename << "(" << line << ":" << column << ")";
-    return result.str();
+      source_fragment(source_fragment) {
+    init_to_string();
   }
 
   std::string get_source_fragment() const { return source_fragment; }
+  std::string toString() const { return to_string; }
 
  private:
   std::string filename;
   unsigned int line;
   unsigned int column;
   std::string source_fragment;
+  std::string to_string;
+
+  void init_to_string();
 };
 
 }  // namespace bm
