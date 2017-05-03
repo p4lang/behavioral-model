@@ -25,6 +25,7 @@
 
 #include <bm/bm_sim/source_info.h>
 #include <string>
+#include <memory>
 
 namespace bm {
 
@@ -37,10 +38,10 @@ using p4object_id_t = int;
 class NamedP4Object {
  public:
   NamedP4Object(const std::string &name, p4object_id_t id)
-    : name(name), id(id), source_info(nullptr) {}
+    : name(name), id(id) {}
   NamedP4Object(const std::string &name, p4object_id_t id,
-                const SourceInfo *source_info)
-    : name(name), id(id), source_info(source_info) {}
+                std::unique_ptr<SourceInfo> source_info)
+    : name(name), id(id), source_info(std::move(source_info)) {}
 
   virtual ~NamedP4Object() { }
 
@@ -65,12 +66,12 @@ class NamedP4Object {
   unsigned get_column() const { return column; }
   const std::string &get_source_fragment() const { return source_fragment; }
   bool has_source_info() const { return (source_info != nullptr); }
-  const SourceInfo *get_source_info() const { return source_info; }
+  const SourceInfo *get_source_info() const { return source_info.get(); }
 
  protected:
   const std::string name;
   p4object_id_t id;
-  const SourceInfo *source_info;
+  std::unique_ptr<SourceInfo> source_info;
 };
 
 }  // namespace bm

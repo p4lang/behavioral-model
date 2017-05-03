@@ -35,8 +35,8 @@ class Conditional
   Conditional(const std::string &name, p4object_id_t id)
     : ControlFlowNode(name, id) {}
   Conditional(const std::string &name, p4object_id_t id,
-              const SourceInfo *source_info)
-    : ControlFlowNode(name, id, source_info) {}
+              std::unique_ptr<SourceInfo> source_info)
+    : ControlFlowNode(name, id, std::move(source_info)) {}
 
   bool eval(const PHV &phv) const {
     return eval_bool(phv);

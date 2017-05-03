@@ -1344,7 +1344,7 @@ std::vector<MatchKeyParam> parse_match_key(
   return match_key;
 }
 
-SourceInfo *new_from_json(const Json::Value &cfg_source_info) {
+std::unique_ptr<SourceInfo> new_from_json(const Json::Value &cfg_source_info) {
   std::string filename = "";
   unsigned int line = 0;
   unsigned int column = 0;
@@ -1365,7 +1365,12 @@ SourceInfo *new_from_json(const Json::Value &cfg_source_info) {
   if (!cfg_source_info["source_fragment"].isNull()) {
     source_fragment = cfg_source_info["source_fragment"].asString();
   }
-  return new SourceInfo(filename, line, column, source_fragment);
+  auto source_info =
+      std::unique_ptr<SourceInfo>{new SourceInfo(filename, line, column,
+                                                 source_fragment)};
+  // std::unique_ptr<SourceInfo> source_info(filename, line, column,
+  //                                        source_fragment);
+  return source_info;
 }
 
 }  // namespace
