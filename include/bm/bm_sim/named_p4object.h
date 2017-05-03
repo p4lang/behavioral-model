@@ -43,11 +43,6 @@ class NamedP4Object {
                 std::unique_ptr<SourceInfo> source_info)
     : name(name), id(id), source_info(std::move(source_info)) {}
 
-  NamedP4Object(const NamedP4Object& rhs)
-      : name(rhs.name), id(rhs.id),
-        source_info(rhs.source_info ? new SourceInfo(*rhs.source_info)
-                    : nullptr) { }
-
   virtual ~NamedP4Object() { }
 
   //! Get the name of the P4 instance
