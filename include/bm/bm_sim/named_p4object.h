@@ -61,11 +61,6 @@ class NamedP4Object {
   //! Default assignment operator
   NamedP4Object &operator=(NamedP4Object &&other) = default;
 
-  const std::string &get_filename() const { return filename; }
-  unsigned get_line() const { return line; }
-  unsigned get_column() const { return column; }
-  const std::string &get_source_fragment() const { return source_fragment; }
-  bool has_source_info() const { return (source_info != nullptr); }
   const SourceInfo *get_source_info() const { return source_info.get(); }
 
  protected:
