@@ -219,6 +219,35 @@ ExprType get_opcode_type(ExprOpcode opcode) {
   return ExprType::UNKNOWN;
 }
 
+std::unique_ptr<SourceInfo> new_from_json(const Json::Value &cfg_source_info) {
+  std::string filename = "";
+  unsigned int line = 0;
+  unsigned int column = 0;
+  std::string source_fragment = "";
+
+  if (cfg_source_info.isNull()) {
+    return nullptr;
+  }
+  if (!cfg_source_info["filename"].isNull()) {
+    filename = cfg_source_info["filename"].asString();
+  }
+  if (!cfg_source_info["line"].isNull()) {
+    line = cfg_source_info["line"].asInt();
+  }
+  if (!cfg_source_info["column"].isNull()) {
+    column = cfg_source_info["column"].asInt();
+  }
+  if (!cfg_source_info["source_fragment"].isNull()) {
+    source_fragment = cfg_source_info["source_fragment"].asString();
+  }
+  auto source_info =
+      std::unique_ptr<SourceInfo>{new SourceInfo(filename, line, column,
+                                                 source_fragment)};
+  // std::unique_ptr<SourceInfo> source_info(filename, line, column,
+  //                                        source_fragment);
+  return source_info;
+}
+
 }  // namespace
 
 void
@@ -1213,8 +1242,10 @@ P4Objects::init_actions(const Json::Value &cfg_root) {
   for (const auto &cfg_action : cfg_actions) {
     const string action_name = cfg_action["name"].asString();
     p4object_id_t action_id = cfg_action["id"].asInt();
+    const Json::Value &cfg_source_info = cfg_action["source_info"];
     std::unique_ptr<ActionFn> action_fn(new ActionFn(
-        action_name, action_id, cfg_action["runtime_data"].size()));
+      action_name, action_id, cfg_action["runtime_data"].size(),
+      new_from_json(cfg_source_info)));
 
     const auto &cfg_primitive_calls = cfg_action["primitives"];
     for (const auto &cfg_primitive_call : cfg_primitive_calls)
@@ -1342,35 +1373,6 @@ std::vector<MatchKeyParam> parse_match_key(
     }
   }
   return match_key;
-}
-
-std::unique_ptr<SourceInfo> new_from_json(const Json::Value &cfg_source_info) {
-  std::string filename = "";
-  unsigned int line = 0;
-  unsigned int column = 0;
-  std::string source_fragment = "";
-
-  if (cfg_source_info.isNull()) {
-    return nullptr;
-  }
-  if (!cfg_source_info["filename"].isNull()) {
-    filename = cfg_source_info["filename"].asString();
-  }
-  if (!cfg_source_info["line"].isNull()) {
-    line = cfg_source_info["line"].asInt();
-  }
-  if (!cfg_source_info["column"].isNull()) {
-    column = cfg_source_info["column"].asInt();
-  }
-  if (!cfg_source_info["source_fragment"].isNull()) {
-    source_fragment = cfg_source_info["source_fragment"].asString();
-  }
-  auto source_info =
-      std::unique_ptr<SourceInfo>{new SourceInfo(filename, line, column,
-                                                 source_fragment)};
-  // std::unique_ptr<SourceInfo> source_info(filename, line, column,
-  //                                        source_fragment);
-  return source_info;
 }
 
 }  // namespace
