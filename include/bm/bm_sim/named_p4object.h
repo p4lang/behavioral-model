@@ -23,9 +23,8 @@
 #ifndef BM_BM_SIM_NAMED_P4OBJECT_H_
 #define BM_BM_SIM_NAMED_P4OBJECT_H_
 
-#include <string>
-#include <sstream>
 #include <bm/bm_sim/source_info.h>
+#include <string>
 
 namespace bm {
 

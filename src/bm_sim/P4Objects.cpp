@@ -1344,6 +1344,30 @@ std::vector<MatchKeyParam> parse_match_key(
   return match_key;
 }
 
+SourceInfo *new_from_json(const Json::Value &cfg_source_info) {
+  std::string filename = "";
+  unsigned int line = 0;
+  unsigned int column = 0;
+  std::string source_fragment = "";
+
+  if (cfg_source_info.isNull()) {
+    return nullptr;
+  }
+  if (!cfg_source_info["filename"].isNull()) {
+    filename = cfg_source_info["filename"].asString();
+  }
+  if (!cfg_source_info["line"].isNull()) {
+    line = cfg_source_info["line"].asInt();
+  }
+  if (!cfg_source_info["column"].isNull()) {
+    column = cfg_source_info["column"].asInt();
+  }
+  if (!cfg_source_info["source_fragment"].isNull()) {
+    source_fragment = cfg_source_info["source_fragment"].asString();
+  }
+  return new SourceInfo(filename, line, column, source_fragment);
+}
+
 }  // namespace
 
 void
@@ -1517,9 +1541,8 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
       const string conditional_name = cfg_conditional["name"].asString();
       p4object_id_t conditional_id = cfg_conditional["id"].asInt();
       const Json::Value &cfg_source_info = cfg_conditional["source_info"];
-      Conditional *conditional =
-          new Conditional(conditional_name, conditional_id,
-                          SourceInfo::newFromJson(cfg_source_info));
+      auto conditional = new Conditional(
+        conditional_name, conditional_id, new_from_json(cfg_source_info));
       const Json::Value &cfg_expression = cfg_conditional["expression"];
       build_expression(cfg_expression, conditional);
       conditional->build();

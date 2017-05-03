@@ -26,7 +26,7 @@
 //! the JSON file produced by the compiler.
 
 #include <string>
-#include "jsoncpp/json.h"
+#include <sstream>
 
 namespace bm {
 
@@ -34,36 +34,12 @@ class SourceInfo {
  public:
   SourceInfo()
     : filename(""), line(0), column(0), source_fragment("") { }
-  SourceInfo(std::string filename, unsigned line, unsigned column,
+  SourceInfo(std::string filename, unsigned int line, unsigned int column,
              std::string source_fragment)
     : filename(filename),
       line(line),
       column(column),
       source_fragment(source_fragment) { }
-
-  static SourceInfo *newFromJson(const Json::Value &cfg_source_info) {
-    std::string filename = "";
-    unsigned line = 0;
-    unsigned column = 0;
-    std::string source_fragment = "";
-
-    if (cfg_source_info.isNull()) {
-      return nullptr;
-    }
-    if (!cfg_source_info["filename"].isNull()) {
-      filename = cfg_source_info["filename"].asString();
-    }
-    if (!cfg_source_info["line"].isNull()) {
-      line = cfg_source_info["line"].asInt();
-    }
-    if (!cfg_source_info["column"].isNull()) {
-      column = cfg_source_info["column"].asInt();
-    }
-    if (!cfg_source_info["source_fragment"].isNull()) {
-      source_fragment = cfg_source_info["source_fragment"].asString();
-    }
-    return new SourceInfo(filename, line, column, source_fragment);
-  }
 
   std::string toString() const {
     std::stringstream result;
@@ -75,8 +51,8 @@ class SourceInfo {
 
  private:
   std::string filename;
-  unsigned line;
-  unsigned column;
+  unsigned int line;
+  unsigned int column;
   std::string source_fragment;
 };
 
