@@ -26,7 +26,7 @@ namespace bm {
 void SourceInfo::init_to_string() {
   std::stringstream result;
   result << filename << "(" << line << ")";
-  to_string = result.str();
+  string_representation = result.str();
 }
 
 }  // namespace bm

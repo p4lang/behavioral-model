@@ -43,14 +43,14 @@ class SourceInfo {
   }
 
   std::string get_source_fragment() const { return source_fragment; }
-  std::string toString() const { return to_string; }
+  std::string to_string() const { return string_representation; }
 
  private:
   std::string filename;
   unsigned int line;
   unsigned int column;
   std::string source_fragment;
-  std::string to_string;
+  std::string string_representation;
 
   void init_to_string();
 };
