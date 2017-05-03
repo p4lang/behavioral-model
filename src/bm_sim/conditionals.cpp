@@ -57,4 +57,3 @@ Conditional::operator()(Packet *pkt) const {
 }
 
 }  // namespace bm
-
