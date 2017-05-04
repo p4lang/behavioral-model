@@ -31,8 +31,6 @@ namespace bm {
 
 class SourceInfo {
  public:
-  SourceInfo()
-    : filename(""), line(0), column(0), source_fragment("") { }
   SourceInfo(std::string filename, unsigned int line, unsigned int column,
              std::string source_fragment)
     : filename(filename),
