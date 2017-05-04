@@ -33,13 +33,14 @@ class SourceInfo {
  public:
   SourceInfo(std::string filename, unsigned int line, unsigned int column,
              std::string source_fragment)
-    : filename(filename),
-      line(line),
-      column(column),
+    : filename(filename), line(line), column(column),
       source_fragment(source_fragment) {
     init_to_string();
   }
 
+  std::string get_filename() const { return filename; }
+  unsigned int get_line() const { return line; }
+  unsigned int get_column() const { return column; }
   std::string get_source_fragment() const { return source_fragment; }
   std::string to_string() const { return string_representation; }
 
