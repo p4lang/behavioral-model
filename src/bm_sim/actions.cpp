@@ -224,6 +224,11 @@ ActionFn::push_back_primitive(ActionPrimitive_ *primitive) {
 }
 
 void
+ActionFn::push_back_source_info(std::unique_ptr<SourceInfo> source_info) {
+  source_infos.push_back(std::move(source_info));
+}
+
+void
 ActionFn::grab_register_accesses(RegisterSync *rs) const {
   rs->merge_from(register_sync);
 }
@@ -289,12 +294,17 @@ ActionFnEntry::execute(Packet *pkt) const {
 
   auto &primitives = action_fn->primitives;
   size_t param_offset = 0;
+  size_t si_offset = 0;
   // primitives is a vector of pointers
   BMLOG_TRACE_SI_PKT(*pkt, action_fn->get_source_info(),
-                     "Executing action {}", action_fn->get_name());
+                     "Action {}", action_fn->get_name());
   for (auto primitive : primitives) {
+    BMLOG_TRACE_SI_PKT(*pkt, action_fn->source_infos[si_offset],
+      "Primitive {}",
+      action_fn->source_infos[si_offset].get()->get_source_fragment());
     primitive->execute(&state, &(action_fn->params[param_offset]));
     param_offset += primitive->get_num_params();
+    ++si_offset;
   }
 }
 
