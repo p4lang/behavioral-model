@@ -301,7 +301,8 @@ ActionFnEntry::execute(Packet *pkt) const {
   for (auto primitive : primitives) {
     BMLOG_TRACE_SI_PKT(*pkt, action_fn->source_infos[si_offset],
       "Primitive {}",
-      action_fn->source_infos[si_offset].get()->get_source_fragment());
+      (action_fn->source_infos[si_offset].get() == nullptr) ? "(no source info)"
+        : action_fn->source_infos[si_offset].get()->get_source_fragment());
     primitive->execute(&state, &(action_fn->params[param_offset]));
     param_offset += primitive->get_num_params();
     ++si_offset;
