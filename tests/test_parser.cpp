@@ -1747,6 +1747,7 @@ TEST_F(ParserMethodCallTest, SetField) {
   ParserTestSetField primitive;
   constexpr int value(97);
   action_fn.push_back_primitive(&primitive);
+  action_fn.push_back_source_info(nullptr);
   action_fn.parameter_push_back_field(testHeader, 0);  // f32
   action_fn.parameter_push_back_const(Data(value));
   parse_state.add_method_call(&action_fn);
@@ -1767,6 +1768,7 @@ TEST_F(ParserMethodCallTest, RegisterSync) {
       "RegisterSpin");
   constexpr unsigned int msecs_to_sleep(1000u);
   action_fn.push_back_primitive(primitive_spin.get());
+  action_fn.push_back_source_info(nullptr);
   action_fn.parameter_push_back_register_array(&register_array);
   action_fn.parameter_push_back_const(Data(msecs_to_sleep));
   parse_state.add_method_call(&action_fn);

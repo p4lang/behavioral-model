@@ -68,6 +68,7 @@ class ControlActionTest : public ::testing::Test {
 
   virtual void SetUp() {
     action_fn.push_back_primitive(&count_primitive);
+    action_fn.push_back_source_info(nullptr);
 
     action_call.set_next_node(&dummy_next_node);
     action_call.set_action(&action_fn);
