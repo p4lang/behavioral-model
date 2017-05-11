@@ -384,7 +384,6 @@ P4Objects::add_primitive_to_action(const Json::Value &cfg_primitive,
                                  object_source_info(cfg_primitive));
 
   const auto &cfg_primitive_parameters = cfg_primitive["parameters"];
-  //std::vector<ActionPrimitive_ *> primitives{};
 
   // check number of parameters
   const size_t num_params_expected = primitive->get_num_params();
