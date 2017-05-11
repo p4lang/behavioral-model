@@ -254,7 +254,6 @@ TEST_F(ActionsTest, SetFromConst) {
   Data value(0xaba);
   SetField primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader1, 3);  // f16
   testActionFn.parameter_push_back_const(value);
 
@@ -272,7 +271,6 @@ TEST_F(ActionsTest, SetFromActionData) {
   Data value(0xaba);
   SetField primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader1, 3);  // f16
   testActionFn.parameter_push_back_action_data(0);
   testActionFnEntry.push_back_action_data(value);
@@ -290,7 +288,6 @@ TEST_F(ActionsTest, SetFromActionData) {
 TEST_F(ActionsTest, SetFromField) {
   SetField primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader1, 3);  // f16
   testActionFn.parameter_push_back_field(testHeader1, 0);  // f32
 
@@ -315,7 +312,6 @@ TEST_F(ActionsTest, SetFromRegisterRef) {
   const unsigned int register_idx = 68;
   SetField primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader1, 3);  // f16
   testActionFn.parameter_push_back_register_ref(&register_array, register_idx);
 
@@ -351,7 +347,6 @@ TEST_F(ActionsTest, SetFromRegisterGen) {
 
   SetField primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader1, 3);  // f16
   testActionFn.parameter_push_back_register_gen(&register_array,
                                                 std::move(expr_idx));
@@ -377,7 +372,6 @@ TEST_F(ActionsTest, SetFromExpression) {
 
   SetField primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader1, 3);  // f16
   testActionFn.parameter_push_back_expression(std::move(expr));
 
@@ -400,7 +394,6 @@ TEST_F(ActionsTest, SetFromLastStackField) {
 
   SetField primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader1, 3);  // f16
   // f32
   testActionFn.parameter_push_back_last_header_stack_field(testHeaderStack, 0);
@@ -419,7 +412,6 @@ TEST_F(ActionsTest, SetFromConstStress) {
   Data value(0xaba);
   SetField primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader1, 3);  // f16
   testActionFn.parameter_push_back_const(value);
 
@@ -438,7 +430,6 @@ TEST_F(ActionsTest, Set) {
   Data value(value_i);
   Set primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader1, 3);  // f16
   testActionFn.parameter_push_back_const(value);
 
@@ -459,7 +450,6 @@ TEST_F(ActionsTest, SetRegisterRef) {
   const unsigned int register_idx = 68;
   Set primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_register_ref(&register_array, register_idx);
   testActionFn.parameter_push_back_const(value);
 
@@ -488,7 +478,6 @@ TEST_F(ActionsTest, SetRegisterGen) {
 
   Set primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_register_gen(&register_array,
                                                 std::move(expr_idx));
   testActionFn.parameter_push_back_const(value);
@@ -514,7 +503,6 @@ TEST_F(ActionsTest, CopyHeader) {
 
   CopyHeader primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_header(testHeader1);
   testActionFn.parameter_push_back_header(testHeader2);
 
@@ -537,7 +525,6 @@ TEST_F(ActionsTest, CopyHeader) {
 TEST_F(ActionsTest, CRSet) {
   CRSet primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
 
   Field &f = phv->get_field(testHeader1, 3);  // f16
   f.set(0);
@@ -552,7 +539,6 @@ TEST_F(ActionsTest, CRSet) {
 TEST_F(ActionsTest, Pop) {
   Pop primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_header_stack(testHeaderStack);
 
   HeaderStack &stack = phv->get_header_stack(testHeaderStack);
@@ -574,7 +560,6 @@ TEST_F(ActionsTest, ModifyFieldWithHashBasedOffset) {
 
   ModifyFieldWithHashBasedOffset primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader2, 3);  // f16
   testActionFn.parameter_push_back_const(Data(base));
   testActionFn.parameter_push_back_calculation(&calculation);
@@ -602,7 +587,6 @@ TEST_F(ActionsTest, ExecuteMeter) {
 
   ExecuteMeter primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader1, 0);  // f32
   testActionFn.parameter_push_back_meter_array(&meter_array);
   testActionFn.parameter_push_back_const(Data(16u));  // idx
@@ -628,7 +612,6 @@ TEST_F(ActionsTest, WritePacketRegister) {
 
   WritePacketRegister primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_const(Data(v));
 
   pkt->set_register(idx, 0u);
@@ -642,7 +625,6 @@ TEST_F(ActionsTest, WritePacketRegister) {
 TEST_F(ActionsTest, HeaderUnion) {
   HeaderUnionAsParameter primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_header_union(testHeaderUnion);
 
   testActionFnEntry(pkt.get());
@@ -662,7 +644,6 @@ TYPED_TEST_CASE(ActionsStringParamTest, SaveStringTypes);
 TYPED_TEST(ActionsStringParamTest, Basic) {
   const std::string testString("testString");
   this->testActionFn.push_back_primitive(&this->primitive);
-  this->testActionFn.push_back_source_info(nullptr);
   this->testActionFn.parameter_push_back_string(testString);
   this->testActionFnEntry(this->pkt.get());
   ASSERT_EQ(testString, this->primitive.get_saved_string());
@@ -671,11 +652,9 @@ TYPED_TEST(ActionsStringParamTest, Basic) {
 TEST_F(ActionsTest, TwoPrimitives) {
   SetField primitive;
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader1, 3);  // f16
   testActionFn.parameter_push_back_field(testHeader1, 0);  // f32
   testActionFn.push_back_primitive(&primitive);
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader2, 3);  // f16
   testActionFn.parameter_push_back_field(testHeader2, 0);  // f32
 
@@ -713,7 +692,6 @@ TEST_F(ActionsTest, ConcurrentPrimitiveExecution) {
       "ModifyFieldWithHashBasedOffset");
 
   testActionFn.push_back_primitive(primitive.get());
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_field(testHeader2, 3);  // f16
   testActionFn.parameter_push_back_const(Data(base));
   testActionFn.parameter_push_back_calculation(&calculation);
@@ -750,7 +728,6 @@ TEST_F(ActionsTest, ConcurrentRegisterPrimitiveExecution) {
   auto primitive = ActionOpcodesMap::get_instance()->get_primitive("Set");
 
   testActionFn.push_back_primitive(primitive.get());
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_register_ref(&register_array, 12);
   testActionFn.parameter_push_back_const(Data(0xabababab));
 
@@ -826,7 +803,6 @@ class ActionsTestRegisterProtection : public ActionsTest {
   void configure_one_action(ActionFn *action_fn,
                             RegisterArray *register_array) {
     action_fn->push_back_primitive(primitive_spin.get());
-    action_fn->push_back_source_info(nullptr);
     action_fn->parameter_push_back_register_array(register_array);
     action_fn->parameter_push_back_const(Data(msecs_to_sleep));
   }
@@ -902,7 +878,6 @@ TEST_F(ActionsTestRegisterProtection, SequentialAdvanced) {
   expr_idx->build();
 
   testActionFn_2.push_back_primitive(&primitive);
-  testActionFn_2.push_back_source_info(nullptr);
   testActionFn_2.parameter_push_back_register_gen(&register_array_2,
                                                   std::move(expr_idx));
   testActionFn_2.parameter_push_back_const(Data(0xab));

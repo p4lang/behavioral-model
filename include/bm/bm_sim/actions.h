@@ -635,8 +635,8 @@ class ActionFn :  public NamedP4Object {
   void parameter_push_back_extern_instance(ExternType *extern_instance);
   void parameter_push_back_string(const std::string &str);
 
-  void push_back_primitive(ActionPrimitive_ *primitive);
-  void push_back_source_info(std::unique_ptr<SourceInfo> source_info);
+  void push_back_primitive(ActionPrimitive_ *primitive,
+                           std::unique_ptr<SourceInfo> source_info = nullptr);
 
   void grab_register_accesses(RegisterSync *register_sync) const;
 

@@ -231,7 +231,6 @@ TEST_F(ExternTest, ExternCounterExecute) {
 
   size_t increment_value = 44u;
   testActionFn.push_back_primitive(primitive.get());
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_extern_instance(extern_instance.get());
   testActionFn.parameter_push_back_const(Data(increment_value));
 
@@ -263,7 +262,6 @@ TEST_F(ExternTest, ExternCounterSetAttribute) {
 
   size_t increment_value = 44u;
   testActionFn.push_back_primitive(primitive.get());
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_extern_instance(extern_instance.get());
   testActionFn.parameter_push_back_const(Data(increment_value));
 
@@ -325,11 +323,9 @@ TEST_F(ExternTest, ExternExpression) {
   auto primitive_1 = get_extern_primitive("ExternExpression", "set_var2");
   auto primitive_2 = get_extern_primitive("ExternExpression", "execute");
   testActionFn.push_back_primitive(primitive_1.get());
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_extern_instance(extern_instance.get());
   testActionFn.parameter_push_back_const(var2);
   testActionFn.push_back_primitive(primitive_2.get());
-  testActionFn.push_back_source_info(nullptr);
   testActionFn.parameter_push_back_extern_instance(extern_instance.get());
   testActionFn.parameter_push_back_field(testHeader1, 0);  // f32
   testActionFnEntry(pkt.get());

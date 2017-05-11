@@ -219,12 +219,9 @@ ActionFn::parameter_push_back_string(const std::string &str) {
 }
 
 void
-ActionFn::push_back_primitive(ActionPrimitive_ *primitive) {
+ActionFn::push_back_primitive(ActionPrimitive_ *primitive,
+                              std::unique_ptr<SourceInfo> source_info) {
   primitives.push_back(primitive);
-}
-
-void
-ActionFn::push_back_source_info(std::unique_ptr<SourceInfo> source_info) {
   source_infos.push_back(std::move(source_info));
 }
 
