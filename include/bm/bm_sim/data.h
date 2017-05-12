@@ -178,7 +178,7 @@ class Data {
   //! Convert the value of Data to any inegral type
   template<typename T,
            typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
-  typename std::remove_const<T>::type get() const {
+  T get() const {
     assert(arith);
     return value.convert_to<typename std::remove_const<T>::type>();
   }
