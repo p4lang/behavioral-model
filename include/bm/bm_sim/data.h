@@ -178,29 +178,26 @@ class Data {
   //! Convert the value of Data to any inegral type
   template<typename T,
            typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
-  T get() const {
+  typename std::remove_const<T>::type get() const {
     assert(arith);
-    return value.convert_to<T>();
+    return value.convert_to<typename std::remove_const<T>::type>();
   }
 
   //! Get the value of Data has an unsigned integer
   unsigned int get_uint() const {
     assert(arith);
-    // Bad ?
     return value.convert_to<unsigned int>();
   }
 
   //! Get the value of Data has a `uint64_t`
   uint64_t get_uint64() const {
     assert(arith);
-    // Bad ?
     return value.convert_to<uint64_t>();
   }
 
   //! get the value of Data has an integer
   int get_int() const {
     assert(arith);
-    // Bad ?
     return value.convert_to<int>();
   }
 
