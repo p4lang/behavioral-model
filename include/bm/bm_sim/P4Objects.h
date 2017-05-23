@@ -47,6 +47,7 @@
 #include "field_lists.h"
 #include "extern.h"
 #include "enums.h"
+#include "control_action.h"
 
 // forward declaration of Json::Value
 namespace Json {
@@ -235,6 +236,10 @@ class P4Objects {
   const std::string &get_enum_name(const std::string &enum_name,
                                    EnumMap::type_t entry_value) const;
 
+  // returns maximum bmv2 json version supported by this parser as
+  // "<major>.<minor>"
+  static std::string get_json_version_string();
+
  private:
   void add_header_type(const std::string &name,
                        std::unique_ptr<HeaderType> header_type);
@@ -286,6 +291,9 @@ class P4Objects {
 
   void add_conditional(const std::string &name,
                        std::unique_ptr<Conditional> conditional);
+
+  void add_control_action(const std::string &name,
+                          std::unique_ptr<ControlAction> control_action);
 
   void add_control_node(const std::string &name, ControlFlowNode *node);
 
@@ -365,6 +373,9 @@ class P4Objects {
 
   std::unordered_map<std::string, std::unique_ptr<Conditional> >
   conditionals_map{};
+
+  std::unordered_map<std::string, std::unique_ptr<ControlAction> >
+  control_actions_map{};
 
   std::unordered_map<std::string, ControlFlowNode *> control_nodes_map{};
 

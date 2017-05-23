@@ -10,7 +10,7 @@ on each attribute.
 
 ## Current bmv2 JSON format version
 
-The version described in this document is *2.10*.
+The version described in this document is *2.12*.
 
 The major version number will be increased by the compiler only when
 backward-compatibility of the JSON format is broken. After a major version
@@ -20,8 +20,8 @@ not be able to consume newer JSON files.
 Starting with version 2.0, the version number is included in the JSON file
 itself, under the key `__meta__` -> `version`.
 
-Note that the bmv2 code currently does not perform any version check, even
-though it is recommended for all consummers of the JSON.
+Note that the bmv2 code will perform a version check against the provided input
+JSON.
 
 ## General information
 
@@ -260,16 +260,15 @@ parser. The attributes for these objects are:
   - `id`: a unique integer; note that it has to be unique with respect to *all*
   parse states in the JSON file, not just the parse states included in this
   parser object
-  - `parser_ops`: a JSON array of the operations (set or extract) performed in
-  this parse state, in the correct order. Each parser operation is represented
-  by a JSON object, whose attributes are:
+  - `parser_ops`: a JSON array of the operations performed in this parse state,
+  in the correct order. Each parser operation is represented by a JSON object,
+  whose attributes are:
     - `op`: the type of operation, either `extract`, `extract_VL`, `set`,
-    `verify` or `shift`
+    `verify`, `shift` or `primitive`.
     - `parameters`: a JSON array of objects encoding the parameters to the
-    parser operation. Each parameter object has 2 string attributes: `type` for
-    the parameter type and `value` for its value. Depending on the type of
-    operation, the constraints are different. A description of these constraints
-    is included [later in this section](#parser-operations).
+    parser operation. Depending on the type of operation, the constraints are
+    different. A description of these constraints is included [later in this
+    section](#parser-operations).
   - `transition_key`: a JSON array (in the correct order) of objects which
   describe the different fields of the parse state transition key. Each object
   has 2 attributes, `type` and `value`, where `type` can be either
@@ -327,6 +326,40 @@ In the `parser_ops` array, the format of the `parameters` array depends on the
   valid integral value for an error constant (see [here](#errors)).
   - `shift`: we expect a single parameter, the number of bytes to shift (shifted
   packet data will be discarded).
+  - `primitive`: introduced for P4_16, where extern methods can be called from
+  parser states. It only takes one parameter, which is itself a JSON object with
+  the following attributes:
+    - `op`: the primitive name. This primitive has to be supported by the
+      target.
+    - `parameters`: a JSON array of the arguments passed to the primitive (has
+  to match the target primitive definition). Each argument is represented by a
+  [type-value](#the-type-value-object) JSON object. This is consistent with how
+  control-flow actions are described in the JSON, so you can refer to the
+  [actions](#actions) section for more details.
+
+We provide an example of parser operations for a parser state:
+```json
+"parser_ops": [
+    {
+        "op": "extract",
+        "parameters": [
+            {"type": "regular", "value": "ethernet"}
+        ]
+    },
+    {
+        "op": "primitive",
+        "parameters": [
+            {
+                "op": "assign_header",
+                "parameters": [
+                    {"type": "header", "value": "ethernet_copy"},
+                    {"type": "header", "value": "ethernet"},
+                ]
+            }
+        ]
+    }
+]
+```
 
 ### `parse_vsets`
 
@@ -426,6 +459,7 @@ bmv2 supports the following core primitives:
 - `assign`, `assign_VL` (for variable-length fields), `assign_header` and
 `assign_union`.
 - `push` and `pop` for stack (header stack or header union stack) manipulation.
+
 Support for additional primitives depends on the architecture being used.
 
 ### `pipelines`
@@ -507,10 +541,27 @@ information for a given P4 condition, which is used by the current pipeline. The
 attributes for these objects are:
   - `name`
   - `id`: a unique integer; note that it has to be unique with respect to *all*
-  conditions in the JSON file, not just the conditions included in this parser
+  conditions in the JSON file, not just the conditions included in this pipeline
   object
   - `expression`: the expression for the condition. See
     [here](#the-type-value-object) for more information on expressions format.
+  - `true_next`: the name of the next control flow to execute if the condition
+  evaluates to true (can be a table, another conditional or an action call), or
+  null if this is the end of the pipeline
+  - `false_next`: the name of the next control flow to execute if the condition
+  evaluates to false, or null if this is the end of the pipeline
+- `action_calls`: a JSON array of JSON objects. It is used for direct action
+calls from a control flow which are not wrapped into a table. The attributes for
+these objects are:
+  - `name`
+  - `id`: a unique integer; note that it has to be unique with respect to *all*
+  action calls in the JSON file, not just the ones included in this pipeline
+  object
+  - `action_id`: the id of the action to call; note that the corresponding
+  action must not expect any parameter
+  - `next_node`: the name of the next control flow node to execute (can be a
+  table, a conditional or another action call like this one), or null if this is
+  the last node in the pipeline
 
 The `match_type` for the table needs to follow the following rules:
 - If one match field is `range`, the table `match_type` has to be `range`

@@ -24,6 +24,9 @@
 
 #include <bm/bm_sim/P4Objects.h>
 
+#include <ctype.h>
+
+#include <algorithm>  // std::all_of
 #include <fstream>
 #include <map>
 #include <sstream>
@@ -586,6 +589,22 @@ class JsonBuilder {
     pipelines.append(pipeline);
   }
 
+  void add_control_action(const std::string &name, int action_id) {
+    auto &pipelines = json["pipelines"];
+    Json::Value pipeline(Json::objectValue);
+    pipeline["name"] = "pipe";
+    pipeline["id"] = 0;
+    pipeline["init_table"] = name;
+    pipeline["action_calls"] = Json::Value(Json::arrayValue);
+    Json::Value action_call(Json::objectValue);
+    action_call["name"] = name;
+    action_call["id"] = 0;
+    action_call["action_id"] = action_id;
+    action_call["next_node"] = Json::Value();  // null
+    pipeline["action_calls"].append(action_call);
+    pipelines.append(pipeline);
+  }
+
   using MatchParam = std::map<std::string, std::string>;
   void add_entry_to_table(const std::string &table_name, int action_id,
                           const std::vector<MatchParam> &mk,
@@ -928,4 +947,35 @@ TEST(P4Objects, ConditionSourceInfo) {
   EXPECT_EQ(expected_source_info.get_source_fragment(),
             source_info->get_source_fragment());
   EXPECT_EQ(std::string("foo.p4(42)"), source_info->to_string());
+}
+
+TEST(P4Objects, ActionControl) {
+  JsonBuilder builder;
+  builder.add_action("a");
+  builder.add_control_action("ca", 0);
+  std::stringstream is(builder.to_string());
+  P4Objects objects;
+  LookupStructureFactory factory;
+  ASSERT_EQ(0, objects.init_objects(&is, &factory));
+}
+
+TEST(P4Objects, JsonVersionStr) {
+  auto json_version_str = P4Objects::get_json_version_string();
+  // not worth using <regex> for this, which would require checking compiler
+  // compatibility (e.g. __GLIBCXX__ >= 20140422) and may create portability
+  // concerns
+  auto check_digit = [](char c) {
+    return isdigit(static_cast<unsigned char>(c));
+  };
+  auto check_version = [&json_version_str, &check_digit]() {
+    auto dot = json_version_str.find('.');
+    ASSERT_NE(std::string::npos, dot);
+    ASSERT_NE(0u, dot);
+    ASSERT_NE(json_version_str.size(), dot);
+    EXPECT_TRUE(std::all_of(
+        &json_version_str.front(), &json_version_str[dot], check_digit));
+    EXPECT_TRUE(std::all_of(
+        &json_version_str[dot + 1], &json_version_str.back(), check_digit));
+  };
+  check_version();
 }

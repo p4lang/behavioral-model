@@ -38,6 +38,15 @@ using std::string;
 
 namespace {
 
+constexpr int required_major_version = 2;
+constexpr int max_minor_version = 12;
+// not needed for now
+// constexpr int min_minor_version = 0;
+
+std::string get_version_str(int major, int minor) {
+  return std::to_string(major) + "." + std::to_string(minor);
+}
+
 template <typename T,
           typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
 T hexstr_to_int(const std::string &hexstr) {
@@ -107,6 +116,11 @@ using EFormat = ExceptionFormatter;
 enum class P4Objects::ExprType {
   UNKNOWN, DATA, HEADER, HEADER_STACK, BOOL, UNION, UNION_STACK
 };
+
+std::string
+P4Objects::get_json_version_string() {
+  return get_version_str(required_major_version, max_minor_version);
+}
 
 void
 P4Objects::build_expression(const Json::Value &json_expression,
@@ -556,6 +570,50 @@ class HeaderUnionType : public NamedP4Object {
   std::vector<EntryInfo> entries{};
 };
 
+void check_json_tuple_size(const Json::Value &cfg_parent,
+                           const std::string &key,
+                           size_t expected_size) {
+  const auto &cfg_v = cfg_parent[key];
+  if (!cfg_v.isArray()) {
+    throw json_exception(
+        EFormat() << "Expected '" << key << "' to be a JSON array",
+        cfg_parent);
+  }
+  if (cfg_v.size() != expected_size) {
+    throw json_exception(
+        EFormat() << "Expected '" << key << "' to be a JSON array of size "
+                  << expected_size << " but array has size " << cfg_v.size(),
+        cfg_parent);
+  }
+}
+
+void check_json_version(const Json::Value &cfg_root) {
+  // to avoid a huge number of backward-compatibility issues, we accept JSON
+  // inputs which are not tagged with a version number.
+  if (!cfg_root.isMember("__meta__")) return;
+  const auto &cfg_meta = cfg_root["__meta__"];
+  if (!cfg_meta.isMember("version")) return;
+  const auto &cfg_version = cfg_meta["version"];
+  check_json_tuple_size(cfg_meta, "version", 2);
+  auto major = cfg_version[0].asInt();
+  auto minor = cfg_version[1].asInt();
+  if (major != required_major_version) {
+    throw json_exception(
+        EFormat() << "We require a bmv2 JSON major version number of "
+                  << required_major_version << " but this JSON input is "
+                  << "tagged with a major version number of " << major,
+        cfg_meta);
+  }
+  if (minor > max_minor_version) {
+    throw json_exception(
+        EFormat() << "The most recent bmv2 JSON version number supported is "
+                  << get_version_str(required_major_version, max_minor_version)
+                  << " but this JSON input is tagged with version number "
+                  << get_version_str(major, minor),
+        cfg_meta);
+  }
+}
+
 }  // namespace
 
 struct P4Objects::InitState {
@@ -871,7 +929,7 @@ P4Objects::init_parsers(const Json::Value &cfg_root, InitState *init_state) {
         const string op_type = cfg_parser_op["op"].asString();
         const Json::Value &cfg_parameters = cfg_parser_op["parameters"];
         if (op_type == "extract") {
-          assert(cfg_parameters.size() == 1);
+          check_json_tuple_size(cfg_parser_op, "parameters", 1);
           const Json::Value &cfg_extract = cfg_parameters[0];
           const string extract_type = cfg_extract["type"].asString();
           if (extract_type == "regular") {
@@ -893,7 +951,7 @@ P4Objects::init_parsers(const Json::Value &cfg_root, InitState *init_state) {
             parse_state->add_extract_to_stack(header_stack_id);
           } else if (extract_type == "union_stack") {
             const auto &cfg_union_stack = cfg_extract["value"];
-            assert(cfg_union_stack.size() == 2);
+            check_json_tuple_size(cfg_extract, "value", 2);
             auto extract_union_stack = cfg_union_stack[0].asString();
             auto header_union_stack_id = get_header_union_stack_id(
                 extract_union_stack);
@@ -910,7 +968,7 @@ P4Objects::init_parsers(const Json::Value &cfg_root, InitState *init_state) {
                 cfg_parser_op);
           }
         } else if (op_type == "extract_VL") {
-          assert(cfg_parameters.size() == 2);
+          check_json_tuple_size(cfg_parser_op, "parameters", 2);
           const Json::Value &cfg_extract = cfg_parameters[0];
           const Json::Value &cfg_VL_expr = cfg_parameters[1];
           assert(cfg_extract["type"].asString() == "regular");
@@ -923,12 +981,17 @@ P4Objects::init_parsers(const Json::Value &cfg_root, InitState *init_state) {
           parse_state->add_extract_VL(header_id, VL_expr,
                                       header_type.get_VL_max_header_bytes());
         } else if (op_type == "set") {
-          assert(cfg_parameters.size() == 2);
+          check_json_tuple_size(cfg_parser_op, "parameters", 2);
           const Json::Value &cfg_dest = cfg_parameters[0];
           const Json::Value &cfg_src = cfg_parameters[1];
 
           const string &dest_type = cfg_dest["type"].asString();
-          assert(dest_type == "field");
+          if (dest_type != "field") {
+            throw json_exception(
+                EFormat() << "Parser 'set' operation has invalid destination "
+                          << "type '" << dest_type << "', expected 'field'",
+                cfg_parser_op);
+          }
           const auto dest = field_info(cfg_dest["value"][0].asString(),
                                        cfg_dest["value"][1].asString());
           enable_arith(std::get<0>(dest), std::get<1>(dest));
@@ -957,10 +1020,13 @@ P4Objects::init_parsers(const Json::Value &cfg_root, InitState *init_state) {
             parse_state->add_set_from_expression(
               std::get<0>(dest), std::get<1>(dest), expr);
           } else {
-            assert(0 && "parser set op not supported");
+            throw json_exception(
+                EFormat() << "Parser 'set' operation has unsupported source "
+                          << "type '" << src_type << "'",
+                cfg_parser_op);
           }
         } else if (op_type == "verify") {
-          assert(cfg_parameters.size() == 2);
+          check_json_tuple_size(cfg_parser_op, "parameters", 2);
           BoolExpression cond_expr;
           build_expression(cfg_parameters[0], &cond_expr);
           cond_expr.build();
@@ -980,7 +1046,7 @@ P4Objects::init_parsers(const Json::Value &cfg_root, InitState *init_state) {
           error_expr.build();
           parse_state->add_verify(cond_expr, error_expr);
         } else if (op_type == "primitive") {
-          assert(cfg_parameters.size() == 1);
+          check_json_tuple_size(cfg_parser_op, "parameters", 1);
           const auto primitive_name = cfg_parameters[0]["op"].asString();
           std::unique_ptr<ActionFn> action_fn(new ActionFn(
               primitive_name, 0, 0));
@@ -1196,7 +1262,8 @@ P4Objects::init_meter_arrays(const Json::Value &cfg_root,
     } else if (type == "bytes") {
       meter_type = Meter::MeterType::BYTES;
     } else {
-      assert(0 && "invalid meter type");
+      throw json_exception(
+          EFormat() << "Invalid meter type '" << type << "'", cfg_meter_array);
     }
     const size_t rate_count = cfg_meter_array["rate_count"].asUInt();
     const size_t size = cfg_meter_array["size"].asUInt();
@@ -1483,8 +1550,7 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
         table = MatchActionTable::create_match_action_table<MatchTable>(
           match_type, table_name, table_id, table_size, key_builder,
           with_counters, with_ageing, lookup_factory);
-      } else {
-        assert(table_type == "indirect" || table_type == "indirect_ws");
+      } else if (table_type == "indirect" || table_type == "indirect_ws") {
         bool with_selection = (table_type == "indirect_ws");
         if (table_type == "indirect") {
           table =
@@ -1523,6 +1589,10 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
           auto calc = process_cfg_selector(cfg_table["selector"]);
           action_profile->set_hash(std::move(calc));
         }
+      } else {
+        throw json_exception(
+            EFormat() << "Invalid table type '" << table_type << "'",
+            cfg_table);
       }
 
       // maintains backwards compatibility
@@ -1541,17 +1611,41 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
 
     // pipelines -> conditionals
 
-    const Json::Value &cfg_conditionals = cfg_pipeline["conditionals"];
+    const auto &cfg_conditionals = cfg_pipeline["conditionals"];
     for (const auto &cfg_conditional : cfg_conditionals) {
       const string conditional_name = cfg_conditional["name"].asString();
       p4object_id_t conditional_id = cfg_conditional["id"].asInt();
       auto conditional = new Conditional(
         conditional_name, conditional_id, object_source_info(cfg_conditional));
-      const Json::Value &cfg_expression = cfg_conditional["expression"];
+      const auto &cfg_expression = cfg_conditional["expression"];
       build_expression(cfg_expression, conditional);
       conditional->build();
 
       add_conditional(conditional_name, unique_ptr<Conditional>(conditional));
+    }
+
+    // pipelines -> control action calls
+
+    const auto &cfg_control_actions = cfg_pipeline["action_calls"];
+    for (const auto &cfg_control_action : cfg_control_actions) {
+      auto control_action_name = cfg_control_action["name"].asString();
+      auto control_action_id = static_cast<p4object_id_t>(
+          cfg_control_action["id"].asInt());
+      auto control_action = std::unique_ptr<ControlAction>(
+          new ControlAction(control_action_name, control_action_id));
+      auto action_id = static_cast<p4object_id_t>(
+          cfg_control_action["action_id"].asInt());
+      auto action_fn = get_action_by_id(action_id);
+      auto num_params = action_fn->get_num_params();
+      if (num_params > 0) {
+        throw json_exception(
+            EFormat() << "Cannot call action '" << action_fn->get_name()
+                      << "' directly from control as it expects parameters",
+            cfg_control_action);
+      }
+      control_action->set_action(action_fn);
+
+      add_control_action(control_action_name, std::move(control_action));
     }
 
     // next node resolution for tables
@@ -1709,20 +1803,32 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
     // next node resolution for conditionals
 
     for (const auto &cfg_conditional : cfg_conditionals) {
-      const string conditional_name = cfg_conditional["name"].asString();
-      Conditional *conditional = get_conditional(conditional_name);
+      auto conditional_name = cfg_conditional["name"].asString();
+      auto conditional = get_conditional(conditional_name);
 
-      const Json::Value &cfg_true_next = cfg_conditional["true_next"];
-      const Json::Value &cfg_false_next = cfg_conditional["false_next"];
+      const auto &cfg_true_next = cfg_conditional["true_next"];
+      const auto &cfg_false_next = cfg_conditional["false_next"];
 
       if (!cfg_true_next.isNull()) {
-        ControlFlowNode *next_node = get_control_node(cfg_true_next.asString());
+        auto next_node = get_control_node(cfg_true_next.asString());
         conditional->set_next_node_if_true(next_node);
       }
       if (!cfg_false_next.isNull()) {
-        ControlFlowNode *next_node = get_control_node(
-          cfg_false_next.asString());
+        auto next_node = get_control_node(cfg_false_next.asString());
         conditional->set_next_node_if_false(next_node);
+      }
+    }
+
+    // next node resolution for control actions
+
+    for (const auto &cfg_control_action : cfg_control_actions) {
+      auto control_action_name = cfg_control_action["name"].asString();
+      auto control_action = control_actions_map.at(control_action_name).get();
+      const auto &cfg_next_node = cfg_control_action["next_node"];
+      if (!cfg_next_node.isNull()) {
+        auto next_node_name = cfg_next_node.asString();
+        auto next_node = get_control_node(next_node_name);
+        control_action->set_next_node(next_node);
       }
     }
 
@@ -1750,6 +1856,7 @@ P4Objects::init_checksums(const Json::Value &cfg_root) {
     header_id_t header_id = get_header_id(header_name);
     const string field_name = cfg_cksum_field[1].asString();
     int field_offset = get_field_offset(header_id, field_name);
+    enable_arith(header_id, field_offset);
 
     Checksum *checksum;
     if (checksum_type == "ipv4") {
@@ -1773,6 +1880,10 @@ P4Objects::init_checksums(const Json::Value &cfg_root) {
     checksums.push_back(unique_ptr<Checksum>(checksum));
 
     for (auto it = deparsers.begin(); it != deparsers.end(); ++it) {
+      it->second->add_checksum(checksum);
+    }
+
+    for (auto it = parsers.begin(); it != parsers.end(); ++it) {
       it->second->add_checksum(checksum);
     }
   }
@@ -1835,7 +1946,9 @@ P4Objects::init_field_lists(const Json::Value &cfg_root) {
         field_list->push_back_constant(
             cfg_value_hexstr.asString(), cfg_value_bitwidth.asInt());
       } else {
-        assert(0);  // TODO(antonin): other types
+        throw json_exception(
+            EFormat() << "Invalid entry type '" << type << "' in field list",
+            cfg_element);
       }
     }
 
@@ -1863,6 +1976,8 @@ P4Objects::init_objects(std::istream *is,
   InitState init_state;
 
   try {
+    check_json_version(cfg_root);
+
     init_enums(cfg_root);
 
     init_header_types(cfg_root);
@@ -2381,6 +2496,13 @@ P4Objects::add_conditional(const std::string &name,
                            std::unique_ptr<Conditional> conditional) {
   add_control_node(name, conditional.get());
   conditionals_map[name] = std::move(conditional);
+}
+
+void
+P4Objects::add_control_action(const std::string &name,
+                              std::unique_ptr<ControlAction> control_action) {
+  add_control_node(name, control_action.get());
+  control_actions_map[name] = std::move(control_action);
 }
 
 void
