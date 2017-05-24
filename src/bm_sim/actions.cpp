@@ -219,8 +219,10 @@ ActionFn::parameter_push_back_string(const std::string &str) {
 }
 
 void
-ActionFn::push_back_primitive(ActionPrimitive_ *primitive) {
+ActionFn::push_back_primitive(ActionPrimitive_ *primitive,
+                              std::unique_ptr<SourceInfo> source_info) {
   primitives.push_back(primitive);
+  source_infos.push_back(std::move(source_info));
 }
 
 void
@@ -289,12 +291,18 @@ ActionFnEntry::execute(Packet *pkt) const {
 
   auto &primitives = action_fn->primitives;
   size_t param_offset = 0;
+  size_t si_offset = 0;
   // primitives is a vector of pointers
   BMLOG_TRACE_SI_PKT(*pkt, action_fn->get_source_info(),
-                     "Executing action {}", action_fn->get_name());
+                     "Action {}", action_fn->get_name());
   for (auto primitive : primitives) {
+    BMLOG_TRACE_SI_PKT(*pkt, action_fn->source_infos[si_offset],
+      "Primitive {}",
+      (action_fn->source_infos[si_offset].get() == nullptr) ? "(no source info)"
+        : action_fn->source_infos[si_offset].get()->get_source_fragment());
     primitive->execute(&state, &(action_fn->params[param_offset]));
     param_offset += primitive->get_num_params();
+    ++si_offset;
   }
 }
 

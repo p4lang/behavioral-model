@@ -635,7 +635,8 @@ class ActionFn :  public NamedP4Object {
   void parameter_push_back_extern_instance(ExternType *extern_instance);
   void parameter_push_back_string(const std::string &str);
 
-  void push_back_primitive(ActionPrimitive_ *primitive);
+  void push_back_primitive(ActionPrimitive_ *primitive,
+                           std::unique_ptr<SourceInfo> source_info = nullptr);
 
   void grab_register_accesses(RegisterSync *register_sync) const;
 
@@ -644,6 +645,7 @@ class ActionFn :  public NamedP4Object {
  private:
   std::vector<ActionPrimitive_ *> primitives{};
   std::vector<ActionParam> params{};
+  std::vector<std::unique_ptr<SourceInfo>> source_infos{};
   RegisterSync register_sync{};
   std::vector<Data> const_values{};
   // should I store the objects in the vector, instead of pointers?
