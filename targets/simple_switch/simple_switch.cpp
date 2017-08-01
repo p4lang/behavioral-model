@@ -110,6 +110,7 @@ SimpleSwitch::SimpleSwitch(int max_port, bool enable_swap)
   force_arith_field("intrinsic_metadata", "resubmit_flag");
   force_arith_field("intrinsic_metadata", "egress_rid");
   force_arith_field("intrinsic_metadata", "recirculate_flag");
+  force_arith_field("intrinsic_metadata", "time_of_day"); // 32 bits of POSIX time and 32 bits of fractional of a second
 
   import_primitives();
 }
@@ -152,6 +153,11 @@ SimpleSwitch::receive_(int port_num, const char *buffer, int len) {
   if (phv->has_field("intrinsic_metadata.ingress_global_timestamp")) {
     phv->get_field("intrinsic_metadata.ingress_global_timestamp")
         .set(get_ts().count());
+  }
+  
+  if (phv->has_field("intrinsic_metadata.time_of_day")) { //This field will be set for every packet entering the switch
+    phv->get_field("intrinsic_metadata.time_of_day")
+        .set(now_tod.get_time_of_day());
   }
 
   input_buffer.push_front(std::move(packet));
@@ -524,3 +530,20 @@ SimpleSwitch::egress_thread(size_t worker_id) {
     output_buffer.push_front(std::move(packet));
   }
 }
+
+
+
+tod::tod()
+{  
+	int64_t POSIX_nanoseconds =  std::chrono::duration_cast<std::chrono::nanoseconds> (std::chrono::system_clock::now().time_since_epoch()).count();
+	int64_t one_64bits = 1;
+	int64_t now_64 = (static_cast<int64_t> (POSIX_nanoseconds) / (1e9)) * (one_64bits<<32); //Fraction calculation
+	this->now = now_64;
+}
+
+
+int64_t tod::get_time_of_day()
+{
+	return this->now;
+}
+

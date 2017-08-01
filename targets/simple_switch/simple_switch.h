@@ -64,6 +64,17 @@ using bm::FieldList;
 using bm::packet_id_t;
 using bm::p4object_id_t;
 
+class tod
+{
+	private:
+	int64_t now;
+	
+	public:
+	tod();
+	int64_t get_time_of_day();
+};
+
+
 
 class SimpleSwitch : public Switch {
  public:
