@@ -1510,6 +1510,9 @@ class RuntimeAPI(cmd.Cmd):
             except:
                 raise UIn_Error("'%s' is not a valid %s number"
                                 "" % (port_num_str, description))
+            if port_num < 0:
+                raise UIn_Error("'%s' is not a valid %s number"
+                                "" % (port_num_str, description))
             ports_int.append(port_num)
         ports_int.sort()
         for port_num in ports_int:
