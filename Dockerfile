@@ -19,6 +19,7 @@ ARG GCOV=
 ENV BM_DEPS automake \
             build-essential \
             clang-3.8 \
+            curl \
             g++-6 \
             git \
             libjudy-dev \

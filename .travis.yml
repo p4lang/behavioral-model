@@ -24,10 +24,6 @@ install:
   - docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV .
 
 script:
-  - docker run -w /behavioral-model bm make check -j2
-  - bash tools/check_style.sh
-
-# code coverage
-after_success:
   - ci_env=`bash <(curl -s https://codecov.io/env)`
-  - if [ "$GCOV" != "" ]; then docker run -w /behavioral-model bm $ci_env bash -c "cd src/bm_sim; $GCOV -p -r -o .libs/ *.cpp; rm *third_party*; bash <(curl -s https://codecov.io/bash) -x $GCOV -p src/bm_sim"; fi
+  - docker run $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "make check -j2 && ./travis/codecov.sh"
+  - bash tools/check_style.sh
