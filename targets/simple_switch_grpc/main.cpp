@@ -42,6 +42,9 @@ main(int argc, char* argv[]) {
       "dp-grpc-server-addr",
       "use a gRPC channel to inject and receive dataplane packets; "
       "bind this gRPC server to given address, e.g. 0.0.0.0:50052");
+  simple_switch_parser.add_int_option(
+      "bc-mgrp",
+      "create a multicast group with this ID and add all the ports to it");
 
   bm::OptionsParser parser;
   parser.parse(argc, argv, &simple_switch_parser);
@@ -81,8 +84,18 @@ main(int argc, char* argv[]) {
       std::exit(1);
   }
 
+  int bc_mgrp = -1;
+  {
+    auto rc = simple_switch_parser.get_int_option("bc-mgrp", &bc_mgrp);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      bc_mgrp = -1;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS || bc_mgrp  <= 0)
+      std::exit(1);
+  }
+
   auto &runner = sswitch_grpc::SimpleSwitchGrpcRunner::get_instance(
-      512, !disable_swap_flag, grpc_server_addr, cpu_port, dp_grpc_server_addr);
+      512, !disable_swap_flag, grpc_server_addr, cpu_port, dp_grpc_server_addr,
+      bc_mgrp);
   int status = runner.init_and_start(parser);
   if (status != 0) std::exit(status);
 

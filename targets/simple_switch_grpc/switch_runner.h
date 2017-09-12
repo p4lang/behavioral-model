@@ -21,7 +21,11 @@
 #ifndef SIMPLE_SWITCH_GRPC_SWITCH_RUNNER_H_
 #define SIMPLE_SWITCH_GRPC_SWITCH_RUNNER_H_
 
+#include <bm/bm_sim/dev_mgr.h>
+#include <bm/bm_sim/simple_pre_lag.h>
+
 #include <memory>
+#include <mutex>
 #include <string>
 
 class SimpleSwitch;
@@ -40,17 +44,31 @@ class OptionsParser;
 
 namespace sswitch_grpc {
 
+namespace testing {
+
+class SimpleSwitchGrpcRunnerTesting {
+ public:
+  static void create_broadcast_group(int bc_mgrp);
+  static void port_add(bm::DevMgrIface::port_t port);
+  static void port_remove(bm::DevMgrIface::port_t port);
+};
+
+}  // namespace testing
+
 class SimpleSwitchGrpcRunner {
  public:
+  friend class testing::SimpleSwitchGrpcRunnerTesting;
   // there is no real need for a singleton here, except for the fact that we use
   // PIGrpcServerRunAddr, ... which uses static state
   static SimpleSwitchGrpcRunner &get_instance(
       int max_port = 512, bool enable_swap = false,
       std::string grpc_server_addr = "0.0.0.0:50051",
       int cpu_port = -1,
-      std::string dp_grpc_server_addr = "") {
+      std::string dp_grpc_server_addr = "",
+      int bc_mgrp = -1) {
     static SimpleSwitchGrpcRunner instance(
-        max_port, enable_swap, grpc_server_addr, cpu_port, dp_grpc_server_addr);
+        max_port, enable_swap, grpc_server_addr, cpu_port, dp_grpc_server_addr,
+        bc_mgrp);
     return instance;
   }
 
@@ -62,14 +80,25 @@ class SimpleSwitchGrpcRunner {
   SimpleSwitchGrpcRunner(int max_port = 512, bool enable_swap = false,
                          std::string grpc_server_addr = "0.0.0.0:50051",
                          int cpu_port = -1,
-                         std::string dp_grpc_server_addr = "");
+                         std::string dp_grpc_server_addr = "",
+                         int bc_mgrp = -1);
   ~SimpleSwitchGrpcRunner();
+
+  void create_broadcast_group(int bc_mgrp);
+
+  void port_status_cb(bm::DevMgrIface::port_t port,
+                      const bm::DevMgrIface::PortStatus);
 
   std::unique_ptr<SimpleSwitch> simple_switch;
   std::string grpc_server_addr;
   int cpu_port;
   std::string dp_grpc_server_addr;
   std::unique_ptr<grpc::Server> dp_grpc_server;
+  int bc_mgrp;
+  mutable std::mutex port_mutex{};
+  bm::McSimplePreLAG::PortMap port_map{};
+  bm::McSimplePreLAG::l1_hdl_t L1_h{};
+  bm::DevMgrIface::PortStatusCb port_cb{};
 };
 
 }  // namespace sswitch_grpc
