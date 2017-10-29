@@ -22,6 +22,7 @@
 #define BM_BM_SIM_P4OBJECTS_H_
 
 #include <iosfwd>
+#include <iostream>
 #include <vector>
 #include <unordered_map>
 #include <string>
