@@ -75,6 +75,7 @@ class SimpleSwitch_TruncateP4 : public ::testing::Test {
 
   // Per-test-case tear-down.
   static void TearDownTestCase() {
+    test_switch->stop_and_return();
     delete test_switch;
   }
 
