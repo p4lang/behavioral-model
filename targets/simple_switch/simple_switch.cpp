@@ -190,7 +190,7 @@ SimpleSwitch::stop_and_return() {
 #endif
   }
   output_buffer.push_front(nullptr);
-  while (thread_count_ != 0);
+  while (thread_count_ != 0) {}
 }
 
 void
