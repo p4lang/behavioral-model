@@ -162,25 +162,15 @@ SimpleSwitch::receive_(int port_num, const char *buffer, int len) {
 void
 SimpleSwitch::start_and_return_() {
   check_queueing_metadata();
-  thread_exit_ = false;
-  thread_count_ = 0;
 
-  std::thread t1(&SimpleSwitch::ingress_thread, this);
-  t1.detach();
-  thread_count_ += 1;
+  threads_.push_back(std::thread(&SimpleSwitch::ingress_thread, this));
   for (size_t i = 0; i < nb_egress_threads; i++) {
-    std::thread t2(&SimpleSwitch::egress_thread, this, i);
-    t2.detach();
-    thread_count_ += 1;
+    threads_.push_back(std::thread(&SimpleSwitch::egress_thread, this, i));
   }
-  std::thread t3(&SimpleSwitch::transmit_thread, this);
-  t3.detach();
-  thread_count_ += 1;
+  threads_.push_back(std::thread(&SimpleSwitch::transmit_thread, this));
 }
 
-void
-SimpleSwitch::stop_and_return() {
-  thread_exit_ = true;
+SimpleSwitch::~SimpleSwitch() {
   input_buffer.push_front(nullptr);
   for (size_t i = 0; i < nb_egress_threads; i++) {
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
@@ -190,7 +180,9 @@ SimpleSwitch::stop_and_return() {
 #endif
   }
   output_buffer.push_front(nullptr);
-  while (thread_count_ != 0) {}
+  for (auto& thread_ : threads_ ) { 
+    thread_.join();
+  }
 }
 
 void
@@ -245,17 +237,16 @@ SimpleSwitch::set_transmit_fn(TransmitFn fn) {
 
 void
 SimpleSwitch::transmit_thread() {
-  while (!thread_exit_) {
+  while (1) {
     std::unique_ptr<Packet> packet;
     output_buffer.pop_back(&packet);
-    if (thread_exit_) break;
+    if (packet == nullptr) break;
     BMELOG(packet_out, *packet);
     BMLOG_DEBUG_PKT(*packet, "Transmitting packet of size {} out of port {}",
                     packet->get_data_size(), packet->get_egress_port());
     my_transmit_fn(packet->get_egress_port(),
                    packet->data(), packet->get_data_size());
   }
-  thread_count_ -= 1;
 }
 
 ts_res
@@ -324,10 +315,10 @@ void
 SimpleSwitch::ingress_thread() {
   PHV *phv;
 
-  while (!thread_exit_) {
+  while (1) {
     std::unique_ptr<Packet> packet;
     input_buffer.pop_back(&packet);
-    if (thread_exit_) break;
+    if (packet == nullptr) break;
 
     // TODO(antonin): only update these if swapping actually happened?
     Parser *parser = this->get_parser("parser");
@@ -457,14 +448,13 @@ SimpleSwitch::ingress_thread() {
 
     enqueue(egress_port, std::move(packet));
   }
-  thread_count_ -= 1;
 }
 
 void
 SimpleSwitch::egress_thread(size_t worker_id) {
   PHV *phv;
 
-  while (!thread_exit_) {
+  while (1) {
     std::unique_ptr<Packet> packet;
     size_t port;
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
@@ -473,7 +463,7 @@ SimpleSwitch::egress_thread(size_t worker_id) {
 #else
     egress_buffers.pop_back(worker_id, &port, &packet);
 #endif
-    if (thread_exit_) break;
+    if (packet == nullptr) break;
 
     Deparser *deparser = this->get_deparser("deparser");
     Pipeline *egress_mau = this->get_pipeline("egress");
@@ -563,5 +553,4 @@ SimpleSwitch::egress_thread(size_t worker_id) {
 
     output_buffer.push_front(std::move(packet));
   }
-  thread_count_ -= 1;
 }

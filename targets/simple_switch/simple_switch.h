@@ -31,7 +31,6 @@
 #include <memory>
 #include <chrono>
 #include <thread>
-#include <atomic>
 #include <vector>
 #include <functional>
 
@@ -79,13 +78,13 @@ class SimpleSwitch : public Switch {
   // by default, swapping is off
   explicit SimpleSwitch(int max_port = 256, bool enable_swap = false);
 
+  ~SimpleSwitch();
+
   int receive_(int port_num, const char *buffer, int len) override;
 
   void start_and_return_() override;
 
   void reset_target_state_() override;
-
-  void stop_and_return();
 
   int mirroring_mapping_add(mirror_id_t mirror_id, int egress_port) {
     mirroring_map[mirror_id] = egress_port;
@@ -162,8 +161,7 @@ class SimpleSwitch : public Switch {
 
  private:
   int max_port;
-  std::atomic<bool> thread_exit_;
-  std::atomic<int> thread_count_;
+  std::vector<std::thread> threads_;
   Queue<std::unique_ptr<Packet> > input_buffer;
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
   bm::QueueingLogicPriRL<std::unique_ptr<Packet>, EgressThreadMapper>
