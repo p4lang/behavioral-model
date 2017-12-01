@@ -180,7 +180,7 @@ SimpleSwitch::~SimpleSwitch() {
 #endif
   }
   output_buffer.push_front(nullptr);
-  for (auto& thread_ : threads_ ) { 
+  for (auto& thread_ : threads_) {
     thread_.join();
   }
 }
