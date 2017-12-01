@@ -31,7 +31,6 @@
 #include <memory>
 #include <chrono>
 #include <thread>
-#include <atomic>
 #include <vector>
 #include <functional>
 
@@ -86,8 +85,6 @@ class SimpleSwitch : public Switch {
   void start_and_return_() override;
 
   void reset_target_state_() override;
-
-  void stop_and_return();
 
   int mirroring_mapping_add(mirror_id_t mirror_id, int egress_port) {
     mirroring_map[mirror_id] = egress_port;

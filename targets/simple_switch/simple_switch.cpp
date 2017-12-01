@@ -162,8 +162,6 @@ SimpleSwitch::receive_(int port_num, const char *buffer, int len) {
 void
 SimpleSwitch::start_and_return_() {
   check_queueing_metadata();
-  thread_exit_ = false;
-  thread_count_ = 0;
 
   threads_.push_back(std::thread(&SimpleSwitch::ingress_thread, this));
   for (size_t i = 0; i < nb_egress_threads; i++) {
@@ -239,7 +237,7 @@ SimpleSwitch::set_transmit_fn(TransmitFn fn) {
 
 void
 SimpleSwitch::transmit_thread() {
-  while (!thread_exit_) {
+  while (1) {
     std::unique_ptr<Packet> packet;
     output_buffer.pop_back(&packet);
     if (packet == nullptr) break;
@@ -249,7 +247,6 @@ SimpleSwitch::transmit_thread() {
     my_transmit_fn(packet->get_egress_port(),
                    packet->data(), packet->get_data_size());
   }
-  thread_count_ -= 1;
 }
 
 ts_res
@@ -318,7 +315,7 @@ void
 SimpleSwitch::ingress_thread() {
   PHV *phv;
 
-  while (!thread_exit_) {
+  while (1) {
     std::unique_ptr<Packet> packet;
     input_buffer.pop_back(&packet);
     if (packet == nullptr) break;
@@ -451,14 +448,13 @@ SimpleSwitch::ingress_thread() {
 
     enqueue(egress_port, std::move(packet));
   }
-  thread_count_ -= 1;
 }
 
 void
 SimpleSwitch::egress_thread(size_t worker_id) {
   PHV *phv;
 
-  while (!thread_exit_) {
+  while (1) {
     std::unique_ptr<Packet> packet;
     size_t port;
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
@@ -557,5 +553,4 @@ SimpleSwitch::egress_thread(size_t worker_id) {
 
     output_buffer.push_front(std::move(packet));
   }
-  thread_count_ -= 1;
 }
