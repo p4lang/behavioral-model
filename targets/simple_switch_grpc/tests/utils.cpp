@@ -50,7 +50,7 @@ int get_action_id(const p4::config::P4Info &p4info,
 }
 
 int get_direct_counter_id(const p4::config::P4Info &p4info,
-              const std::string &dc_name) {
+                          const std::string &direct_counter_name) {
   for (const auto &direct_counters : p4info.direct_counters()) {
     const auto &pre = direct_counters.preamble();
     if (pre.name() == dc_name) return pre.id();

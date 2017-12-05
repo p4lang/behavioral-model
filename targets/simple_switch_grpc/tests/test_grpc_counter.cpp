@@ -68,7 +68,7 @@ TEST_F(SimpleSwitchGrpcTest_Counter, CounterHit) {
   auto action = table_action->mutable_action();
   action->set_action_id(a_id);
 
-  auto write_one_entry = [&,this](const std::string &key_string) {
+  auto write_one_entry = [&, this](const std::string &key_string) {
     p4::WriteRequest write_request;
     write_request.set_device_id(device_id);
     auto update = write_request.add_updates();
@@ -84,12 +84,12 @@ TEST_F(SimpleSwitchGrpcTest_Counter, CounterHit) {
   write_one_entry(std::string("\x00\x00\x00\x0a", 4));
   write_one_entry(std::string("\x00\x00\x00\x05", 4));
 
-  auto send_one_packet = [&,this](const std::string &payload) {
+  auto send_one_packet = [&, this](const std::string &payload) {
     p4::bm::PacketStreamRequest packet_request;
     packet_request.set_device_id(device_id);
     packet_request.set_port(1);
     packet_request.set_packet(payload);
-	  
+
     ClientContext context;
     auto stream = dataplane_stub->PacketStream(&context);
     stream->Write(packet_request);
@@ -105,7 +105,7 @@ TEST_F(SimpleSwitchGrpcTest_Counter, CounterHit) {
   send_one_packet(std::string(10, '\xab'));
   send_one_packet(std::string(5, '\xab'));
 
-  auto read_one_counter = [&,this](const std::string &key_string,
+  auto read_one_counter = [&, this](const std::string &key_string,
                                    int packet_count, int byte_count) {
     p4::ReadRequest read_request;
     read_request.set_device_id(device_id);
