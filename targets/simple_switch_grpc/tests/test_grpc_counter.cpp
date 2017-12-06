@@ -57,24 +57,23 @@ TEST_F(SimpleSwitchGrpcTest_Counter, CounterHit) {
   auto a_id = get_action_id(p4info, "port_redirect");
   auto dc_id = get_direct_counter_id(p4info, "cntr");
 
-  p4::Entity entity;
-  auto table_entry = entity.mutable_table_entry();
-  table_entry->set_table_id(t_id);
-  table_entry->set_priority(100);
-  auto match = table_entry->add_match();
-  match->set_field_id(mf_id);
-  auto exact = match->mutable_exact();
-  auto table_action = table_entry->mutable_action();
-  auto action = table_action->mutable_action();
-  action->set_action_id(a_id);
-
-  auto write_one_entry = [&, this](const std::string &key_string) {
+  auto write_one_entry = [t_id, mf_id, a_id, this]
+                         (const std::string &key_string) {
     p4::WriteRequest write_request;
     write_request.set_device_id(device_id);
     auto update = write_request.add_updates();
     update->set_type(p4::Update_Type_INSERT);
+    auto entity = update->mutable_entity();
+    auto table_entry = entity->mutable_table_entry();
+    table_entry->set_table_id(t_id);
+    table_entry->set_priority(100);
+    auto match = table_entry->add_match();
+    match->set_field_id(mf_id);
+    auto exact = match->mutable_exact();
     exact->set_value(key_string);
-    *(update->mutable_entity()) = entity;
+    auto table_action = table_entry->mutable_action();
+    auto action = table_action->mutable_action();
+    action->set_action_id(a_id);
 
     p4::WriteResponse write_response;
     ClientContext context;
@@ -84,7 +83,7 @@ TEST_F(SimpleSwitchGrpcTest_Counter, CounterHit) {
   write_one_entry(std::string("\x00\x00\x00\x0a", 4));
   write_one_entry(std::string("\x00\x00\x00\x05", 4));
 
-  auto send_one_packet = [&, this](const std::string &payload) {
+  auto send_one_packet = [this](const std::string &payload) {
     p4::bm::PacketStreamRequest packet_request;
     packet_request.set_device_id(device_id);
     packet_request.set_port(1);
@@ -105,15 +104,24 @@ TEST_F(SimpleSwitchGrpcTest_Counter, CounterHit) {
   send_one_packet(std::string(10, '\xab'));
   send_one_packet(std::string(5, '\xab'));
 
-  auto read_one_counter = [&, this](const std::string &key_string,
-                                   int packet_count, int byte_count) {
+  auto read_one_counter = [dc_id, t_id, mf_id, a_id, this]
+                          (const std::string &key_string,
+                           int packet_count, int byte_count) {
     p4::ReadRequest read_request;
     read_request.set_device_id(device_id);
     auto read_entity = read_request.add_entities();
     auto direct_counter_entry = read_entity->mutable_direct_counter_entry();
     direct_counter_entry->set_counter_id(dc_id);
+    auto table_entry = direct_counter_entry->mutable_table_entry();
+    table_entry->set_table_id(t_id);
+    table_entry->set_priority(100);
+    auto match = table_entry->add_match();
+    match->set_field_id(mf_id);
+    auto exact = match->mutable_exact();
     exact->set_value(key_string);
-    *(direct_counter_entry->mutable_table_entry()) = *table_entry;
+    auto table_action = table_entry->mutable_action();
+    auto action = table_action->mutable_action();
+    action->set_action_id(a_id);
 
     ClientContext context;
     std::unique_ptr<grpc::ClientReader<p4::ReadResponse> > reader(
