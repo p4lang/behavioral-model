@@ -119,12 +119,6 @@ TEST_F(SimpleSwitchGrpcTest_Counter, CounterHit) {
     match->set_field_id(mf_id);
     auto exact = match->mutable_exact();
     exact->set_value(key_string);
-<<<<<<< HEAD
-=======
-    auto table_action = table_entry->mutable_action();
-    auto action = table_action->mutable_action();
-    action->set_action_id(a_id);
->>>>>>> db5f872e68c63940723ca6b58456da6b15bfd913
 
     ClientContext context;
     std::unique_ptr<grpc::ClientReader<p4::ReadResponse> > reader(
