@@ -246,7 +246,7 @@ SimpleSwitchGrpcRunner::wait() {
 
 void
 SimpleSwitchGrpcRunner::shutdown() {
-  dp_grpc_server->Shutdown();
+  if (!dp_grpc_server_addr.empty()) dp_grpc_server->Shutdown();
   PIGrpcServerShutdown();
 }
 
