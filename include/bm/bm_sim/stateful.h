@@ -111,7 +111,8 @@ class RegisterArray : public NamedP4Object {
   Register &operator[](size_t idx) {
     if (idx >= size()) {
       bm::Logger::get()->critical(
-        "Access register `{}` out of range, size={},index={}", name, size(), idx);
+        "Access register `{}` out of range, size={},index={}",
+        name, size(), idx);
     }
     return registers[idx];
   }
@@ -120,7 +121,8 @@ class RegisterArray : public NamedP4Object {
   const Register &operator[](size_t idx) const {
     if (idx >= size()) {
       bm::Logger::get()->critical(
-        "Access register `{}` out of range, size={},index={}", name, size(), idx);
+        "Access register `{}` out of range, size={},index={}",
+        name, size(), idx);
     }
     return registers[idx];
   }
