@@ -45,6 +45,7 @@
 
 #include "data.h"
 #include "bignum.h"
+#include "logger.h"
 #include "named_p4object.h"
 #include "short_alloc.h"
 
@@ -108,13 +109,19 @@ class RegisterArray : public NamedP4Object {
 
   //! Access the register at position \p idx, asserts if bad \p idx
   Register &operator[](size_t idx) {
-    assert(idx < size());
+    if (idx >= size()) {
+      bm::Logger::get()->critical(
+        "Access register `{}` out of range, size={},index={}", name, size(), idx);
+    }
     return registers[idx];
   }
 
   //! @copydoc operator[]
   const Register &operator[](size_t idx) const {
-    assert(idx < size());
+    if (idx >= size()) {
+      bm::Logger::get()->critical(
+        "Access register `{}` out of range, size={},index={}", name, size(), idx);
+    }
     return registers[idx];
   }
 
