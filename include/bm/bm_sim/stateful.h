@@ -113,6 +113,7 @@ class RegisterArray : public NamedP4Object {
       bm::Logger::get()->critical(
         "Access register `{}` out of range, size={},index={}",
         name, size(), idx);
+      assert(idx < size());
     }
     return registers[idx];
   }
@@ -123,6 +124,7 @@ class RegisterArray : public NamedP4Object {
       bm::Logger::get()->critical(
         "Access register `{}` out of range, size={},index={}",
         name, size(), idx);
+      assert(idx < size());
     }
     return registers[idx];
   }
