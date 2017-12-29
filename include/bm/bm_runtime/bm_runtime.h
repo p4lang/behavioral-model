@@ -12,7 +12,7 @@ namespace thrift_provider = apache::thrift;
 #endif
 
 #include <bm/bm_sim/switch.h>
-#include <bm/stdcxx.h>
+#include <bm/thrift/stdcxx.h>
 
 using namespace thrift_provider;
 using namespace thrift_provider::transport;

@@ -45,7 +45,7 @@ namespace thrift_provider = apache::thrift;
 #include <bm/bm_sim/switch.h>
 #include <bm/bm_sim/simple_pre.h>
 #include <bm/bm_sim/simple_pre_lag.h>
-#include <bm/stdcxx.h>
+#include <bm/thrift/stdcxx.h>
 #include <bm/Standard.h>
 #include <bm/SimplePre.h>
 #include <bm/SimplePreLAG.h>

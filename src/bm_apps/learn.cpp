@@ -35,7 +35,7 @@ namespace thrift_provider = apache::thrift;
 #endif
 
 #include <bm/bm_apps/learn.h>
-#include <bm/stdcxx.h>
+#include <bm/thrift/stdcxx.h>
 #include <bm/Standard.h>
 #include <bm/SimplePre.h>
 
