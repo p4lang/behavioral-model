@@ -33,10 +33,12 @@ On Ubuntu 14.04, the following packages are required:
 - g++
 - libssl-dev
 
-You also need to install [thrift
-0.9.2](https://github.com/apache/thrift/releases/tag/0.9.2) and [nanomsg
-1.0.0](https://github.com/nanomsg/nanomsg/releases/tag/1.0.0) from source. Feel
-free to use the install scripts under travis/.
+You also need to install the following from source. Feel free to use the
+install scripts under travis/.
+
+- [thrift 0.9.2](https://github.com/apache/thrift/releases/tag/0.9.2) or later
+- [nanomsg 1.0.0](https://github.com/nanomsg/nanomsg/releases/tag/1.0.0) or
+  later
 
 To use the CLI, you will need to install the
 [nnpy](https://github.com/nanomsg/nnpy) Python package. Feel free to use
@@ -244,17 +246,4 @@ Please submit an issue with the appropriate label on
 
 ### How can I contribute ?
 
-You can fork the repo and submit a pull request in Github. For more information
-send us an email (p4-dev@p4.org).
-
-All developers must sign the [P4.org](http://p4.org) CLA and return it to
-(membership@p4.org) before making contributions. The CLA is available
-[here](http://p4.org/wp-content/uploads/2015/07/P4_Language_Consortium_Membership_Agreement.pdf).
-
-Any contribution to the C++ core code (in particular the [bm_sim](src/bm_sim)
-module) must respect the coding guidelines. We rely heavily on the [Google C++
-Style Guide](https://google.github.io/styleguide/cppguide.html), with some
-differences listed in this repository's
-[wiki](https://github.com/p4lang/behavioral-model/wiki/Coding-guidelines). Every
-submitted pull request will go through our Travis tests, which include running
-`cpplint.py` to ensure correct style and formatting.
+See [CONTRIBUTING.md](CONTRIBUTING.md).

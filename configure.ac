@@ -108,6 +108,10 @@ AC_ARG_WITH([pi],
 
 AM_CONDITIONAL([COND_PI], [test "$want_pi" = yes])
 
+AC_ARG_ENABLE([Werror],
+    AS_HELP_STRING([--enable-Werror], [Make all compiler warnings fatal]),
+    [enable_Werror="$enableval"], [enable_Werror=no])
+
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
@@ -147,6 +151,9 @@ AS_IF([test "$want_thrift" = yes], [
     ])
     AS_IF([test x"$THRIFT" = x], [AC_MSG_ERROR([cannot find thrift])])
     MY_CPPFLAGS="$MY_CPPFLAGS -DBMTHRIFT_ON"
+    AC_CHECK_HEADER([thrift/stdcxx.h], [
+        MY_CPPFLAGS="$MY_CPPFLAGS -DHAVE_THRIFT_STDCXX_H"
+    ], [])
 ])
 
 AS_IF([test "$want_pi" = yes], [
@@ -215,9 +222,12 @@ AC_SUBST([AM_CPPFLAGS], ["$MY_CPPFLAGS \
                           -I\$(top_srcdir)/include \
                           -isystem\$(top_srcdir)/third_party/jsoncpp/include \
                           -isystem\$(top_srcdir)/third_party/spdlog"])
-
-AC_SUBST([AM_CXXFLAGS], ["$PTHREAD_CFLAGS -Wall -Werror -Wextra"])
 AC_SUBST([AM_CFLAGS], ["$PTHREAD_CFLAGS"])
+# Using ax_append_compile_flags requires copying 4 macro definitions from the
+# autoconf archive to m4/
+MY_CXXFLAGS="-Wall -Wextra"
+AS_IF([test "$enable_Werror" = "yes"], [MY_CXXFLAGS="$MY_CXXFLAGS -Werror"])
+AC_SUBST([AM_CXXFLAGS], ["$MY_CXXFLAGS $PTHREAD_CFLAGS"])
 
 # Checks for typedefs, structures, and compiler characteristics.
 # not supported by autoconf 2.68, add to m4/ ?
