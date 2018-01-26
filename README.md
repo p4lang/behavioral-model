@@ -1,5 +1,7 @@
 # BEHAVIORAL MODEL REPOSITORY
 
+testing CLA
+
 [![Build Status](https://travis-ci.org/p4lang/behavioral-model.svg?branch=master)](https://travis-ci.org/p4lang/behavioral-model)
 
 This is the second version of the P4 software switch (aka behavioral model),
