@@ -354,15 +354,16 @@ TYPED_TEST(TableSizeTwo, DeleteEntryHandleUpdate) {
   ASSERT_EQ(MatchErrorCode::EXPIRED_HANDLE, rc);
 }
 
+// This test was added for this issue:
+// https://github.com/p4lang/behavioral-model/issues/549.
+// Removing and entry increments the version field; the handle's version wraps
+// around, but the entry's did not.
 TYPED_TEST(TableSizeTwo, HandleVersionWrapAround) {
-
   std::string key_ = "\xaa\xaa";
   ByteContainer key("0xaaaa");
   entry_handle_t handle;
   MatchErrorCode rc;
-
   for (unsigned int i = 0; i < 257; ++i) {
-
     rc = this->add_entry(key_, &handle);
     ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
     rc = this->table->delete_entry(handle);
