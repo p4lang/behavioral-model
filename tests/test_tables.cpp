@@ -1152,6 +1152,31 @@ TEST_F(TableIndirect, DeleteMember) {
   ASSERT_EQ(rc, MatchErrorCode::SUCCESS);
 }
 
+TEST_F(TableIndirect, DefaultMember) {
+  MatchErrorCode rc;
+  mbr_hdl_t mbr, mbr_2;
+
+  auto pkt = get_pkt(64);
+
+  rc = add_member(0xaba, &mbr);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  rc = table->set_default_member(mbr);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  rc = action_profile.delete_member(mbr);
+  EXPECT_EQ(rc, MatchErrorCode::MBR_STILL_USED);
+
+  rc = add_member(0xabb, &mbr_2);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  rc = table->set_default_member(mbr_2);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  rc = action_profile.delete_member(mbr);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+}
+
 TEST_F(TableIndirect, ModifyEntry) {
   MatchErrorCode rc;
   mbr_hdl_t mbr_1, mbr_2;
@@ -1773,6 +1798,34 @@ TEST_F(TableIndirectWS, GetEntries) {
   ASSERT_EQ(-1, e2.priority);
   ASSERT_EQ(0u, e2.timeout_ms);
   ASSERT_EQ(0u, e2.time_since_hit_ms);
+}
+
+TEST_F(TableIndirectWS, DefaultGroup) {
+  MatchErrorCode rc;
+  grp_hdl_t grp;
+  mbr_hdl_t mbr;
+  unsigned int data = 666u;
+
+  auto pkt = get_pkt(64);
+
+  rc = action_profile.create_group(&grp);
+  EXPECT_EQ(MatchErrorCode::SUCCESS, rc);
+  rc = add_member(data, &mbr);
+  EXPECT_EQ(MatchErrorCode::SUCCESS, rc);
+  rc = action_profile.add_member_to_group(mbr, grp);
+  EXPECT_EQ(MatchErrorCode::SUCCESS, rc);
+
+  rc = table->set_default_group(grp);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  rc = action_profile.delete_group(grp);
+  EXPECT_EQ(rc, MatchErrorCode::GRP_STILL_USED);
+
+  rc = table->set_default_member(mbr);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  rc = action_profile.delete_group(grp);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
 }
 
 TEST_F(TableIndirectWS, CustomGroupSelection) {
