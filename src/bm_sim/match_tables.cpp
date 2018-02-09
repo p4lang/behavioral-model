@@ -96,7 +96,8 @@ MatchTableAbstract::apply_action(Packet *pkt) {
   entry_handle_t handle;
   bool hit;
 
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
+  auto lock_impl = lock_impl_read();
 
   const ActionEntry &action_entry = lookup(*pkt, &hit, &handle);
 
@@ -140,13 +141,13 @@ MatchTableAbstract::apply_action(Packet *pkt) {
 
 void
 MatchTableAbstract::reset_state() {
-  WriteLock lock = lock_write();
+  auto lock = lock_write();
   reset_state_();
 }
 
 void
 MatchTableAbstract::serialize(std::ostream *out) const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   (*out) << name << "\n";
   if (!next_node_miss)
     (*out) << "__NULL__" << "\n";
@@ -157,7 +158,7 @@ MatchTableAbstract::serialize(std::ostream *out) const {
 
 void
 MatchTableAbstract::deserialize(std::istream *in, const P4Objects &objs) {
-  WriteLock lock = lock_write();
+  auto lock = lock_write();
   std::string name_sentinel; (*in) >> name_sentinel;
   assert(name_sentinel == name);
   std::string next_node_miss_name; (*in) >> next_node_miss_name;
@@ -199,7 +200,7 @@ void
 MatchTableAbstract::set_direct_meters(MeterArray *meter_array,
                                       header_id_t target_header,
                                       int target_offset) {
-  WriteLock lock = lock_write();
+  auto lock = lock_write();
   match_unit_->set_direct_meters(meter_array);
   meter_target_header = target_header;
   meter_target_offset = target_offset;
@@ -210,7 +211,7 @@ MatchErrorCode
 MatchTableAbstract::query_counters(entry_handle_t handle,
                                    counter_value_t *bytes,
                                    counter_value_t *packets) const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   if (!with_counters) return MatchErrorCode::COUNTERS_DISABLED;
   if (!is_valid_handle(handle)) return MatchErrorCode::INVALID_HANDLE;
   const MatchUnit::EntryMeta &meta = match_unit_->get_entry_meta(handle);
@@ -231,7 +232,7 @@ MatchErrorCode
 MatchTableAbstract::write_counters(entry_handle_t handle,
                                    counter_value_t bytes,
                                    counter_value_t packets) {
-  ReadLock lock = lock_write();
+  auto lock = lock_write();
   if (!with_counters) return MatchErrorCode::COUNTERS_DISABLED;
   if (!is_valid_handle(handle)) return MatchErrorCode::INVALID_HANDLE;
   MatchUnit::EntryMeta &meta = match_unit_->get_entry_meta(handle);
@@ -245,7 +246,7 @@ MatchTableAbstract::set_meter_rates(
     entry_handle_t handle,
     const std::vector<Meter::rate_config_t> &configs) const {
   if (!with_meters) return MatchErrorCode::METERS_DISABLED;
-  WriteLock lock = lock_write();
+  auto lock = lock_write();
   if (!is_valid_handle(handle)) return MatchErrorCode::INVALID_HANDLE;
   Meter &meter = match_unit_->get_meter(handle);
   Meter::MeterErrorCode rc = meter.set_rates(configs);
@@ -257,7 +258,7 @@ MatchErrorCode
 MatchTableAbstract::get_meter_rates(
     entry_handle_t handle, std::vector<Meter::rate_config_t> *configs) const {
   if (!with_meters) return MatchErrorCode::METERS_DISABLED;
-  WriteLock lock = lock_write();
+  auto lock = lock_write();
   if (!is_valid_handle(handle)) return MatchErrorCode::INVALID_HANDLE;
   const Meter &meter = match_unit_->get_meter(handle);
   *configs = meter.get_rates();
@@ -267,25 +268,25 @@ MatchTableAbstract::get_meter_rates(
 MatchErrorCode
 MatchTableAbstract::set_entry_ttl(entry_handle_t handle, unsigned int ttl_ms) {
   if (!with_ageing) return MatchErrorCode::AGEING_DISABLED;
-  WriteLock lock = lock_write();
+  auto lock = lock_write();
   return match_unit_->set_entry_ttl(handle, ttl_ms);
 }
 
 void
 MatchTableAbstract::sweep_entries(std::vector<entry_handle_t> *entries) const {
-  ReadLock lock = lock_read();  // TODO(antonin): how to avoid this?
+  auto lock = lock_read();  // TODO(antonin): how to avoid this?
   match_unit_->sweep_entries(entries);
 }
 
 MatchTableAbstract::handle_iterator
 MatchTableAbstract::handles_begin() const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   return handle_iterator(this, match_unit_->handles_begin());
 }
 
 MatchTableAbstract::handle_iterator
 MatchTableAbstract::handles_end() const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   return handle_iterator(this, match_unit_->handles_end());
 }
 
@@ -358,7 +359,7 @@ MatchTable::add_entry(const std::vector<MatchKeyParam> &match_key,
   MatchErrorCode rc = MatchErrorCode::SUCCESS;
 
   {
-    WriteLock lock = lock_write();
+    auto lock = lock_write();
 
     rc = match_unit->add_entry(
         match_key,
@@ -391,7 +392,7 @@ MatchTable::delete_entry(entry_handle_t handle) {
   MatchErrorCode rc = MatchErrorCode::SUCCESS;
 
   {
-    WriteLock lock = lock_write();
+    auto lock = lock_write();
     rc = match_unit->delete_entry(handle);
   }
 
@@ -419,7 +420,7 @@ MatchTable::modify_entry(entry_handle_t handle,
   MatchErrorCode rc = MatchErrorCode::SUCCESS;
 
   {
-    WriteLock lock = lock_write();
+    auto lock = lock_write();
     rc = match_unit->modify_entry(
         handle, ActionEntry(std::move(action_fn_entry), next_node));
   }
@@ -451,7 +452,7 @@ MatchTable::set_default_action(const ActionFn *action_fn,
   next_node_miss = next_node;
 
   {
-    WriteLock lock = lock_write();
+    auto lock = lock_write();
     default_entry = ActionEntry(std::move(action_fn_entry), next_node);
   }
 
@@ -479,7 +480,7 @@ MatchTable::get_entry_(entry_handle_t handle, Entry *entry) const {
 
 MatchErrorCode
 MatchTable::get_entry(entry_handle_t handle, Entry *entry) const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   return get_entry_(handle, entry);
 }
 
@@ -513,7 +514,7 @@ MatchTable::get_entry(entry_handle_t handle, Entry *entry) const {
 MatchErrorCode
 MatchTable::get_entry_from_key(const std::vector<MatchKeyParam> &match_key,
                                Entry *entry, int priority) const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   entry_handle_t handle;
   const auto rc = match_unit->retrieve_handle(match_key, &handle, priority);
   if (rc != MatchErrorCode::SUCCESS) return rc;
@@ -522,7 +523,7 @@ MatchTable::get_entry_from_key(const std::vector<MatchKeyParam> &match_key,
 
 std::vector<MatchTable::Entry>
 MatchTable::get_entries() const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   // maybe calling get_entry_ is not the most efficient way of building the
   // vector, but at least we avoid code duplication
   std::vector<Entry> entries(get_num_entries());
@@ -539,7 +540,7 @@ MatchTable::get_entries() const {
 
 MatchErrorCode
 MatchTable::get_default_entry(Entry *entry) const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   entry->action_fn = default_entry.action_fn.get_action_fn();
   if (!entry->action_fn) return MatchErrorCode::NO_DEFAULT_ENTRY;
   entry->action_data = default_entry.action_fn.get_action_data();
@@ -678,7 +679,8 @@ MatchTableIndirect::add_entry(const std::vector<MatchKeyParam> &match_key,
   MatchErrorCode rc = MatchErrorCode::SUCCESS;
 
   {
-    WriteLock lock = lock_write();
+    auto lock = lock_write();
+    auto lock_impl = lock_impl_write();
 
     if (!action_profile->is_valid_mbr(mbr)) {
       rc = MatchErrorCode::INVALID_MBR_HANDLE;
@@ -704,7 +706,8 @@ MatchTableIndirect::delete_entry(entry_handle_t handle) {
   MatchErrorCode rc = MatchErrorCode::SUCCESS;
 
   {
-    WriteLock lock = lock_write();
+    auto lock = lock_write();
+    auto lock_impl = lock_impl_write();
 
     const IndirectIndex *index;
     rc = match_unit->get_value(handle, &index);
@@ -731,7 +734,8 @@ MatchTableIndirect::modify_entry(entry_handle_t handle, mbr_hdl_t mbr) {
   MatchErrorCode rc = MatchErrorCode::SUCCESS;
 
   {
-    WriteLock lock = lock_write();
+    auto lock = lock_write();
+    auto lock_impl = lock_impl_write();
 
     const IndirectIndex *index;
     rc = match_unit->get_value(handle, &index);
@@ -766,7 +770,8 @@ MatchTableIndirect::set_default_member(mbr_hdl_t mbr) {
   MatchErrorCode rc = MatchErrorCode::SUCCESS;
 
   {
-    WriteLock lock = lock_write();
+    auto lock = lock_write();
+    auto lock_impl = lock_impl_write();
 
     if (!action_profile->is_valid_mbr(mbr)) {
       rc = MatchErrorCode::INVALID_MBR_HANDLE;
@@ -802,9 +807,19 @@ MatchTableIndirect::get_entry_(entry_handle_t handle, Entry *entry) const {
   return MatchErrorCode::SUCCESS;
 }
 
+MatchTableIndirect::ReadLock
+MatchTableIndirect::lock_impl_read() const {
+  return action_profile->lock_read();
+}
+
+MatchTableIndirect::WriteLock
+MatchTableIndirect::lock_impl_write() const {
+  return action_profile->lock_write();
+}
+
 MatchErrorCode
 MatchTableIndirect::get_entry(entry_handle_t handle, Entry *entry) const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   return get_entry_(handle, entry);
 }
 
@@ -812,7 +827,7 @@ MatchErrorCode
 MatchTableIndirect::get_entry_from_key(
     const std::vector<MatchKeyParam> &match_key,
     Entry *entry, int priority) const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   entry_handle_t handle;
   const auto rc = match_unit->retrieve_handle(match_key, &handle, priority);
   if (rc != MatchErrorCode::SUCCESS) return rc;
@@ -821,7 +836,7 @@ MatchTableIndirect::get_entry_from_key(
 
 std::vector<MatchTableIndirect::Entry>
 MatchTableIndirect::get_entries() const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   std::vector<Entry> entries(get_num_entries());
   size_t idx = 0;
   for (auto it = match_unit->handles_begin(); it != match_unit->handles_end();
@@ -836,7 +851,7 @@ MatchTableIndirect::get_entries() const {
 
 MatchErrorCode
 MatchTableIndirect::get_default_entry(Entry *entry) const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   if (!default_set) return MatchErrorCode::NO_DEFAULT_ENTRY;
   assert(default_index.is_mbr());
   entry->mbr = default_index.get_mbr();
@@ -913,7 +928,8 @@ MatchTableIndirectWS::add_entry_ws(const std::vector<MatchKeyParam> &match_key,
   MatchErrorCode rc = MatchErrorCode::SUCCESS;
 
   {
-    WriteLock lock = lock_write();
+    auto lock = lock_write();
+    auto lock_impl = lock_impl_write();
 
     if (!action_profile->is_valid_grp(grp))
       rc = MatchErrorCode::INVALID_GRP_HANDLE;
@@ -943,7 +959,8 @@ MatchTableIndirectWS::modify_entry_ws(entry_handle_t handle, grp_hdl_t grp) {
   MatchErrorCode rc;
 
   {
-    WriteLock lock = lock_write();
+    auto lock = lock_write();
+    auto lock_impl = lock_impl_write();
 
     const IndirectIndex *index;
     rc = match_unit->get_value(handle, &index);
@@ -981,7 +998,8 @@ MatchTableIndirectWS::set_default_group(grp_hdl_t grp) {
   MatchErrorCode rc = MatchErrorCode::SUCCESS;
 
   {
-    WriteLock lock = lock_write();
+    auto lock = lock_write();
+    auto lock_impl = lock_impl_write();
 
     if (!action_profile->is_valid_grp(grp)) {
       rc = MatchErrorCode::INVALID_GRP_HANDLE;
@@ -1025,7 +1043,7 @@ MatchTableIndirectWS::get_entry_(entry_handle_t handle, Entry *entry) const {
 
 MatchErrorCode
 MatchTableIndirectWS::get_entry(entry_handle_t handle, Entry *entry) const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   return get_entry_(handle, entry);
 }
 
@@ -1033,7 +1051,7 @@ MatchErrorCode
 MatchTableIndirectWS::get_entry_from_key(
     const std::vector<MatchKeyParam> &match_key,
     Entry *entry, int priority) const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   entry_handle_t handle;
   const auto rc = match_unit->retrieve_handle(match_key, &handle, priority);
   if (rc != MatchErrorCode::SUCCESS) return rc;
@@ -1042,7 +1060,7 @@ MatchTableIndirectWS::get_entry_from_key(
 
 std::vector<MatchTableIndirectWS::Entry>
 MatchTableIndirectWS::get_entries() const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   std::vector<Entry> entries(get_num_entries());
   size_t idx = 0;
   for (auto it = match_unit->handles_begin(); it != match_unit->handles_end();
@@ -1057,7 +1075,7 @@ MatchTableIndirectWS::get_entries() const {
 
 MatchErrorCode
 MatchTableIndirectWS::get_default_entry(Entry *entry) const {
-  ReadLock lock = lock_read();
+  auto lock = lock_read();
   if (!default_set) return MatchErrorCode::NO_DEFAULT_ENTRY;
   if (default_index.is_mbr()) {
     entry->mbr = default_index.get_mbr();
