@@ -115,7 +115,8 @@ class MatchTableAbstract : public NamedP4Object {
   virtual MatchTableType get_table_type() const = 0;
 
   virtual const ActionEntry &lookup(const Packet &pkt, bool *hit,
-                                    entry_handle_t *handle) = 0;
+                                    entry_handle_t *handle,
+                                    const ControlFlowNode **next_node) = 0;
 
   virtual size_t get_num_entries() const = 0;
 
@@ -123,16 +124,20 @@ class MatchTableAbstract : public NamedP4Object {
 
   MatchErrorCode dump_entry(std::ostream *out,
                             entry_handle_t handle) const {
-    ReadLock lock = lock_read();
+    auto lock = lock_read();
+    // TODO(antonin): this seems too conservative: we know that indirect indices
+    // have to remain valid while a match entry is pointing to it.
+    auto lock_impl = lock_impl_read();
     return dump_entry_(out, handle);
   }
 
   std::string dump_entry_string(entry_handle_t handle) const {
-    ReadLock lock = lock_read();
+    auto lock = lock_read();
+    auto lock_impl = lock_impl_read();
     return dump_entry_string_(handle);
   }
 
-  void reset_state();
+  void reset_state(bool reset_default_entry = true);
 
   void serialize(std::ostream *out) const;
   void deserialize(std::istream *in, const P4Objects &objs);
@@ -173,6 +178,14 @@ class MatchTableAbstract : public NamedP4Object {
   handle_iterator handles_begin() const;
   handle_iterator handles_end() const;
 
+  // meant to be called by P4Objects when loading the JSON
+  // set_default_entry sets a default entry obtained from the JSON. You can make
+  // sure that it cannot be changed by the control plane by using the is_const
+  // parameter.
+  void set_default_default_entry(const ActionFn *action_fn,
+                                 ActionData action_data,
+                                 bool is_const);
+
   MatchTableAbstract(const MatchTableAbstract &other) = delete;
   MatchTableAbstract &operator=(const MatchTableAbstract &other) = delete;
 
@@ -208,21 +221,55 @@ class MatchTableAbstract : public NamedP4Object {
   // "miss" case
   bool has_next_node_hit{false};
   bool has_next_node_miss{false};
-  // stores default next node for miss case, used in case we want to reset a
-  // table miss behavior
-  const ControlFlowNode *next_node_miss_default{nullptr};
+  // default default entry is used when no default entry has been programmed by
+  // the control-plane. Its next_node member is set according to the following
+  // rules (in increasing order of priority):
+  // - if the P4 program specififed a table switch statement with a "miss" case,
+  // it is the first node of the "miss" branch
+  // - if the P4 table definition specified a default action, it is the next
+  // node correspondign to this action
+  // - otherwise it will be the default unconditional next node as per the JSON
+  // and the P4 program, or NULL
+  // Regarding the action_fn member, it is empty unless a default entry was
+  // provided in the P4 / JSON.
+  ActionEntry default_default_entry{};
+  bool const_default_entry{false};
 
   header_id_t meter_target_header{};
   int meter_target_offset{};
 
  private:
-  virtual void reset_state_() = 0;
+  virtual void reset_state_(bool reset_default_entry) = 0;
 
   virtual void serialize_(std::ostream *out) const = 0;
   virtual void deserialize_(std::istream *in, const P4Objects &objs) = 0;
 
   virtual MatchErrorCode dump_entry_(std::ostream *out,
                                      entry_handle_t handle) const = 0;
+
+  // Used to propagate changes to the default default entry to the table
+  // implementation. For a direct match table, the default default entry is
+  // copied to the default entry.
+  virtual void set_default_default_entry_() = 0;
+
+  // TODO(antonin): I realized that since the action profile refactor from 2017
+  // - to enable action profile sharing -, there were race conditions all over
+  // the place as the action profile itself was no longer protected by the mutex
+  // of its parent table (there is no single parent table any more). The most
+  // obvious issue was when calling apply_action(). Because of the complexity of
+  // the ActionEntry structure, lookup() returns it by reference. However, the
+  // action profile mutex was not held during the duration of apply_action. This
+  // means that modifications to the action profile ActionEntry vector (such as
+  // adding new members, potentially leading to memory reallocation) could read
+  // to the reference being "invalidated". This was actually very easy to
+  // trigger in a unit test with 2 competing threads, one calling apply_action
+  // repeatedly on a packet and one creating a multitude of members.
+  // As a temporary solution I have added these virtual methods to acquire the
+  // "implementation" mutex (in this case of an indirect table, the action
+  // profile's lock). I could think of several alternatives but nothing I
+  // liked.
+  virtual ReadLock lock_impl_read() const { return ReadLock(); }
+  virtual WriteLock lock_impl_write() const { return WriteLock(); }
 
   // the internal version does not acquire the lock
   std::string dump_entry_string_(entry_handle_t handle) const;
@@ -262,6 +309,8 @@ class MatchTable : public MatchTableAbstract {
   MatchErrorCode set_default_action(const ActionFn *action_fn,
                                     ActionData action_data);
 
+  MatchErrorCode reset_default_entry();
+
   MatchErrorCode get_entry(entry_handle_t handle, Entry *entry) const;
 
   MatchErrorCode get_entry_from_key(const std::vector<MatchKeyParam> &match_key,
@@ -276,7 +325,8 @@ class MatchTable : public MatchTableAbstract {
   }
 
   const ActionEntry &lookup(const Packet &pkt, bool *hit,
-                            entry_handle_t *handle) override;
+                            entry_handle_t *handle,
+                            const ControlFlowNode **next_node) override;
 
   size_t get_num_entries() const override {
     return match_unit->get_num_entries();
@@ -288,13 +338,9 @@ class MatchTable : public MatchTableAbstract {
 
   // meant to be called by P4Objects when loading the JSON
   // set_const_default_action_fn makes sure that the control plane cannot change
-  // the default action; note that the action data can still be changed
-  // set_default_entry sets a default entry obtained from the JSON. You can make
-  // sure that neither the default action function nor the default action data
-  // can be changed by the control plane by using the is_const parameter.
+  // the default action; note that the action data can still be changed. It only
+  // makes sense for regular match-tables.
   void set_const_default_action_fn(const ActionFn *const_default_action_fn);
-  void set_default_entry(const ActionFn *action_fn, ActionData action_data,
-                         bool is_const);
 
   void set_immutable_entries();
 
@@ -308,7 +354,7 @@ class MatchTable : public MatchTableAbstract {
       bool with_counters, bool with_ageing);
 
  private:
-  void reset_state_() override;
+  void reset_state_(bool reset_default_entry) override;
 
   void serialize_(std::ostream *out) const override;
   void deserialize_(std::istream *in, const P4Objects &objs) override;
@@ -316,13 +362,14 @@ class MatchTable : public MatchTableAbstract {
   MatchErrorCode dump_entry_(std::ostream *out,
                              entry_handle_t handle) const override;
 
+  void set_default_default_entry_() override;
+
   MatchErrorCode get_entry_(entry_handle_t handle, Entry *entry) const;
 
  private:
   ActionEntry default_entry{};
   std::unique_ptr<MatchUnitAbstract<ActionEntry> > match_unit;
   const ActionFn *const_default_action{nullptr};
-  bool const_default_entry{false};
   bool immutable_entries{false};
 };
 
@@ -358,6 +405,8 @@ class MatchTableIndirect : public MatchTableAbstract {
 
   MatchErrorCode set_default_member(mbr_hdl_t mbr);
 
+  MatchErrorCode reset_default_entry();
+
   MatchErrorCode get_entry(entry_handle_t handle, Entry *entry) const;
 
   MatchErrorCode get_entry_from_key(const std::vector<MatchKeyParam> &match_key,
@@ -372,7 +421,8 @@ class MatchTableIndirect : public MatchTableAbstract {
   }
 
   const ActionEntry &lookup(const Packet &pkt, bool *hit,
-                            entry_handle_t *handle) override;
+                            entry_handle_t *handle,
+                            const ControlFlowNode **next_node) override;
 
   size_t get_num_entries() const override {
     return match_unit->get_num_entries();
@@ -391,7 +441,7 @@ class MatchTableIndirect : public MatchTableAbstract {
     bool with_counters, bool with_ageing);
 
  protected:
-  void reset_state_() override;
+  void reset_state_(bool reset_default_entry) override;
 
   void serialize_(std::ostream *out) const override;
   void deserialize_(std::istream *in, const P4Objects &objs) override;
@@ -401,14 +451,19 @@ class MatchTableIndirect : public MatchTableAbstract {
   MatchErrorCode dump_entry_(std::ostream *out,
                              entry_handle_t handle) const override;
 
+  void set_default_default_entry_() override;
+
   MatchErrorCode get_entry_(entry_handle_t handle, Entry *entry) const;
+
+  ReadLock lock_impl_read() const override;
+  WriteLock lock_impl_write() const override;
 
  protected:
   IndirectIndex default_index{};
   std::unique_ptr<MatchUnitAbstract<IndirectIndex> > match_unit;
   ActionProfile *action_profile{nullptr};
   bool default_set{false};
-  ActionEntry empty_action{};
+  ActionEntry empty_action{};  // for lookups yielding empty groups
 };
 
 class MatchTableIndirectWS : public MatchTableIndirect {
@@ -453,7 +508,8 @@ class MatchTableIndirectWS : public MatchTableIndirect {
   }
 
   const ActionEntry &lookup(const Packet &pkt, bool *hit,
-                            entry_handle_t *handle) override;
+                            entry_handle_t *handle,
+                            const ControlFlowNode **next_node) override;
 
  public:
   static std::unique_ptr<MatchTableIndirectWS> create(
@@ -464,8 +520,6 @@ class MatchTableIndirectWS : public MatchTableIndirect {
     bool with_counters, bool with_ageing);
 
  private:
-  void reset_state_() override;
-
   void serialize_(std::ostream *out) const override;
   void deserialize_(std::istream *in, const P4Objects &objs) override;
 

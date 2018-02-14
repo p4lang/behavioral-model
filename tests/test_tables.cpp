@@ -22,6 +22,7 @@
 
 #include <bm/bm_sim/tables.h>
 
+#include <atomic>
 #include <memory>
 #include <random>
 #include <thread>
@@ -164,6 +165,13 @@ class TableSizeTwo : public ::testing::Test {
     return packet;
   }
 
+  const ActionEntry &lookup(const Packet &pkt, bool *hit,
+                            entry_handle_t *handle) {
+    const ControlFlowNode *next_node;
+    (void)next_node;
+    return table->lookup(pkt, hit, handle, &next_node);
+  }
+
   virtual void SetUp() {
     phv_source->set_phv_factory(0, &phv_factory);
   }
@@ -268,12 +276,12 @@ TableSizeTwo<MURange>::add_entry_w_valid(const std::string &key,
                                   handle, priority);
 }
 
-using TableTypes = Types<MUExact,
-                         MULPM,
-                         MUTernary,
-                         MURange>;
+using MUTypes = Types<MUExact,
+                      MULPM,
+                      MUTernary,
+                      MURange>;
 
-TYPED_TEST_CASE(TableSizeTwo, TableTypes);
+TYPED_TEST_CASE(TableSizeTwo, MUTypes);
 
 TYPED_TEST(TableSizeTwo, AddEntry) {
   std::string key_1 = "\xaa\xaa";
@@ -386,19 +394,19 @@ TYPED_TEST(TableSizeTwo, LookupEntry) {
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
   f.set("0xaba");
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
 
   // has to be large enough for range test
   f.set("0xcba");
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_FALSE(hit);
 
   rc = this->table->delete_entry(handle);
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
   f.set("0xaba");
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_FALSE(hit);
 }
 
@@ -422,27 +430,27 @@ TYPED_TEST(TableSizeTwo, DeleteEntry2) {
   rc = this->add_entry(bad_key_, &handle_1);
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_FALSE(hit);
 
   rc = this->add_entry(key_, &handle_2);
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
   ASSERT_EQ(handle_2, lookup_handle);
 
   rc = this->table->delete_entry(handle_1);
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
   ASSERT_EQ(handle_2, lookup_handle);
 
   rc = this->table->delete_entry(handle_2);
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_FALSE(hit);
 }
 
@@ -601,7 +609,7 @@ TYPED_TEST(TableSizeTwo, ConstDefaultEntry) {
   };
 
   // false means non-const
-  this->table->set_default_entry(&this->action_fn, ActionData(), false);
+  this->table->set_default_default_entry(&this->action_fn, ActionData(), false);
 
   // both changing action data and action fn should succeed
   change_default_entry(MatchErrorCode::SUCCESS, MatchErrorCode::SUCCESS);
@@ -613,7 +621,7 @@ TYPED_TEST(TableSizeTwo, ConstDefaultEntry) {
                        MatchErrorCode::DEFAULT_ACTION_IS_CONST);
 
   // true means const
-  this->table->set_default_entry(&this->action_fn, ActionData(), true);
+  this->table->set_default_default_entry(&this->action_fn, ActionData(), true);
 
   // no change possible
   change_default_entry(MatchErrorCode::DEFAULT_ENTRY_IS_CONST,
@@ -637,7 +645,7 @@ TYPED_TEST(TableSizeTwo, ModifyEntry) {
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
   f.set("0xaba");
-  const ActionEntry &entry_1 = this->table->lookup(pkt, &hit, &lookup_handle);
+  const ActionEntry &entry_1 = this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
   ASSERT_EQ(0, entry_1.action_fn.action_data_size());
 
@@ -651,7 +659,7 @@ TYPED_TEST(TableSizeTwo, ModifyEntry) {
                                  std::move(new_action_data));
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
-  const ActionEntry &entry_2 = this->table->lookup(pkt, &hit, &lookup_handle);
+  const ActionEntry &entry_2 = this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
   ASSERT_NE(0, entry_2.action_fn.action_data_size());
   ASSERT_EQ((unsigned) 0xaba,
@@ -834,6 +842,7 @@ TYPED_TEST(TableSizeTwo, Valid) {
   MatchErrorCode rc;
   entry_handle_t lookup_handle;
   bool hit;
+  const ControlFlowNode *next_node;
 
   rc = this->add_entry_w_valid(key_, valid, &handle);
   ASSERT_EQ(rc, MatchErrorCode::SUCCESS);
@@ -847,12 +856,12 @@ TYPED_TEST(TableSizeTwo, Valid) {
 
   h2.mark_invalid();
 
-  this->table_w_valid->lookup(pkt, &hit, &lookup_handle);
+  this->table_w_valid->lookup(pkt, &hit, &lookup_handle, &next_node);
   ASSERT_FALSE(hit);
 
   h2.mark_valid();
 
-  this->table_w_valid->lookup(pkt, &hit, &lookup_handle);
+  this->table_w_valid->lookup(pkt, &hit, &lookup_handle, &next_node);
   ASSERT_TRUE(hit);
 }
 
@@ -871,18 +880,18 @@ TYPED_TEST(TableSizeTwo, ResetState) {
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
   f.set("0xaba");
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
 
   this->table->reset_state();
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_FALSE(hit);
   rc = this->table->delete_entry(handle);
   ASSERT_EQ(MatchErrorCode::INVALID_HANDLE, rc);
 
   rc = this->add_entry(key_, &handle);
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
 }
 
@@ -1069,6 +1078,13 @@ class TableIndirect : public ::testing::Test {
                                         std::move(action_data));
   }
 
+  const ActionEntry &lookup(const Packet &pkt, bool *hit,
+                            entry_handle_t *handle) {
+    const ControlFlowNode *next_node;
+    (void)next_node;
+    return table->lookup(pkt, hit, handle, &next_node);
+  }
+
   Packet get_pkt(int length) {
     // dummy packet, won't be parsed
     Packet packet = Packet::make_new(
@@ -1168,6 +1184,41 @@ TEST_F(TableIndirect, DeleteMember) {
   ASSERT_EQ(rc, MatchErrorCode::SUCCESS);
 }
 
+TEST_F(TableIndirect, DefaultMember) {
+  MatchErrorCode rc;
+  mbr_hdl_t mbr;
+  entry_handle_t lookup_handle;
+  bool hit;
+
+  auto pkt = get_pkt(64);
+
+  rc = add_member(0xaba, &mbr);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  rc = table->set_default_member(mbr);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  // the lookups are here to ensure that no memory errors happen (when running
+  // the tests under valgrind
+  lookup(pkt, &hit, &lookup_handle);
+  EXPECT_FALSE(hit);
+
+  rc = action_profile.delete_member(mbr);
+  EXPECT_EQ(rc, MatchErrorCode::MBR_STILL_USED);
+
+  lookup(pkt, &hit, &lookup_handle);
+  EXPECT_FALSE(hit);
+
+  rc = table->reset_default_entry();
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  rc = action_profile.delete_member(mbr);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  lookup(pkt, &hit, &lookup_handle);
+  EXPECT_FALSE(hit);
+}
+
 TEST_F(TableIndirect, ModifyEntry) {
   MatchErrorCode rc;
   mbr_hdl_t mbr_1, mbr_2;
@@ -1212,19 +1263,19 @@ TEST_F(TableIndirect, LookupEntry) {
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
   f.set("0xaba");
-  const ActionEntry &entry = table->lookup(pkt, &hit, &lookup_handle);
+  const ActionEntry &entry = lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
   ASSERT_EQ(data, entry.action_fn.get_action_data_at(0).get_uint());
 
   f.set("0xabb");
-  table->lookup(pkt, &hit, &lookup_handle);
+  lookup(pkt, &hit, &lookup_handle);
   ASSERT_FALSE(hit);
 
   rc = table->delete_entry(handle);
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
   f.set("0xaba");
-  table->lookup(pkt, &hit, &lookup_handle);
+  lookup(pkt, &hit, &lookup_handle);
   ASSERT_FALSE(hit);
 }
 
@@ -1311,14 +1362,14 @@ TEST_F(TableIndirect, ModifyMember) {
   rc = add_entry(key, mbr, &handle);
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
 
-  const ActionEntry &entry_1 = table->lookup(pkt, &hit, &lookup_handle);
+  const ActionEntry &entry_1 = lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
   ASSERT_EQ(data_1, entry_1.action_fn.get_action_data_at(0).get_uint());
 
   rc = modify_member(mbr, data_2);
   ASSERT_EQ(rc, MatchErrorCode::SUCCESS);
 
-  const ActionEntry &entry_2 = table->lookup(pkt, &hit, &lookup_handle);
+  const ActionEntry &entry_2 = lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
   ASSERT_EQ(data_2, entry_2.action_fn.get_action_data_at(0).get_uint());
 }
@@ -1341,7 +1392,7 @@ TEST_F(TableIndirect, ResetState) {
   ASSERT_EQ(rc, MatchErrorCode::SUCCESS);
   rc = add_entry(key, mbr, &handle);
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
-  table->lookup(pkt, &hit, &lookup_handle);
+  lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
 
   table->reset_state();
@@ -1355,7 +1406,7 @@ TEST_F(TableIndirect, ResetState) {
   ASSERT_EQ(rc, MatchErrorCode::SUCCESS);
   rc = add_entry(key, mbr, &handle);
   ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
-  table->lookup(pkt, &hit, &lookup_handle);
+  lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
 }
 
@@ -1405,6 +1456,50 @@ TEST_F(TableIndirect, GetEntries) {
     ASSERT_EQ(1u, m.action_data.size());
     ASSERT_EQ(datas[i], m.action_data.action_data[0].get<unsigned int>());
   }
+}
+
+extern bool WITH_VALGRIND;  // defined in main.cpp
+
+// This test was added after it was found out that lookups in action profile
+// were not even lock-protected...
+TEST_F(TableIndirect, ActionProfileRace) {
+  std::string key("\x0a\xba");
+  unsigned int data = 666u;
+  mbr_hdl_t mbr;
+  entry_handle_t handle;
+
+  auto pkt = get_pkt(64);
+  auto &f = pkt.get_phv()->get_field(testHeader1, 0);
+  f.set("0xaba");
+
+  {
+    auto rc = add_member(data, &mbr);
+    ASSERT_EQ(rc, MatchErrorCode::SUCCESS);
+    rc = add_entry(key, mbr, &handle);
+    ASSERT_EQ(MatchErrorCode::SUCCESS, rc);
+  }
+
+  auto add_member_loop = [this, &data](size_t iters) {
+    for (size_t i = 0; i < iters; i++) {
+      mbr_hdl_t mbr;
+      auto rc = add_member(data, &mbr);
+      ASSERT_EQ(rc, MatchErrorCode::SUCCESS);
+    }
+  };
+
+  std::atomic<bool> stop{false};
+  auto lookup_loop = [this, &pkt, &stop]() {
+    while (!stop) {
+      table->apply_action(&pkt);
+    }
+  };
+
+  const size_t iterations = WITH_VALGRIND ? 500u : 10000u;
+  std::thread t1(lookup_loop);
+  std::thread t2(add_member_loop, iterations);
+  t2.join();
+  stop = true;
+  t1.join();
 }
 
 
@@ -1482,6 +1577,13 @@ class TableIndirectWS : public ::testing::Test {
     ActionData action_data;
     action_data.push_back_action_data(data);
     return action_profile.add_member(&action_fn, std::move(action_data), mbr);
+  }
+
+  const ActionEntry &lookup(const Packet &pkt, bool *hit,
+                            entry_handle_t *handle) {
+    const ControlFlowNode *next_node;
+    (void)next_node;
+    return table->lookup(pkt, hit, handle, &next_node);
   }
 
   Packet get_pkt(int length) {
@@ -1637,7 +1739,7 @@ TEST_F(TableIndirectWS, LookupEntryWS) {
     h1_f48.set(dis(gen));
     h2_f16.set(dis(gen));
     h2_f48.set(dis(gen));
-    const ActionEntry &entry = table->lookup(pkt, &hit, &lookup_handle);
+    const ActionEntry &entry = lookup(pkt, &hit, &lookup_handle);
     ASSERT_TRUE(hit);
     ASSERT_EQ(data_1, entry.action_fn.get_action_data_at(0).get_uint());
   }
@@ -1655,7 +1757,7 @@ TEST_F(TableIndirectWS, LookupEntryWS) {
     h1_f48.set(dis(gen));
     h2_f16.set(dis(gen));
     h2_f48.set(dis(gen));
-    const ActionEntry &entry = table->lookup(pkt, &hit, &lookup_handle);
+    const ActionEntry &entry = lookup(pkt, &hit, &lookup_handle);
     ASSERT_TRUE(hit);
     unsigned int data = entry.action_fn.get_action_data_at(0).get_uint();
     if (data == data_1)
@@ -1747,6 +1849,68 @@ TEST_F(TableIndirectWS, GetEntries) {
   ASSERT_EQ(0u, e2.time_since_hit_ms);
 }
 
+TEST_F(TableIndirectWS, DefaultGroup) {
+  MatchErrorCode rc;
+  grp_hdl_t grp;
+  mbr_hdl_t mbr;
+  unsigned int data = 666u;
+  entry_handle_t lookup_handle;
+  bool hit;
+
+  auto pkt = get_pkt(64);
+
+  rc = action_profile.create_group(&grp);
+  EXPECT_EQ(MatchErrorCode::SUCCESS, rc);
+  rc = add_member(data, &mbr);
+  EXPECT_EQ(MatchErrorCode::SUCCESS, rc);
+  rc = action_profile.add_member_to_group(mbr, grp);
+  EXPECT_EQ(MatchErrorCode::SUCCESS, rc);
+
+  rc = table->set_default_group(grp);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  // the lookups are here to ensure that no memory errors happen (when running
+  // the tests under valgrind
+  lookup(pkt, &hit, &lookup_handle);
+  EXPECT_FALSE(hit);
+
+  rc = action_profile.delete_group(grp);
+  EXPECT_EQ(rc, MatchErrorCode::GRP_STILL_USED);
+
+  lookup(pkt, &hit, &lookup_handle);
+  EXPECT_FALSE(hit);
+
+  rc = table->reset_default_entry();
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  rc = action_profile.delete_group(grp);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  lookup(pkt, &hit, &lookup_handle);
+  EXPECT_FALSE(hit);
+}
+
+// It can be quite complicated to prevent the control-plane from referencing
+// empty groups (is it even desirable?). We must at least make sure that we do
+// not crash. In the current implementation, I believe the table apply is a
+// no-op.
+TEST_F(TableIndirectWS, EmptyGroup) {
+  MatchErrorCode rc;
+  grp_hdl_t grp;
+  entry_handle_t lookup_handle;
+  bool hit;
+
+  auto pkt = get_pkt(64);
+
+  rc = action_profile.create_group(&grp);
+  EXPECT_EQ(MatchErrorCode::SUCCESS, rc);
+
+  rc = table->set_default_group(grp);
+  EXPECT_EQ(rc, MatchErrorCode::SUCCESS);
+
+  lookup(pkt, &hit, &lookup_handle);
+}
+
 TEST_F(TableIndirectWS, CustomGroupSelection) {
   using GroupSelectionIface = ActionProfile::GroupSelectionIface;
   using hash_t = ActionProfile::hash_t;
@@ -1830,7 +1994,7 @@ TEST_F(TableIndirectWS, CustomGroupSelection) {
     h1_f48.set(dis(gen));
     h2_f16.set(dis(gen));
     h2_f48.set(dis(gen));
-    const auto &entry = table->lookup(pkt, &hit, &lookup_handle);
+    const auto &entry = lookup(pkt, &hit, &lookup_handle);
     ASSERT_TRUE(hit);
     ASSERT_EQ(data_2, entry.action_fn.get_action_data_at(0).get<uint>());
   }
@@ -1885,6 +2049,13 @@ class TableBigMask : public ::testing::Test {
   MatchErrorCode add_entry(const std::string &key_1,
                            const std::string &key_2,
                            entry_handle_t *handle);
+
+  const ActionEntry &lookup(const Packet &pkt, bool *hit,
+                            entry_handle_t *handle) {
+    const ControlFlowNode *next_node;
+    (void)next_node;
+    return table->lookup(pkt, hit, handle, &next_node);
+  }
 
   Packet get_pkt(int length) {
     // dummy packet, won't be parsed
@@ -1992,7 +2163,7 @@ TableBigMask<MURange>::make_key_builder() {
                               MatchKeyParam::Type::EXACT);
 }
 
-TYPED_TEST_CASE(TableBigMask, TableTypes);
+TYPED_TEST_CASE(TableBigMask, MUTypes);
 
 TYPED_TEST(TableBigMask, HitMiss) {
   const std::string key_1 = "\x11\x22";
@@ -2012,17 +2183,17 @@ TYPED_TEST(TableBigMask, HitMiss) {
 
   f_1.set(key_1.c_str(), key_1.size());
   f_2.set(key_2.c_str(), key_2.size());
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
 
   const std::string key_2_hit = "\xaa\x44\x55\x66\x77\x88";
   f_2.set(key_2_hit.c_str(), key_2_hit.size());
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
 
   const std::string key_2_miss = "\x33\x44\x55\x66\x77\xaa";
   f_2.set(key_2_miss.c_str(), key_2_miss.size());
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_FALSE(hit);
 }
 
@@ -2159,6 +2330,13 @@ class AdvancedTest : public ::testing::Test {
     phv_source->set_phv_factory(0, &phv_factory);
   }
 
+  const ActionEntry &lookup(const Packet &pkt, bool *hit,
+                            entry_handle_t *handle) {
+    const ControlFlowNode *next_node;
+    (void)next_node;
+    return table->lookup(pkt, hit, handle, &next_node);
+  }
+
   Packet get_pkt() const {
     // dummy packet, won't be parsed
     Packet packet = Packet::make_new(
@@ -2228,7 +2406,7 @@ TEST_F(AdvancedLPMTest, Lookup1) {
   ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry(&handle));
 
   Packet pkt = gen_pkt("0x0a00", "0xabcd");
-  table->lookup(pkt, &hit, &lookup_handle);
+  lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
 }
 
@@ -2240,7 +2418,7 @@ TEST_F(AdvancedLPMTest, Lookup2) {
   ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry(&handle));
 
   Packet pkt = gen_pkt("0x0a0d", "0xabcd");
-  table->lookup(pkt, &hit, &lookup_handle);
+  lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
 }
 
@@ -2252,7 +2430,7 @@ TEST_F(AdvancedLPMTest, Lookup3) {
   ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry(&handle));
 
   Packet pkt = gen_pkt("0x0ad0", "0xabcd");
-  table->lookup(pkt, &hit, &lookup_handle);
+  lookup(pkt, &hit, &lookup_handle);
   ASSERT_FALSE(hit);
 }
 
@@ -2313,7 +2491,7 @@ TEST_F(AdvancedTernaryTest, Lookup1) {
 
   Packet pkt = gen_pkt("0x5235", "0xabcd");
   // Packet pkt = gen_pkt("0xabcd", "0x5235");
-  table->lookup(pkt, &hit, &lookup_handle);
+  lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
 }
 
@@ -2382,28 +2560,28 @@ TEST_F(HiddenValidFieldTest, Lookup) {
 
   {
     auto pkt = gen_pkt(exact_v_1, false);
-    table->lookup(pkt, &hit, &lookup_handle);
+    lookup(pkt, &hit, &lookup_handle);
     ASSERT_FALSE(hit);
   }
   {
     auto pkt = gen_pkt(exact_v_2, false);
-    table->lookup(pkt, &hit, &lookup_handle);
+    lookup(pkt, &hit, &lookup_handle);
     ASSERT_TRUE(hit); ASSERT_EQ(h2, lookup_handle);
   }
   {
     auto pkt = gen_pkt(exact_v_1, true);
-    table->lookup(pkt, &hit, &lookup_handle);
+    lookup(pkt, &hit, &lookup_handle);
     ASSERT_TRUE(hit); ASSERT_EQ(h1, lookup_handle);
   }
   {
     auto pkt = gen_pkt(exact_v_2, true);
-    table->lookup(pkt, &hit, &lookup_handle);
+    lookup(pkt, &hit, &lookup_handle);
     ASSERT_TRUE(hit); ASSERT_EQ(h2, lookup_handle);
   }
   {
     auto pkt = gen_pkt(exact_v_1, true);
     pkt.get_phv()->get_header(testHeader1).mark_invalid();
-    table->lookup(pkt, &hit, &lookup_handle);
+    lookup(pkt, &hit, &lookup_handle);
     ASSERT_FALSE(hit);
   }
 }
@@ -2619,7 +2797,7 @@ std::string TableEntryDebug<MURange>::gen_entry_string() const {
       "Action entry: actionA - aba,\n");
 }
 
-TYPED_TEST_CASE(TableEntryDebug, TableTypes);
+TYPED_TEST_CASE(TableEntryDebug, MUTypes);
 
 namespace {
 
@@ -2973,14 +3151,15 @@ TableBadInputKey<MURange>::gen_match_key() const {
   return match_key;
 }
 
-TYPED_TEST_CASE(TableBadInputKey, TableTypes);
+TYPED_TEST_CASE(TableBadInputKey, MUTypes);
 
 TYPED_TEST(TableBadInputKey, NonByteAligned) {
   entry_handle_t handle, lookup_handle;
   bool hit;
+  const ControlFlowNode *next_node;
   ASSERT_EQ(MatchErrorCode::SUCCESS, this->add_entry(&handle));
   auto pkt = this->gen_pkt();
-  this->table->lookup(pkt, &hit, &lookup_handle);
+  this->table->lookup(pkt, &hit, &lookup_handle, &next_node);
   ASSERT_TRUE(hit);
 }
 
@@ -3056,9 +3235,10 @@ TEST_F(TableRangeMatch, OneRange) {
   auto check_one = [this](unsigned int v, bool expected) {
     bool hit;
     entry_handle_t h;
+    const ControlFlowNode *next_node;
     Packet pkt = get_pkt();
     pkt.get_phv()->get_field(testHeader1, 0).set(v);
-    table->lookup(pkt, &hit, &h);
+    table->lookup(pkt, &hit, &h, &next_node);
     ASSERT_EQ(expected, hit);
   };
 
@@ -3094,10 +3274,11 @@ TEST_F(TableRangeMatch, TwoRanges) {
   auto check_one = [this](unsigned int v1, unsigned int v2, bool expected) {
     bool hit;
     entry_handle_t h;
+    const ControlFlowNode *next_node;
     Packet pkt = get_pkt();
     pkt.get_phv()->get_field(testHeader1, 0).set(v1);
     pkt.get_phv()->get_field(testHeader2, 0).set(v2);
-    table->lookup(pkt, &hit, &h);
+    table->lookup(pkt, &hit, &h, &next_node);
     ASSERT_EQ(expected, hit);
   };
 
@@ -3204,8 +3385,9 @@ class TableTernaryCache : public ::testing::Test {
   void lookup(MatchTable *table, const std::string &binary_key,
               entry_handle_t *lookup_handle) {
     bool hit;
+    const ControlFlowNode *next_node;
     auto pkt = get_pkt(binary_key);
-    table->lookup(pkt, &hit, lookup_handle);
+    table->lookup(pkt, &hit, lookup_handle, &next_node);
     ASSERT_TRUE(hit);
   }
 
@@ -3288,4 +3470,126 @@ TEST_F(TableTernaryCache, CacheUpdate) {
     ASSERT_EQ(MatchErrorCode::SUCCESS, table->delete_entry(new_h));
     lookup(table.get(), binary_key, &lookup_handle);
     ASSERT_EQ(h, lookup_handle);
+}
+
+
+template <typename MTType>
+class TableDefaultDefaultEntryTest : public ::testing::Test {
+ protected:
+  PHVFactory phv_factory;
+
+  MatchKeyBuilder key_builder;
+  ActionProfile action_profile;
+  std::unique_ptr<MTType> table;
+
+  HeaderType testHeaderType;
+  header_id_t testHeader1{0};
+  p4object_id_t action_1{0}, action_2{1};
+  ActionFn action_fn_1, action_fn_2;
+
+  std::unique_ptr<PHVSourceIface> phv_source{nullptr};
+
+  DummyNode node_1{}, node_2{};
+
+  static const size_t table_size = 128;
+
+  TableDefaultDefaultEntryTest()
+      : action_profile("test_act_prof", 0, false),
+        testHeaderType("test_t", 0),
+        action_fn_1("action1", action_1, 0  /* no param */),
+        action_fn_2("action2", action_2, 0  /* no param */),
+        phv_source(PHVSourceIface::make_phv_source()) {
+    testHeaderType.push_back_field("f16", 16);
+    phv_factory.push_back_header("test1", testHeader1, testHeaderType);
+
+    key_builder.push_back_field(testHeader1, 0, 16, MatchKeyParam::Type::EXACT);
+
+    // without counters, without ageing
+    table = MTType::create("exact", "test_table", 0,
+                           table_size, key_builder, &lookup_factory,
+                           false, false);
+    table->set_next_node(action_1, &node_1);
+    table->set_next_node(action_2, &node_2);
+    // table->set_next_node_miss_default(&node_miss_default_2);
+    set_implementation();
+  }
+
+  virtual void SetUp() {
+    phv_source->set_phv_factory(0, &phv_factory);
+  }
+
+  Packet get_pkt(int length = 64) {
+    // dummy packet, won't be parsed
+    Packet packet = Packet::make_new(
+        length, PacketBuffer(length * 2), phv_source.get());
+    packet.get_phv()->get_header(testHeader1).mark_valid();
+    return packet;
+  }
+
+  void set_implementation();
+  MatchErrorCode set_default_entry(const ActionFn *action_fn);
+};
+
+template <>
+void
+TableDefaultDefaultEntryTest<MatchTable>::set_implementation() { }
+
+template <>
+void
+TableDefaultDefaultEntryTest<MatchTableIndirect>::set_implementation() {
+  table->set_action_profile(&this->action_profile);
+}
+
+template <>
+MatchErrorCode
+TableDefaultDefaultEntryTest<MatchTable>::set_default_entry(
+    const ActionFn *action_fn) {
+  return table->set_default_action(action_fn, ActionData());
+}
+
+template <>
+MatchErrorCode
+TableDefaultDefaultEntryTest<MatchTableIndirect>::set_default_entry(
+    const ActionFn *action_fn) {
+  MatchTableIndirect::mbr_hdl_t mbr_h;
+  {
+    auto rc = action_profile.add_member(action_fn, ActionData(), &mbr_h);
+    if (rc != MatchErrorCode::SUCCESS) return rc;
+  }
+  return table->set_default_member(mbr_h);
+}
+
+using MTTypes = Types<MatchTable, MatchTableIndirect>;
+TYPED_TEST_CASE(TableDefaultDefaultEntryTest, MTTypes);
+
+TYPED_TEST(TableDefaultDefaultEntryTest, DefaultEntryLookup) {
+  auto pkt = this->get_pkt();
+  this->table->set_default_default_entry(&this->action_fn_1, ActionData(),
+                                         false  /* is_const */);
+  EXPECT_EQ(&this->node_1, this->table->apply_action(&pkt));
+  EXPECT_EQ(this->set_default_entry(&this->action_fn_2),
+            MatchErrorCode::SUCCESS);
+  EXPECT_EQ(&this->node_2, this->table->apply_action(&pkt));
+}
+
+TYPED_TEST(TableDefaultDefaultEntryTest, ConstDefaultEntry) {
+  auto pkt = this->get_pkt();
+  this->table->set_default_default_entry(&this->action_fn_1, ActionData(),
+                                         true  /* is_const */);
+  EXPECT_EQ(&this->node_1, this->table->apply_action(&pkt));
+  EXPECT_EQ(this->set_default_entry(&this->action_fn_2),
+            MatchErrorCode::DEFAULT_ENTRY_IS_CONST);
+  EXPECT_EQ(&this->node_1, this->table->apply_action(&pkt));
+}
+
+TYPED_TEST(TableDefaultDefaultEntryTest, DefaultEntryReset) {
+  auto pkt = this->get_pkt();
+  this->table->set_default_default_entry(&this->action_fn_1, ActionData(),
+                                         false  /* is_const */);
+  EXPECT_EQ(&this->node_1, this->table->apply_action(&pkt));
+  EXPECT_EQ(this->set_default_entry(&this->action_fn_2),
+            MatchErrorCode::SUCCESS);
+  EXPECT_EQ(&this->node_2, this->table->apply_action(&pkt));
+  EXPECT_EQ(this->table->reset_default_entry(), MatchErrorCode::SUCCESS);
+  EXPECT_EQ(&this->node_1, this->table->apply_action(&pkt));
 }
