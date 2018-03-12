@@ -987,7 +987,7 @@ MatchUnitGeneric<K, V>::delete_entry_(entry_handle_t handle) {
   if (HANDLE_VERSION(handle) != entry.key.version)
     return MatchErrorCode::EXPIRED_HANDLE;
   entry.key.version = HANDLE_VERSION(HANDLE_SET((entry.key.version + 1),
-						handle_));
+                                                handle_));
   lookup_structure->delete_entry(entry.key);
 
   return this->unset_handle(handle_);
