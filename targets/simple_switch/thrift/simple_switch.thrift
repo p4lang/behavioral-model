@@ -28,8 +28,10 @@ service SimpleSwitch {
   i32 mirroring_mapping_get_egress_port(1:i32 mirror_id);
 
   i32 set_egress_queue_depth(1:i32 port_num, 2:i32 depth_pkts);
+  i32 set_egress_priority_queue_depth(1:i32 port_num, 2:i32 priority, 3:i32 depth_pkts);
   i32 set_all_egress_queue_depths(1:i32 depth_pkts);
   i32 set_egress_queue_rate(1:i32 port_num, 2:i64 rate_pps);
+  i32 set_egress_priority_queue_rate(1:i32 port_num, 2:i32 priority, 3:i64 rate_pps);
   i32 set_all_egress_queue_rates(1:i64 rate_pps);
 
   // these methods are here as an experiment, prefer get_time_elapsed_us() when

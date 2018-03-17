@@ -183,6 +183,12 @@ SimpleSwitch::set_egress_queue_depth(int port, const size_t depth_pkts) {
 }
 
 int
+SimpleSwitch::set_egress_priority_queue_depth(int port, size_t priority, const size_t depth_pkts) {
+  egress_buffers.set_capacity(port, priority, depth_pkts);
+  return 0;
+}
+
+int
 SimpleSwitch::set_all_egress_queue_depths(const size_t depth_pkts) {
   for (int i = 0; i < max_port; i++) {
     set_egress_queue_depth(i, depth_pkts);
@@ -193,6 +199,12 @@ SimpleSwitch::set_all_egress_queue_depths(const size_t depth_pkts) {
 int
 SimpleSwitch::set_egress_queue_rate(int port, const uint64_t rate_pps) {
   egress_buffers.set_rate(port, rate_pps);
+  return 0;
+}
+
+int
+SimpleSwitch::set_egress_priority_queue_rate(int port, size_t priority,  const uint64_t rate_pps) {
+  egress_buffers.set_rate(port, priority, rate_pps);
   return 0;
 }
 
