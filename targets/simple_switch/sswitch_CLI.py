@@ -37,41 +37,69 @@ class SimpleSwitchAPI(runtime_CLI.RuntimeAPI):
                                         standard_client, mc_client)
         self.sswitch_client = sswitch_client
 
+    @runtime_CLI.handle_bad_input
     def do_set_queue_depth(self, line):
-        "Set depth of one / all egress queue(s): set_queue_depth <nb_pkts> [<egress_port>]"
+        "Set depth of one / all egress queue(s): set_queue_depth <nb_pkts> [<egress_port>] [<priority>]"
         args = line.split()
-        depth = int(args[0])
-        if len(args) > 1:
-            port = int(args[1])
-            self.sswitch_client.set_egress_queue_depth(port, depth)
-        else:
-            self.sswitch_client.set_all_egress_queue_depths(depth)
 
+        self.at_least_n_args(args, 1)
+
+        try:
+            depth = int(args[0])
+            if len(args) > 2:
+                port = int(args[1])
+                priority = int(args[2])
+                self.sswitch_client.set_egress_priority_queue_depth(port, priority, depth)
+            elif len(args) > 1:
+                port = int(args[1])
+                self.sswitch_client.set_egress_queue_depth(port, rate)
+            else:
+                self.sswitch_client.set_all_egress_queue_depths(depth)
+
+        except ValueError:
+            print "Invalid depth, port or priority value"
+
+    @runtime_CLI.handle_bad_input
     def do_set_queue_rate(self, line):
-        "Set rate of one / all egress queue(s): set_queue_rate <rate_pps> [<egress_port>]"
+        "Set rate of one / all egress queue(s): set_queue_rate <rate_pps> [<egress_port>] [<priority>]"
         args = line.split()
-        rate = int(args[0])
-        if len(args) > 1:
-            port = int(args[1])
-            self.sswitch_client.set_egress_queue_rate(port, rate)
-        else:
-            self.sswitch_client.set_all_egress_queue_rates(rate)
-
+        
+        self.at_least_n_args(args,1)
+        
+        try:
+            rate = int(args[0])
+            if len(args) > 2:
+                port = int(args[1])
+                priority = int(args[2])
+                self.sswitch_client.set_egress_priority_queue_rate(port, priority, rate)
+            elif len(args) > 1:
+                port = int(args[1])
+                self.sswitch_client.set_egress_queue_rate(port, rate)
+            else:
+                self.sswitch_client.set_all_egress_queue_rates(rate)
+        except ValueError:
+            print "Invalid rate, port or priority value"
+    
+    @runtime_CLI.handle_bad_input
     def do_mirroring_add(self, line):
         "Add mirroring mapping: mirroring_add <mirror_id> <egress_port>"
         args = line.split()
+        self.at_least_n_args(args,2)
         mirror_id, egress_port = int(args[0]), int(args[1])
         self.sswitch_client.mirroring_mapping_add(mirror_id, egress_port)
 
+    @runtime_CLI.handle_bad_input
     def do_mirroring_delete(self, line):
         "Delete mirroring mapping: mirroring_delete <mirror_id>"
         mirror_id = int(line)
         self.sswitch_client.mirroring_mapping_delete(mirror_id)
 
+    @runtime_CLI.handle_bad_input
     def do_get_time_elapsed(self, line):
         "Get time elapsed (in microseconds) since the switch started: get_time_elapsed"
         print self.sswitch_client.get_time_elapsed_us()
 
+    @runtime_CLI.handle_bad_input
     def do_get_time_since_epoch(self, line):
         "Get time elapsed (in microseconds) since the switch clock's epoch: get_time_since_epoch"
         print self.sswitch_client.get_time_since_epoch_us()

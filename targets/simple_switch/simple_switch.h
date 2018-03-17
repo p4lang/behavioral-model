@@ -100,9 +100,11 @@ class SimpleSwitch : public Switch {
   }
 
   int set_egress_queue_depth(int port, const size_t depth_pkts);
+  int set_egress_priority_queue_depth(int port, size_t priority, const size_t depth_pkts);
   int set_all_egress_queue_depths(const size_t depth_pkts);
 
   int set_egress_queue_rate(int port, const uint64_t rate_pps);
+  int set_egress_priority_queue_rate(int port, size_t priority, const uint64_t rate_pps);
   int set_all_egress_queue_rates(const uint64_t rate_pps);
 
   // returns the number of microseconds elapsed since the switch started
