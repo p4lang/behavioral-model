@@ -20,15 +20,46 @@
 
 /* Switch instance */
 
+#include <dlfcn.h>
 #include <bm/SimpleSwitch.h>
 #include <bm/bm_runtime/bm_runtime.h>
 #include <bm/bm_sim/target_parser.h>
+
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "simple_switch.h"
 
 namespace {
 SimpleSwitch *simple_switch;
-bm::TargetParserBasic *simple_switch_parser;
+
+std::string load_modules_option = "load-modules";
+
+class TargetParserModules : public bm::TargetParserBasic {
+ public:
+  TargetParserModules() {
+    add_flag_option("enable-swap",
+                    "enable JSON swapping at runtime");
+  }
+
+  int parse(const std::vector<std::string> &more_options,
+                    std::ostream *errstream) override {
+    int result = ::bm::TargetParserBasic::parse(more_options, errstream);
+    set_enable_swap();
+    return result;
+  }
+
+ protected:
+  void set_enable_swap() {
+    bool enable_swap = false;
+    if (get_flag_option("enable-swap", &enable_swap) != ReturnCode::SUCCESS)
+      std::exit(1);
+    if (enable_swap) simple_switch->enable_config_swap();
+  }
+};
+
+TargetParserModules *simple_switch_parser;
 }  // namespace
 
 namespace sswitch_runtime {
@@ -38,18 +69,10 @@ shared_ptr<SimpleSwitchIf> get_handler(SimpleSwitch *sw);
 int
 main(int argc, char* argv[]) {
   simple_switch = new SimpleSwitch();
-  simple_switch_parser = new bm::TargetParserBasic();
-  simple_switch_parser->add_flag_option("enable-swap",
-                                        "enable JSON swapping at runtime");
+  simple_switch_parser = new TargetParserModules();
   int status = simple_switch->init_from_command_line_options(
       argc, argv, simple_switch_parser);
   if (status != 0) std::exit(status);
-
-  bool enable_swap_flag = false;
-  if (simple_switch_parser->get_flag_option("enable-swap", &enable_swap_flag)
-      != bm::TargetParserBasic::ReturnCode::SUCCESS)
-    std::exit(1);
-  if (enable_swap_flag) simple_switch->enable_config_swap();
 
   int thrift_port = simple_switch->get_runtime_port();
   bm_runtime::start_server(simple_switch, thrift_port);
