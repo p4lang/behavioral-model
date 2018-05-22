@@ -20,7 +20,9 @@
 
 /* Switch instance */
 
-#include <dlfcn.h>
+#ifdef BM_HAVE_DLOPEN
+#  include <dlfcn.h>
+#endif  // BM_HAVE_DLOPEN
 #include <bm/SimpleSwitch.h>
 #include <bm/bm_runtime/bm_runtime.h>
 #include <bm/bm_sim/target_parser.h>
@@ -36,21 +38,54 @@ SimpleSwitch *simple_switch;
 
 std::string load_modules_option = "load-modules";
 
-class TargetParserModules : public bm::TargetParserBasic {
+class SimpleSwitchParser : public bm::TargetParserBasic {
  public:
-  TargetParserModules() {
+  SimpleSwitchParser() {
     add_flag_option("enable-swap",
                     "enable JSON swapping at runtime");
+#ifdef BM_ENABLE_MODULES
+    add_string_option(load_modules_option,
+                      "load the given .so files as modules");
+#endif  // BM_ENABLE_MODULES
   }
 
   int parse(const std::vector<std::string> &more_options,
                     std::ostream *errstream) override {
     int result = ::bm::TargetParserBasic::parse(more_options, errstream);
+#ifdef BM_ENABLE_MODULES
+    load_modules(errstream);
+#endif  // BM_ENABLE_MODULES
     set_enable_swap();
     return result;
   }
 
  protected:
+#ifdef BM_ENABLE_MODULES
+  int load_modules(std::ostream *errstream) {
+    std::string modules;
+    ReturnCode retval = get_string_option(load_modules_option, &modules);
+    if (retval == ReturnCode::OPTION_NOT_PROVIDED) {
+      return 0;
+    }
+    if (retval != ReturnCode::SUCCESS) {
+      return -1;  // Unexpected error
+    }
+    std::istringstream iss(modules);
+    std::string module;
+    while (std::getline(iss, module, ',')) {
+#  ifdef BM_HAVE_DLOPEN
+      if (!dlopen(module.c_str(), RTLD_NOW | RTLD_GLOBAL)) {
+        *errstream << "WARNING: Skipping module: " << module << ": "
+                   << dlerror() << std::endl;
+      }
+#  else  // BM_HAVE_DLOPEN
+      #error modules enabled, but no loading method available
+#  endif  // BM_HAVE_DLOPEN
+    }
+    return 0;
+  }
+#endif  // BM_ENABLE_MODULES
+
   void set_enable_swap() {
     bool enable_swap = false;
     if (get_flag_option("enable-swap", &enable_swap) != ReturnCode::SUCCESS)
@@ -59,7 +94,7 @@ class TargetParserModules : public bm::TargetParserBasic {
   }
 };
 
-TargetParserModules *simple_switch_parser;
+SimpleSwitchParser *simple_switch_parser;
 }  // namespace
 
 namespace sswitch_runtime {
@@ -69,7 +104,7 @@ shared_ptr<SimpleSwitchIf> get_handler(SimpleSwitch *sw);
 int
 main(int argc, char* argv[]) {
   simple_switch = new SimpleSwitch();
-  simple_switch_parser = new TargetParserModules();
+  simple_switch_parser = new SimpleSwitchParser();
   int status = simple_switch->init_from_command_line_options(
       argc, argv, simple_switch_parser);
   if (status != 0) std::exit(status);
