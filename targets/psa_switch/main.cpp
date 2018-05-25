@@ -20,44 +20,44 @@
 
 /* Switch instance */
 
-#include <bm/PortableSwitch.h>
+#include <bm/PsaSwitch.h>
 #include <bm/bm_runtime/bm_runtime.h>
 #include <bm/bm_sim/target_parser.h>
 
-#include "portable_switch.h"
+#include "psa_switch.h"
 
 namespace {
-PortableSwitch *portable_switch;
-bm::TargetParserBasic *portable_switch_parser;
+PsaSwitch *psa_switch;
+bm::TargetParserBasic *psa_switch_parser;
 }  // namespace
 
 namespace pswitch_runtime {
-shared_ptr<PortableSwitchIf> get_handler(PortableSwitch *sw);
+shared_ptr<PsaSwitchIf> get_handler(PsaSwitch *sw);
 }  // namespace pswitch_runtime
 
 int
 main(int argc, char* argv[]) {
-  portable_switch = new PortableSwitch();
-  portable_switch_parser = new bm::TargetParserBasic();
-  portable_switch_parser->add_flag_option("enable-swap",
+  psa_switch = new PsaSwitch();
+  psa_switch_parser = new bm::TargetParserBasic();
+  psa_switch_parser->add_flag_option("enable-swap",
                                         "enable JSON swapping at runtime");
-  int status = portable_switch->init_from_command_line_options(
-      argc, argv, portable_switch_parser);
+  int status = psa_switch->init_from_command_line_options(
+      argc, argv, psa_switch_parser);
   if (status != 0) std::exit(status);
 
   bool enable_swap_flag = false;
-  if (portable_switch_parser->get_flag_option("enable-swap", &enable_swap_flag)
+  if (psa_switch_parser->get_flag_option("enable-swap", &enable_swap_flag)
       != bm::TargetParserBasic::ReturnCode::SUCCESS)
     std::exit(1);
-  if (enable_swap_flag) portable_switch->enable_config_swap();
+  if (enable_swap_flag) psa_switch->enable_config_swap();
 
-  int thrift_port = portable_switch->get_runtime_port();
-  bm_runtime::start_server(portable_switch, thrift_port);
-  using ::pswitch_runtime::PortableSwitchIf;
-  using ::pswitch_runtime::PortableSwitchProcessor;
-  bm_runtime::add_service<PortableSwitchIf, PortableSwitchProcessor>(
-      "portable_switch", pswitch_runtime::get_handler(portable_switch));
-  portable_switch->start_and_return();
+  int thrift_port = psa_switch->get_runtime_port();
+  bm_runtime::start_server(psa_switch, thrift_port);
+  using ::pswitch_runtime::PsaSwitchIf;
+  using ::pswitch_runtime::PsaSwitchProcessor;
+  bm_runtime::add_service<PsaSwitchIf, PsaSwitchProcessor>(
+      "psa_switch", pswitch_runtime::get_handler(psa_switch));
+  psa_switch->start_and_return();
 
   while (true) std::this_thread::sleep_for(std::chrono::seconds(100));
 

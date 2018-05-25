@@ -26,7 +26,7 @@
 #include <fstream>
 #include <streambuf>
 
-#include "portable_switch.h"
+#include "psa_switch.h"
 
 #include "utils.h"
 
@@ -41,33 +41,33 @@ namespace {
 
 void
 packet_handler(int port_num, const char *buffer, int len, void *cookie) {
-  static_cast<PortableSwitch *>(cookie)->receive(port_num, buffer, len);
+  static_cast<PsaSwitch *>(cookie)->receive(port_num, buffer, len);
 }
 
 }  // namespace
 
-class PortableSwitch_SwapP4 : public ::testing::Test {
+class PsaSwitch_SwapP4 : public ::testing::Test {
  protected:
   static constexpr size_t kMaxBufSize = 512;
 
   static constexpr bm::device_id_t device_id{0};
 
-  PortableSwitch_SwapP4()
+  PsaSwitch_SwapP4()
       : packet_inject(packet_in_addr) { }
 
   // Per-test-case set-up.
   // We make the switch a shared resource for all tests. This is mainly because
-  // the portable_switch target detaches threads
+  // the psa_switch target detaches threads
   static void SetUpTestCase() {
     // bm::Logger::set_logger_console();
 
-    test_switch = new PortableSwitch(8, true);  // 8 ports, with swapping
+    test_switch = new PsaSwitch(8, true);  // 8 ports, with swapping
 
     test_switch->init_objects(json_path_1());
 
     // packet in - packet out
     test_switch->set_dev_mgr_packet_in(device_id, packet_in_addr, nullptr);
-    test_switch->Switch::start();  // there is a start member in PortableSwitch
+    test_switch->Switch::start();  // there is a start member in PsaSwitch
     test_switch->set_packet_handler(packet_handler,
                                     static_cast<void *>(test_switch));
     test_switch->start_and_return();
@@ -122,7 +122,7 @@ class PortableSwitch_SwapP4 : public ::testing::Test {
 
  protected:
   static const std::string packet_in_addr;
-  static PortableSwitch *test_switch;
+  static PsaSwitch *test_switch;
   bm_apps::PacketInject packet_inject;
   PacketInReceiver receiver{};
 
@@ -132,16 +132,16 @@ class PortableSwitch_SwapP4 : public ::testing::Test {
   static const std::string test_json_2;
 };
 
-const std::string PortableSwitch_SwapP4::packet_in_addr =
+const std::string PsaSwitch_SwapP4::packet_in_addr =
     "inproc://packets";
 
-PortableSwitch *PortableSwitch_SwapP4::test_switch = nullptr;
+PsaSwitch *PsaSwitch_SwapP4::test_switch = nullptr;
 
-const std::string PortableSwitch_SwapP4::testdata_dir = TESTDATADIR;
-const std::string PortableSwitch_SwapP4::test_json_1 = "swap_1.json";
-const std::string PortableSwitch_SwapP4::test_json_2 = "swap_2.json";
+const std::string PsaSwitch_SwapP4::testdata_dir = TESTDATADIR;
+const std::string PsaSwitch_SwapP4::test_json_1 = "swap_1.json";
+const std::string PsaSwitch_SwapP4::test_json_2 = "swap_2.json";
 
-TEST_F(PortableSwitch_SwapP4, Swap) {
+TEST_F(PsaSwitch_SwapP4, Swap) {
   const int port_in = 0;
 
   bm::RuntimeInterface::ErrorCode rc;
@@ -204,7 +204,7 @@ TEST_F(PortableSwitch_SwapP4, Swap) {
   rc = test_switch->swap_configs();
   ASSERT_EQ(rc_success, rc);
 
-  // PortableSwitch is going to make the swap here
+  // PsaSwitch is going to make the swap here
 
   swap_2_check();
 }

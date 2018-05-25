@@ -73,25 +73,25 @@ def main():
     rpc_path = "/tmp/bmv2-{}-notifications.ipc".format(device_id)
 
     # makes sure that the switch will start right away
-    portable_switch_p = subprocess.Popen(
-        ["@abs_top_builddir@/targets/portable_switch/portable_switch", "-h"],
+    psa_switch_p = subprocess.Popen(
+        ["@abs_top_builddir@/targets/psa_switch/psa_switch", "-h"],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    portable_switch_p.wait()
+    psa_switch_p.wait()
 
-    # start portable_switch
-    portable_switch_p = subprocess.Popen(
-        ["@abs_top_builddir@/targets/portable_switch/portable_switch",
+    # start psa_switch
+    psa_switch_p = subprocess.Popen(
+        ["@abs_top_builddir@/targets/psa_switch/psa_switch",
          json_path, "--thrift-port", thrift_port, "--device-id", device_id],
         stdout=subprocess.PIPE)
     # while True:
-    #     line = portable_switch_p.stdout.readline()
+    #     line = psa_switch_p.stdout.readline()
     #     if "Thrift" in line:
     #         break
 
     time.sleep(1)
 
     def cleanup():
-        portable_switch_p.kill()
+        psa_switch_p.kill()
         try:
             os.remove(rpc_path)
         except:

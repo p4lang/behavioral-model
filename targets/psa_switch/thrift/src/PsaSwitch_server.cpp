@@ -18,7 +18,7 @@
  *
  */
 
-#include <bm/PortableSwitch.h>
+#include <bm/PsaSwitch.h>
 
 #ifdef P4THRIFT
 #include <p4thrift/protocol/TBinaryProtocol.h>
@@ -39,13 +39,13 @@ namespace thrift_provider = apache::thrift;
 #include <bm/bm_sim/switch.h>
 #include <bm/bm_sim/logger.h>
 
-#include "portable_switch.h"
+#include "psa_switch.h"
 
 namespace pswitch_runtime {
 
-class PortableSwitchHandler : virtual public PortableSwitchIf {
+class PsaSwitchHandler : virtual public PsaSwitchIf {
  public:
-  explicit PortableSwitchHandler(PortableSwitch *sw)
+  explicit PsaSwitchHandler(PsaSwitch *sw)
     : switch_(sw) { }
 
   int32_t mirroring_mapping_add(const int32_t mirror_id,
@@ -106,11 +106,11 @@ class PortableSwitchHandler : virtual public PortableSwitchIf {
   }
 
  private:
-  PortableSwitch *switch_;
+  PsaSwitch *switch_;
 };
 
-boost::shared_ptr<PortableSwitchIf> get_handler(PortableSwitch *sw) {
-  return boost::shared_ptr<PortableSwitchHandler>(new PortableSwitchHandler(sw));
+boost::shared_ptr<PsaSwitchIf> get_handler(PsaSwitch *sw) {
+  return boost::shared_ptr<PsaSwitchHandler>(new PsaSwitchHandler(sw));
 }
 
 }  // namespace pswitch_runtime

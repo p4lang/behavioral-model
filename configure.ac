@@ -266,9 +266,9 @@ AC_CONFIG_FILES([Makefile
 		targets/simple_switch/Makefile
 		targets/simple_switch/tests/Makefile
 		targets/simple_switch/tests/CLI_tests/Makefile
-		targets/portable_switch/Makefile
-		targets/portable_switch/tests/Makefile
-		targets/portable_switch/tests/CLI_tests/Makefile
+		targets/psa_switch/Makefile
+		targets/psa_switch/tests/Makefile
+		targets/psa_switch/tests/CLI_tests/Makefile
 		tests/Makefile
 		tests/stress_tests/Makefile
                 tools/Makefile
@@ -282,8 +282,8 @@ AC_CONFIG_FILES([tests/utils.cpp
                  mininet/stress_test_ipv4.py])
 AC_CONFIG_FILES([targets/simple_switch/tests/CLI_tests/run_one_test.py],
                 [chmod +x targets/simple_switch/tests/CLI_tests/run_one_test.py])
-AC_CONFIG_FILES([targets/portable_switch/tests/CLI_tests/run_one_test.py],
-                [chmod +x targets/portable_switch/tests/CLI_tests/run_one_test.py])
+AC_CONFIG_FILES([targets/psa_switch/tests/CLI_tests/run_one_test.py],
+                [chmod +x targets/psa_switch/tests/CLI_tests/run_one_test.py])
 
 AC_OUTPUT
 

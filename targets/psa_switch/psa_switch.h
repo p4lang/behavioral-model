@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef PORTABLE_SWITCH_PORTABLE_SWITCH_H_
-#define PORTABLE_SWITCH_PORTABLE_SWITCH_H_
+#ifndef PSA_SWITCH_PSA_SWITCH_H_
+#define PSA_SWITCH_PSA_SWITCH_H_
 
 #include <bm/bm_sim/queue.h>
 #include <bm/bm_sim/queueing.h>
@@ -65,7 +65,7 @@ using bm::packet_id_t;
 using bm::p4object_id_t;
 
 
-class PortableSwitch : public Switch {
+class PsaSwitch : public Switch {
  public:
   using mirror_id_t = int;
 
@@ -77,9 +77,9 @@ class PortableSwitch : public Switch {
 
  public:
   // by default, swapping is off
-  explicit PortableSwitch(port_t max_port = 256, bool enable_swap = false);
+  explicit PsaSwitch(port_t max_port = 256, bool enable_swap = false);
 
-  ~PortableSwitch();
+  ~PsaSwitch();
 
   int receive_(port_t port_num, const char *buffer, int len) override;
 
@@ -188,4 +188,4 @@ class PortableSwitch : public Switch {
   bool with_queueing_metadata{false};
 };
 
-#endif  // PORTABLE_SWITCH_PORTABLE_SWITCH_H_
+#endif  // PSA_SWITCH_PSA_SWITCH_H_

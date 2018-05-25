@@ -25,12 +25,12 @@ import runtime_CLI
 import sys
 import os
 
-from pswitch_runtime import PortableSwitch
+from pswitch_runtime import PsaSwitch
 
-class PortableSwitchAPI(runtime_CLI.RuntimeAPI):
+class PsaSwitchAPI(runtime_CLI.RuntimeAPI):
     @staticmethod
     def get_thrift_services():
-        return [("portable_switch", PortableSwitch.Client)]
+        return [("psa_switch", PsaSwitch.Client)]
 
     def __init__(self, pre_type, standard_client, mc_client, pswitch_client):
         runtime_CLI.RuntimeAPI.__init__(self, pre_type,
@@ -82,7 +82,7 @@ def main():
     args.pre = runtime_CLI.PreType.SimplePreLAG
 
     services = runtime_CLI.RuntimeAPI.get_thrift_services(args.pre)
-    services.extend(PortableSwitchAPI.get_thrift_services())
+    services.extend(PsaSwitchAPI.get_thrift_services())
 
     standard_client, mc_client, pswitch_client = runtime_CLI.thrift_connect(
         args.thrift_ip, args.thrift_port, services
@@ -90,7 +90,7 @@ def main():
 
     runtime_CLI.load_json_config(standard_client, args.json)
 
-    PortableSwitchAPI(args.pre, standard_client, mc_client, pswitch_client).cmdloop()
+    PsaSwitchAPI(args.pre, standard_client, mc_client, pswitch_client).cmdloop()
 
 if __name__ == '__main__':
     main()

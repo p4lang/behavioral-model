@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef PORTABLE_SWITCH_TESTS_UTILS_H_
-#define PORTABLE_SWITCH_TESTS_UTILS_H_
+#ifndef PSA_SWITCH_TESTS_UTILS_H_
+#define PSA_SWITCH_TESTS_UTILS_H_
 
 #include <bm/bm_sim/nn.h>
 
@@ -92,4 +92,4 @@ class PacketInReceiver {
   mutable std::condition_variable can_read{};
 };
 
-#endif  // PORTABLE_SWITCH_TESTS_UTILS_H_
+#endif  // PSA_SWITCH_TESTS_UTILS_H_

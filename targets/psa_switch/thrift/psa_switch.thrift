@@ -21,7 +21,7 @@
 namespace cpp pswitch_runtime
 namespace py pswitch_runtime
 
-service PortableSwitch {
+service PsaSwitch {
 
   i32 mirroring_mapping_add(1:i32 mirror_id, 2:i32 egress_port);
   i32 mirroring_mapping_delete(1:i32 mirror_id);

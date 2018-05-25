@@ -24,7 +24,7 @@
 #include <vector>
 #include <algorithm>  // for std::fill_n
 
-#include "portable_switch.h"
+#include "psa_switch.h"
 
 #include "utils.h"
 
@@ -39,27 +39,27 @@ namespace {
 
 void
 packet_handler(int port_num, const char *buffer, int len, void *cookie) {
-  static_cast<PortableSwitch *>(cookie)->receive(port_num, buffer, len);
+  static_cast<PsaSwitch *>(cookie)->receive(port_num, buffer, len);
 }
 
 }  // namespace
 
-class PortableSwitch_TruncateP4 : public ::testing::Test {
+class PsaSwitch_TruncateP4 : public ::testing::Test {
  protected:
   static constexpr size_t kMaxBufSize = 512;
 
   static constexpr bm::device_id_t device_id{0};
 
-  PortableSwitch_TruncateP4()
+  PsaSwitch_TruncateP4()
       : packet_inject(packet_in_addr) { }
 
   // Per-test-case set-up.
   // We make the switch a shared resource for all tests. This is mainly because
-  // the portable_switch target detaches threads
+  // the psa_switch target detaches threads
   static void SetUpTestCase() {
     // bm::Logger::set_logger_console();
 
-    test_switch = new PortableSwitch(8);  // 8 ports
+    test_switch = new PsaSwitch(8);  // 8 ports
 
     // load JSON
     fs::path json_path = fs::path(testdata_dir) / fs::path(test_json);
@@ -67,7 +67,7 @@ class PortableSwitch_TruncateP4 : public ::testing::Test {
 
     // packet in - packet out
     test_switch->set_dev_mgr_packet_in(device_id, packet_in_addr, nullptr);
-    test_switch->Switch::start();  // there is a start member in PortableSwitch
+    test_switch->Switch::start();  // there is a start member in PsaSwitch
     test_switch->set_packet_handler(packet_handler,
                                     static_cast<void *>(test_switch));
     test_switch->start_and_return();
@@ -96,7 +96,7 @@ class PortableSwitch_TruncateP4 : public ::testing::Test {
 
  protected:
   static const std::string packet_in_addr;
-  static PortableSwitch *test_switch;
+  static PsaSwitch *test_switch;
   bm_apps::PacketInject packet_inject;
   PacketInReceiver receiver{};
 
@@ -105,16 +105,16 @@ class PortableSwitch_TruncateP4 : public ::testing::Test {
   static const std::string test_json;
 };
 
-const std::string PortableSwitch_TruncateP4::packet_in_addr =
+const std::string PsaSwitch_TruncateP4::packet_in_addr =
     "inproc://packets";
 
-PortableSwitch *PortableSwitch_TruncateP4::test_switch = nullptr;
+PsaSwitch *PsaSwitch_TruncateP4::test_switch = nullptr;
 
-const std::string PortableSwitch_TruncateP4::testdata_dir = TESTDATADIR;
-const std::string PortableSwitch_TruncateP4::test_json =
+const std::string PsaSwitch_TruncateP4::testdata_dir = TESTDATADIR;
+const std::string PsaSwitch_TruncateP4::test_json =
     "truncate.json";
 
-TEST_F(PortableSwitch_TruncateP4, Truncate) {
+TEST_F(PsaSwitch_TruncateP4, Truncate) {
   static constexpr int port_in = 1;
   static constexpr int port_out = 2;
   static constexpr size_t kTruncatedLength = 32;

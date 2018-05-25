@@ -28,7 +28,7 @@
 #include <memory>
 #include <vector>
 
-#include "portable_switch.h"
+#include "psa_switch.h"
 
 #include "utils.h"
 
@@ -43,24 +43,24 @@ namespace {
 
 void
 packet_handler(int port_num, const char *buffer, int len, void *cookie) {
-  static_cast<PortableSwitch *>(cookie)->receive(port_num, buffer, len);
+  static_cast<PsaSwitch *>(cookie)->receive(port_num, buffer, len);
 }
 
 }  // namespace
 
-class PortableSwitch_PacketRedirectP4 : public ::testing::Test {
+class PsaSwitch_PacketRedirectP4 : public ::testing::Test {
  protected:
   static constexpr size_t kMaxBufSize = 512;
 
   static constexpr bm::device_id_t device_id{0};
 
-  PortableSwitch_PacketRedirectP4()
+  PsaSwitch_PacketRedirectP4()
       : packet_inject(packet_in_addr),
         events(event_logger_addr) { }
 
   // Per-test-case set-up.
   // We make the switch a shared resource for all tests. This is mainly because
-  // the portable_switch target detaches threads
+  // the psa_switch target detaches threads
   static void SetUpTestCase() {
     // bm::Logger::set_logger_console();
 #ifdef BMELOG_ON
@@ -69,7 +69,7 @@ class PortableSwitch_PacketRedirectP4 : public ::testing::Test {
     bm::EventLogger::init(std::move(event_transport));
 #endif
 
-    test_switch = new PortableSwitch(8);  // 8 ports
+    test_switch = new PsaSwitch(8);  // 8 ports
 
     // load JSON
     fs::path json_path = fs::path(testdata_dir) / fs::path(test_json);
@@ -77,7 +77,7 @@ class PortableSwitch_PacketRedirectP4 : public ::testing::Test {
 
     // packet in - packet out
     test_switch->set_dev_mgr_packet_in(device_id, packet_in_addr, nullptr);
-    test_switch->Switch::start();  // there is a start member in PortableSwitch
+    test_switch->Switch::start();  // there is a start member in PsaSwitch
     test_switch->set_packet_handler(packet_handler,
                                     static_cast<void *>(test_switch));
     test_switch->start_and_return();
@@ -133,7 +133,7 @@ class PortableSwitch_PacketRedirectP4 : public ::testing::Test {
  protected:
   static const std::string event_logger_addr;
   static const std::string packet_in_addr;
-  static PortableSwitch *test_switch;
+  static PsaSwitch *test_switch;
   bm_apps::PacketInject packet_inject;
   PacketInReceiver receiver{};
   NNEventListener events;
@@ -149,18 +149,18 @@ class PortableSwitch_PacketRedirectP4 : public ::testing::Test {
 // packet drops are to be expected when the phblisher is faster than the
 // consummer. However, I do not believe my consummer is that slow and I never
 // observe the drops with 'ipc'
-const std::string PortableSwitch_PacketRedirectP4::event_logger_addr =
+const std::string PsaSwitch_PacketRedirectP4::event_logger_addr =
     "ipc:///tmp/test_events_abc123";
-const std::string PortableSwitch_PacketRedirectP4::packet_in_addr =
+const std::string PsaSwitch_PacketRedirectP4::packet_in_addr =
     "ipc:///tmp/test_packet_in_abc123";
 
-PortableSwitch *PortableSwitch_PacketRedirectP4::test_switch = nullptr;
+PsaSwitch *PsaSwitch_PacketRedirectP4::test_switch = nullptr;
 
-const std::string PortableSwitch_PacketRedirectP4::testdata_dir = TESTDATADIR;
-const std::string PortableSwitch_PacketRedirectP4::test_json =
+const std::string PsaSwitch_PacketRedirectP4::testdata_dir = TESTDATADIR;
+const std::string PsaSwitch_PacketRedirectP4::test_json =
     "packet_redirect.json";
 
-TEST_F(PortableSwitch_PacketRedirectP4, Baseline) {
+TEST_F(PsaSwitch_PacketRedirectP4, Baseline) {
   static constexpr int port_in = 1;
   static constexpr int port_out = 2;
 
@@ -201,7 +201,7 @@ TEST_F(PortableSwitch_PacketRedirectP4, Baseline) {
 #endif
 }
 
-TEST_F(PortableSwitch_PacketRedirectP4, Multicast) {
+TEST_F(PsaSwitch_PacketRedirectP4, Multicast) {
   static constexpr int port_in = 1;
   static constexpr int mgrp = 1;
 
@@ -287,7 +287,7 @@ TEST_F(PortableSwitch_PacketRedirectP4, Multicast) {
   ASSERT_EQ(McSimplePreLAG::SUCCESS, pre_ptr->mc_mgrp_destroy(mgrp_hdl));
 }
 
-TEST_F(PortableSwitch_PacketRedirectP4, CloneI2E) {
+TEST_F(PsaSwitch_PacketRedirectP4, CloneI2E) {
   static constexpr int port_in = 1;
   static constexpr int port_out = 2;
   static constexpr int port_out_copy = 3;
@@ -356,7 +356,7 @@ TEST_F(PortableSwitch_PacketRedirectP4, CloneI2E) {
 #endif
 }
 
-TEST_F(PortableSwitch_PacketRedirectP4, CloneE2E) {
+TEST_F(PsaSwitch_PacketRedirectP4, CloneE2E) {
   static constexpr int port_in = 1;
   static constexpr int port_out = 2;
   static constexpr int port_out_copy = 3;
@@ -424,7 +424,7 @@ TEST_F(PortableSwitch_PacketRedirectP4, CloneE2E) {
 #endif
 }
 
-TEST_F(PortableSwitch_PacketRedirectP4, Resubmit) {
+TEST_F(PsaSwitch_PacketRedirectP4, Resubmit) {
   /* In this test, the egress port is first set to 2, but because the packet is
      selected for resubmission, and because of the resubmitted metadata, the
      egress port will be set to 3 */
@@ -484,7 +484,7 @@ TEST_F(PortableSwitch_PacketRedirectP4, Resubmit) {
                                          "_resubmit"));
 
   // TODO(antonin): if we consider that it is the same packet, then the copy_id
-  // should be the same? Update this if this changes in portable_switch
+  // should be the same? Update this if this changes in psa_switch
   events.get_and_remove_events("4.1", &pevents, 8u);
   ASSERT_EQ(8u, pevents.size());
   ASSERT_TRUE(check_event_table_hit(pevents[0], "t_ingress_1"));
@@ -499,7 +499,7 @@ TEST_F(PortableSwitch_PacketRedirectP4, Resubmit) {
 #endif
 }
 
-TEST_F(PortableSwitch_PacketRedirectP4, Recirculate) {
+TEST_F(PsaSwitch_PacketRedirectP4, Recirculate) {
   static constexpr int port_in = 1;
   static constexpr int port_out_1 = 2;
   static constexpr int port_out_2 = 3;
@@ -562,7 +562,7 @@ TEST_F(PortableSwitch_PacketRedirectP4, Recirculate) {
   ASSERT_TRUE(check_event_action_execute(pevents[7], "t_exit", "set_hdr"));
 
   // TODO(antonin): if we consider that it is the same packet, then the copy_id
-  // should be the same? Update this if this changes in portable_switch
+  // should be the same? Update this if this changes in psa_switch
   events.get_and_remove_events("5.1", &pevents, 8u);
   ASSERT_EQ(8u, pevents.size());
   ASSERT_TRUE(check_event_table_hit(pevents[0], "t_ingress_1"));
@@ -577,7 +577,7 @@ TEST_F(PortableSwitch_PacketRedirectP4, Recirculate) {
 #endif
 }
 
-TEST_F(PortableSwitch_PacketRedirectP4, ExitIngress) {
+TEST_F(PsaSwitch_PacketRedirectP4, ExitIngress) {
   static constexpr int port_in = 1;
   static constexpr int port_out = 0;
 

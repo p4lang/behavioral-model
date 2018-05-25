@@ -28,7 +28,7 @@
 #include <fstream>
 #include <string>
 
-#include "portable_switch.h"
+#include "psa_switch.h"
 
 namespace {
 
@@ -64,9 +64,9 @@ REGISTER_HASH(bmv2_hash);
 
 extern int import_primitives();
 
-packet_id_t PortableSwitch::packet_id = 0;
+packet_id_t PsaSwitch::packet_id = 0;
 
-PortableSwitch::PortableSwitch(port_t max_port, bool enable_swap)
+PsaSwitch::PsaSwitch(port_t max_port, bool enable_swap)
   : Switch(enable_swap),
     max_port(max_port),
     input_buffer(1024),
@@ -96,7 +96,7 @@ PortableSwitch::PortableSwitch(port_t max_port, bool enable_swap)
 #define PACKET_LENGTH_REG_IDX 0
 
 int
-PortableSwitch::receive_(port_t port_num, const char *buffer, int len) {
+PsaSwitch::receive_(port_t port_num, const char *buffer, int len) {
   // this is a good place to call this, because blocking this thread will not
   // block the processing of existing packet instances, which is a requirement
   if (do_swap() == 0) {
@@ -136,17 +136,17 @@ PortableSwitch::receive_(port_t port_num, const char *buffer, int len) {
 }
 
 void
-PortableSwitch::start_and_return_() {
+PsaSwitch::start_and_return_() {
   check_queueing_metadata();
 
-  threads_.push_back(std::thread(&PortableSwitch::ingress_thread, this));
+  threads_.push_back(std::thread(&PsaSwitch::ingress_thread, this));
   for (size_t i = 0; i < nb_egress_threads; i++) {
-    threads_.push_back(std::thread(&PortableSwitch::egress_thread, this, i));
+    threads_.push_back(std::thread(&PsaSwitch::egress_thread, this, i));
   }
-  threads_.push_back(std::thread(&PortableSwitch::transmit_thread, this));
+  threads_.push_back(std::thread(&PsaSwitch::transmit_thread, this));
 }
 
-PortableSwitch::~PortableSwitch() {
+PsaSwitch::~PsaSwitch() {
   input_buffer.push_front(nullptr);
   for (size_t i = 0; i < nb_egress_threads; i++) {
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
@@ -162,19 +162,19 @@ PortableSwitch::~PortableSwitch() {
 }
 
 void
-PortableSwitch::reset_target_state_() {
-  bm::Logger::get()->debug("Resetting portable_switch target-specific state");
+PsaSwitch::reset_target_state_() {
+  bm::Logger::get()->debug("Resetting psa_switch target-specific state");
   get_component<McSimplePreLAG>()->reset_state();
 }
 
 int
-PortableSwitch::set_egress_queue_depth(size_t port, const size_t depth_pkts) {
+PsaSwitch::set_egress_queue_depth(size_t port, const size_t depth_pkts) {
   egress_buffers.set_capacity(port, depth_pkts);
   return 0;
 }
 
 int
-PortableSwitch::set_all_egress_queue_depths(const size_t depth_pkts) {
+PsaSwitch::set_all_egress_queue_depths(const size_t depth_pkts) {
   for (uint32_t i = 0; i < max_port; i++) {
     set_egress_queue_depth(i, depth_pkts);
   }
@@ -182,13 +182,13 @@ PortableSwitch::set_all_egress_queue_depths(const size_t depth_pkts) {
 }
 
 int
-PortableSwitch::set_egress_queue_rate(size_t port, const uint64_t rate_pps) {
+PsaSwitch::set_egress_queue_rate(size_t port, const uint64_t rate_pps) {
   egress_buffers.set_rate(port, rate_pps);
   return 0;
 }
 
 int
-PortableSwitch::set_all_egress_queue_rates(const uint64_t rate_pps) {
+PsaSwitch::set_all_egress_queue_rates(const uint64_t rate_pps) {
   for (uint32_t i = 0; i < max_port; i++) {
     set_egress_queue_rate(i, rate_pps);
   }
@@ -196,23 +196,23 @@ PortableSwitch::set_all_egress_queue_rates(const uint64_t rate_pps) {
 }
 
 uint64_t
-PortableSwitch::get_time_elapsed_us() const {
+PsaSwitch::get_time_elapsed_us() const {
   return get_ts().count();
 }
 
 uint64_t
-PortableSwitch::get_time_since_epoch_us() const {
+PsaSwitch::get_time_since_epoch_us() const {
   auto tp = clock::now();
   return duration_cast<ts_res>(tp.time_since_epoch()).count();
 }
 
 void
-PortableSwitch::set_transmit_fn(TransmitFn fn) {
+PsaSwitch::set_transmit_fn(TransmitFn fn) {
   my_transmit_fn = std::move(fn);
 }
 
 void
-PortableSwitch::transmit_thread() {
+PsaSwitch::transmit_thread() {
   while (1) {
     std::unique_ptr<Packet> packet;
     output_buffer.pop_back(&packet);
@@ -226,12 +226,12 @@ PortableSwitch::transmit_thread() {
 }
 
 ts_res
-PortableSwitch::get_ts() const {
+PsaSwitch::get_ts() const {
   return duration_cast<ts_res>(clock::now() - start);
 }
 
 void
-PortableSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
+PsaSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
     if (egress_port >= max_port) {
       bm::Logger::get()->error("Invalid egress port %u, dropping packet",
                                egress_port);
@@ -265,7 +265,7 @@ PortableSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
 
 // used for ingress cloning, resubmit
 void
-PortableSwitch::copy_field_list_and_set_type(
+PsaSwitch::copy_field_list_and_set_type(
     const std::unique_ptr<Packet> &packet,
     const std::unique_ptr<Packet> &packet_copy,
     PktInstanceType copy_type, p4object_id_t field_list_id) {
@@ -277,7 +277,7 @@ PortableSwitch::copy_field_list_and_set_type(
 }
 
 void
-PortableSwitch::check_queueing_metadata() {
+PsaSwitch::check_queueing_metadata() {
   // TODO(antonin): add qid in required fields
   bool enq_timestamp_e = field_exists("queueing_metadata", "enq_timestamp");
   bool enq_qdepth_e = field_exists("queueing_metadata", "enq_qdepth");
@@ -293,7 +293,7 @@ PortableSwitch::check_queueing_metadata() {
 }
 
 void
-PortableSwitch::ingress_thread() {
+PsaSwitch::ingress_thread() {
   PHV *phv;
 
   while (1) {
@@ -435,7 +435,7 @@ PortableSwitch::ingress_thread() {
 }
 
 void
-PortableSwitch::egress_thread(size_t worker_id) {
+PsaSwitch::egress_thread(size_t worker_id) {
   PHV *phv;
 
   while (1) {

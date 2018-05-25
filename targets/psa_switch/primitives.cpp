@@ -339,9 +339,9 @@ class truncate_ : public ActionPrimitive<const Data &> {
 REGISTER_PRIMITIVE_W_NAME("truncate", truncate_);
 
 // dummy function, which ensures that this unit is not discarded by the linker
-// it is being called by the constructor of PortableSwitch
+// it is being called by the constructor of PsaSwitch
 // the previous alternative was to have all the primitives in a header file (the
-// primitives could also be placed in portable_switch.cpp directly), but I need
+// primitives could also be placed in psa_switch.cpp directly), but I need
 // this dummy function if I want to keep the primitives in their own file
 int import_primitives() {
   return 0;

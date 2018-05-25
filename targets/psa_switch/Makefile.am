@@ -4,13 +4,13 @@ endif
 
 SUBDIRS = . $(MAYBE_TESTS)
 
-THRIFT_IDL = $(srcdir)/thrift/portable_switch.thrift
+THRIFT_IDL = $(srcdir)/thrift/psa_switch.thrift
 
-noinst_LTLIBRARIES = libsimpleswitch.la
+noinst_LTLIBRARIES = libpsaswitch.la
 
-libsimpleswitch_la_SOURCES = portable_switch.cpp portable_switch.h primitives.cpp
+libpsaswitch_la_SOURCES = psa_switch.cpp psa_switch.h primitives.cpp
 
-libsimpleswitch_la_LIBADD = \
+libpsaswitch_la_LIBADD = \
 $(top_builddir)/src/bm_sim/libbmsim.la \
 $(top_builddir)/src/bf_lpm_trie/libbflpmtrie.la \
 $(top_builddir)/src/BMI/libbmi.la \
@@ -19,23 +19,23 @@ $(top_builddir)/third_party/jsoncpp/libjson.la \
 
 if COND_THRIFT
 
-portable_switch_thrift_py_files = \
+psa_switch_thrift_py_files = \
 gen-py/pswitch_runtime/constants.py \
 gen-py/pswitch_runtime/__init__.py \
-gen-py/pswitch_runtime/PortableSwitch.py \
+gen-py/pswitch_runtime/PsaSwitch.py \
 gen-py/pswitch_runtime/ttypes.py
-portable_switch_thrift_files = \
-gen-cpp/bm/portable_switch_constants.cpp \
-gen-cpp/bm/portable_switch_constants.h \
-gen-cpp/bm/PortableSwitch.cpp \
-gen-cpp/bm/PortableSwitch.h \
-gen-cpp/bm/portable_switch_types.cpp \
-gen-cpp/bm/portable_switch_types.h
+psa_switch_thrift_files = \
+gen-cpp/bm/psa_switch_constants.cpp \
+gen-cpp/bm/psa_switch_constants.h \
+gen-cpp/bm/PsaSwitch.cpp \
+gen-cpp/bm/PsaSwitch.h \
+gen-cpp/bm/psa_switch_types.cpp \
+gen-cpp/bm/psa_switch_types.h
 
-BUILT_SOURCES = $(portable_switch_thrift_files) $(portable_switch_thrift_py_files)
+BUILT_SOURCES = $(psa_switch_thrift_files) $(psa_switch_thrift_py_files)
 
 pswitchpydir = $(pythondir)/pswitch_runtime
-nodist_pswitchpy_PYTHON = $(portable_switch_thrift_py_files)
+nodist_pswitchpy_PYTHON = $(psa_switch_thrift_py_files)
 
 python_PYTHON = pswitch_CLI.py
 
@@ -44,42 +44,42 @@ python_PYTHON = pswitch_CLI.py
 edit = sed \
 	-e 's|@pythondir[@]|$(pythondir)|g'
 
-portable_switch_CLI: Makefile
+psa_switch_CLI: Makefile
 	rm -f $@ $@.tmp
 	$(edit) $(srcdir)/$@.in >$@.tmp
 	chmod +x $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@
 
-portable_switch_CLI: portable_switch_CLI.in
+psa_switch_CLI: psa_switch_CLI.in
 
 EXTRA_DIST = \
-portable_switch_CLI.in \
+psa_switch_CLI.in \
 pswitch_CLI
 
 bin_SCRIPTS = \
-portable_switch_CLI
+psa_switch_CLI
 
 AM_CPPFLAGS += \
 -I$(srcdir)/thrift/src/ \
 -I$(builddir)/gen-cpp
 
-libsimpleswitch_la_SOURCES += thrift/src/PortableSwitch_server.cpp
+libpsaswitch_la_SOURCES += thrift/src/PsaSwitch_server.cpp
 
-bin_PROGRAMS = portable_switch
+bin_PROGRAMS = psa_switch
 
-portable_switch_LDADD = \
+psa_switch_LDADD = \
 $(top_builddir)/src/bm_runtime/libbmruntime.la \
 $(top_builddir)/thrift_src/libruntimestubs.la \
-libsimpleswitch.la \
-libsimpleswitch_thrift.la
+libpsaswitch.la \
+libpsaswitch_thrift.la
 
-portable_switch_SOURCES = main.cpp
+psa_switch_SOURCES = main.cpp
 
-lib_LTLIBRARIES = libsimpleswitch_thrift.la
+lib_LTLIBRARIES = libpsaswitch_thrift.la
 
-nodist_libsimpleswitch_thrift_la_SOURCES = \
-$(portable_switch_thrift_files)
+nodist_libpsaswitch_thrift_la_SOURCES = \
+$(psa_switch_thrift_files)
 
 # See http://www.gnu.org/software/automake/manual/html_node/Multiple-Outputs.html
 
@@ -105,7 +105,7 @@ $(BUILT_SOURCES): thrift_files.ts
 ## Recover from the removal of $@
 	@if test -f $@; then :; else \
 	  trap 'rm -rf thrift_files.lock thrift_files.ts' 1 2 13 15; \
-## mkdir is a portable test-and-set
+## mkdir is a simple test-and-set
 	if mkdir thrift_files.lock 2>/dev/null; then \
 ## This code is being executed by the first process.
 	  rm -f thrift_files.ts; \
@@ -121,13 +121,13 @@ $(BUILT_SOURCES): thrift_files.ts
 	fi
 
 nodist_pkginclude_HEADERS = \
-gen-cpp/bm/portable_switch_constants.h \
-gen-cpp/bm/PortableSwitch.h \
-gen-cpp/bm/portable_switch_types.h
+gen-cpp/bm/psa_switch_constants.h \
+gen-cpp/bm/PsaSwitch.h \
+gen-cpp/bm/psa_switch_types.h
 
 CLEANFILES = $(BUILT_SOURCES) \
 thrift_files.ts \
-gen-cpp/bm/PortableSwitch_server.skeleton.cpp \
+gen-cpp/bm/PsaSwitch_server.skeleton.cpp \
 $(bin_SCRIPTS)
 
 # I used to do a rm on gen-cpp, but it was removing a .deps directory, instead I

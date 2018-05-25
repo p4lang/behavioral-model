@@ -9,7 +9,7 @@ AM_CPPFLAGS += \
 -I$(srcdir)/.. \
 -I$(srcdir)/ \
 -DTESTDATADIR=\"$(srcdir)/testdata\"
-LDADD = $(builddir)/../libsimpleswitch.la \
+LDADD = $(builddir)/../libpsaswitch.la \
 $(top_builddir)/third_party/gtest/libgtest.la \
 $(top_builddir)/src/bm_apps/libbmapps.la \
 -lboost_filesystem
