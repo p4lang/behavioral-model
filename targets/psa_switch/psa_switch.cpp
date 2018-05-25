@@ -90,6 +90,17 @@ PsaSwitch::PsaSwitch(port_t max_port, bool enable_swap)
     start(clock::now()) {
   add_component<McSimplePreLAG>(pre);
 
+  add_required_field("standard_metadata", "ingress_port");
+  add_required_field("standard_metadata", "packet_length");
+  add_required_field("standard_metadata", "instance_type");
+  add_required_field("standard_metadata", "egress_spec");
+  add_required_field("standard_metadata", "clone_spec");
+  add_required_field("standard_metadata", "egress_port");
+
+  force_arith_header("standard_metadata");
+  force_arith_header("queueing_metadata");
+  force_arith_header("intrinsic_metadata");
+
   import_primitives();
 }
 
