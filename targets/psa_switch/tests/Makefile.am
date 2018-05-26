@@ -1,8 +1,4 @@
-if COND_THRIFT
-MAYBE_CLI_TESTS = CLI_tests
-endif
-
-SUBDIRS = . $(MAYBE_CLI_TESTS)
+SUBDIRS = .
 
 AM_CPPFLAGS += \
 -isystem $(top_srcdir)/third_party/gtest/include \

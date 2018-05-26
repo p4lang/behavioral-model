@@ -1,5 +1,0 @@
-table_dump empty_key
-table_set_default empty_key _nop
-table_dump empty_key
-table_reset_default empty_key
-table_dump empty_key
