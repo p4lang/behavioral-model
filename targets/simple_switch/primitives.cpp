@@ -25,6 +25,7 @@
 #include <bm/bm_sim/meters.h>
 #include <bm/bm_sim/packet.h>
 #include <bm/bm_sim/phv.h>
+#include <bm/bm_sim/logger.h>
 
 #include <random>
 #include <thread>
@@ -282,7 +283,22 @@ REGISTER_PRIMITIVE(no_op);
 class execute_meter
   : public ActionPrimitive<MeterArray &, const Data &, Field &> {
   void operator ()(MeterArray &meter_array, const Data &idx, Field &dst) {
-    dst.set(meter_array.execute_meter(get_packet(), idx.get_uint()));
+    unsigned int i = idx.get_uint();
+    if (i < meter_array.size()) {
+        unsigned int color = meter_array.execute_meter(get_packet(), i);
+        dst.set(color);
+        BMLOG_TRACE_PKT(get_packet(),
+                        "Updated meter {} at index {},"
+                        " assigning dest field the color result {}",
+                        meter_array.get_name(), i, color);
+    } else {
+        BMLOG_TRACE_PKT(get_packet(),
+                        "Attempted to update meter {} with size {}"
+                        " at out-of-bounds index {}."
+                        "  No meters were updated, and neither was"
+                        " dest field.",
+                        meter_array.get_name(), meter_array.size(), i);
+    }
   }
 };
 
@@ -290,7 +306,19 @@ REGISTER_PRIMITIVE(execute_meter);
 
 class count : public ActionPrimitive<CounterArray &, const Data &> {
   void operator ()(CounterArray &counter_array, const Data &idx) {
-    counter_array.get_counter(idx.get_uint()).increment_counter(get_packet());
+    unsigned int i = idx.get_uint();
+    if (i < counter_array.size()) {
+        counter_array.get_counter(i).increment_counter(get_packet());
+        BMLOG_TRACE_PKT(get_packet(),
+                        "Updated counter {} at index {}",
+                        counter_array.get_name(), i);
+    } else {
+        BMLOG_TRACE_PKT(get_packet(),
+                        "Attempted to update counter {} with size {}"
+                        " at out-of-bounds index {}."
+                        "  No counters were updated.",
+                        counter_array.get_name(), counter_array.size(), i);
+    }
   }
 };
 
@@ -299,7 +327,19 @@ REGISTER_PRIMITIVE(count);
 class register_read
   : public ActionPrimitive<Field &, const RegisterArray &, const Data &> {
   void operator ()(Field &dst, const RegisterArray &src, const Data &idx) {
-    dst.set(src[idx.get_uint()]);
+    unsigned int i = idx.get_uint();
+    if (i < src.size()) {
+        dst.set(src[i]);
+        BMLOG_TRACE_PKT(get_packet(),
+                        "Read register {} at index {} read value {}",
+                        src.get_name(), i, src[i]);
+    } else {
+        BMLOG_TRACE_PKT(get_packet(),
+                        "Attempted to read register {} with size {}"
+                        " at out-of-bounds index {}."
+                        "  Dest field was not updated.",
+                        src.get_name(), src.size(), i);
+    }
   }
 };
 
@@ -308,7 +348,19 @@ REGISTER_PRIMITIVE(register_read);
 class register_write
   : public ActionPrimitive<RegisterArray &, const Data &, const Data &> {
   void operator ()(RegisterArray &dst, const Data &idx, const Data &src) {
-    dst[idx.get_uint()].set(src);
+    unsigned int i = idx.get_uint();
+    if (i < dst.size()) {
+        dst[i].set(src);
+        BMLOG_TRACE_PKT(get_packet(),
+                        "Wrote register {} at index {} with value {}",
+                        dst.get_name(), i, dst[i]);
+    } else {
+        BMLOG_TRACE_PKT(get_packet(),
+                        "Attempted to write register {} with size {}"
+                        " at out-of-bounds index {}."
+                        "  No register array elements were updated.",
+                        dst.get_name(), dst.size(), i);
+    }
   }
 };
 
