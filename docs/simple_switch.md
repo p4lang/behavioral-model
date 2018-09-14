@@ -153,7 +153,7 @@ pipeline. See the "after-ingress pseudocode" for relative priority of
 this vs. other possible packet operations at end of ingress.
 - `recirculate_flag`: should not be accessed directly. It is set by the
 `recirculate` action primitive and is required for the recirculate feature. As a
-remainder, `recirculate` needs to be called from the egress pipeline.
+reminder, `recirculate` needs to be called from the egress pipeline.
 See the "after-egress pseudocode" for the relative priority of this
 vs. other possible packet operations at the end of egress processing.
 - `clone_spec`: should not be accessed directly. It is set by the
@@ -187,7 +187,7 @@ struct type for these fields.
 
 For a P4_14 program,
 you only need to define this P4 header if you want to access queueing
-information - as a remainder, the packet is queued between the ingress and
+information - as a reminder, the packet is queued between the ingress and
 egress pipelines. Note that this header is "all or nothing". Either you do not
 define it or you define it with all its fields (there are 4 of them). We
 recommend that you use the following P4_14 code:
