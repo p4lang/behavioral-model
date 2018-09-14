@@ -164,9 +164,9 @@ to egress" clone primitive action must be called from the egress pipeline.
 
 Several of these fields should be considered internal implementation
 details for how simple_switch implements some packet processing
-features.  They are: `recirculate_flag`, `resubmit_flag`,
-`lf_field_list`, and `clone_spec`.  They have the following properties
-in common:
+features.  They are: `lf_field_list`, `resubmit_flag`,
+`recirculate_flag`, and `clone_spec`.  They have the following
+properties in common:
 
 - They are initialized to 0, and are assigned a compiler-chosen non-0
   value when the corresponding primitive action is called.
@@ -298,7 +298,7 @@ if (egress_spec == 511) {
     // mark_to_drop (P4_16) or drop (P4_14) primitive action during
     // egress processing.
     Drop packet.
-} else if (resubmit_flag != 0) {
+} else if (recirculate_flag != 0) {
     // This condition will be true if your code called the recirculate
     // primitive action during egress processing.
     Start ingress over again, for the packet as constructed by the
