@@ -302,7 +302,7 @@ if (egress_spec == 511) {
     // This condition will be true if your code called the recirculate
     // primitive action during egress processing.
     Start ingress over again, for the packet as constructed by the
-    deparser, with any modifications made to the made during both
+    deparser, with any modifications made to the packet during both
     ingress and egress processing.  Preserve the current values of any
     fields specified in the field list given as an argument to the
     last recirculate primitive action called.  Also the instance_type
@@ -310,6 +310,9 @@ if (egress_spec == 511) {
 } else {
     Send the packet to the port in egress_port.  Since egress_port is
     read only during egress processing, note that its value must have
-    been determined during ingress processing for normal packets.
+    been determined during ingress processing for normal packets.  One
+    exception is that a clone primitive action executed during egress
+    processing will have its egress_port determined from the port that
+    the control plane configured for that clone session).
 }
 ```
