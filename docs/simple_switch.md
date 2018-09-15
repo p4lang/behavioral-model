@@ -259,8 +259,10 @@ if (clone_spec != 0) {
     in the clone (aka mirror) session id number that was given when the
     last clone or clone3 primitive action was called.
 
-    If it was a clone3 action, also preserve the values of the
-    metadata fields specified in the field list argument.
+    If it was a clone3 action, also preserve the final ingress values
+    of the metadata fields specified in the field list argument,
+    except assign clone_spec a value of 0 always, and instance_type a
+    value of PKT_INSTANCE_TYPE_INGRESS_CLONE.
     // fall through to code below
 }
 if (lf_field_list != 0) {
@@ -274,10 +276,11 @@ if (resubmit_flag != 0) {
     // This condition will be true if your code called the resubmit
     // primitive action during ingress processing.
     Start ingress over again for this packet, with its original
-    unmodified packet contents and metadata values, except preserve
-    the current values of any fields specified in the field list given
-    as an argument to the last resubmit primitive action called.
-    Also the instance_type will indicate the packet was resubmitted.
+    unmodified packet contents and metadata values.  Preserve the
+    final ingress values of any fields specified in the field list
+    given as an argument to the last resubmit() primitive operation
+    called, except assign resubmit_flag a value of 0 always, and
+    instance_type a value of PKT_INSTANCE_TYPE_RESUBMIT.
 } else if (mcast_grp != 0) {
     // This condition will be true if your code made an assignment to
     // standard_metadata.mcast_grp during ingress processing.  There
@@ -287,7 +290,8 @@ if (resubmit_flag != 0) {
     Make 0 or more copies of the packet based upon the list of
     (egress_port, egress_rid) values configured by the control plane
     for the mcast_grp value.  Enqueue each one in the appropriate
-    packet buffer queue.
+    packet buffer queue.  The instance_type of each will be
+    PKT_INSTANCE_TYPE_REPLICATION.
 } else if (egress_spec == 511) {
     // This condition will be true if your code called the
     // mark_to_drop (P4_16) or drop (P4_14) primitive action during
@@ -326,8 +330,10 @@ if (clone_spec != 0) {
     in the clone (aka mirror) session id number that was given when the
     last clone or clone3 primitive action was called.
 
-    If it was a clone3 action, also preserve the values of the
-    metadata fields specified in the field list argument.
+    If it was a clone3 action, also preserve the final egress values
+    of the metadata fields specified in the field list argument,
+    except assign clone_spec a value of 0 always, and instance_type a
+    value of PKT_INSTANCE_TYPE_EGRESS_CLONE.
     // fall through to code below
 }
 if (egress_spec == 511) {
@@ -340,10 +346,11 @@ if (egress_spec == 511) {
     // primitive action during egress processing.
     Start ingress over again, for the packet as constructed by the
     deparser, with any modifications made to the packet during both
-    ingress and egress processing.  Preserve the current values of any
-    fields specified in the field list given as an argument to the
-    last recirculate primitive action called.  Also the instance_type
-    will indicate the packet was recirculated.
+    ingress and egress processing.  Preserve the final egress values
+    of any fields specified in the field list given as an argument to
+    the last recirculate primitive action called, except assign
+    recirculate_flag a value of 0 always, and instance_type a value of
+    PKT_INSTANCE_TYPE_RECIRC.
 } else {
     Send the packet to the port in egress_port.  Since egress_port is
     read only during egress processing, note that its value must have
