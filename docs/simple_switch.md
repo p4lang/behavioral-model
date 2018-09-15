@@ -227,8 +227,29 @@ file](../targets/simple_switch/primitives.cpp).
 
 ## Pseudocode for what happens at the end of ingress and egress processing
 
+After-ingress pseudocode - the short version:
+
+```
+if (clone_spec != 0) {      // because your code called clone or clone3
+    make a clone of the packet with details configured for the clone session
+}
+if (lf_field_list != 0) {   // because your code called generate_digest
+    send a digest message to the control plane software
+}
+if (resubmit_flag != 0) {   // because your code called resubmit
+    start ingress processing over again for the original packet
+} else if (mcast_grp != 0) {  // because your code assigned a value to mcast_grp
+    multicast the packet to the output port(s) configured for group mcast_grp
+} else if (egress_spec == 511) {  // because your code called drop/mark_to_drop
+    Drop packet.
+} else {
+    unicast the packet to the port equal to egress_spec
+}
+```
+
 After-ingress pseudocode - for determining what happens to a packet
-after ingress processing is complete:
+after ingress processing is complete.  The longer more detailed
+version:
 
 ```
 if (clone_spec != 0) {
@@ -278,8 +299,24 @@ if (resubmit_flag != 0) {
 }
 ```
 
+After-egress pseudocode - the short version:
+
+```
+if (clone_spec != 0) {    // because your code called clone or clone3
+    make a clone of the packet with details configured for the clone session
+}
+if (egress_spec == 511) {  // because your code called drop/mark_to_drop
+    Drop packet.
+} else if (recirculate_flag != 0) {  // because your code called recirculate
+    start ingress processing over again for deparsed packet
+} else {
+    Send the packet to the port in egress_port.
+}
+```
+
 After-egress pseudocode - for determining what happens to a packet
-after egress processing is complete:
+after egress processing is complete.  The longer more detailed
+version:
 
 ```
 if (clone_spec != 0) {
