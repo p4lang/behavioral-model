@@ -259,6 +259,14 @@ if (clone_spec != 0) {
     in the clone (aka mirror) session id number that was given when the
     last clone or clone3 primitive action was called.
 
+    The packet contents will be the same as when it most recently
+    began the ingress processing, where the clone operation was
+    performed, without any modifications that may have been made
+    during the execution of that ingress code.  (That may not be the
+    packet as originally received by the switch, if the packet reached
+    this occurrence of ingress processing via a recirculate operation,
+    for example.)
+
     If it was a clone3 action, also preserve the final ingress values
     of the metadata fields specified in the field list argument,
     except assign clone_spec a value of 0 always, and instance_type a
@@ -329,6 +337,10 @@ if (clone_spec != 0) {
     Make a clone of the packet destined for the egress_port configured
     in the clone (aka mirror) session id number that was given when the
     last clone or clone3 primitive action was called.
+
+    The packet contents will be as constructed by the deparser after
+    egress processing, with any modifications made to the packet
+    during both ingress and egress processing.
 
     If it was a clone3 action, also preserve the final egress values
     of the metadata fields specified in the field list argument,
