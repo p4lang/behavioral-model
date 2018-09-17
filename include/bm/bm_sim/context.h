@@ -63,6 +63,7 @@
 #include "runtime_interface.h"
 #include "lookup_structures.h"
 #include "device_id.h"
+#include "enums.h"
 
 namespace bm {
 
@@ -160,6 +161,23 @@ class Context final {
   p4object_id_t get_action_id(const std::string &table_name,
                               const std::string &action_name) {
     return p4objects->get_action(table_name, action_name)->get_id();
+  }
+
+  //! Returns the integer value assigned to this enum member by the compiler and
+  //! included in the JSON. The caller must provide the fully-qualified \p name
+  //! of the enum member. Throws a std::out_of_range exception if it does not
+  //! exist (i.e. not found in the JSON).
+  EnumMap::type_t get_enum_value(const std::string &name) const {
+    return p4objects->get_enum_value(name);
+  }
+
+  //! Returns the fully-qualified name of an enum member from the \p enum_name
+  //! and the \p entry_value. Throws a std::out_of_range exception if \p
+  //! enum_name is not a valid name or if \p entry_value does not match any
+  //! member for that enum.
+  const std::string &get_enum_name(const std::string &enum_name,
+                                   EnumMap::type_t entry_value) const {
+    return p4objects->get_enum_name(enum_name, entry_value);
   }
 
  private:

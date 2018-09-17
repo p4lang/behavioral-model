@@ -24,10 +24,13 @@
 
 #include <unistd.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <map>
 #include <mutex>
+#include <numeric>  // for iota
 #include <string>
+#include <unordered_map>
 
 #include "simple_switch.h"
 
@@ -134,6 +137,12 @@ SimpleSwitch::SimpleSwitch(port_t max_port, bool enable_swap)
   force_arith_header("queueing_metadata");
   force_arith_header("intrinsic_metadata");
 
+  // store increasing sequence
+  // these defaults are needed for backward-compatibility
+  std::iota(
+      pkt_instance_type_defaults.begin(), pkt_instance_type_defaults.end(), 0);
+  pkt_instance_type_values = pkt_instance_type_defaults;
+
   import_primitives();
 }
 
@@ -145,6 +154,7 @@ SimpleSwitch::receive_(port_t port_num, const char *buffer, int len) {
   // block the processing of existing packet instances, which is a requirement
   if (do_swap() == 0) {
     check_queueing_metadata();
+    import_pkt_instance_type_values();
   }
 
   // we limit the packet buffer to original size + 512 bytes, which means we
@@ -168,7 +178,7 @@ SimpleSwitch::receive_(port_t port_num, const char *buffer, int len) {
   packet->set_register(PACKET_LENGTH_REG_IDX, len);
   phv->get_field("standard_metadata.packet_length").set(len);
   Field &f_instance_type = phv->get_field("standard_metadata.instance_type");
-  f_instance_type.set(PKT_INSTANCE_TYPE_NORMAL);
+  f_instance_type.set(instance_type(PKT_INSTANCE_TYPE_IDX_NORMAL));
 
   if (phv->has_field("intrinsic_metadata.ingress_global_timestamp")) {
     phv->get_field("intrinsic_metadata.ingress_global_timestamp")
@@ -181,7 +191,9 @@ SimpleSwitch::receive_(port_t port_num, const char *buffer, int len) {
 
 void
 SimpleSwitch::start_and_return_() {
+  // this function is not called until a P4 program has been loaded
   check_queueing_metadata();
+  import_pkt_instance_type_values();
 
   threads_.push_back(std::thread(&SimpleSwitch::ingress_thread, this));
   for (size_t i = 0; i < nb_egress_threads; i++) {
@@ -354,6 +366,36 @@ SimpleSwitch::check_queueing_metadata() {
 }
 
 void
+SimpleSwitch::import_pkt_instance_type_values() {
+  // maps index in std::array to P4 / JSON enum member name
+  static const std::map<PktInstanceTypeIdx, const std::string> idx_to_name = {
+    { PKT_INSTANCE_TYPE_IDX_NORMAL, "Normal" },
+    { PKT_INSTANCE_TYPE_IDX_INGRESS_CLONE, "IngressClone" },
+    { PKT_INSTANCE_TYPE_IDX_EGRESS_CLONE, "EgressClone" },
+    { PKT_INSTANCE_TYPE_IDX_COALESCED, "Coalesced" },
+    { PKT_INSTANCE_TYPE_IDX_RECIRC, "Recirc" },
+    { PKT_INSTANCE_TYPE_IDX_REPLICATION, "Replication" },
+    { PKT_INSTANCE_TYPE_IDX_RESUBMIT, "Resubmit" },
+  };
+  for (const auto &p : idx_to_name) {
+    PktInstanceType v;
+    const std::string member_name = "InstanceType." + p.second;
+    try {
+      v = get_enum_value(member_name);
+      bm::Logger::get()->trace(
+          "Using integer value {} for '{}'", v, member_name);
+    } catch (const std::out_of_range &) {
+      v = pkt_instance_type_defaults[p.first];
+      bm::Logger::get()->warn(
+          "Your JSON input does not provide an integer value for enum member "
+          "'{}', using default ({})",
+          member_name, v);
+    }
+    pkt_instance_type_values[p.first] = v;
+  }
+}
+
+void
 SimpleSwitch::multicast(Packet *packet, unsigned int mgid) {
   auto *phv = packet->get_phv();
   auto &f_rid = phv->get_field("intrinsic_metadata.egress_rid");
@@ -449,9 +491,10 @@ SimpleSwitch::ingress_thread() {
         // the alternative would be to pay the (huge) price of PHV copy for
         // every ingress packet
         parser->parse(packet_copy.get());
-        copy_field_list_and_set_type(packet, packet_copy,
-                                     PKT_INSTANCE_TYPE_INGRESS_CLONE,
-                                     field_list_id);
+        copy_field_list_and_set_type(
+            packet, packet_copy,
+            instance_type(PKT_INSTANCE_TYPE_IDX_INGRESS_CLONE),
+            field_list_id);
         if (config.mgid_valid) {
           BMLOG_DEBUG_PKT(*packet, "Cloning packet to MGID {}", config.mgid);
           multicast(packet_copy.get(), config.mgid);
@@ -483,9 +526,10 @@ SimpleSwitch::ingress_thread() {
         // TODO(antonin): a copy is not needed here, but I don't yet have an
         // optimized way of doing this
         std::unique_ptr<Packet> packet_copy = packet->clone_no_phv_ptr();
-        copy_field_list_and_set_type(packet, packet_copy,
-                                     PKT_INSTANCE_TYPE_RESUBMIT,
-                                     field_list_id);
+        copy_field_list_and_set_type(
+            packet, packet_copy,
+            instance_type(PKT_INSTANCE_TYPE_IDX_RESUBMIT),
+            field_list_id);
         input_buffer.push_front(std::move(packet_copy));
         continue;
       }
@@ -495,7 +539,7 @@ SimpleSwitch::ingress_thread() {
     if (mgid != 0) {
       BMLOG_DEBUG_PKT(*packet, "Multicast requested for packet");
       auto &f_instance_type = phv->get_field("standard_metadata.instance_type");
-      f_instance_type.set(PKT_INSTANCE_TYPE_REPLICATION);
+      f_instance_type.set(instance_type(PKT_INSTANCE_TYPE_IDX_REPLICATION));
       multicast(packet.get(), mgid);
       // when doing multicast, we discard the original packet
       continue;
@@ -583,7 +627,7 @@ SimpleSwitch::egress_thread(size_t worker_id) {
         FieldList *field_list = this->get_field_list(field_list_id);
         field_list->copy_fields_between_phvs(phv_copy, phv);
         phv_copy->get_field("standard_metadata.instance_type")
-            .set(PKT_INSTANCE_TYPE_EGRESS_CLONE);
+            .set(instance_type(PKT_INSTANCE_TYPE_IDX_EGRESS_CLONE));
         if (config.mgid_valid) {
           BMLOG_DEBUG_PKT(*packet, "Cloning packet to MGID {}", config.mgid);
           multicast(packet_copy.get(), config.mgid);
@@ -620,7 +664,7 @@ SimpleSwitch::egress_thread(size_t worker_id) {
         phv_copy->reset_metadata();
         field_list->copy_fields_between_phvs(phv_copy, phv);
         phv_copy->get_field("standard_metadata.instance_type")
-            .set(PKT_INSTANCE_TYPE_RECIRC);
+            .set(instance_type(PKT_INSTANCE_TYPE_IDX_RECIRC));
         size_t packet_size = packet_copy->get_data_size();
         packet_copy->set_register(PACKET_LENGTH_REG_IDX, packet_size);
         phv_copy->get_field("standard_metadata.packet_length").set(packet_size);

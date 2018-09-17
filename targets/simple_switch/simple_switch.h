@@ -21,18 +21,20 @@
 #ifndef SIMPLE_SWITCH_SIMPLE_SWITCH_H_
 #define SIMPLE_SWITCH_SIMPLE_SWITCH_H_
 
+#include <bm/bm_sim/enums.h>
+#include <bm/bm_sim/event_logger.h>
 #include <bm/bm_sim/queue.h>
 #include <bm/bm_sim/queueing.h>
 #include <bm/bm_sim/packet.h>
-#include <bm/bm_sim/switch.h>
-#include <bm/bm_sim/event_logger.h>
 #include <bm/bm_sim/simple_pre_lag.h>
+#include <bm/bm_sim/switch.h>
 
-#include <memory>
+#include <array>
 #include <chrono>
+#include <functional>
+#include <memory>
 #include <thread>
 #include <vector>
-#include <functional>
 
 // TODO(antonin)
 // experimental support for priority queueing
@@ -126,14 +128,18 @@ class SimpleSwitch : public Switch {
 
   class MirroringSessions;
 
-  enum PktInstanceType {
-    PKT_INSTANCE_TYPE_NORMAL,
-    PKT_INSTANCE_TYPE_INGRESS_CLONE,
-    PKT_INSTANCE_TYPE_EGRESS_CLONE,
-    PKT_INSTANCE_TYPE_COALESCED,
-    PKT_INSTANCE_TYPE_RECIRC,
-    PKT_INSTANCE_TYPE_REPLICATION,
-    PKT_INSTANCE_TYPE_RESUBMIT,
+  using PktInstanceType = bm::EnumMap::type_t;
+  // enum values used as index in arrays pkt_instance_type_values and
+  // pkt_instance_type_defaults
+  enum PktInstanceTypeIdx {
+    PKT_INSTANCE_TYPE_IDX_NORMAL = 0,
+    PKT_INSTANCE_TYPE_IDX_INGRESS_CLONE,
+    PKT_INSTANCE_TYPE_IDX_EGRESS_CLONE,
+    PKT_INSTANCE_TYPE_IDX_COALESCED,
+    PKT_INSTANCE_TYPE_IDX_RECIRC,
+    PKT_INSTANCE_TYPE_IDX_REPLICATION,
+    PKT_INSTANCE_TYPE_IDX_RESUBMIT,
+    PKT_INSTANCE_TYPE_IDX_COUNT,
   };
 
   struct EgressThreadMapper {
@@ -164,6 +170,12 @@ class SimpleSwitch : public Switch {
 
   void check_queueing_metadata();
 
+  void import_pkt_instance_type_values();
+
+  PktInstanceType instance_type(PktInstanceTypeIdx idx) {
+    return pkt_instance_type_values[idx];
+  }
+
   void multicast(Packet *packet, unsigned int mgid);
 
  private:
@@ -182,6 +194,15 @@ class SimpleSwitch : public Switch {
   clock::time_point start;
   bool with_queueing_metadata{false};
   std::unique_ptr<MirroringSessions> mirroring_sessions;
+  // stores underlying integer value for each InstanceType enum member, as
+  // assigned by the compiler and found in the JSON input. If the JSON does not
+  // include a value for the member, a "legacy" default will be used (stored in
+  // pkt_instance_type_defaults). The default values are the ones used by
+  // previous versions of simple_switch to ensure backward-compatibility.
+  std::array<PktInstanceType, PKT_INSTANCE_TYPE_IDX_COUNT>
+  pkt_instance_type_values{};
+  std::array<PktInstanceType, PKT_INSTANCE_TYPE_IDX_COUNT>
+  pkt_instance_type_defaults{};
 };
 
 #endif  // SIMPLE_SWITCH_SIMPLE_SWITCH_H_

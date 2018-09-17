@@ -80,6 +80,7 @@
 
 #include "context.h"
 #include "device_id.h"
+#include "enums.h"
 #include "queue.h"
 #include "learning.h"
 #include "runtime_interface.h"
@@ -113,6 +114,10 @@ class SwitchWContexts : public DevMgr, public RuntimeInterface {
   //! Access a Context by context id, throws a std::out_of_range exception if
   //! \p cxt_id is invalid.
   Context *get_context(cxt_id_t cxt_id = 0u) {
+    return &contexts.at(cxt_id);
+  }
+
+  const Context *get_context(cxt_id_t cxt_id = 0u) const {
     return &contexts.at(cxt_id);
   }
 
@@ -998,6 +1003,23 @@ class Switch : public SwitchWContexts {
   p4object_id_t get_action_id(const std::string &table_name,
                               const std::string &action_name) {
     return get_context(0)->get_action_id(table_name, action_name);
+  }
+
+  //! Returns the integer value assigned to this enum member by the compiler and
+  //! included in the JSON. The caller must provide the fully-qualified \p name
+  //! of the enum member. Throws a std::out_of_range exception if it does not
+  //! exist (i.e. not found in the JSON).
+  EnumMap::type_t get_enum_value(const std::string &name) const {
+    return get_context(0)->get_enum_value(name);
+  }
+
+  //! Returns the fully-qualified name of an enum member from the \p enum_name
+  //! and the \p entry_value. Throws a std::out_of_range exception if \p
+  //! enum_name is not a valid name or if \p entry_value does not match any
+  //! member for that enum.
+  const std::string &get_enum_name(const std::string &enum_name,
+                                   EnumMap::type_t entry_value) const {
+    return get_context(0)->get_enum_name(enum_name, entry_value);
   }
 
   // to avoid C++ name hiding
