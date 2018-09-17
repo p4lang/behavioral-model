@@ -88,6 +88,12 @@ Here are the fields:
   what error occurred during parsing.
 - `parser_error_location` (sm14) - Not present in v1model.p4, and not
   implemented in simple_switch.
+- `clone_spec` (v1m): should not be accessed directly. It is set by
+  the `clone` and `clone3` action primitives and is required for the
+  packet clone (aka mirror) feature. The "ingress to egress" clone
+  primitive action must be called from the ingress pipeline, and the
+  "egress to egress" clone primitive action must be called from the
+  egress pipeline.
 
 ## Intrinsic metadata
 
@@ -122,7 +128,6 @@ header_type intrinsic_metadata_t {
         egress_rid : 16;
         resubmit_flag : 8;
         recirculate_flag : 8;
-        clone_spec : 32;   // TBD - should this be added in order for P4_14 clone to work?
     }
 }
 metadata intrinsic_metadata_t intrinsic_metadata;
@@ -156,11 +161,6 @@ this vs. other possible packet operations at end of ingress.
 reminder, `recirculate` needs to be called from the egress pipeline.
 See the "after-egress pseudocode" for the relative priority of this
 vs. other possible packet operations at the end of egress processing.
-- `clone_spec`: should not be accessed directly. It is set by the
-`clone` and `clone3` action primitives and is required for the
-packet clone (aka mirror) feature.  The "ingress to egress" clone
-primitive action must be called from the ingress pipeline, and the "egress
-to egress" clone primitive action must be called from the egress pipeline.
 
 Several of these fields should be considered internal implementation
 details for how simple_switch implements some packet processing
