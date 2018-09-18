@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 ubuntu_release=`lsb_release -s -r`
 if [[ "${ubuntu_release}" > "18" ]]
