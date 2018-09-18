@@ -1,5 +1,13 @@
 #!/bin/sh
 set -e
+# Check whether running Ubuntu >= 18.04
+if test `lsb_release -rs` = '18.04';
+then
+    echo "Detected Ubuntu 18.04, using libssl1.0-dev"
+    LIBSSL="libssl1.0-dev"
+else
+    LIBSSL="libssl-dev"
+fi
 sudo apt-get install -y \
     automake \
     cmake \
@@ -18,7 +26,7 @@ sudo apt-get install -y \
     bison \
     pkg-config \
     g++ \
-    libssl-dev \
+    $LIBSSL \
     libffi-dev \
     python-dev \
     python-pip \
