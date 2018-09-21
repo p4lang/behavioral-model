@@ -331,6 +331,11 @@ SimpleSwitch::ingress_thread() {
     const Packet::buffer_state_t packet_in_state = packet->save_buffer_state();
     parser->parse(packet.get());
 
+    if (phv->has_field("standard_metadata.checksum_error")) {
+      phv->get_field("standard_metadata.checksum_error").set(
+           packet->get_checksum_error() ? 1 : 0);
+    }
+    
     ingress_mau->apply(packet.get());
 
     packet->reset_exit();
