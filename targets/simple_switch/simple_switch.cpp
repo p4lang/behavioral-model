@@ -273,7 +273,7 @@ void
 SimpleSwitch::periodic_thread() {
   auto actions = bm::PeriodicActionsList::get_instance();
   while (!exiting) {
-    if (actions->next() != true){
+    if (actions->next() != true) {
       break;
     }
   }
