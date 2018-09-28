@@ -188,6 +188,7 @@ SimpleSwitch::start_and_return_() {
     threads_.push_back(std::thread(&SimpleSwitch::egress_thread, this, i));
   }
   threads_.push_back(std::thread(&SimpleSwitch::transmit_thread, this));
+  threads_.push_back(std::thread(&SimpleSwitch::periodic_thread, this));
 }
 
 SimpleSwitch::~SimpleSwitch() {
@@ -200,6 +201,7 @@ SimpleSwitch::~SimpleSwitch() {
 #endif
   }
   output_buffer.push_front(nullptr);
+  exiting = true;
   for (auto& thread_ : threads_) {
     thread_.join();
   }
@@ -265,6 +267,16 @@ uint64_t
 SimpleSwitch::get_time_since_epoch_us() const {
   auto tp = clock::now();
   return duration_cast<ts_res>(tp.time_since_epoch()).count();
+}
+
+void
+SimpleSwitch::periodic_thread() {
+  auto actions = bm::PeriodicActionsList::get_instance();
+  while (!exiting) {
+    if (actions->next() != true){
+      break;
+    }
+  }
 }
 
 void
