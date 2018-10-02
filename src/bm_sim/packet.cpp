@@ -23,6 +23,7 @@
 
 #include <algorithm>  // for swap
 #include <atomic>
+#include <vector>
 
 #include "xxhash.h"
 
@@ -117,6 +118,37 @@ Packet::~Packet() {
     phv_source->release(cxt_id, std::move(phv));
     DEBUGGER_PACKET_OUT(PacketId::make(packet_id, copy_id), egress_port);
   }
+}
+
+char *
+Packet::deparsed_data(const std::vector<Header *>&hdrs, size_t *size_p) {
+  size_t payload_size = get_data_size();
+  size_t size = payload_size;
+  for (auto hdr : hdrs) {
+     size += hdr->get_nbytes_packet();
+  }
+  char *buff = new char[size];
+  char *hdr_buff = buff;
+  for (auto hdr : hdrs) {
+    hdr->deparse(hdr_buff);
+    hdr_buff += hdr->get_nbytes_packet();
+  }
+  memcpy(hdr_buff, data(), payload_size);
+  if (size_p != NULL) {
+      *size_p = size;
+  }
+  return buff;
+}
+
+void
+Packet::reparse_headers(char *deparsed, const std::vector<Header *>&hdrs) {
+  PHV *phv = get_phv();
+  char *hdr_buff = deparsed;
+  for (auto hdr : hdrs) {
+    hdr->extract(hdr_buff, *phv);
+    hdr_buff += hdr->get_nbytes_packet();
+  }
+  delete[] deparsed;
 }
 
 void
