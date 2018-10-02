@@ -288,6 +288,8 @@ class PHV {
   const std::string get_field_name(header_id_t header_index,
                                    int field_offset) const;
 
+  void get_valid_headers(std::vector<Header *> *hdrs);
+
  private:
   // To  be used only by PHVFactory
   // all headers need to be pushed back in order (according to header_index) !!!

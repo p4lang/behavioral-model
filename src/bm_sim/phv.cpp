@@ -194,6 +194,18 @@ PHV::get_field_name(header_id_t header_index, int field_offset) const {
   return get_header(header_index).get_field_full_name(field_offset);
 }
 
+void
+PHV::get_valid_headers(std::vector<Header *> *hdrs) {
+  const std::string bad_prefix = "hdr_";
+  for (auto it = header_begin(); it != header_end(); it++) {
+    Header &hdr = *it;
+    if (hdr.is_valid() &&
+          !hdr.is_metadata() &&
+          hdr.get_name().compare(0, bad_prefix.size(), bad_prefix)) {
+      hdrs->push_back(&hdr);
+    }
+  }
+}
 
 void
 PHVFactory::push_back_header(const std::string &header_name,

@@ -265,6 +265,12 @@ class Packet final {
   //! called on the packet).
   bool is_marked_for_exit() const { return flags & (1 << FLAGS_EXIT); }
 
+  // Deparses the selected headers in front of the packet payload
+  char *deparsed_data(const std::vector<Header *> &hdrs, size_t *size);
+  // Reparses the data back into the headers
+  void reparse_headers(char *deparsed, const std::vector<Header *>&hdrs);
+
+
   //! Changes the context of the packet. You will only need to call this
   //! function if you target switch leverages the Context class and if your
   //! Packet instance changes contexts during its lifetime. This is needed
