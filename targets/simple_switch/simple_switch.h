@@ -148,13 +148,9 @@ class SimpleSwitch : public Switch {
   };
 
  private:
-  // Used to signal exit to periodic_thread
-  std::atomic<bool> exiting;
-
   void ingress_thread();
   void egress_thread(size_t worker_id);
   void transmit_thread();
-  void periodic_thread();
 
   ts_res get_ts() const;
 
