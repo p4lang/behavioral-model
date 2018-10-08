@@ -562,7 +562,7 @@ class DebuggerAPI(cmd.Cmd):
     prompt = 'P4DBG: '
     intro = "Prototype for Debugger UI"
 
-    def __init__(self, addr, standard_client=None):
+    def __init__(self, addr, standard_client=None, json_cfg=None):
         cmd.Cmd.__init__(self)
         self.addr = addr
         self.sok = nnpy.Socket(nnpy.AF_SP, nnpy.REQ)
@@ -579,12 +579,14 @@ class DebuggerAPI(cmd.Cmd):
         self.reset()
 
         # creates new attributes
+        self.json_cfg = json_cfg
         self.standard_client = standard_client
         self.json_dependent_init()
 
     def json_dependent_init(self):
-        self.json_cfg = utils.get_json_config(
-            standard_client=self.standard_client)
+        if not self.json_cfg:
+            self.json_cfg = utils.get_json_config(
+                    standard_client=self.standard_client)
         field_map.load_names(self.json_cfg)
         obj_map.load_names(self.json_cfg)
 
@@ -1150,25 +1152,35 @@ for long_name, short_name in shortcuts.items():
         setattr(DebuggerAPI, "complete_" + short_name, f_complete)
 
 def main():
-    deprecated_args = ["json"]
+    deprecated_args = []
     for a in deprecated_args:
         if getattr(args, a) is not None:
             print "Command line option '--{}' is deprecated".format(a),
             print "and will be ignored"
 
-    client = utils.thrift_connect_standard(args.thrift_ip, args.thrift_port)
-    info = client.bm_mgmt_get_info()
-    socket_addr = info.debugger_socket
-    if socket_addr is None:
-        print "The debugger is not enabled on the switch"
-        sys.exit(1)
+    client = None
+    socket_addr = None
+
     if args.socket is not None:
         socket_addr = args.socket
-    else:
-        print "'--socket' not provided, using", socket_addr,
-        print "(obtained from switch)"
 
-    c = DebuggerAPI(socket_addr, standard_client=client)
+    if not args.json and not args.socket:
+        client = utils.thrift_connect_standard(args.thrift_ip, args.thrift_port)
+        info = client.bm_mgmt_get_info()
+        if not args.socket:
+            socket_addr = info.debugger_socket
+            if socket_addr is None:
+                print "The debugger is not enabled on the switch"
+                sys.exit(1)
+            print "'--socket' not provided, using", socket_addr,
+            print "(obtained from switch)"
+
+    json_cfg = None
+    if args.json:
+        with open(args.json, 'r') as f:
+            json_cfg = f.read()
+
+    c = DebuggerAPI(socket_addr, standard_client=client, json_cfg=json_cfg)
     try:
         c.attach()
         c.cmdloop()
