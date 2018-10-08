@@ -96,42 +96,6 @@ class NamedCalculation;
 class MeterArray;
 class CounterArray;
 
-// Internal representation of actions which are executed
-// periodically at a given interval
-struct PeriodicAction {
-  const char *name;
-  std::function<void()> fn;
-  std::chrono::milliseconds interval_ms;
-  unsigned int interval_ticks;
-};
-
-// Contains the list of the periodically executed actions
-class PeriodicActionsList {
- public:
-  static PeriodicActionsList *get_instance();
-  bool register_periodic(const char *name,
-                         std::function<void()> fn,
-                         std::chrono::milliseconds interval);
-
-  // To be called continuously : waits for the next interval to
-  // elapse then calls the next registered function or set of functions.
-  // Returns `false` if no actions are registered
-  bool next();
-
- private:
-  unsigned int tick;
-  std::vector<PeriodicAction> list_{};
-  std::chrono::milliseconds min_interval{0};
-};
-
-// A function registered as a periodic action will be called repeatedly
-// with at most `interval` delay betwen calls, if PeriodicActionsList::next()
-// is called regularly
-#define REGISTER_PERIODIC_ACTION(action, interval)          \
-  bool action##_create_ =                                   \
-    bm::PeriodicActionsList::get_instance()->register_periodic( \
-        #action, action, interval);
-
 // forward declaration of ActionPrimitive_
 class ActionPrimitive_;
 

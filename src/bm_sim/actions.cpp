@@ -244,55 +244,6 @@ extern int _bm_core_primitives_import();
 
 }  // namespace core
 
-PeriodicActionsList* PeriodicActionsList::get_instance() {
-  static PeriodicActionsList instance;
-  return &instance;
-}
-
-bool
-PeriodicActionsList::register_periodic(const char *name,
-                                       std::function<void()> fn,
-                                       std::chrono::milliseconds interval) {
-  if (min_interval == std::chono::milliseconds(0) ||
-          interval < min_interval) {
-    min_interval = interval;
-  }
-  bool inserted = false;
-  PeriodicAction action{name, fn, interval, interval / min_interval};
-  for (auto it = list_.begin(); it != list_.end(); it++) {
-    if (it->interval_ms > interval) {
-      list_.insert(it, action);
-      inserted = true;
-      break;
-    }
-  }
-  if (!inserted) {
-    list_.push_back(action);
-  }
-
-  for (auto it = list_.begin(); it != list_.end(); it++) {
-    it->interval_ticks = it->interval_ms / min_interval;
-  }
-
-  return true;
-}
-
-bool PeriodicActionsList::next() {
-  if (list_.size() == 0) {
-    return false;
-  }
-  std::this_thread::sleep_for(min_interval);
-
-  for (auto it = list_.begin(); it != list_.end(); it++) {
-    if (tick % it->interval_ticks == 0) {
-      it->fn();
-    }
-  }
-
-  tick++;
-  return true;
-}
-
 ActionOpcodesMap::ActionOpcodesMap() {
   // ensures that core primitives are registered properly
   core::_bm_core_primitives_import();
