@@ -253,12 +253,12 @@ bool
 PeriodicActionsList::register_periodic(const char *name,
                                        std::function<void()> fn,
                                        std::chrono::milliseconds interval) {
-  using milliseconds = std::chrono::milliseconds;
-  if (min_interval == milliseconds(0) || interval < min_interval) {
+  if (min_interval == std::chono::milliseconds(0) ||
+          interval < min_interval) {
     min_interval = interval;
   }
   bool inserted = false;
-  PeriodicAction action{name, fn, interval, 0};
+  PeriodicAction action{name, fn, interval, interval / min_interval};
   for (auto it = list_.begin(); it != list_.end(); it++) {
     if (it->interval_ms > interval) {
       list_.insert(it, action);
