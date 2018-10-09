@@ -674,12 +674,16 @@ class DebuggerAPI(cmd.Cmd):
         self.reset()
         print "We have been notified that the JSON config has changed on the",
         print "switch. The debugger state has therefore been reset."
+
+        if not self.standard_client:
+            print "Unable to request new config from switch because Thrift is unavailable"
+            sys.exit(0)
+
         print "You can request the new config and keep debugging,",
         print "or we will exit."
+
         v = prompt_yes_no("Do you want to request the new config?", True)
         if v:
-            if not self.standard_client:
-                raise UIn_Error("Unable to request new config from switch because Thrift is unavailable")
            self.json_dependent_init()
         else:
             sys.exit(0)
