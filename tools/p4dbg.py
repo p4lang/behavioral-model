@@ -41,9 +41,9 @@ parser.add_argument('--socket', help='Nanomsg socket to which to subscribe',
                     action="store", required=False)
 parser.add_argument('--thrift-port', help='Thrift server port for table updates',
                     type=int, action="store", default=9090)
-parser.add_argument('--thrift-ip', help='Thrift IP address for table updates',
+parser.add_argument('--thrift-ip', help='Thrift IP address for table updates. If both --socket and --json are provided, then Thrift will not be used.',
                     type=str, action="store", default='localhost')
-parser.add_argument('--json', help='JSON description of P4 program [deprecated]',
+parser.add_argument('--json', help='JSON description of P4 program',
                     action="store", required=False)
 
 args = parser.parse_args()
@@ -590,7 +590,7 @@ class DebuggerAPI(cmd.Cmd):
         field_map.load_names(self.json_cfg)
         obj_map.load_names(self.json_cfg)
 
-        if not with_runtime_CLI:
+        if not with_runtime_CLI or not self.standard_client:
             self.with_CLI = False
         else:
             self.with_CLI = True
@@ -678,6 +678,8 @@ class DebuggerAPI(cmd.Cmd):
         print "or we will exit."
         v = prompt_yes_no("Do you want to request the new config?", True)
         if v:
+            if not self.standard_client:
+                raise UIn_Error("Unable to request new config from switch because Thrift is unavailable")
            self.json_dependent_init()
         else:
             sys.exit(0)
@@ -1105,8 +1107,10 @@ class DebuggerAPI(cmd.Cmd):
 
     def do_CLI(self, line):
         "Connects to the bmv2 using the CLI, e.g. CLI table_dump <table_name>"
-        if not with_runtime_CLI or not self.standard_client:
-            return UIn_Error("Runtime CLI not available")
+        if not with_runtime_CLI:
+            raise UIn_Error("Runtime CLI not available")
+        if not self.standard_client:
+            raise UIn_Error("Runtime CLI not available (because Thrift is unavailable)")
         self.runtime_CLI.onecmd(line)
 
     def complete_CLI(self, text, line, start_index, end_index):
