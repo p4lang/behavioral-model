@@ -3,7 +3,7 @@
 This is an alternative version of the simple_switch target, which does not use
 the Thrift runtime server for table programming (unless required, see below).
 Instead it starts a gRPC server which implements
-[p4untime.proto](https://github.com/p4lang/PI/blob/master/proto/p4/p4runtime.proto).
+[p4runtime.proto](https://github.com/p4lang/PI/blob/master/proto/p4/p4runtime.proto).
 
 Make sure you read this README and [FAQ](#faq) before asking a question on
 Github or the p4-dev mailing list.
@@ -12,7 +12,7 @@ Github or the p4-dev mailing list.
 
  1. Follow instructions in the [PI
     README](https://github.com/p4lang/PI#dependencies) to install required
-    dependencies for the `--with-profo` configure flag - as well as for the
+    dependencies for the `--with-proto` configure flag - as well as for the
     `--with-sysrepo` configure flag if desired.
  1. Configure, build and install PI:
     ```
