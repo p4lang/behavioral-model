@@ -77,8 +77,7 @@ class PeriodicTaskList {
   TaskQueue task_queue;
 
   std::thread periodic_thread;
-  std::atomic<bool> running;
-  std::atomic<bool> exiting;
+  bool running;
   std::mutex queue_mutex;
   std::condition_variable cv;
 };

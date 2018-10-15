@@ -102,26 +102,35 @@ PeriodicTaskList::unregister_task(PeriodicTask *task) {
 
 void
 PeriodicTaskList::start() {
-  exiting = false;
+  if (running) {
+    BMLOG_DEBUG("Warning: Tried to start already-running periodic task loop");
+    return;
+  }
   running = true;
   periodic_thread = std::thread(&PeriodicTaskList::loop, this);
 }
 
 void
 PeriodicTaskList::join() {
-  if (!running) {
-    BMLOG_DEBUG("Warning: Attempted to join non-running periodic thread");
-    return;
+  {
+    std::lock_guard<std::mutex> lock(queue_mutex);
+    if (!running) {
+      BMLOG_DEBUG("Warning: Tried to join non-running periodic thread");
+      return;
+    }
+    running = false;
+    cv.notify_all();
   }
-  exiting = true;
   periodic_thread.join();
-  running = false;
 }
 
 void
 PeriodicTaskList::loop() {
-  while (!exiting) {
+  while (true) {
     std::unique_lock<std::mutex> lk(queue_mutex);
+    if (!running) {
+      break;
+    }
     std::chrono::system_clock::time_point next;
     if (!task_queue.empty()) {
       next = task_queue.top()->next;
