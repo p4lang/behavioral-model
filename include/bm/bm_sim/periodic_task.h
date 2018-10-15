@@ -28,6 +28,27 @@
 
 namespace bm {
 
+//! Initializes and registers a task that is to be executed periodically
+//! at a fixed interval. Task will execute during the lifetime of the object.
+//! Make a member of an ActionPrimitive class to tie the execution to the
+//! use of a specific primitive
+//! @code
+//! class MyExtern : public ActionPrimitive<> {
+//!   MyExtern() : task("my_task",
+//!                     std::bind(&MyExtern::periodic_fn, this),
+//!                     std::chrono::seconds(1)) {}
+//!
+//!   void operator ()() {
+//!     // This will execute when extern is called
+//!   }
+//!
+//!   void periodic_fn() {
+//!     // This will execute once a second
+//!   }
+//!
+//!   PeriodicTask task;
+//! }
+//! @endcode
 class PeriodicTask {
  public:
   PeriodicTask(const std::string &name,
@@ -35,24 +56,33 @@ class PeriodicTask {
                std::chrono::milliseconds interval);
   ~PeriodicTask();
 
-  void reset_next();
+  //! Executes the stored function and sets `next` to the next desired
+  //! execution time
+  void execute();
 
   const std::string name;
-  const std::function<void()> fn;
   const std::chrono::milliseconds interval;
   std::chrono::system_clock::time_point next;
 
  private:
+  void reset_next();
   void cancel();
+
+  const std::function<void()> fn;
 };
 
+//! Singleton which stores and executes periodic tasks.
+//! Registration and unregistration are handled automatically
+//! in the PeriodicTask constructor.
 class PeriodicTaskList {
  public:
   static PeriodicTaskList &get_instance();
 
+  // Returns true if task was successfully registered
   bool register_task(PeriodicTask *task);
   bool unregister_task(PeriodicTask *task);
 
+  //! Starts the loop which executes the tasks in a new thread
   void start();
   void join();
 
@@ -67,7 +97,7 @@ class PeriodicTaskList {
   using TaskQueue = std::priority_queue<PeriodicTask*,
                                         std::vector<PeriodicTask*>,
                                         PeriodCompare>;
-
+  // The loop automatically cycles at least once in this interval
   static constexpr std::chrono::milliseconds kDefaultTimeout{1000};
 
   PeriodicTaskList() = default;
@@ -76,6 +106,7 @@ class PeriodicTaskList {
   bool contains_task(PeriodicTask *task);
   void loop();
 
+  // The queue of PeriodicTasks, ordered by next execution time
   TaskQueue task_queue;
 
   std::thread periodic_thread;

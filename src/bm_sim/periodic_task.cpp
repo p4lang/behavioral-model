@@ -30,6 +30,7 @@ PeriodicTask::PeriodicTask(
 }
 
 PeriodicTask::~PeriodicTask() {
+  // Destructor automatically unregisters the task
   cancel();
 }
 
@@ -41,6 +42,12 @@ PeriodicTask::cancel() {
 void
 PeriodicTask::reset_next() {
   next = std::chrono::system_clock::now() + interval;
+}
+
+void
+PeriodicTask::execute() {
+  fn();
+  reset_next();
 }
 
 constexpr std::chrono::milliseconds PeriodicTaskList::kDefaultTimeout;
@@ -83,6 +90,7 @@ PeriodicTaskList::unregister_task(PeriodicTask *task) {
 
   TaskQueue tmp;
   bool removed = false;
+  // Removal from a priority queue necessitates iterating over elements
   while (!task_queue.empty()) {
     if (task_queue.top() == task) {
       removed = true;
@@ -143,8 +151,7 @@ PeriodicTaskList::loop() {
       if (!task_queue.empty()) {
         auto task = task_queue.top();
         task_queue.pop();
-        task->fn();
-        task->reset_next();
+        task->execute();
         task_queue.push(task);
       }
     }
