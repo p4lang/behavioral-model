@@ -68,7 +68,7 @@ class PeriodicTaskList {
                                         std::vector<PeriodicTask*>,
                                         PeriodCompare>;
 
-  static constexpr std::chrono::milliseconds default_timeout{1000};
+  static constexpr std::chrono::milliseconds kDefaultTimeout{1000};
 
   PeriodicTaskList() = default;
   ~PeriodicTaskList();

@@ -43,7 +43,7 @@ PeriodicTask::reset_next() {
   next = std::chrono::system_clock::now() + interval;
 }
 
-constexpr std::chrono::milliseconds PeriodicTaskList::default_timeout;
+constexpr std::chrono::milliseconds PeriodicTaskList::kDefaultTimeout;
 
 bool
 PeriodicTaskList::contains_task(PeriodicTask *task) {
@@ -137,7 +137,7 @@ PeriodicTaskList::loop() {
     if (!task_queue.empty()) {
       next = task_queue.top()->next;
     } else {
-      next = std::chrono::system_clock::now() + default_timeout;
+      next = std::chrono::system_clock::now() + kDefaultTimeout;
     }
     if (cv.wait_until(lk, next) == std::cv_status::timeout) {
       if (!task_queue.empty()) {
