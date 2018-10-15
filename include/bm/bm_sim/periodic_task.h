@@ -62,10 +62,11 @@ class PeriodicTaskList {
       return lhs->next > rhs->next;
     }
   };
-
   using TaskQueue = std::priority_queue<PeriodicTask*,
                                         std::vector<PeriodicTask*>,
                                         PeriodCompare>;
+
+  static constexpr std::chrono::milliseconds default_timeout{1000};
 
   PeriodicTaskList() = default;
   ~PeriodicTaskList();
