@@ -28,6 +28,7 @@
 #include <bm/bm_sim/debugger.h>
 #include <bm/bm_sim/event_logger.h>
 #include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/periodic_task.h>
 
 #include <cassert>
 #include <fstream>
@@ -72,6 +73,8 @@ SwitchWContexts::receive(port_t port_num, const char *buffer, int len) {
 
 void
 SwitchWContexts::start_and_return() {
+  // Starts any registered periodically-executing externs
+  PeriodicTaskList::get_instance().start();
   {
     std::unique_lock<std::mutex> config_lock(config_mutex);
     if (!config_loaded && !enable_swap) {
