@@ -19,6 +19,8 @@
 #include <string>
 #include <iostream>
 
+namespace bm {
+
 PeriodicTask::PeriodicTask(
     const std::string &name, std::function<void()> fn,
     std::chrono::milliseconds interval)
@@ -158,3 +160,5 @@ PeriodicTaskList::get_instance() {
 PeriodicTaskList::~PeriodicTaskList() {
     join();
 }
+
+}  // namespace bm

@@ -26,6 +26,8 @@
 #include <condition_variable>
 #include <mutex>
 
+namespace bm {
+
 class PeriodicTask {
  public:
   PeriodicTask(const std::string &name,
@@ -81,5 +83,7 @@ class PeriodicTaskList {
   std::mutex queue_mutex;
   std::condition_variable cv;
 };
+
+}  // namespace bm
 
 #endif  // BM_BM_SIM_PERIODIC_TASK_H_
