@@ -24,14 +24,15 @@ using namespace bm;
 
 class PeriodicIncrementor {
  public:
-  PeriodicIncrementor(const std::chrono::milliseconds &interval)
-      : increment_task("increment",
-                       std::bind(&PeriodicIncrementor::increment, this),
-                       interval) {}
+  PeriodicIncrementor(const std::chrono::milliseconds &interval, int *i)
+      : i(i), increment_task("increment",
+                             std::bind(&PeriodicIncrementor::increment, this),
+                             interval) {}
+
   void increment() {
-    i++;
+    (*i)++;
   }
-  int i{0};
+  int *i;
 
  private:
   PeriodicTask increment_task;
@@ -43,39 +44,44 @@ static constexpr int kPeriods = 5;
 static constexpr std::chrono::milliseconds kInterval{kSleepTimeMs / kPeriods};
 static constexpr std::chrono::milliseconds kSleepTime{kSleepTimeMs};
 
+// Tasks registered before the start of the thread execute on start
 TEST(PeriodicExtern, PreStartRegistration) {
-  PeriodicIncrementor incrementor(kInterval);
+  int i = 0;
+  PeriodicIncrementor incrementor(kInterval, &i);
   std::this_thread::sleep_for(kSleepTime);
 
-  ASSERT_EQ(incrementor.i, 0);
+  ASSERT_EQ(i, 0);
 
   PeriodicTaskList::get_instance().start();
   std::this_thread::sleep_for(kSleepTime);
   PeriodicTaskList::get_instance().join();
 
-  ASSERT_GE(incrementor.i, kPeriods - 1);
-  ASSERT_LE(incrementor.i, kPeriods + 1);
+  // One more or one less execution is o.k.
+  ASSERT_GE(i, kPeriods - 1);
+  ASSERT_LE(i, kPeriods + 1);
 }
 
+// Tasks registered after the start of the thread still execute
 TEST(PeriodicExtern, PostStartRegistration) {
+  int i = 0;
   PeriodicTaskList::get_instance().start();
 
-  PeriodicIncrementor incrementor(kInterval);
+  PeriodicIncrementor incrementor(kInterval, &i);
 
   std::this_thread::sleep_for(kSleepTime);
   PeriodicTaskList::get_instance().join();
 
-  ASSERT_GE(incrementor.i, kPeriods - 1);
-  ASSERT_LE(incrementor.i, kPeriods + 1);
+  ASSERT_GE(i, kPeriods - 1);
+  ASSERT_LE(i, kPeriods + 1);
 }
 
+// Tasks stop executing when they go out of scope
 TEST(PeriodicExtern, Unregistration) {
-  int i;
+  int i = 0;
   PeriodicTaskList::get_instance().start();
   {
-    PeriodicIncrementor incrementor(kInterval);
+    PeriodicIncrementor incrementor(kInterval, &i);
     std::this_thread::sleep_for(kSleepTime);
-    i = incrementor.i;
   }
   std::this_thread::sleep_for(kSleepTime);
 
@@ -83,3 +89,20 @@ TEST(PeriodicExtern, Unregistration) {
   ASSERT_LE(i, kPeriods + 1);
 }
 
+// Two tasks will be scheduled correctly
+TEST(PeriodicExtern, MultipleTasks) {
+  int i = 0;
+  int j = 0;
+  std::chrono::milliseconds interval_2{kSleepTimeMs / (kPeriods * 2)};
+  PeriodicTaskList::get_instance().start();
+  {
+      PeriodicIncrementor incrementor_1(kInterval, &i);
+      PeriodicIncrementor incrementor_2(interval_2, &j);
+      std::this_thread::sleep_for(kSleepTime);
+  }
+
+  ASSERT_GE(i, kPeriods - 1);
+  ASSERT_LE(i, kPeriods + 1);
+  ASSERT_GE(j, (kPeriods * 2) - 1);
+  ASSERT_LE(j, (kPeriods * 2) + 1);
+}
