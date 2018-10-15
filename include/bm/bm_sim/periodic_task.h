@@ -26,8 +26,13 @@
 #include <condition_variable>
 #include <mutex>
 
-struct PeriodicTask {
-  void cancel();
+class PeriodicTask {
+ public:
+  PeriodicTask(const std::string &name,
+               std::function<void()> fn,
+               std::chrono::milliseconds interval);
+  ~PeriodicTask();
+
   void reset_next();
 
   const std::string name;
@@ -35,17 +40,21 @@ struct PeriodicTask {
   const std::chrono::milliseconds interval;
   std::chrono::system_clock::time_point next;
 
-  PeriodicTask(const std::string &name,
-               std::function<void()> fn,
-               std::chrono::milliseconds interval);
-
-  ~PeriodicTask();
+ private:
+  void cancel();
 };
 
 class PeriodicTaskList {
-  std::mutex queue_mutex;
-  std::condition_variable cv;
+ public:
+  static PeriodicTaskList &get_instance();
 
+  bool register_task(PeriodicTask *task);
+  bool unregister_task(PeriodicTask *task);
+
+  void start();
+  void join();
+
+ private:
   class PeriodCompare {
    public:
     bool
@@ -58,26 +67,19 @@ class PeriodicTaskList {
                                         std::vector<PeriodicTask*>,
                                         PeriodCompare>;
 
-  TaskQueue task_queue;
-
-  std::atomic<bool> running;
-  std::atomic<bool> exiting;
-  void loop();
-
-  std::thread periodic_thread;
-
-  bool contains_task(PeriodicTask *task);
-
   PeriodicTaskList() = default;
   ~PeriodicTaskList();
 
- public:
-  void start();
-  void join();
+  bool contains_task(PeriodicTask *task);
+  void loop();
 
-  static PeriodicTaskList &get_instance();
-  bool register_task(PeriodicTask *task);
-  bool unregister_task(PeriodicTask *task);
+  TaskQueue task_queue;
+
+  std::thread periodic_thread;
+  std::atomic<bool> running;
+  std::atomic<bool> exiting;
+  std::mutex queue_mutex;
+  std::condition_variable cv;
 };
 
 #endif  // BM_BM_SIM_PERIODIC_TASK_H_
