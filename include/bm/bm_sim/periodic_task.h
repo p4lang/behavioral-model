@@ -42,17 +42,6 @@ struct PeriodicTask {
   ~PeriodicTask();
 };
 
-// This smells a bit (binding 'this' in inline member initialization),
-// but it compiles and I haven't found documentation against it
-#define REGISTER_EXTERN_PERIODIC(extrn_name, fn, interval) \
-  PeriodicTask fn## __task = \
-      PeriodicTask(#extrn_name #fn, \
-                   std::bind(&extrn_name::fn, this), \
-                   interval);
-
-#define REGISTER_GLOBAL_PERIODIC(fn, interval) \
-  static PeriodicTask fn## __task = PeriodicTask(#fn, fn, interval);
-
 class PeriodicTaskList {
   std::mutex queue_mutex;
   std::condition_variable cv;
@@ -79,14 +68,16 @@ class PeriodicTaskList {
 
   bool contains_task(PeriodicTask *task);
 
+  PeriodicTaskList() = default;
   ~PeriodicTaskList();
 
  public:
+  void start();
+  void join();
+
   static PeriodicTaskList &get_instance();
   bool register_task(PeriodicTask *task);
   bool unregister_task(PeriodicTask *task);
-  void start();
-  void join();
 };
 
 #endif  // BM_BM_SIM_PERIODIC_TASK_H_
