@@ -24,8 +24,8 @@ namespace bm {
 PeriodicTask::PeriodicTask(
     const std::string &name, std::function<void()> fn,
     std::chrono::milliseconds interval)
-    : name(name), fn(fn), interval(interval),
-      next(std::chrono::system_clock::now() + interval) {
+    : name(name), interval(interval),
+      next(std::chrono::system_clock::now() + interval), fn(fn) {
   PeriodicTaskList::get_instance().register_task(this);
 }
 
@@ -79,7 +79,6 @@ PeriodicTaskList::register_task(PeriodicTask *task) {
 
   std::lock_guard<std::mutex> lock(queue_mutex);
   task_queue.push(task);
-  task->reset_next();
   cv.notify_all();
   return true;
 }
