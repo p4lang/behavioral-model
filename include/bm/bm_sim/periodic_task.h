@@ -63,19 +63,22 @@ class PeriodicTask {
   PeriodicTask(const PeriodicTask&) = delete;
   PeriodicTask& operator= (const PeriodicTask&) = delete;
 
-  //! Executes the stored function and sets `next` to the next desired
-  //! execution time
-  void execute();
-
   const std::string name;
   const std::chrono::milliseconds interval;
-  std::chrono::system_clock::time_point next;
 
  private:
+  //! Executes the stored function and sets `next` to the next desired
+  //! execution time. To be called by PeriodicTaskList
+  void execute();
+
   void reset_next();
   void cancel();
 
   const std::function<void()> fn;
+  std::chrono::system_clock::time_point next;
+
+  // Friend so that PeriodicTaskList can call execute()
+  friend class PeriodicTaskList;
 };
 
 //! Singleton which stores and executes periodic tasks.
