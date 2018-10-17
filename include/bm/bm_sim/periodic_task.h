@@ -56,6 +56,10 @@ class PeriodicTask {
                std::chrono::milliseconds interval);
   ~PeriodicTask();
 
+  // Deleting copy-constructor and copy-assignment
+  PeriodicTask(const PeriodicTask&) = delete;
+  PeriodicTask& operator= (const PeriodicTask&) = delete;
+
   //! Executes the stored function and sets `next` to the next desired
   //! execution time
   void execute();
