@@ -50,15 +50,15 @@ TEST(PeriodicExtern, PreStartRegistration) {
   PeriodicIncrementor incrementor(kInterval, &i);
   std::this_thread::sleep_for(kSleepTime);
 
-  ASSERT_EQ(i, 0);
+  EXPECT_EQ(i, 0);
 
   PeriodicTaskList::get_instance().start();
   std::this_thread::sleep_for(kSleepTime);
   PeriodicTaskList::get_instance().join();
 
   // One more or one less execution is o.k.
-  ASSERT_GE(i, kPeriods - 1);
-  ASSERT_LE(i, kPeriods + 1);
+  EXPECT_GE(i, kPeriods - 1);
+  EXPECT_LE(i, kPeriods + 1);
 }
 
 // Tasks registered after the start of the thread still execute
@@ -71,8 +71,8 @@ TEST(PeriodicExtern, PostStartRegistration) {
   std::this_thread::sleep_for(kSleepTime);
   PeriodicTaskList::get_instance().join();
 
-  ASSERT_GE(i, kPeriods - 1);
-  ASSERT_LE(i, kPeriods + 1);
+  EXPECT_GE(i, kPeriods - 1);
+  EXPECT_LE(i, kPeriods + 1);
 }
 
 // Tasks stop executing when they go out of scope
@@ -85,8 +85,8 @@ TEST(PeriodicExtern, Unregistration) {
   }
   std::this_thread::sleep_for(kSleepTime);
 
-  ASSERT_GE(i, kPeriods - 1);
-  ASSERT_LE(i, kPeriods + 1);
+  EXPECT_GE(i, kPeriods - 1);
+  EXPECT_LE(i, kPeriods + 1);
 }
 
 // Two tasks will be scheduled correctly
@@ -101,8 +101,8 @@ TEST(PeriodicExtern, MultipleTasks) {
       std::this_thread::sleep_for(kSleepTime);
   }
 
-  ASSERT_GE(i, kPeriods - 1);
-  ASSERT_LE(i, kPeriods + 1);
-  ASSERT_GE(j, (kPeriods * 2) - 1);
-  ASSERT_LE(j, (kPeriods * 2) + 1);
+  EXPECT_GE(i, kPeriods - 1);
+  EXPECT_LE(i, kPeriods + 1);
+  EXPECT_GE(j, (kPeriods * 2) - 1);
+  EXPECT_LE(j, (kPeriods * 2) + 1);
 }
