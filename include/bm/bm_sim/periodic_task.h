@@ -30,8 +30,9 @@ namespace bm {
 
 //! Initializes and registers a task that is to be executed periodically
 //! at a fixed interval. Task will execute during the lifetime of the object.
-//! Make a member of an ActionPrimitive class to tie the execution to the
-//! use of a specific primitive
+//! If a PeriodicTask object is made a member of an ActionPrimitive class,
+//! this will ensure that the task is only executed if the extern represented
+//! by the ActionPrimitive is instantiated in P4.
 //! @code
 //! class MyExtern : public ActionPrimitive<> {
 //!   MyExtern() : task("my_task",
@@ -46,6 +47,8 @@ namespace bm {
 //!     // This will execute once a second
 //!   }
 //!
+//!   // Note: If `task` is not the last declared member, periodic_fn
+//!   // may be called before all members have been initialized
 //!   PeriodicTask task;
 //! }
 //! @endcode
