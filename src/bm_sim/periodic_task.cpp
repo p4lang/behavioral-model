@@ -108,6 +108,7 @@ PeriodicTaskList::unregister_task(PeriodicTask *task) {
 
 void
 PeriodicTaskList::start() {
+  std::lock_guard<std::mutex> lock(queue_mutex);
   if (running) {
     BMLOG_DEBUG("Warning: Tried to start already-running periodic task loop");
     return;
