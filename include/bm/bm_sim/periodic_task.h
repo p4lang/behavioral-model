@@ -113,7 +113,6 @@ class PeriodicTaskList {
   PeriodicTaskList() = default;
   ~PeriodicTaskList();
 
-  bool contains_task(PeriodicTask *task);
   void loop();
 
   // The queue of PeriodicTasks, ordered by next execution time

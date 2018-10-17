@@ -53,9 +53,10 @@ PeriodicTask::execute() {
 constexpr std::chrono::milliseconds PeriodicTaskList::kDefaultTimeout;
 
 bool
-PeriodicTaskList::contains_task(PeriodicTask *task) {
+PeriodicTaskList::register_task(PeriodicTask *task) {
   std::lock_guard<std::mutex> lock(queue_mutex);
 
+  // Iterate over task queue to check if it already contains the task
   TaskQueue tmp;
   bool contains = false;
   while (!task_queue.empty()) {
@@ -66,18 +67,14 @@ PeriodicTaskList::contains_task(PeriodicTask *task) {
     task_queue.pop();
   }
   task_queue.swap(tmp);
-  return contains;
-}
 
-bool
-PeriodicTaskList::register_task(PeriodicTask *task) {
-  if (contains_task(task)) {
+  // Do not add a task twice
+  if (contains) {
     BMLOG_DEBUG("Warning: Task {} already exists in periodic task queue",
                 task->name);
     return false;
   }
 
-  std::lock_guard<std::mutex> lock(queue_mutex);
   task_queue.push(task);
   cv.notify_all();
   return true;
