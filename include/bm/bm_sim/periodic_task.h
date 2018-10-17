@@ -107,8 +107,6 @@ class PeriodicTaskList {
   using TaskQueue = std::priority_queue<PeriodicTask*,
                                         std::vector<PeriodicTask*>,
                                         PeriodCompare>;
-  // The loop automatically cycles at least once in this interval
-  static constexpr std::chrono::milliseconds kDefaultTimeout{1000};
 
   PeriodicTaskList() = default;
   ~PeriodicTaskList();
