@@ -73,8 +73,6 @@ SwitchWContexts::receive(port_t port_num, const char *buffer, int len) {
 
 void
 SwitchWContexts::start_and_return() {
-  // Starts any registered periodically-executing externs
-  PeriodicTaskList::get_instance().start();
   {
     std::unique_lock<std::mutex> config_lock(config_mutex);
     if (!config_loaded && !enable_swap) {
@@ -85,6 +83,8 @@ SwitchWContexts::start_and_return() {
   }
   start();  // DevMgr::start
   start_and_return_();
+  // Starts any registered periodically-executing externs
+  PeriodicTaskList::get_instance().start();
 }
 
 void
