@@ -54,6 +54,9 @@ namespace bm {
 //! @endcode
 class PeriodicTask {
  public:
+  // Friend so that PeriodicTaskList can call execute()
+  friend class PeriodicTaskList;
+
   PeriodicTask(const std::string &name,
                std::function<void()> fn,
                std::chrono::milliseconds interval);
@@ -76,9 +79,6 @@ class PeriodicTask {
 
   const std::function<void()> fn;
   std::chrono::system_clock::time_point next;
-
-  // Friend so that PeriodicTaskList can call execute()
-  friend class PeriodicTaskList;
 };
 
 //! Singleton which stores and executes periodic tasks.
