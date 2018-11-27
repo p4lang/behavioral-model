@@ -84,15 +84,11 @@ requires additional work in the [P4 compiler
 Github repository, or the one for `p4c`.
 
 
-## `simple_router`
+## `simple_router` and `l2_switch`
 
-TBD - Give brief explanation of the differences between this target
-and `simple_switch`, and whether it is considered for historical
-interest only as of November 2018.
-
-
-## `l2_switch`
-
-TBD - Give brief explanation of the differences between this target
-and `simple_switch`, and whether it is considered for historical
-interest only as of November 2018.
+These targets were introduced to illustrate how the bmv2 library can
+be leveraged to implement different architectures.  They support much
+smaller sets of standard metadata, and `simple_router` does not have
+an egress control flow.  There is no good reason to use these targets
+over `simple_switch` as of November 2018, and they cannot be used with
+P4_16 programs.
