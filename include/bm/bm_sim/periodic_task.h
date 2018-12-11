@@ -65,6 +65,9 @@ class PeriodicTask {
   // Deleting copy-constructor and copy-assignment
   PeriodicTask(const PeriodicTask&) = delete;
   PeriodicTask& operator= (const PeriodicTask&) = delete;
+  // Deleting move constructor and move assignment
+  PeriodicTask(PeriodicTask&&) = delete;
+  PeriodicTask& operator= (PeriodicTask&&) = delete;
 
   const std::string name;
   const std::chrono::milliseconds interval;
