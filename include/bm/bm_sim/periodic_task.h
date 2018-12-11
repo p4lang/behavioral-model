@@ -121,8 +121,8 @@ class PeriodicTaskList {
 
   std::thread periodic_thread;
   bool running;
-  std::mutex queue_mutex;
-  std::condition_variable cv;
+  mutable std::mutex queue_mutex;
+  mutable std::condition_variable cv;
 };
 
 }  // namespace bm
