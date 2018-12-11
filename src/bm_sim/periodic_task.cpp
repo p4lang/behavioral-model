@@ -68,8 +68,8 @@ PeriodicTaskList::register_task(PeriodicTask *task) {
 
   // Do not add a task twice
   if (contains) {
-    BMLOG_DEBUG("Warning: Task {} already exists in periodic task queue",
-                task->name);
+    Logger::get()->warn("Task {} already exists in periodic task queue",
+                        task->name);
     return false;
   }
 
@@ -97,8 +97,8 @@ PeriodicTaskList::unregister_task(PeriodicTask *task) {
 
   cv.notify_all();
   if (!removed) {
-    BMLOG_DEBUG("Warning: Task {} does not exist in periodic task queue",
-                task->name);
+    Logger::get()->warn("Task {} does not exist in periodic task queue",
+                        task->name);
     return false;
   }
   return true;
@@ -108,7 +108,7 @@ void
 PeriodicTaskList::start() {
   std::lock_guard<std::mutex> lock(queue_mutex);
   if (running) {
-    BMLOG_DEBUG("Warning: Tried to start already-running periodic task loop");
+    Logger::get()->warn("Tried to start already-running periodic task loop");
     return;
   }
   running = true;
@@ -120,7 +120,7 @@ PeriodicTaskList::join() {
   {
     std::lock_guard<std::mutex> lock(queue_mutex);
     if (!running) {
-      BMLOG_DEBUG("Warning: Tried to join non-running periodic thread");
+      Logger::get()->warn("Tried to join non-running periodic thread");
       return;
     }
     running = false;
