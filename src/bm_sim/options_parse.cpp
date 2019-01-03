@@ -164,6 +164,8 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
   positional.add("input-config", 1);
   positional.add("to-pass-further", -1);
 
+  options_provided.clear();
+
   po::variables_map vm;
   auto parser = po::command_line_parser(argc, argv);
   parser.options(options).positional(positional);
@@ -187,6 +189,8 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
     }
     exit(1);
   }
+
+  for (const auto &p : vm) options_provided.insert(p.first);
 
   if (vm.count("help")) {
     outstream << "Usage: SWITCH_NAME [options] <path to JSON config file>\n";
@@ -378,9 +382,6 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
   if (vm.count("thrift-port")) {
     thrift_port = vm["thrift-port"].as<int>();
   } else {
-    outstream << "Thrift port was not specified, will use "
-              << default_thrift_port
-              << std::endl;
     thrift_port = default_thrift_port;
   }
 #endif
@@ -400,6 +401,11 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
 void
 OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp) {
   parse(argc, argv, tp, std::cout);
+}
+
+bool
+OptionsParser::option_was_provided(const std::string &option) const {
+  return options_provided.find(option) != options_provided.end();
 }
 
 }  // namespace bm

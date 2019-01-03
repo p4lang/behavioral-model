@@ -25,15 +25,16 @@
 #include <bm/bm_sim/bytecontainer.h>
 #include <bm/bm_sim/transport.h>
 
-#include <string>
-#include <vector>
 #include <algorithm>
+#include <chrono>
+#include <condition_variable>
+#include <functional>  // for std::reference_wrapper
+#include <mutex>
+#include <string>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
-#include <chrono>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
+#include <vector>
 
 #include <cassert>
 
@@ -52,7 +53,8 @@ class LearnEngine final : public LearnEngineIface {
 
   explicit LearnEngine(device_id_t device_id = 0, cxt_id_t cxt_id = 0);
 
-  void list_create(list_id_t list_id, size_t max_samples = 1,
+  void list_create(list_id_t list_id, const std::string &list_name,
+                   size_t max_samples = 1,
                    unsigned int timeout_ms = 1000) override;
 
   void list_set_learn_writer(
@@ -72,6 +74,12 @@ class LearnEngine final : public LearnEngineIface {
 
   LearnErrorCode list_set_max_samples(list_id_t list_id,
                                       size_t max_samples) override;
+
+  LearnErrorCode list_get_name_from_id(
+      list_id_t list_id, std::string *list_name) const override;
+
+  LearnErrorCode list_get_id_from_name(
+      const std::string &list_name, list_id_t *list_id) const override;
 
   //! Performs learning on the packet. Needs to be called by the target after a
   //! learning-enabled pipeline has been applied on the packet. See the simple
@@ -127,7 +135,12 @@ class LearnEngine final : public LearnEngineIface {
  private:
   struct FilterPtrs {
     size_t unacked_count{0};
-    std::vector<LearnFilter::iterator> buffer{};
+    // According to the standard, iterators are invalidated in case of a
+    // re-hash when performing an insert. While I haven't observed this with
+    // recent STL versions, its is probably safer to store a reference to the
+    // key instead.
+    // std::vector<LearnFilter::iterator> buffer{};
+    std::vector<std::reference_wrapper<const LearnFilter::key_type> > buffer{};
   };
 
   class LearnList {
@@ -135,7 +148,8 @@ class LearnEngine final : public LearnEngineIface {
     enum class LearnMode {NONE, WRITER, CB};
 
    public:
-    LearnList(list_id_t list_id, device_id_t device_id, cxt_id_t cxt_id,
+    LearnList(list_id_t list_id, const std::string &list_name,
+              device_id_t device_id, cxt_id_t cxt_id,
               size_t max_samples, unsigned int timeout);
 
     void init();
@@ -156,6 +170,8 @@ class LearnEngine final : public LearnEngineIface {
 
     void ack(buffer_id_t buffer_id, const std::vector<int> &sample_ids);
     void ack_buffer(buffer_id_t buffer_id);
+
+    std::string get_name() const;
 
     void reset_state();
 
@@ -178,6 +194,7 @@ class LearnEngine final : public LearnEngineIface {
     mutable MutexType mutex{};
 
     list_id_t list_id;
+    std::string list_name;
 
     device_id_t device_id;
     cxt_id_t cxt_id;
@@ -216,6 +233,7 @@ class LearnEngine final : public LearnEngineIface {
 
  private:
   LearnList *get_learn_list(list_id_t list_id);
+  const LearnList *get_learn_list(list_id_t list_id) const;
 
   device_id_t device_id{};
   cxt_id_t cxt_id{};
@@ -263,11 +281,15 @@ LearnEngine::LearnSampleBuilder::operator()(const PHV &phv,
   }
 }
 
-LearnEngine::LearnList::LearnList(list_id_t list_id, device_id_t device_id,
-                                  cxt_id_t cxt_id, size_t max_samples,
+LearnEngine::LearnList::LearnList(list_id_t list_id,
+                                  const std::string &list_name,
+                                  device_id_t device_id,
+                                  cxt_id_t cxt_id,
+                                  size_t max_samples,
                                   unsigned int timeout)
-    : list_id(list_id), device_id(device_id), cxt_id(cxt_id),
-      max_samples(max_samples), timeout(timeout), with_timeout(timeout > 0) { }
+    : list_id(list_id), list_name(list_name), device_id(device_id),
+      cxt_id(cxt_id), max_samples(max_samples), timeout(timeout),
+      with_timeout(timeout > 0) { }
 
 void
 LearnEngine::LearnList::init() {
@@ -353,8 +375,7 @@ LearnEngine::LearnList::process_full_buffer(LockType &lock) {
 
 void
 LearnEngine::LearnList::add_sample(const PHV &phv) {
-  static thread_local ByteContainer sample;
-  sample.clear();
+  ByteContainer sample;
   builder(phv, &sample);
 
   BMLOG_TRACE("Learning sample for list id {}", list_id);
@@ -369,7 +390,7 @@ LearnEngine::LearnList::add_sample(const PHV &phv) {
   auto filter_it = filter.insert(filter.end(), std::move(sample));
   FilterPtrs &filter_ptrs = old_buffers[buffer_id];
   filter_ptrs.unacked_count++;
-  filter_ptrs.buffer.push_back(filter_it);
+  filter_ptrs.buffer.emplace_back(*filter_it);
 
   if (num_samples == 1 && max_samples > 1) {
     buffer_started = clock::now();
@@ -468,13 +489,15 @@ LearnEngine::LearnList::ack(buffer_id_t buffer_id,
                             const std::vector<int> &sample_ids) {
   LockType lock(mutex);
   auto it = old_buffers.find(buffer_id);
-  // assert(it != old_buffers.end());
   // we assume that this was acked already, and simply return
   if (it == old_buffers.end())
     return;
   FilterPtrs &filter_ptrs = it->second;
   for (int sample_id : sample_ids) {
-    // what happens if bad input :(
+    // Invalid sample_id?
+    if (sample_id < 0 ||
+        static_cast<size_t>(sample_id) >= filter_ptrs.buffer.size())
+      continue;
     filter.erase(filter_ptrs.buffer[sample_id]);
     if (--filter_ptrs.unacked_count == 0) {
       old_buffers.erase(it);
@@ -491,8 +514,8 @@ LearnEngine::LearnList::ack_buffer(buffer_id_t buffer_id) {
   if (it == old_buffers.end())
     return;
   FilterPtrs &filter_ptrs = it->second;
-  // we optimize for this case (no learning occured since the buffer as sent out
-  // and the ack clears out the filter
+  // we optimize for this case (no learning occured since the buffer was sent
+  // out) and the ack clears out the entire filter
   if (filter_ptrs.unacked_count == filter.size()) {
     filter.clear();
   } else {  // slow: linear in the number of elements acked
@@ -501,6 +524,11 @@ LearnEngine::LearnList::ack_buffer(buffer_id_t buffer_id) {
     }
   }
   old_buffers.erase(it);
+}
+
+std::string
+LearnEngine::LearnList::get_name() const {
+  return list_name;
 }
 
 void
@@ -524,16 +552,24 @@ LearnEngine::get_learn_list(list_id_t list_id) {
   return it == learn_lists.end() ? nullptr : it->second.get();
 }
 
+const LearnEngine::LearnList *
+LearnEngine::get_learn_list(list_id_t list_id) const {
+  auto it = learn_lists.find(list_id);
+  return it == learn_lists.end() ? nullptr : it->second.get();
+}
+
 void
-LearnEngine::list_create(list_id_t list_id, size_t max_samples,
+LearnEngine::list_create(list_id_t list_id,
+                         const std::string &list_name,
+                         size_t max_samples,
                          unsigned int timeout_ms) {
   if (learn_lists.find(list_id) != learn_lists.end()) {
     BMLOG_ERROR("Trying to create learn list with id {} "
                 "but a list with the same id already exists", list_id);
         return;
   }
-  learn_lists[list_id] = std::unique_ptr<LearnList>(
-      new LearnList(list_id, device_id, cxt_id, max_samples, timeout_ms));
+  learn_lists[list_id] = std::unique_ptr<LearnList>(new LearnList(
+      list_id, list_name, device_id, cxt_id, max_samples, timeout_ms));
 }
 
 void
@@ -609,6 +645,26 @@ LearnEngine::list_set_max_samples(list_id_t list_id, size_t max_samples) {
   if (!list) return INVALID_LIST_ID;
   list->set_max_samples(max_samples);
   return SUCCESS;
+}
+
+LearnEngine::LearnErrorCode
+LearnEngine::list_get_name_from_id(
+    list_id_t list_id, std::string *list_name) const {
+  const LearnList *list = get_learn_list(list_id);
+  if (!list) return INVALID_LIST_ID;
+  *list_name = list->get_name();
+  return SUCCESS;
+}
+
+LearnEngine::LearnErrorCode
+LearnEngine::list_get_id_from_name(
+    const std::string &list_name, list_id_t *list_id) const {
+  for (const auto &p : learn_lists) {
+    if (p.second->get_name() != list_name) continue;
+    *list_id = p.first;
+    return SUCCESS;
+  }
+  return INVALID_LIST_NAME;
 }
 
 void
