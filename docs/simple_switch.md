@@ -407,7 +407,8 @@ A `range` table may have an `lpm` field. If so, the prefix length is used to
 determine whether a search key matches the entry, but the prefix length does
 _not_ determine the relative priority among multiple matching table
 entries. Only the numeric priority supplied by the control plane software
-determines that.
+determines that. Because of this, it would be reasonable for a `range` table to
+support multiple `lpm` key fields, but as of January 2019 it does not.
 
 If a table has no `range` field, but at least one `ternary` field, it is
 implemented internally as a `ternary` table in BMv2. As for `range` tables, a
