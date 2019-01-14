@@ -401,19 +401,20 @@ If a table has at least one `range` field, it is implemented internally as a
 `range` table in BMv2. Because a single search key could match mutiple entries,
 every entry must be assigned a numeric priority by the control plane software
 when it is installed. If multiple installed table entries match the same search
-key, one with the maximum numeric priority will match, and its action performed.
+key, one among them with the maximum numeric priority will "win", and its action
+performed.
 
 A `range` table may have an `lpm` field. If so, the prefix length is used to
 determine whether a search key matches the entry, but the prefix length does
 _not_ determine the relative priority among multiple matching table
 entries. Only the numeric priority supplied by the control plane software
 determines that. Because of this, it would be reasonable for a `range` table to
-support multiple `lpm` key fields, but as of January 2019 it does not.
+support multiple `lpm` key fields, but as of January 2019 this is not supported.
 
 If a table has no `range` field, but at least one `ternary` field, it is
 implemented internally as a `ternary` table in BMv2. As for `range` tables, a
 single search key can be matched by multiple table entries, and thus every entry
-must have a numeric priority selected by the control plane software. The same
+must have a numeric priority assigned by the control plane software. The same
 note about `lpm` fields described above for `range` tables also applied to
 `ternary` tables.
 
