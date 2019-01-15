@@ -402,7 +402,10 @@ If a table has at least one `range` field, it is implemented internally as a
 every entry must be assigned a numeric priority by the control plane software
 when it is installed. If multiple installed table entries match the same search
 key, one among them with the maximum numeric priority will "win", and its action
-performed.
+performed. Note that winner is one with maximum numeric priority value if you
+use the P4Runtime API to specify the numeric priorities. Check the documentation
+of your control plane API if you use a different one, as some might choose to
+use the convention that minimum numeric priority values win over larger ones.
 
 A `range` table may have an `lpm` field. If so, the prefix length is used to
 determine whether a search key matches the entry, but the prefix length does
