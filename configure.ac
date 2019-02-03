@@ -226,18 +226,18 @@ AS_IF([test "x$enable_modules" != "xno"], [
       modules_enabled=yes
     ], [
       AC_MSG_RESULT(no)
-      AS_IF([test "x$enable_modules" == "xyes"], [
+      AS_IF([test "x$enable_modules" = "xyes"], [
         AC_MSG_ERROR([Cannot enable modules without dlopen])
       ])
     ])
   ],[
     AC_MSG_RESULT(no)
-    AS_IF([test "x$enable_modules" == "xyes"], [
+    AS_IF([test "x$enable_modules" = "xyes"], [
       AC_MSG_ERROR([Cannot enable modules without dlfcn.h])
     ])
   ])
 ])
-AM_CONDITIONAL([ENABLE_MODULES], [test "x$modules_enabled" == "xyes"])
+AM_CONDITIONAL([ENABLE_MODULES], [test "x$modules_enabled" = "xyes"])
 
 # C++ libraries are harder (http://nerdland.net/2009/07/detecting-c-libraries-with-autotools/),
 # so use headers to check
