@@ -179,10 +179,9 @@ DevMgrIface::clear_port_stats_(port_t port) {  // default implementation
 }
 
 PacketDispatcherIface::ReturnCode
-DevMgrIface::register_status_cb(const PortStatus &type,
-                                const PortStatusCb &port_cb) {
+DevMgrIface::register_status_cb(const PortStatus &type, PortStatusCb port_cb) {
   assert(p_monitor);
-  p_monitor->register_cb(type, port_cb);
+  p_monitor->register_cb(type, std::move(port_cb));
   return ReturnCode::SUCCESS;
 }
 
@@ -249,10 +248,9 @@ DevMgr::set_packet_handler(const PacketHandler &handler, void *cookie) {
 }
 
 PacketDispatcherIface::ReturnCode
-DevMgr::register_status_cb(const PortStatus &type,
-                           const PortStatusCb &port_cb) {
+DevMgr::register_status_cb(const PortStatus &type, PortStatusCb port_cb) {
   assert(pimp);
-  return pimp->register_status_cb(type, port_cb);
+  return pimp->register_status_cb(type, std::move(port_cb));
 }
 
 bool

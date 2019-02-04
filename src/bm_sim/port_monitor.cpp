@@ -40,7 +40,7 @@ class PortMonitorDummy : public PortMonitorIface {
     (void) evt;
   }
 
-  void register_cb_(const PortStatus evt, const PortStatusCb &cb) override {
+  void register_cb_(const PortStatus evt, PortStatusCb cb) override {
     (void) evt;
     (void) cb;
   }
@@ -91,7 +91,7 @@ class PortMonitorPassive : public PortMonitorIface {
     return {port, (evt == PortStatus::PORT_UP)};
   }
 
-  std::unordered_multimap<unsigned int, const PortStatusCb &> cb_map{};
+  std::unordered_multimap<unsigned int, PortStatusCb> cb_map{};
   mutable std::mutex cb_map_mutex{};
   std::unordered_map<port_t, bool> curr_ports{};
   mutable std::mutex port_mutex{};
@@ -126,11 +126,10 @@ class PortMonitorPassive : public PortMonitorIface {
     }
   }
 
-  void register_cb_(const PortStatus evt, const PortStatusCb &cb) override {
+  void register_cb_(const PortStatus evt, PortStatusCb cb) override {
     std::lock_guard<std::mutex> lock(cb_map_mutex);
-    // cannot use make_pair because of the reference
-    cb_map.insert(std::pair<unsigned int, const PortStatusCb &>(
-        static_cast<unsigned int>(evt), cb));
+    cb_map.insert(
+        std::make_pair(static_cast<unsigned int>(evt), std::move(cb)));
   }
 
   void start_(const PortStatusFn &fn) override {

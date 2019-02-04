@@ -106,8 +106,7 @@ class DevMgrIface : public PacketDispatcherIface {
 
   bool port_is_up(port_t port_num) const;
 
-  ReturnCode register_status_cb(const PortStatus &type,
-                                const PortStatusCb &port_cb);
+  ReturnCode register_status_cb(const PortStatus &type, PortStatusCb port_cb);
 
   std::map<port_t, PortInfo> get_port_info() const;
 
@@ -199,8 +198,7 @@ class DevMgr : public PacketDispatcherIface {
 
   //! Register a callback function to be called every time the status of a port
   //! changes.
-  ReturnCode register_status_cb(const PortStatus &type,
-                                const PortStatusCb &port_cb);
+  ReturnCode register_status_cb(const PortStatus &type, PortStatusCb port_cb);
 
   // start the thread that performs packet processing
   void start();

@@ -65,8 +65,8 @@ class PortMonitorIface {
     notify_(port_num, evt);
   }
 
-  void register_cb(const PortStatus evt, const PortStatusCb &cb) {
-    register_cb_(evt, cb);
+  void register_cb(const PortStatus evt, PortStatusCb cb) {
+    register_cb_(evt, std::move(cb));
   }
 
   void start(const PortStatusFn &fn) {
@@ -94,7 +94,7 @@ class PortMonitorIface {
  private:
   virtual void notify_(port_t port_num, const PortStatus evt) = 0;
 
-  virtual void register_cb_(const PortStatus evt, const PortStatusCb &cb) = 0;
+  virtual void register_cb_(const PortStatus evt, PortStatusCb cb) = 0;
 
   virtual void start_(const PortStatusFn &fn) = 0;
 

@@ -137,8 +137,8 @@ class DevMgrTest : public ::testing::Test {
   }
 
   void register_callback() {
-    port_cb = std::bind(&DevMgrTest::port_status, this, std::placeholders::_1,
-                        std::placeholders::_2);
+    auto port_cb = std::bind(&DevMgrTest::port_status, this,
+                             std::placeholders::_1, std::placeholders::_2);
     g_mgr->register_status_cb(DevMgrIface::PortStatus::PORT_ADDED, port_cb);
     g_mgr->register_status_cb(DevMgrIface::PortStatus::PORT_REMOVED, port_cb);
     g_mgr->register_status_cb(DevMgrIface::PortStatus::PORT_UP, port_cb);
@@ -157,7 +157,6 @@ class DevMgrTest : public ::testing::Test {
     return cb_counts.at(status);
   }
 
-  DevMgrIface::PortStatusCb port_cb{};
   std::map<DevMgrIface::PortStatus, uint32_t> cb_counts{};
   mutable std::mutex cnt_mutex{};
   std::unique_ptr<TestDevMgrImp> g_mgr{nullptr};
@@ -359,8 +358,8 @@ class PacketInDevMgrPortStatusTest : public PacketInDevMgrTest {
   }
 
   void register_callback() {
-    port_cb = std::bind(&PacketInDevMgrPortStatusTest::port_status, this,
-                        std::placeholders::_1, std::placeholders::_2);
+    auto port_cb = std::bind(&PacketInDevMgrPortStatusTest::port_status, this,
+                             std::placeholders::_1, std::placeholders::_2);
     sw.register_status_cb(DevMgrIface::PortStatus::PORT_ADDED, port_cb);
     sw.register_status_cb(DevMgrIface::PortStatus::PORT_REMOVED, port_cb);
     sw.register_status_cb(DevMgrIface::PortStatus::PORT_UP, port_cb);
@@ -388,7 +387,6 @@ class PacketInDevMgrPortStatusTest : public PacketInDevMgrTest {
     reset_counts();
   }
 
-  DevMgrIface::PortStatusCb port_cb{};
   std::map<DevMgrIface::PortStatus, uint32_t> cb_counts{};
   mutable std::mutex cnt_mutex{};
 };
