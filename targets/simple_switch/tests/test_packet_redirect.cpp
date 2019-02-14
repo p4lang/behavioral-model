@@ -470,6 +470,8 @@ class SimpleSwitch_PacketRedirectP4_CloneE2E
     // only PKT_INSTANCE_TYPE_NORMAL (= 0)
     match_key_2.emplace_back(MatchKeyParam::Type::TERNARY,
                              std::string(4, '\x00'), std::string(4, '\xff'));
+    match_key_2.emplace_back(MatchKeyParam::Type::TERNARY,
+                             std::string(4, '\x00'), std::string(4, '\x00'));
     ActionData data_2;
     data_2.push_back_action_data(mirror_id);
     entry_handle_t h_2;
@@ -700,6 +702,9 @@ TEST_F(SimpleSwitch_PacketRedirectP4, Recirculate) {
   std::vector<MatchKeyParam> match_key_3;
   match_key_3.emplace_back(MatchKeyParam::Type::EXACT, std::string("\x06"));
   // only PKT_INSTANCE_TYPE_NORMAL (= 0)
+  match_key_3.emplace_back(MatchKeyParam::Type::TERNARY,
+                           std::string(4, '\x00'), std::string(4, '\xff'));
+  // only 0
   match_key_3.emplace_back(MatchKeyParam::Type::TERNARY,
                            std::string(4, '\x00'), std::string(4, '\xff'));
   ActionData data_3;
