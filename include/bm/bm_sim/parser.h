@@ -255,6 +255,14 @@ class ParseState : public NamedP4Object {
   void add_verify(const BoolExpression &condition,
                   const ArithExpression &error_expr);
 
+  void add_assert(const BoolExpression& condition,
+                  const std::string& error_expr,
+                  std::unique_ptr<SourceInfo> src_info);
+
+  void add_assume(const BoolExpression& cond,
+                  const std::string& error_expr,
+                  std::unique_ptr<SourceInfo> src_info);
+
   void add_method_call(ActionFn *action_fn);
 
   void add_shift(size_t shift_bytes);

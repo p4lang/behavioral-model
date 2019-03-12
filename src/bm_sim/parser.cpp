@@ -29,11 +29,13 @@
 #include <bm/bm_sim/actions.h>
 #include <bm/bm_sim/checksums.h>
 #include <bm/bm_sim/core/primitives.h>
+#include <bm/bm_sim/source_info.h>
 
 #include <string>
 #include <vector>
 #include <unordered_set>
 #include <mutex>
+#include <memory>
 
 #include "extract.h"
 
@@ -412,6 +414,50 @@ struct ParserOpVerify : ParserOp {
     if (!condition.eval(phv)) {
       error_expr.eval(phv, &error);
       throw parser_exception_arch(ErrorCode(error.get<ErrorCode::type_t>()));
+    }
+  }
+};
+
+struct ParserOpAssert : ParserOp {
+  BoolExpression condition;
+  std::string error_expr;
+  std::unique_ptr<SourceInfo> srcInfo;
+
+  ParserOpAssert(const BoolExpression &cond,
+                 const std::string &error_expr,
+                 std::unique_ptr<SourceInfo> src_info)
+      : condition(cond), error_expr(error_expr),
+      srcInfo(std::move(src_info)) { }
+
+  void operator()(Packet *pkt, const char *data,
+                  size_t *bytes_parsed) const override {
+    (void) data; (void) bytes_parsed;
+    const auto &phv = *pkt->get_phv();
+    if (!condition.eval(phv)) {
+      error_message(error_expr.c_str(), srcInfo.get());
+      pkt->mark_for_exit();
+    }
+  }
+};
+
+struct ParserOpAssume : ParserOp {
+  BoolExpression condition;
+  std::string error_expr;
+  std::unique_ptr<SourceInfo> srcInfo;
+
+  ParserOpAssume(const BoolExpression& cond,
+                 const std::string& error_expr,
+                 std::unique_ptr<SourceInfo> src_info)
+      : condition(cond), error_expr(error_expr),
+      srcInfo(std::move(src_info)) { }
+
+  void operator()(Packet *pkt, const char *data,
+                  size_t *bytes_parsed) const override {
+    (void) data; (void) bytes_parsed;
+    const auto &phv = *pkt->get_phv();
+    if (condition.eval(phv)) {
+      error_message(error_expr.c_str(), srcInfo.get());
+      pkt->mark_for_exit();
     }
   }
 };
@@ -943,6 +989,22 @@ void
 ParseState::add_verify(const BoolExpression &condition,
                        const ArithExpression &error_expr) {
   parser_ops.emplace_back(new ParserOpVerify(condition, error_expr));
+}
+
+void
+ParseState::add_assert(const BoolExpression &condition,
+                       const std::string& error_expr,
+                       std::unique_ptr<SourceInfo> src_info) {
+  parser_ops.emplace_back(new ParserOpAssert(condition, error_expr,
+                          std::move(src_info)));
+}
+
+void
+ParseState::add_assume(const BoolExpression& cond,
+                       const std::string& error_expr,
+                       std::unique_ptr<SourceInfo> src_info) {
+  parser_ops.emplace_back(new ParserOpAssume(cond, error_expr,
+                          std::move(src_info)));
 }
 
 void

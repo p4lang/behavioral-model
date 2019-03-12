@@ -78,7 +78,11 @@ class ErrorCodeMap {
     //! Extracting too many bits into a varbit field (unused for now)
     HeaderTooShort,
     //! Parser execution time limit exceeded (unused for now)
-    ParserTimeout
+    ParserTimeout,
+    //! Assert failure when boolean expression = false
+    AssertError,
+    //! Assume failure when boolean expression = true
+    AssumeError
   };
 
   bool add(const std::string &name, ErrorCode::type_t v);

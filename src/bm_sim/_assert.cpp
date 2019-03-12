@@ -31,4 +31,12 @@ void _assert(const char* expr, const char* file, int line) {
   std::abort();
 }
 
+void error_message(const char* error_msg, const SourceInfo* srcInfo) {
+    if (srcInfo != nullptr) {
+        std::cerr << error_msg << ": '" << srcInfo->get_source_fragment()
+        << "' failed, file '" << srcInfo->get_filename()
+        << "' line '" << srcInfo->get_line() << "'.\n";
+    }
+}
+
 }  // namespace bm

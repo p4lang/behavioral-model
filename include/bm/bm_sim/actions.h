@@ -535,6 +535,10 @@ class ActionPrimitive_ {
     this->p4objects = p4objects;
   }
 
+  void set_source_info(SourceInfo* source_info) {
+    srcInfo = source_info;
+  }
+
  protected:
   // This used to be regular members in ActionPrimitive, but there could be a
   // race condition. Making them thread_local solves the issue. I moved these
@@ -543,7 +547,7 @@ class ActionPrimitive_ {
   // (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60056).
   static thread_local Packet *pkt;
   static thread_local PHV *phv;
-
+  SourceInfo* srcInfo = nullptr;
   P4Objects *get_p4objects() {
     return p4objects;
   }

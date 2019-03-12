@@ -1168,6 +1168,24 @@ P4Objects::init_parsers(const Json::Value &cfg_root, InitState *init_state) {
           }
           error_expr.build();
           parse_state->add_verify(cond_expr, error_expr);
+        } else if (op_type == "assert") {
+          check_json_tuple_size(cfg_parser_op, "parameters", 1);
+          BoolExpression cond_expr;
+          build_expression(cfg_parameters[0], &cond_expr);
+          cond_expr.build();
+          auto error_code = error_codes.from_core(
+                            ErrorCodeMap::Core::AssertError);
+          parse_state->add_assert(cond_expr, error_codes.to_name(error_code),
+                                  object_source_info(cfg_parser_op));
+        } else if (op_type == "assume") {
+          check_json_tuple_size(cfg_parser_op, "parameters", 1);
+          BoolExpression cond_expr;
+          build_expression(cfg_parameters[0], &cond_expr);
+          cond_expr.build();
+          auto error_code = error_codes.from_core(
+                            ErrorCodeMap::Core::AssumeError);
+          parse_state->add_assume(cond_expr, error_codes.to_name(error_code),
+                                  object_source_info(cfg_parser_op));
         } else if (op_type == "primitive") {
           check_json_tuple_size(cfg_parser_op, "parameters", 1);
           const auto primitive_name = cfg_parameters[0]["op"].asString();

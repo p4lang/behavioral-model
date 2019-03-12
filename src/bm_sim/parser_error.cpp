@@ -58,7 +58,8 @@ ErrorCodeMap::add_core() {
   // TODO(antonin): write an iterator for Core enum class instead
   for (const auto core : {Core::NoError, Core::PacketTooShort, Core::NoMatch,
                           Core::StackOutOfBounds, Core::HeaderTooShort,
-                          Core::ParserTimeout}) {
+                          Core::ParserTimeout, Core::AssertError,
+                          Core::AssumeError}) {
     auto name = core_to_name(core);
     if (!exists(name)) add(name, max_v++);
   }
@@ -102,6 +103,10 @@ ErrorCodeMap::core_to_name(const Core &core) {
       return "HeaderTooShort";
     case Core::ParserTimeout:
       return "ParserTimeout";
+    case Core::AssertError:
+      return "AssertError";
+    case Core::AssumeError:
+      return "AssumeError";
   }
   // unreachable but gcc complains without it
   assert(0);

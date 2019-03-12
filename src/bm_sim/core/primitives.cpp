@@ -19,6 +19,8 @@
  */
 
 #include <bm/bm_sim/core/primitives.h>
+#include <include/bm/bm_sim/parser_error.h>
+#include <include/bm/bm_sim/P4Objects.h>
 
 namespace bm {
 

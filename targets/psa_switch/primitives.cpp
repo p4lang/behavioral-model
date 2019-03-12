@@ -26,6 +26,8 @@
 #include <bm/bm_sim/packet.h>
 #include <bm/bm_sim/phv.h>
 #include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/parser_error.h>
+#include <bm/bm_sim/P4Objects.h>
 
 #include <random>
 #include <thread>
@@ -41,6 +43,7 @@ using bm::CounterArray;
 using bm::RegisterArray;
 using bm::NamedCalculation;
 using bm::HeaderStack;
+using bm::ErrorCodeMap;
 
 class modify_field : public ActionPrimitive<Data &, const Data &> {
   void operator ()(Data &dst, const Data &src) {
@@ -141,6 +144,8 @@ class shift_right :
 REGISTER_PRIMITIVE(shift_right);
 
 class drop : public ActionPrimitive<> {
+  friend class assert_;
+  friend class assume_;
   void operator ()() {
     get_field("standard_metadata.egress_spec").set(511);
     if (get_phv().has_field("intrinsic_metadata.mcast_grp")) {
@@ -397,6 +402,36 @@ class truncate_ : public ActionPrimitive<const Data &> {
 };
 
 REGISTER_PRIMITIVE_W_NAME("truncate", truncate_);
+
+class assert_ : public ActionPrimitive<const Data &> {
+  void operator ()(const Data& src) {
+    if (src.test_eq(0)) {
+      auto error_code_map = get_p4objects()->get_error_codes();
+      auto error_code = error_code_map.from_core(
+                        ErrorCodeMap::Core::AssertError);
+      error_message(error_code_map.to_name(error_code).c_str(), srcInfo);
+      get_packet().mark_for_exit();
+      drop()();
+    }
+  }
+};
+
+REGISTER_PRIMITIVE_W_NAME("assert", assert_);
+
+class assume_ : public ActionPrimitive<const Data &> {
+  void operator ()(const Data& src) {
+    if (src.test_eq(1)) {
+      auto error_code_map = get_p4objects()->get_error_codes();
+      auto error_code = error_code_map.from_core(
+                        ErrorCodeMap::Core::AssumeError);
+      error_message(error_code_map.to_name(error_code).c_str(), srcInfo);
+      get_packet().mark_for_exit();
+      drop()();
+    }
+  }
+};
+
+REGISTER_PRIMITIVE_W_NAME("assume", assume_);
 
 // dummy function, which ensures that this unit is not discarded by the linker
 // it is being called by the constructor of PsaSwitch

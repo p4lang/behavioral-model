@@ -22,10 +22,13 @@
 #define BM_BM_SIM__ASSERT_H_
 
 // An assert that cannot be removed with NDEBUG
+#include <bm/bm_sim/source_info.h>
 
 namespace bm {
 
 [[ noreturn ]] void _assert(const char* expr, const char* file, int line);
+
+void error_message(const char* error_msg, const SourceInfo* srcInfo);
 
 }  // namespace bm
 
