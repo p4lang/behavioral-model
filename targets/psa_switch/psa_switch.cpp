@@ -148,14 +148,14 @@ PsaSwitch::receive_(port_t port_num, const char *buffer, int len) {
   phv->reset_metadata();
 
   // setting standard metadata
-  phv->get_field("psa_ingress_parser_input_metadata.ingress_port").set(port_num);
-  phv->get_field("psa_ingress_parser_input_metadata.packet_path").set(PKT_INSTANCE_TYPE_NORMAL);
+
+  phv->get_field("standard_metadata.ingress_port").set(port_num);
   // using packet register 0 to store length, this register will be updated for
   // each add_header / remove_header primitive call
-  //packet->set_register(PACKET_LENGTH_REG_IDX, len);
-  //phv->get_field("standard_metadata.packet_length").set(len);
-  //Field &f_instance_type = phv->get_field("standard_metadata.instance_type");
-  //f_instance_type.set(PKT_INSTANCE_TYPE_NORMAL);
+  packet->set_register(PACKET_LENGTH_REG_IDX, len);
+  phv->get_field("standard_metadata.packet_length").set(len);
+  Field &f_instance_type = phv->get_field("standard_metadata.instance_type");
+  f_instance_type.set(PKT_INSTANCE_TYPE_NORMAL);
 
   if (phv->has_field("intrinsic_metadata.ingress_global_timestamp")) {
     phv->get_field("intrinsic_metadata.ingress_global_timestamp")
@@ -316,15 +316,14 @@ PsaSwitch::check_queueing_metadata() {
 void
 PsaSwitch::ingress_thread() {
   PHV *phv;
+
   while (1) {
     std::unique_ptr<Packet> packet;
     input_buffer.pop_back(&packet);
-
     if (packet == nullptr) break;
-    
 
     // TODO(antonin): only update these if swapping actually happened?
-    Parser *parser = this->get_parser("ingress_parser");
+    Parser *parser = this->get_parser("parser");
     Pipeline *ingress_mau = this->get_pipeline("ingress");
 
     phv = packet->get_phv();
@@ -333,8 +332,6 @@ PsaSwitch::ingress_thread() {
     (void) ingress_port;
     BMLOG_DEBUG_PKT(*packet, "Processing packet received on port {}",
                     ingress_port);
-
-    std::cout << "Ready to parse and pipe packet\n";
 
     /* This looks like it comes out of the blue. However this is needed for
        ingress cloning. The parser updates the buffer state (pops the parsed
@@ -345,11 +342,8 @@ PsaSwitch::ingress_thread() {
        deparser. TODO? */
     const Packet::buffer_state_t packet_in_state = packet->save_buffer_state();
     parser->parse(packet.get());
-    std::cout << "parsed correctly\n";
 
     ingress_mau->apply(packet.get());
-    std::cout << "piped correctly\n";
-    break;
 
     packet->reset_exit();
 

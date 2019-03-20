@@ -38,16 +38,12 @@ shared_ptr<PsaSwitchIf> get_handler(PsaSwitch *sw);
 int
 main(int argc, char* argv[]) {
   psa_switch = new PsaSwitch();
-  std::cout << "Switch created" << std::endl;
   psa_switch_parser = new bm::TargetParserBasic();
   psa_switch_parser->add_flag_option("enable-swap",
                                         "enable JSON swapping at runtime");
   int status = psa_switch->init_from_command_line_options(
       argc, argv, psa_switch_parser);
   if (status != 0) std::exit(status);
-
-  
-  std::cout << "switch initialized" << std::endl;
 
   bool enable_swap_flag = false;
   if (psa_switch_parser->get_flag_option("enable-swap", &enable_swap_flag)
@@ -61,8 +57,6 @@ main(int argc, char* argv[]) {
   using ::pswitch_runtime::PsaSwitchProcessor;
   bm_runtime::add_service<PsaSwitchIf, PsaSwitchProcessor>(
       "psa_switch", pswitch_runtime::get_handler(psa_switch));
-
-  std::cout << "starting switch" << std::endl;
   psa_switch->start_and_return();
 
   while (true) std::this_thread::sleep_for(std::chrono::seconds(100));
