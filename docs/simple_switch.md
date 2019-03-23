@@ -492,6 +492,9 @@ also serve to document the P4_14 behavior of `simple_switch`.  This
 section is only for things specific to P4_16 plus the v1model
 architecture.
 
+
+### Restrictions on type `H`
+
 There is a type called `H` that is a parameter to the package
 `V1Switch` definition in `v1model.p4`, excerpted below:
 
@@ -511,3 +514,39 @@ of one of the following types, and no others:
 + header
 + header_union
 + header stack
+
+
+### Restrictions on contents of parsers and controls
+
+The P4_16 language specification version 1.1 does not support `if`
+statements inside of parsers.  Because the `p4c` compiler in-lines
+calls to functions at the location of the call, this restriction
+extends to function bodies of functions called from a parser.  There
+are two potential workarounds:
+
++ If the conditional execution can be done just as effectively by
+  waiting to do it during ingress control processing, you can use `if`
+  statements there.
++ In some cases you can implement the desired conditional execution
+  effect using `transition select` statements to branch to different
+  parser states, each of which can have its own distinct code.
+
+The `VerifyChecksum` control is executed just after the `Parser`
+completes, and just before the `Ingress` control begins.  `p4c` plus
+`simple_switch` only support a sequence of calls to the
+`verify_checksum` or `verify_checksum_with_payload` extern functions
+inside such controls.  See the `v1model.p4` include file for their
+definition.  The first argument to these functions is a boolean, which
+can be an arbitrary boolean condition used to make the checksum
+calculation conditional on that expression being true.
+
+The `ComputeChecksum` control is executed just after the `Egress`
+control completes, and just before the `Deparser` control begins.
+`p4c` plus `simple_switch` only support a sequence of calls to the
+`update_checksum` or `update_checksum_with_payload` extern functions
+inside such controls.  The first argument to these functions is a
+boolean, which can be an arbitrary boolean condition used to make the
+checksum update action conditional on that expression being true.
+
+The `Deparser` control is restricted to contain only a sequence of
+calls to the `emit` method of the `packet_out` object.
