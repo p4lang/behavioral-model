@@ -516,7 +516,7 @@ of one of the following types, and no others:
 + header stack
 
 
-### Restrictions on contents of parsers and controls
+### Restrictions on parser code
 
 The P4_16 language specification version 1.1 does not support `if`
 statements inside of parsers.  Because the `p4c` compiler in-lines
@@ -531,6 +531,22 @@ are two potential workarounds:
   effect using `transition select` statements to branch to different
   parser states, each of which can have its own distinct code.
 
+In the `v1model` architecture, a packet reaching the `reject` parser
+state, e.g. because it failed a `verify` call, is _not_ automatically
+dropped.  Such a packet will begin `Ingress` processing with the value
+of the `parser_error` standard metadata field equal to the error that
+occurred.  Your P4 code can direct such packets to be dropped if you
+wish, but you may also choose to write code that will do other things
+with such packets, e.g. send a clone of them to a control CPU for
+further analysis or error logging.
+
+`p4c` plus `simple_switch` does not support transitioning to the
+`reject` state explicitly in the source code.  It can only do so via
+failing a call to `verify`.
+
+
+### Restrictions on code in the `VerifyChecksum` control
+
 The `VerifyChecksum` control is executed just after the `Parser`
 completes, and just before the `Ingress` control begins.  `p4c` plus
 `simple_switch` only support a sequence of calls to the
@@ -540,6 +556,18 @@ definition.  The first argument to these functions is a boolean, which
 can be an arbitrary boolean condition used to make the checksum
 calculation conditional on that expression being true.
 
+In the `v1model` architecture, a packet having an incorrect checksum
+is _not_ automatically dropped.  Such a packet will begin `Ingress`
+processing with the value of the `checksum_error` standard metadata
+field equal to 1.  If your program has multiple calls to
+`verify_checksum` and/or `verify_checksum_with_payload`, there is no
+way supported to determine which of the calls was the one that found
+an incorrect checksum.  Your P4 code can direct such packets to be
+dropped if you wish, but this will not automatically be done for you.
+
+
+### Restrictions on code in the `ComputeChecksum` control
+
 The `ComputeChecksum` control is executed just after the `Egress`
 control completes, and just before the `Deparser` control begins.
 `p4c` plus `simple_switch` only support a sequence of calls to the
@@ -548,5 +576,12 @@ inside such controls.  The first argument to these functions is a
 boolean, which can be an arbitrary boolean condition used to make the
 checksum update action conditional on that expression being true.
 
+
+### Restrictions on code in the `Deparser` control
+
 The `Deparser` control is restricted to contain only a sequence of
 calls to the `emit` method of the `packet_out` object.
+
+The most straightforward approach to avoiding the restrictions in the
+`ComputeChecksum` and `Deparser` controls is to write the more general
+code you want near the end of the `Egress` control.
