@@ -345,16 +345,12 @@ PsaSwitch::ingress_thread() {
     BMLOG_DEBUG_PKT(*packet, "Processing packet received on port {}",
                     ingress_port);
 
-    std::cout << "Ready to parse and pipe packet\n";
     parser->parse(packet.get());
-    std::cout << "parsed correctly\n";
     ingress_mau->apply(packet.get());
-    std::cout << "piped correctly\n";
 
     packet->reset_exit();
     Field &f_egress_spec = phv->get_field("psa_ingress_output_metadata.egress_port");
     port_t egress_spec = f_egress_spec.get_uint();
-    std::cout << egress_spec << std::endl;
     port_t egress_port = egress_spec;
 
     egress_port = egress_spec;
@@ -364,7 +360,8 @@ PsaSwitch::ingress_thread() {
       BMLOG_DEBUG_PKT(*packet, "Dropping packet at the end of ingress");
       continue;
     }
-
+    Deparser *deparser = this->get_deparser("ingress_deparser");
+    deparser->deparse(packet.get());
     enqueue(egress_port, std::move(packet));
   }
 }
@@ -383,15 +380,14 @@ PsaSwitch::egress_thread(size_t worker_id) {
     egress_buffers.pop_back(worker_id, &port, &packet);
 #endif
     if (packet == nullptr) break;
-    std::cout << "packet in egress" << std::endl;
-    std::cout << port << std::endl;
 
+    Parser *parser = this->get_parser("egress_parser");
+    parser->parse(packet.get());
     Deparser *deparser = this->get_deparser("egress_deparser");
     Pipeline *egress_mau = this->get_pipeline("egress");
     phv = packet->get_phv();
     egress_mau->apply(packet.get());
     deparser->deparse(packet.get());
-    std::cout << "ready to send out" << std::endl;
     output_buffer.push_front(std::move(packet));
   }
 }
