@@ -367,7 +367,6 @@ PsaSwitch::ingress_thread() {
 
 void
 PsaSwitch::egress_thread(size_t worker_id) {
-  PHV *phv;
 
   while (1) {
     std::unique_ptr<Packet> packet;
@@ -384,7 +383,6 @@ PsaSwitch::egress_thread(size_t worker_id) {
     parser->parse(packet.get());
     Deparser *deparser = this->get_deparser("egress_deparser");
     Pipeline *egress_mau = this->get_pipeline("egress");
-    phv = packet->get_phv();
     egress_mau->apply(packet.get());
     deparser->deparse(packet.get());
     output_buffer.push_front(std::move(packet));
