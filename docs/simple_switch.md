@@ -566,6 +566,26 @@ an incorrect checksum.  Your P4 code can direct such packets to be
 dropped if you wish, but this will not automatically be done for you.
 
 
+### Restrictions on code in the `Ingress` and `Egress` controls
+
+`simple_switch` does not support doing `apply` on the same table more
+than once for a single execution of the `Ingress` control, nor for a
+single execution of the `Egress` control.
+
+In some cases, you can work around this restriction by having multiple
+tables with similar definitions, and `apply` each of them once per
+execution of the `Ingress` control (or `Egress`).  If you want two
+such tables to contain the same set of table entries and actions, then
+you must write your control plane software to keep their contents the
+same, e.g. always add an entry to `T2` every time you add an entry to
+`T1`, etc.
+
+This restriction is one that could be generalized in `simple_switch`,
+but realize that some high speed ASIC implementations of P4 may also
+impose this same restriction, because the restriction can be imposed
+by the design of the hardware.
+
+
 ### Restrictions on code in the `ComputeChecksum` control
 
 The `ComputeChecksum` control is executed just after the `Egress`
