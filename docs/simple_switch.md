@@ -626,7 +626,7 @@ atomicity to be guaranteed for you.
 It is still recommended to use the `@atomic` annotation in your P4_16
 code to mark blocks of code containing multiple register accesses that
 you wish to be atomic relative to other packets being processed, but
-as of March 2019, the BMv2 implementation ignore such annotations.
+as of March 2019, the BMv2 implementation ignores such annotations.
 
 
 ### BMv2 `random` implementation notes
@@ -635,8 +635,10 @@ The BMv2 v1model implementation of the `random` function supports the
 `lo` and `hi` parameters being run-time variables, i.e. they need not
 be compile time constants.
 
-Also, they need not be limited to the constraint that (hi - lo + 1) is
-a power of 2.
+Also, they need not be limited to the constraint that `(hi - lo + 1)`
+is a power of 2.
+
+Type `T` is restricted to be `bit<W>` for `W <= 64`.
 
 
 ### BMv2 `hash` implementation notes
@@ -651,3 +653,6 @@ of 2.
 Call the hash value that is calculated from the data H.  The value
 written to the out parameter named `result` is: `(base + (H % max))`
 if `max >= 1`, otherwise `base`.
+
+The type `O` of the `result`, `T` of `base`, and `M` of `max` are
+restricted to be `bit<W>` for `W <= 64`.
