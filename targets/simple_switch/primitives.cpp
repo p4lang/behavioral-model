@@ -59,8 +59,18 @@ class modify_field_rng_uniform
     using hash = std::hash<std::thread::id>;
     static thread_local engine generator(hash()(std::this_thread::get_id()));
     using distrib64 = std::uniform_int_distribution<uint64_t>;
-    distrib64 distribution(b.get_uint64(), e.get_uint64());
-    f.set(distribution(generator));
+    uint64_t lo = b.get_uint64();
+    uint64_t hi = e.get_uint64();
+    std::string warning = "";
+    if (lo > hi) {
+        warning = " warning: result is not specified when lo > hi";
+    }
+    distrib64 distribution(lo, hi);
+    uint64_t rand_val = distribution(generator);
+    BMLOG_TRACE_PKT(get_packet(),
+                    "random lo {} hi {} result {}{}",
+                    lo, hi, rand_val, warning);
+    f.set(rand_val);
   }
 };
 
@@ -264,8 +274,19 @@ class modify_field_with_hash_based_offset
                            const NamedCalculation &, const Data &> {
   void operator ()(Data &dst, const Data &base,
                    const NamedCalculation &hash, const Data &size) {
-    uint64_t v =
-      (hash.output(get_packet()) % size.get<uint64_t>()) + base.get<uint64_t>();
+    uint64_t b = base.get<uint64_t>();
+    uint64_t orig_sz = size.get<uint64_t>();
+    uint64_t sz = orig_sz;
+    std::string warning = "";
+    if (sz == (uint64_t) 0) {
+        sz = (uint64_t) 1;
+        warning = " warning: max given as 0, but treating it as 1";
+    }
+    uint64_t h = hash.output(get_packet());
+    uint64_t v = (h % sz) + b;
+    BMLOG_TRACE_PKT(get_packet(),
+                    "hash base {} max {} raw_hash {} result {}{}",
+                    b, orig_sz, h, v, warning);
     dst.set(v);
   }
 };
