@@ -64,6 +64,10 @@ class modify_field_rng_uniform
     auto hi = e.get_uint64();
     if (lo > hi) {
         Logger::get()->warn("random result is not specified when lo > hi");
+        // Return without writing to the result field at all.  We
+        // should avoid the distrib64 call below, since its behavior
+        // is not defined in this case.
+        return;
     }
     distrib64 distribution(lo, hi);
     auto rand_val = distribution(generator);
