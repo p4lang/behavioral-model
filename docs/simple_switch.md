@@ -661,10 +661,10 @@ restricted to be `bit<W>` for `W <= 64`.
 ### BMv2 `direct_counter` implementation notes
 
 If a table `t` has a `direct_counter` object `c` associated with it by
-having a table property `counters = c` in its definition, then BMv2
-simple_switch behaves as if every action for that table contains
-exactly one call to `c.count()`, whether it has none, one, or more
-than one.
+having a table property `counters = c` in its definition, the BMv2
+v1model implementation behaves as if every action for that table
+contains exactly one call to `c.count()`, whether it has none, one, or
+more than one.
 
 
 ### BMv2 `direct_meter` implementation notes
@@ -675,8 +675,8 @@ one_ of that table's actions must have a call to
 `m.read(result_field);`, for some field `result_field` with type
 `bit<W>` where `W >= 2`.
 
-When this is done, then BMv2 simple_switch behaves as if _all_ actions
-for table `t` have such a call in them, even if they do not.
+When this is done, the BMv2 v1model implementation behaves as if _all_
+actions for table `t` have such a call in them, even if they do not.
 
 It is not supported, and the `p4c` compiler gives an error message, if
 you have two actions for table `t` where one has the action
