@@ -154,7 +154,7 @@ PsaSwitch::receive_(port_t port_num, const char *buffer, int len) {
   phv->get_field("psa_ingress_parser_input_metadata.packet_path").set(PKT_INSTANCE_TYPE_NORMAL);
   // using packet register 0 to store length, this register will be updated for
   // each add_header / remove_header primitive call
-//   packet->set_register(PACKET_LENGTH_REG_IDX, len);
+   packet->set_register(PACKET_LENGTH_REG_IDX, len);
 //   phv->get_field("standard_metadata.packet_length").set(len);
 //   Field &f_instance_type = phv->get_field("standard_metadata.instance_type");
 //   f_instance_type.set(PKT_INSTANCE_TYPE_NORMAL);
@@ -346,6 +346,25 @@ PsaSwitch::ingress_thread() {
 
     parser->parse(packet.get());
     ingress_mau->apply(packet.get());
+
+    // Handleing multicast
+    unsigned int mgid = 0u;
+    if (phv->has_field("psa_ingress_output_metadata.multicast_group")) {
+      Field &f_mgid = phv->get_field("psa_ingress_output_metadata.multicast_group");
+      mgid = f_mgid.get_uint();
+      
+      const auto pre_out = pre->replicate({mgid});
+      auto packet_size = packet->get_register(PACKET_LENGTH_REG_IDX);
+      for(const auto &out : pre_out){
+        auto egress_port = out.egress_port;
+        std::unique_ptr<Packet> packet_copy = packet->clone_with_phv_ptr();
+        packet_copy->set_register(PACKET_LENGTH_REG_IDX, packet_size);
+        enqueue(egress_port, std::move(packet_copy));
+      }
+      continue;
+    }
+
+
 
     packet->reset_exit();
     Field &f_egress_spec = phv->get_field("psa_ingress_output_metadata.egress_port");
