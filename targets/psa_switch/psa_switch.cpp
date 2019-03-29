@@ -353,15 +353,17 @@ PsaSwitch::ingress_thread() {
       Field &f_mgid = phv->get_field("psa_ingress_output_metadata.multicast_group");
       mgid = f_mgid.get_uint();
       
-      const auto pre_out = pre->replicate({mgid});
-      auto packet_size = packet->get_register(PACKET_LENGTH_REG_IDX);
-      for(const auto &out : pre_out){
-        auto egress_port = out.egress_port;
-        std::unique_ptr<Packet> packet_copy = packet->clone_with_phv_ptr();
-        packet_copy->set_register(PACKET_LENGTH_REG_IDX, packet_size);
-        enqueue(egress_port, std::move(packet_copy));
+      if(mgid != 0){
+        const auto pre_out = pre->replicate({mgid});
+        auto packet_size = packet->get_register(PACKET_LENGTH_REG_IDX);
+        for(const auto &out : pre_out){
+          auto egress_port = out.egress_port;
+          std::unique_ptr<Packet> packet_copy = packet->clone_with_phv_ptr();
+          packet_copy->set_register(PACKET_LENGTH_REG_IDX, packet_size);
+          enqueue(egress_port, std::move(packet_copy));
+        }
+        continue;
       }
-      continue;
     }
 
 
