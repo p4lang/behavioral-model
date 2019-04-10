@@ -71,11 +71,11 @@ PsaSwitch::PsaSwitch(port_t max_port, bool enable_swap)
     max_port(max_port),
     input_buffer(1024),
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
-    egress_buffers(max_port, nb_egress_threads,
+    egress_buffers(nb_egress_threads,
                    64, EgressThreadMapper(nb_egress_threads),
                    SSWITCH_PRIORITY_QUEUEING_NB_QUEUES),
 #else
-    egress_buffers(max_port, nb_egress_threads,
+    egress_buffers(nb_egress_threads,
                    64, EgressThreadMapper(nb_egress_threads)),
 #endif
     output_buffer(128),
@@ -352,7 +352,7 @@ PsaSwitch::ingress_thread() {
     if (phv->has_field("psa_ingress_output_metadata.multicast_group")) {
       Field &f_mgid = phv->get_field("psa_ingress_output_metadata.multicast_group");
       mgid = f_mgid.get_uint();
-      
+
       if(mgid != 0){
         const auto pre_out = pre->replicate({mgid});
         auto packet_size = packet->get_register(PACKET_LENGTH_REG_IDX);

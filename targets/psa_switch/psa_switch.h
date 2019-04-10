@@ -77,7 +77,7 @@ class PsaSwitch : public Switch {
 
  public:
   // by default, swapping is off
-  explicit PsaSwitch(bool enable_swap = false);
+  explicit PsaSwitch(port_t max_port = 256, bool enable_swap = false);
 
   ~PsaSwitch();
 
@@ -171,6 +171,7 @@ class PsaSwitch : public Switch {
   void check_queueing_metadata();
 
  private:
+  port_t max_port;
   std::vector<std::thread> threads_;
   Queue<std::unique_ptr<Packet> > input_buffer;
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
