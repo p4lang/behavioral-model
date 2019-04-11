@@ -688,5 +688,5 @@ result parameter where the result is written.
 
 ### BMv2 `meter rate units` implementation notes
 
-The user of the P4 program enters the meter rate and burtsize in
+The user enters the meter rate and burtsize in
 units of bytes/microsec.
