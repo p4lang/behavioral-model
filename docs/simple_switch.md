@@ -690,7 +690,7 @@ result parameter where the result is written.
 
 The user enters the meter rate in kbps (10^3 bits/sec) and burst_size in
 a unit of 10^3 bits. Internally, the implementation converts rate to
-bytes/microsecond and burst_size to 10^6 bytes.
+bytes/microsecond and burst_size to bytes.
 
 If the meter type is packets, the rate is enterted in packets/sec and
 burst_size is number of packets.
