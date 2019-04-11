@@ -55,12 +55,14 @@ pd_packets_meter_spec_to_rates(p4_pd_packets_meter_spec_t *meter_spec) {
 
   info_rate = static_cast<double>(meter_spec->cir_pps) / 1000000.;
   burst_size = meter_spec->cburst_pkts;
-  rate.units_per_micros = info_rate; rate.burst_size = burst_size;
+  rate.units_per_micros = info_rate;
+  rate.burst_size = burst_size;
   rates.push_back(rate);
 
   info_rate = static_cast<double>(meter_spec->pir_pps) / 1000000.;
   burst_size = meter_spec->pburst_pkts;
-  rate.units_per_micros = info_rate; rate.burst_size = burst_size;
+  rate.units_per_micros = info_rate;
+  rate.burst_size = burst_size;
   rates.push_back(rate);
 
   return rates;

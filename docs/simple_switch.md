@@ -685,3 +685,8 @@ you have two actions for table `t` where one has the action
 `m.read(result_field2)`, or if both of those calls are in the same
 action.  All calls to the `read()` method for `m` must have the same
 result parameter where the result is written.
+
+### BMv2 `meter rate units` implementation notes
+
+The user of the P4 program enters the meter rate and burtsize in
+units of bytes/microsec.
