@@ -33,7 +33,8 @@ pd_bytes_meter_spec_to_rates(p4_pd_bytes_meter_spec_t *meter_spec) {
 
   // bytes per microsecond
   info_rate = static_cast<double>(meter_spec->cir_kbps) / 8000.;
-  burst_size = meter_spec->cburst_kbits * 1000 / 8;
+  // kilo octets
+  burst_size = meter_spec->cburst_koctects * 1000;
   rate.units_per_micros = info_rate;
   rate.burst_size = burst_size;
   rates.push_back(rate);
