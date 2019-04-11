@@ -688,6 +688,6 @@ result parameter where the result is written.
 
 ### BMv2 `meter rate units` implementation notes
 
-The user enters the meter rate in bytes/microsec and burtsize in
+The user enters the meter rate in kbps and burtsize in
 number of kilo octets.  If the meter type is packets, the rate is
 enterted in packets/sec and burst_size is number of packets.
