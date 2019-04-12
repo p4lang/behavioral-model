@@ -66,9 +66,8 @@ extern int import_primitives();
 
 packet_id_t PsaSwitch::packet_id = 0;
 
-PsaSwitch::PsaSwitch(port_t max_port, bool enable_swap)
+PsaSwitch::PsaSwitch(bool enable_swap)
   : Switch(enable_swap),
-    max_port(max_port),
     input_buffer(1024),
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
     egress_buffers(nb_egress_threads,
