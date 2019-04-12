@@ -72,8 +72,8 @@ typedef struct p4_pd_packets_meter_spec {
 } p4_pd_packets_meter_spec_t;
 
 typedef struct p4_pd_bytes_meter_spec {
-  uint32_t cir_kbps;  // 10^3 bits/sec
-  uint32_t cburst_kbits;  // 10^3 bits
+  uint32_t cir_kbps;
+  uint32_t cburst_kbits;
   uint32_t pir_kbps;
   uint32_t pburst_kbits;
   p4_pd_meter_type_t meter_type;
