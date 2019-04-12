@@ -686,7 +686,8 @@ you have two actions for table `t` where one has the action
 action.  All calls to the `read()` method for `m` must have the same
 result parameter where the result is written.
 
-### BMv2 `meter rate units` implementation notes
+### BMv2 `meter rate and burst_size units` implementation notes.
+### Units help configuring meter with simple_switch_CLI
 
 The user enters the meter rate in kbps (10^3 bits/sec) and burst_size in
 a unit of 10^3 bits. Internally, the implementation converts rate to
