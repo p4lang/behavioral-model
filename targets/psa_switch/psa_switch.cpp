@@ -396,6 +396,20 @@ PsaSwitch::egress_thread(size_t worker_id) {
     Pipeline *egress_mau = this->get_pipeline("egress");
     egress_mau->apply(packet.get());
     deparser->deparse(packet.get());
+    
+    if (port == PSA_PORT_RECIRCULATE) {
+      BMLOG_DEBUG_PKT(*packet, "Recirculating packet");
+      std::unique_ptr<Packet> packet_copy = packet->clone_no_phv_ptr();
+      PHV *phv_copy = packet_copy->get_phv();
+      phv_copy->reset_metadata();
+      phv_copy->get_field("psa_ingress_input_metadata.packet_path")
+        .set(PKT_INSTANCE_TYPE_RECIRC);
+      size_t packet_size = packet_copy->get_data_size();
+      packet_copy->set_register(PACKET_LENGTH_REG_IDX, packet_size);
+      packet_copy->set_ingress_length(packet_size);
+      input_buffer.push_front(std::move(packet));
+      continue;
+    }
     output_buffer.push_front(std::move(packet));
   }
 }
