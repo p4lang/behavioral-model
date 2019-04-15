@@ -79,7 +79,8 @@ class ErrorCodeMap {
     HeaderTooShort,
     //! Parser execution time limit exceeded (unused for now)
     ParserTimeout,
-    //! Parser operation was called with a value not supported by the implementation.
+    //! Parser operation was called with a value not supported by the
+    //! implementation.
     ParserInvalidArgument
   };
 
