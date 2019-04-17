@@ -685,12 +685,3 @@ you have two actions for table `t` where one has the action
 `m.read(result_field2)`, or if both of those calls are in the same
 action.  All calls to the `read()` method for `m` must have the same
 result parameter where the result is written.
-
-### BMv2 `meter rate and burst_size units` implementation notes.
-### Units help configuring meter with simple_switch_CLI
-
-The user enters the meter rate in bytes/microsecond and burst_size in
-bytes.
-
-If the meter type is packets, the rate is enterted in packets/microsecond and
-burst_size is number of packets.
