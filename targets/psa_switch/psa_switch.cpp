@@ -256,14 +256,7 @@ PsaSwitch::get_ts() const {
 void
 PsaSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
     packet->set_egress_port(egress_port);
-
     PHV *phv = packet->get_phv();
-
-    if (with_queueing_metadata) {
-      phv->get_field("queueing_metadata.enq_timestamp").set(get_ts().count());
-      phv->get_field("queueing_metadata.enq_qdepth")
-          .set(egress_buffers.size(egress_port));
-    }
 
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
     size_t priority = phv->has_field(SSWITCH_PRIORITY_QUEUEING_SRC) ?
@@ -290,7 +283,6 @@ PsaSwitch::copy_field_list_and_set_type(
   phv_copy->reset_metadata();
   FieldList *field_list = this->get_field_list(field_list_id);
   field_list->copy_fields_between_phvs(phv_copy, packet->get_phv());
-  phv_copy->get_field("standard_metadata.instance_type").set(copy_type);
 }
 
 void
