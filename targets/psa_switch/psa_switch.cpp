@@ -152,10 +152,10 @@ PsaSwitch::receive_(port_t port_num, const char *buffer, int len) {
   PHV *phv = packet->get_phv();
   phv->reset_metadata();
 
-  // TODO
-  phv->get_field("psa_ingress_parser_input_metadata.ingress_port").set(port_num);
+  // TODO use appropriate enum member from JSON
   phv->get_field("psa_ingress_parser_input_metadata.packet_path").set(PKT_INSTANCE_TYPE_NORMAL);
-
+  phv->get_field("psa_ingress_parser_input_metadata.ingress_port").set(port_num);
+  
   // using packet register 0 to store length, this register will be updated for
   // each add_header / remove_header primitive call
   packet->set_register(PACKET_LENGTH_REG_IDX, len);
