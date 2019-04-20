@@ -55,6 +55,7 @@ test_header_unions \
 test_meters \
 test_ageing \
 test_counters \
+test_psa_counters\
 test_pcap \
 test_fields \
 test_devmgr \
@@ -94,6 +95,7 @@ test_header_unions_SOURCES   = $(common_source) test_header_unions.cpp
 test_meters_SOURCES          = $(common_source) test_meters.cpp
 test_ageing_SOURCES          = $(common_source) test_ageing.cpp
 test_counters_SOURCES        = $(common_source) test_counters.cpp
+test_psa_counters_SOURCES    = $(common_source) test_psa_counters.cpp
 test_fields_SOURCES          = $(common_source) test_fields.cpp
 test_pcap_SOURCES            = $(common_source) test_pcap.cpp
 test_devmgr_SOURCES          = $(common_source) test_devmgr.cpp
@@ -131,6 +133,7 @@ test_header_unions.cpp \
 test_meters.cpp \
 test_ageing.cpp \
 test_counters.cpp \
+test_psa_counters \
 test_pcap.cpp \
 test_fields.cpp \
 test_devmgr.cpp \
