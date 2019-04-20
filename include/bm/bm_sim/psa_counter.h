@@ -1,3 +1,6 @@
+#ifndef BM_BM_SIM_PSA_COUNTER_H_
+#define BM_BM_SIM_PSA_COUNTER_H_
+
 #include "extern.h"
 #include "named_p4object.h"
 #include "packet.h"
@@ -6,7 +9,7 @@
 
 namespace bm {
 
-  class PSA_Counter {
+  class P_Counter {
     public:
       using counter_value_t = uint64_t;
 
@@ -17,11 +20,7 @@ namespace bm {
         ERROR
       };
 
-      void increment_counter(const Packet &pkt){
-        bytes += pkt.get_ingress_length();
-        packets += 1;
-        std::cout << "??????\n" << std::endl;
-      };
+      void increment_counter(const Packet &pkt);
       CounterErrorCode query_counter(counter_value_t *bytes,
                                      counter_value_t *packets) const;
       CounterErrorCode reset_counter();
@@ -36,7 +35,7 @@ namespace bm {
       std::atomic<std::uint_fast64_t> packets{0u};
   };
 
-  class ExternCounter : public ExternType {
+  class PSA_Counter : public ExternType {
    public:
     static constexpr unsigned int BYTES = 0;
     static constexpr unsigned int PACKETS = 1;
@@ -47,34 +46,24 @@ namespace bm {
       BM_EXTERN_ATTRIBUTE_ADD(type);
     }
 
-    void init() {
-      std::cout << "Initializing counter with " << n_counters.get_uint() << std::endl;
-      counters = std::vector<PSA_Counter>(n_counters.get_uint());
-    }
+    void init();
 
-    PSA_Counter &get_counter(size_t idx) {
-      return counters[idx];
-    }
+    P_Counter &get_counter(size_t idx);
 
-    const PSA_Counter &get_counter(size_t idx) const {
-      return counters[idx];
-    }
+    const P_Counter &get_counter(size_t idx) const;
 
-    PSA_Counter &operator[](size_t idx) {
-      assert(idx < size());
-    }
+    P_Counter &operator[](size_t idx);
 
-    const PSA_Counter &operator[](size_t idx) const {
-      assert(idx < size());
-    }
+    const P_Counter &operator[](size_t idx) const;
 
-    size_t size() const { return counters.size(); }
+    size_t size() const;
 
    private:
     // declared attributes
     Data n_counters;
     Data type;
-    std::vector<PSA_Counter> counters;
+    std::vector<P_Counter> counters;
 
   };
-}  // namespace bm
+}  // namespace br
+#endif

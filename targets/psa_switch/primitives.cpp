@@ -26,6 +26,7 @@
 #include <bm/bm_sim/packet.h>
 #include <bm/bm_sim/phv.h>
 #include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/psa_counter.h>
 
 #include <random>
 #include <thread>
@@ -41,6 +42,7 @@ using bm::CounterArray;
 using bm::RegisterArray;
 using bm::NamedCalculation;
 using bm::HeaderStack;
+using bm::PSA_Counter;
 
 class modify_field : public ActionPrimitive<Data &, const Data &> {
   void operator ()(Data &dst, const Data &src) {
@@ -306,10 +308,11 @@ class execute_meter
 
 REGISTER_PRIMITIVE(execute_meter);
 
-class count : public ActionPrimitive<CounterArray &, const Data &> {
-  void operator ()(CounterArray &counter_array, const Data &idx) {
+class count : public ActionPrimitive<PSA_Counter &, const Data &> {
+  void operator ()(PSA_Counter &counter_array, const Data &idx) {
     auto i = idx.get_uint();
 #ifndef NDEBUG
+    std::cout << "Trying to use the primitive count()" << std::endl;
     if (i >= counter_array.size()) {
         BMLOG_ERROR_PKT(get_packet(),
                         "Attempted to update counter '{}' with size {}"

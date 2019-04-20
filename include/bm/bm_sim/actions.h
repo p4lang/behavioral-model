@@ -95,6 +95,7 @@ class Packet;
 class NamedCalculation;
 class MeterArray;
 class CounterArray;
+class PSA_Counter;
 
 // forward declaration of ActionPrimitive_
 class ActionPrimitive_;
@@ -233,6 +234,9 @@ struct ActionParam {
 
     // non owning pointer
     RegisterArray *register_array;
+
+    // non owning pointer
+    PSA_Counter *psa_counter;
 
     struct {
       unsigned int offset;
@@ -418,6 +422,18 @@ template <> inline
 const MeterArray &ActionParam::to<const MeterArray &>(
     ActionEngineState *state) const {
   return ActionParam::to<MeterArray &>(state);
+}
+
+template <> inline
+PSA_Counter &ActionParam::to<PSA_Counter &>(ActionEngineState *state) const {
+  (void) state;
+  return *(psa_counter);
+}
+
+template <> inline
+const PSA_Counter &ActionParam::to<const PSA_Counter &>(
+    ActionEngineState *state) const {
+  return ActionParam::to<PSA_Counter &>(state);
 }
 
 template <> inline

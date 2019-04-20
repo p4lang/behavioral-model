@@ -61,6 +61,7 @@ periodic_task.cpp \
 port_monitor.cpp \
 phv.cpp \
 phv_source.cpp \
+psa_counter.cpp\
 stateful.cpp \
 switch.cpp \
 simple_pre.cpp \

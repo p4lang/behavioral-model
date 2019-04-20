@@ -77,6 +77,7 @@ bm/bm_sim/phv_source.h \
 bm/bm_sim/pipeline.h \
 bm/bm_sim/port_monitor.h \
 bm/bm_sim/pre.h \
+bm/bm_sim/psa_counter.h\
 bm/bm_sim/queue.h \
 bm/bm_sim/queueing.h \
 bm/bm_sim/ras.h \
