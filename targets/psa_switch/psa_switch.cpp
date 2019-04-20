@@ -137,9 +137,9 @@ PsaSwitch::PsaSwitch(bool enable_swap)
 int
 PsaSwitch::receive_(port_t port_num, const char *buffer, int len) {
 
-  // for p4runtime program swap - (antonin's comment)
-  // this is because blocking this thread will not block processing of existing
-  // packet instances, which is a requirement
+  // for p4runtime program swap - antonin
+  // putting do_swap call here is ok because blocking this thread will not
+  // block processing of existing packet instances, which is a requirement
   do_swap();
 
   // we limit the packet buffer to original size + 512 bytes, which means we
@@ -150,12 +150,16 @@ PsaSwitch::receive_(port_t port_num, const char *buffer, int len) {
 
   BMELOG(packet_in, *packet);
   PHV *phv = packet->get_phv();
+
+  // many current p4 programs assume this
+  // from psa spec - PSA does not mandate initialization of user-defined
+  // metadata to known values as given as input to the ingress parser
   phv->reset_metadata();
 
   // TODO use appropriate enum member from JSON
   phv->get_field("psa_ingress_parser_input_metadata.packet_path").set(PKT_INSTANCE_TYPE_NORMAL);
   phv->get_field("psa_ingress_parser_input_metadata.ingress_port").set(port_num);
-  
+
   // using packet register 0 to store length, this register will be updated for
   // each add_header / remove_header primitive call
   packet->set_register(PACKET_LENGTH_REG_IDX, len);
