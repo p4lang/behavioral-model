@@ -707,6 +707,7 @@ class SwitchWContexts : public DevMgr, public RuntimeInterface {
                  size_t index,
                  MatchTableAbstract::counter_value_t bytes,
                  MatchTableAbstract::counter_value_t packets) override {
+    std::cout << "Writing counters" << std::endl;
     return contexts.at(cxt_id).write_counters(
         counter_name, index, bytes, packets);
   }

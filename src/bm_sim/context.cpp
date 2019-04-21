@@ -557,6 +557,9 @@ Context::write_counters(const std::string &counter_name, size_t idx,
   boost::shared_lock<boost::shared_mutex> lock(request_mutex);
   CounterArray *counter_array = p4objects_rt->get_counter_array_rt(
       counter_name);
+  std::cout << "attempting to write counters" << std::endl;
+  std::cout << bytes << std::endl;
+  std::cout << packets << std::endl;
   if (!counter_array) return Counter::INVALID_COUNTER_NAME;
   if (idx >= counter_array->size()) return Counter::INVALID_INDEX;
   return (*counter_array)[idx].write_counter(bytes, packets);
