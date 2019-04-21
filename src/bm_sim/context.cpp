@@ -535,9 +535,9 @@ Context::read_psa_counters(const std::string &counter_name, size_t idx,
   ExternType *counter_array = p4objects_rt->get_extern_instance_rt(
       counter_name);
   if (!counter_array) return Counter::INVALID_COUNTER_NAME;
-  PSA_Counter *temp = (PSA_Counter *)counter_array;
-  if (idx >= temp->size()) return Counter::INVALID_INDEX;
-  (temp)->get_counter(idx).query_counter(bytes, packets);
+  PSA_Counter *counter = reinterpret_cast<PSA_Counter *>(counter_array);
+  if (idx >= counter->size()) return Counter::INVALID_INDEX;
+  (counter)->get_counter(idx).query_counter(bytes, packets);
   return Counter::CounterErrorCode::SUCCESS;
 }
 
@@ -569,13 +569,10 @@ Context::write_psa_counters(const std::string &counter_name, size_t idx,
   boost::shared_lock<boost::shared_mutex> lock(request_mutex);
   ExternType *counter_array = p4objects_rt->get_extern_instance_rt(
       counter_name);
-  std::cout << "attempting to write counters" << std::endl;
-  std::cout << bytes << std::endl;
-  std::cout << packets << std::endl;
   if (!counter_array) return Counter::INVALID_COUNTER_NAME;
-  PSA_Counter *temp = (PSA_Counter *)counter_array;
-  if (idx >= temp->size()) return Counter::INVALID_INDEX;
-  (temp)->get_counter(idx).write_counter(bytes, packets);
+  PSA_Counter *counter = reinterpret_cast<PSA_Counter *>(counter_array);
+  if (idx >= counter->size()) return Counter::INVALID_INDEX;
+  (counter)->get_counter(idx).write_counter(bytes, packets);
   return Counter::CounterErrorCode::SUCCESS;
 }
 
