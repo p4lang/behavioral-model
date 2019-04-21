@@ -504,7 +504,6 @@ P4Objects::add_primitive_to_action(const Json::Value &cfg_primitive,
     } else if (type == "extern") {
       const auto name = cfg_parameter["value"].asString();
       auto extern_instance = get_extern_instance_cfg(name);
-      std::cout << "adding extern to action\n";
       action_fn->parameter_push_back_extern_instance(extern_instance);
     } else if (type == "string") {
       action_fn->parameter_push_back_string(cfg_parameter["value"].asString());
@@ -908,7 +907,6 @@ P4Objects::init_extern_instances(const Json::Value &cfg_root) {
                     << extern_type_name << "'",
           cfg_extern_instance);
     }
-    std::cout << "Created an extern of type: " << extern_type_name << std::endl;
 
     instance->_register_attributes();
 
@@ -927,7 +925,6 @@ P4Objects::init_extern_instances(const Json::Value &cfg_root) {
                       << "' has no attribute '" << name << "'",
             cfg_extern_attribute);
       }
-      std::cout << "Preparing to load: " << name << "{" << type << "}\n";
 
       if (type == "hexstr") {
         const string value_hexstr = cfg_extern_attribute["value"].asString();
@@ -950,11 +947,9 @@ P4Objects::init_extern_instances(const Json::Value &cfg_root) {
                              " attribute initialization", cfg_extern_attribute);
       }
     }
-    std::cout << "there are none?\n";
 
     // needs to be set before the call to init!
     instance->_set_p4objects(this);
-    std::cout << "adding extern of name: " << extern_instance_name << std::endl;
     add_extern_instance(extern_instance_name, std::move(instance));
   }
 }
@@ -2647,7 +2642,6 @@ P4Objects::get_pipeline_rt(const std::string &name) const {
 
 ExternType *
 P4Objects::get_extern_instance_rt(const std::string &name) const {
-  std::cout << "looking for: " << name << std::endl;
   auto it = extern_instances.find(name);
   return (it != extern_instances.end()) ? it->second.get() : nullptr;
 }

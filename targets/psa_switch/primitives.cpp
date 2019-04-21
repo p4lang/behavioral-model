@@ -312,7 +312,6 @@ class count : public ActionPrimitive<PSA_Counter &, const Data &> {
   void operator ()(PSA_Counter &counter_array, const Data &idx) {
     auto i = idx.get_uint();
 #ifndef NDEBUG
-    std::cout << "Trying to use the primitive count()" << std::endl;
     if (i >= counter_array.size()) {
         BMLOG_ERROR_PKT(get_packet(),
                         "Attempted to update counter '{}' with size {}"

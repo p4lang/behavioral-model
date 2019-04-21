@@ -368,7 +368,6 @@ Context::mt_read_counters(const std::string &table_name,
                           entry_handle_t handle,
                           MatchTableAbstract::counter_value_t *bytes,
                           MatchTableAbstract::counter_value_t *packets) {
-  std::cout << "I am reading counters 1" << std::endl;
   boost::shared_lock<boost::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
@@ -521,7 +520,6 @@ Context::read_counters(const std::string &counter_name, size_t idx,
                        MatchTableAbstract::counter_value_t *bytes,
                        MatchTableAbstract::counter_value_t *packets) {
   boost::shared_lock<boost::shared_mutex> lock(request_mutex);
-  std::cout << "I am reading counters 2" << std::endl;
   CounterArray *counter_array = p4objects_rt->get_counter_array_rt(
       counter_name);
   if (!counter_array) return Counter::INVALID_COUNTER_NAME;
@@ -534,12 +532,8 @@ Context::read_psa_counters(const std::string &counter_name, size_t idx,
                        MatchTableAbstract::counter_value_t *bytes,
                        MatchTableAbstract::counter_value_t *packets) {
   boost::shared_lock<boost::shared_mutex> lock(request_mutex);
-  std::cout << "I am reading counters 8" << std::endl;
   ExternType *counter_array = p4objects_rt->get_extern_instance_rt(
       counter_name);
-  if(counter_array == nullptr) {
-    std::cout << "couldn't find it" << std::endl;
-  }
   PSA_Counter *temp = (PSA_Counter *)counter_array;
   (temp)->get_counter(idx).query_counter(bytes, packets);
   return Counter::CounterErrorCode::SUCCESS;

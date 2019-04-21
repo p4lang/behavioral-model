@@ -651,7 +651,6 @@ class SwitchWContexts : public DevMgr, public RuntimeInterface {
                    entry_handle_t handle,
                    MatchTableAbstract::counter_value_t *bytes,
                    MatchTableAbstract::counter_value_t *packets) override {
-    std::cout << "reading counter 3" << std::endl;
     return contexts.at(cxt_id).mt_read_counters(
         table_name, handle, bytes, packets);
   }
@@ -692,7 +691,6 @@ class SwitchWContexts : public DevMgr, public RuntimeInterface {
                 size_t index,
                 MatchTableAbstract::counter_value_t *bytes,
                 MatchTableAbstract::counter_value_t *packets) override {
-    std::cout << "reading counter 4" << std::endl;
     return contexts.at(cxt_id).read_counters(
         counter_name, index, bytes, packets);
   }
