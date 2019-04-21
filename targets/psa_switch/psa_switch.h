@@ -96,6 +96,18 @@ class PsaSwitch : public Switch {
     return bm::Counter::CounterErrorCode::SUCCESS;
   };
 
+  Counter::CounterErrorCode
+  write_counters(cxt_id_t cxt_id,
+                 const std::string &counter_name,
+                 size_t index,
+                 MatchTableAbstract::counter_value_t bytes,
+                 MatchTableAbstract::counter_value_t packets) override {
+    std::cout << "write_counters siwtch" << std::endl;
+    get_context(cxt_id)->write_psa_counters(
+        counter_name, index, bytes, packets);
+    return bm::Counter::CounterErrorCode::SUCCESS;
+  }
+
   ~PsaSwitch();
 
   int receive_(port_t port_num, const char *buffer, int len) override;

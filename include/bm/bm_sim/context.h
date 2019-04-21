@@ -168,6 +168,11 @@ class Context final {
                 MatchTableAbstract::counter_value_t *bytes,
                 MatchTableAbstract::counter_value_t *packets);
 
+  Counter::CounterErrorCode
+  write_psa_counters(const std::string &counter_name,
+                 size_t index,
+                 MatchTableAbstract::counter_value_t bytes,
+                 MatchTableAbstract::counter_value_t packets);
 
 
  private:

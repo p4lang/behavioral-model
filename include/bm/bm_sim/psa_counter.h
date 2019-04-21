@@ -9,7 +9,7 @@
 
 namespace bm {
 
-  class P_Counter {
+class P_Counter {
     public:
       using counter_value_t = uint64_t;
 

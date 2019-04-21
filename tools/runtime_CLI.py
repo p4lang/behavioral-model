@@ -1901,7 +1901,6 @@ class RuntimeAPI(cmd.Cmd):
             # index = index & 0xffffffff
             value = self.client.bm_mt_read_counter(0, table_name, index)
         else:
-            self.client.bm_counter_write(0, counter_name, index, BmCounterValue(packets = 10, bytes = 20));
             value = self.client.bm_counter_read(0, counter.name, index)
         print "%s[%d]= " % (counter_name, index), value
 
