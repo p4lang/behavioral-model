@@ -954,6 +954,7 @@ P4Objects::init_extern_instances(const Json::Value &cfg_root) {
 
     // needs to be set before the call to init!
     instance->_set_p4objects(this);
+    std::cout << "adding extern of name: " << extern_instance_name << std::endl;
     add_extern_instance(extern_instance_name, std::move(instance));
   }
 }
@@ -1417,6 +1418,7 @@ P4Objects::init_counter_arrays(const Json::Value &cfg_root) {
   DupIdChecker dup_id_checker("counter");
   const Json::Value &cfg_counter_arrays = cfg_root["counter_arrays"];
   for (const auto &cfg_counter_array : cfg_counter_arrays) {
+    break;
     const string name = cfg_counter_array["name"].asString();
     const p4object_id_t id = cfg_counter_array["id"].asInt();
     dup_id_checker.add(id);
@@ -2645,6 +2647,7 @@ P4Objects::get_pipeline_rt(const std::string &name) const {
 
 ExternType *
 P4Objects::get_extern_instance_rt(const std::string &name) const {
+  std::cout << "looking for: " << name << std::endl;
   auto it = extern_instances.find(name);
   return (it != extern_instances.end()) ? it->second.get() : nullptr;
 }

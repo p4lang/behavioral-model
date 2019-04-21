@@ -162,6 +162,14 @@ class Context final {
     return p4objects->get_action(table_name, action_name)->get_id();
   }
 
+  Counter::CounterErrorCode
+  read_psa_counters(const std::string &counter_name,
+                size_t index,
+                MatchTableAbstract::counter_value_t *bytes,
+                MatchTableAbstract::counter_value_t *packets);
+
+
+
  private:
   // ---------- runtime interfaces ----------
 

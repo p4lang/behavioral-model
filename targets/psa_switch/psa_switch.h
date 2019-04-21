@@ -63,6 +63,10 @@ using bm::Field;
 using bm::FieldList;
 using bm::packet_id_t;
 using bm::p4object_id_t;
+using bm::Counter;
+using bm::MatchTableAbstract;
+using bm::cxt_id_t;
+using bm::Context;
 
 
 class PsaSwitch : public Switch {
@@ -78,6 +82,19 @@ class PsaSwitch : public Switch {
  public:
   // by default, swapping is off
   explicit PsaSwitch(bool enable_swap = false);
+
+  Counter::CounterErrorCode
+  read_counters(cxt_id_t cxt_id,
+                const std::string &counter_name,
+                size_t index,
+                MatchTableAbstract::counter_value_t *bytes,
+                MatchTableAbstract::counter_value_t *packets) override {
+    std::cout << "read_counters r5" << std::endl;
+    // TODO
+    get_context(cxt_id)->read_psa_counters(
+        counter_name, index, bytes, packets);
+    return bm::Counter::CounterErrorCode::SUCCESS;
+  };
 
   ~PsaSwitch();
 
