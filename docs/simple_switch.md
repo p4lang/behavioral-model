@@ -491,15 +491,12 @@ a legal possible value for the field, i.e. not outside of that field's range of
 values. All of them can be arithmetic expressions containing compile time
 constant values.
 
-| ---------------- | ------------ | ------------ | ------------ | ------- |
-|                  | search key field `match_kind`                     ||||
 |                  | `range`      | `ternary`    | `lpm`        | `exact` |
 | ---------------- | ------------ | ------------ | ------------ | ------- |
 | `lo .. hi`       | yes (Note 1) | no           | no           | no      |
 | `val &&& mask`   | no           | yes (Note 2) | yes (Note 3) | no      |
 | `val`            | yes (Note 4) | yes (Note 5) | yes (Note 5) | yes     |
 | `_` or `default` | yes (Note 6) | yes (Note 6) | yes (Note 6) | no      |
-| ---------------- | ------------ | ------------ | ------------ | ------- |
 
 Note 1: Restriction: `lo <= hi`. A runt time search key value `k` matches if `lo
 <= k <= hi`.
