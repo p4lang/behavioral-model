@@ -60,9 +60,22 @@ class ExternFactoryMap {
   static_assert(std::is_default_constructible<extern__>::value,         \
                 "User-defined extern type " #extern__                   \
                 " needs to be default-constructible");                  \
+  int _extern_##extern_name##_create_ =                                 \
       ::bm::ExternFactoryMap::get_instance()->register_extern_type(     \
            #extern_name,                                                \
            [](){ return std::unique_ptr<ExternType>(new extern__()); });
+
+    
+#define BM_REGISTER_EXTERN_TYPE(extern_name)                               \
+  static_assert(std::is_default_constructible<extern_name>::value,         \
+                "User-defined extern type " #extern_name                   \
+                " needs to be default-constructible");                     \
+  int _extern_##extern_name##_create_ =                                    \
+      ::bm::ExternFactoryMap::get_instance()->register_extern_type(        \
+           #extern_name,                                                   \
+           [](){ return std::unique_ptr<ExternType>(new extern_name()); });
+
+
 
 #define BM_REGISTER_EXTERN(extern_name) \
   BM_REGISTER_EXTERN_W_NAME(extern_name, extern_name)

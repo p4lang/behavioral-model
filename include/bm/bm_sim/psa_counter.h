@@ -82,6 +82,6 @@ class PSA_Counter : public ExternType {
   std::vector<P_Counter> counters;
 };
 
-}  // namespace br
+}  // namespace bm
 
-#endif // BM_BM_SIM_PSA_COUNTER_H_
+#endif  // BM_BM_SIM_PSA_COUNTER_H_

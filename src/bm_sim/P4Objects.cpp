@@ -890,7 +890,7 @@ P4Objects::init_header_union_stacks(const Json::Value &cfg_root,
 
 void
 P4Objects::init_extern_instances(const Json::Value &cfg_root) {
-  BM_REGISTER_EXTERN(PSA_Counter);
+  BM_REGISTER_EXTERN_TYPE(PSA_Counter);
   DupIdChecker dup_id_checker("extern");
   const Json::Value &cfg_extern_instances = cfg_root["extern_instances"];
   for (const auto &cfg_extern_instance : cfg_extern_instances) {
@@ -1413,7 +1413,6 @@ P4Objects::init_counter_arrays(const Json::Value &cfg_root) {
   DupIdChecker dup_id_checker("counter");
   const Json::Value &cfg_counter_arrays = cfg_root["counter_arrays"];
   for (const auto &cfg_counter_array : cfg_counter_arrays) {
-    break;
     const string name = cfg_counter_array["name"].asString();
     const p4object_id_t id = cfg_counter_array["id"].asInt();
     dup_id_checker.add(id);

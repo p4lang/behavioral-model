@@ -28,7 +28,7 @@ P_Counter::increment_counter(const Packet &pkt) {
 }
 
 P_Counter::CounterErrorCode
-P_Counter::query_counter(counter_value_t *bytes, 
+P_Counter::query_counter(counter_value_t *bytes,
                          counter_value_t *packets) const {
   *bytes = this->bytes;
   *packets = this->packets;
@@ -94,4 +94,4 @@ PSA_Counter::size() const {
   return counters.size();
 }
 
-} // namespace bm
+}  // namespace bm
