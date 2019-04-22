@@ -89,8 +89,6 @@ class PsaSwitch : public Switch {
                 size_t index,
                 MatchTableAbstract::counter_value_t *bytes,
                 MatchTableAbstract::counter_value_t *packets) override {
-    std::cout << "read_counters r5" << std::endl;
-    // TODO
     get_context(cxt_id)->read_psa_counters(
         counter_name, index, bytes, packets);
     return bm::Counter::CounterErrorCode::SUCCESS;
@@ -102,7 +100,6 @@ class PsaSwitch : public Switch {
                  size_t index,
                  MatchTableAbstract::counter_value_t bytes,
                  MatchTableAbstract::counter_value_t packets) override {
-    std::cout << "write_counters siwtch" << std::endl;
     get_context(cxt_id)->write_psa_counters(
         counter_name, index, bytes, packets);
     return bm::Counter::CounterErrorCode::SUCCESS;
