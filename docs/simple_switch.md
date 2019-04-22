@@ -555,7 +555,7 @@ control ingress(inout headers_t hdr,
              1 ..  8 : a(1);
              6 .. 12 : a(2);  // ranges are allowed to overlap between entries
             15 .. 15 : a(3);
-            17       : a(4);  // equivalent to 17 .. 17
+            //17       : a(4);  // not supported
             // It is not required to have a "match anything" rule in a table,
             // but it is allowed (except for exact match fields), and several of
             // these examples have one.
