@@ -502,22 +502,22 @@ constant values.
 | `val`            | yes (Note 4) | yes (Note 5) | yes (Note 5) | yes     |
 | `_` or `default` | yes (Note 6) | yes (Note 6) | yes (Note 6) | no      |
 
-Note 1: Restriction: `lo <= hi`. A runt time search key value `k` matches if `lo
+Note 1: Restriction: `lo <= hi`. A run time search key value `k` matches if `lo
 <= k <= hi`.
 
-Note 2: Restriction: `val == (val & mask)`.  Bit positions of `mask` equal to 1
-are exact match bit positions, and bit positions where `<mask>` is 0 are "wild
+Note 2: Restriction: `val == (val & mask)`. Bit positions of `mask` equal to 1
+are exact match bit positions, and bit positions where `mask` is 0 are "wild
 card" or don't care bit position. A run time search key value `k` matches if `(k
 & mask) == (val & mask)`.
 
 Note 3: Restriction: `val == (val & mask)` and `mask` is a "prefix mask",
 i.e. it has all 1 bit positions consecutive and in the most significant bit
-positions of the field.  WARNING: If you attempt to specify a prefix as `val /
+positions of the field. WARNING: If you attempt to specify a prefix as `val /
 prefix_length` in a P4_16 program (the syntax used by some command line
 interfaces for specifying a prefix, such as `simple_switch_CLI`), that is
 actually an arithmetic expression that divides `val` by `prefix_length`, and
-thus falls into the `val`, which is exact match.  There is no warning from the
-compiler because it is perfectly legal syntax for a division operation.
+thus falls into the `val` case, which is exact match. There is no warning from
+the compiler because it is perfectly legal syntax for a division operation.
 
 Note 4: Equivalent to the range `val .. val`, so it behaves as exact match on
 `val`.
@@ -525,11 +525,12 @@ Note 4: Equivalent to the range `val .. val`, so it behaves as exact match on
 Note 5: Equivalent to `val &&& mask` where `mask` is 1 in all bit positions of
 the field, so it behaves as exact match on `val`.
 
-Note 6: Matches any allowed value for the field.  Equivalent to
+Note 6: Matches any allowed value for the field. Equivalent to
 `min_posible_field_value .. max_possible_field_value` for `range` fields, or `0
 &&& 0` for `ternary` and `lpm` fields.
 
-Below is an example of the syntax used to specify the ranges for such a field:
+Below is a portion of a P4_16 program that demonstrates most of the allowed
+combinations of `match_kind` and syntax for specifying matching sets of values.
 
 ```
 header h1_t {
