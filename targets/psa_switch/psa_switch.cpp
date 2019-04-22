@@ -63,6 +63,7 @@ REGISTER_HASH(hash_ex);
 REGISTER_HASH(bmv2_hash);
 
 extern int import_primitives();
+extern int import_counters();
 
 packet_id_t PsaSwitch::packet_id = 0;
 
@@ -121,6 +122,7 @@ PsaSwitch::PsaSwitch(bool enable_swap)
 
   add_required_field("psa_egress_deparser_input_metadata", "egress_port");
 
+  import_counters();
   import_primitives();
 }
 
