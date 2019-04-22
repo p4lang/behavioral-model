@@ -486,6 +486,10 @@ determining which entry will win.
 
 ## Specifying match criteria for table entries using `const entries`
 
+The table below shows, for each `match_kind` value of P4_16 table key fields,
+which syntax is allowed for specifying the set of matching field values for a
+table entry in a `const entries` list.
+
 A restriction on all allowed cases is that `lo`, `hi`, `val`, and `mask` must be
 a legal possible value for the field, i.e. not outside of that field's range of
 values. All of them can be arithmetic expressions containing compile time
