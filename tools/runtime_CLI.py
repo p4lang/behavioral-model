@@ -1904,6 +1904,8 @@ class RuntimeAPI(cmd.Cmd):
             value = self.client.bm_counter_read(0, counter.name, index)
         print "%s[%d]= " % (counter_name, index), value
 
+    def complete_counter_read(self, text, line, start_index, end_index):
+        return self._complete_counters(text)
 
     @handle_bad_input
     def do_counter_write(self, line):
@@ -1917,20 +1919,25 @@ class RuntimeAPI(cmd.Cmd):
         byts    = args[3]
         try:
             index = int(index)
-            pkts  = int(pkts)
-            byts  = int(byts)
-
         except:
-            raise UIn_Error("Bad format for index, packets, or bytes")
+            raise UIn_Error("Bad format for index")
+        try:
+            pkts = int(pkts)
+        except:
+            raise UIn_Error("Bad format for packets")
+        try:
+            byts = int(byts)
+        except:
+            raise UIn_Error("Bad format for bytes")
         if counter.is_direct:
-            # TODO when direct counters are supported in PSA?
-            print "writing to direct counters is currently not supported"
+            table_name = counter.binding
+            print "writing to direct counter for table", table_name
+            value = self.client.bm_mt_write_counter(0, table_name, index, BmCounterValue(packets=pkts, bytes = byts))
         else:
-            self.client.bm_counter_write(0, counter_name, index, BmCounterValue(packets=pkts, bytes = byts));
+            self.client.bm_counter_write(0, counter_name, index, BmCounterValue(packets=pkts, bytes = byts))
         print "%s[%d] has been updated" % (counter_name, index)
         
-
-    def complete_counter_read(self, text, line, start_index, end_index):
+    def complete_counter_write(self, text, line, start_index, end_index):
         return self._complete_counters(text)
 
     @handle_bad_input
