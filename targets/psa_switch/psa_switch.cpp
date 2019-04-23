@@ -65,6 +65,10 @@ REGISTER_HASH(bmv2_hash);
 extern int import_primitives();
 extern int import_counters();
 
+namespace bm {
+
+namespace psa {
+
 packet_id_t PsaSwitch::packet_id = 0;
 
 PsaSwitch::PsaSwitch(bool enable_swap)
@@ -422,3 +426,7 @@ PsaSwitch::egress_thread(size_t worker_id) {
     output_buffer.push_front(std::move(packet));
   }
 }
+
+}  // namespace bm::psa
+
+}  // namespace bm

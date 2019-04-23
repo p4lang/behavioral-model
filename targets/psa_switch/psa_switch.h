@@ -53,25 +53,9 @@ using ts_res = std::chrono::microseconds;
 using std::chrono::duration_cast;
 using ticks = std::chrono::nanoseconds;
 
-using bm::Switch;
-using bm::Queue;
-using bm::Packet;
-using bm::PHV;
-using bm::Parser;
-using bm::Deparser;
-using bm::Pipeline;
-using bm::McSimplePreLAG;
-using bm::Field;
-using bm::FieldList;
-using bm::packet_id_t;
-using bm::p4object_id_t;
-using bm::Counter;
-using bm::MatchTableAbstract;
-using bm::cxt_id_t;
-using bm::Context;
-using bm::ExternType;
-using bm::PSA_Counter;
+namespace bm {
 
+namespace psa {
 
 class PsaSwitch : public Switch {
  public:
@@ -134,10 +118,10 @@ class PsaSwitch : public Switch {
                 size_t index,
                 MatchTableAbstract::counter_value_t *bytes,
                 MatchTableAbstract::counter_value_t *packets) override {
-    Context *context = get_context(cxt_id);
-    ExternType *ex = context->get_extern_instance(counter_name).get();
+    auto *context = get_context(cxt_id);
+    auto *ex = context->get_extern_instance(counter_name).get();
     if (!ex) return Counter::CounterErrorCode::INVALID_COUNTER_NAME;
-    PSA_Counter *counter = static_cast<PSA_Counter*>(ex);
+    auto *counter = static_cast<PSA_Counter*>(ex);
     if (index >= counter->size()) 
       return Counter::CounterErrorCode::INVALID_INDEX;
     counter->get_counter(index).query_counter(bytes, packets);
@@ -150,10 +134,10 @@ class PsaSwitch : public Switch {
                  size_t index,
                  MatchTableAbstract::counter_value_t bytes,
                  MatchTableAbstract::counter_value_t packets) override {
-    Context *context = get_context(cxt_id);
-    ExternType *ex = context->get_extern_instance(counter_name).get();
+    auto *context = get_context(cxt_id);
+    auto *ex = context->get_extern_instance(counter_name).get();
     if (!ex) return Counter::CounterErrorCode::INVALID_COUNTER_NAME;
-    PSA_Counter *counter = static_cast<PSA_Counter*>(ex);
+    auto *counter = static_cast<PSA_Counter*>(ex);
     if (index >= counter->size())
       return Counter::CounterErrorCode::INVALID_INDEX;
     counter->get_counter(index).write_counter(bytes, packets);
@@ -170,6 +154,8 @@ class PsaSwitch : public Switch {
     return counter->reset_counters();
   }
 
+  // TODO(derek): override RuntimeInterface methods not yet supported 
+  //              by psa_switch and log an error msg / return error code
 
  private:
   static constexpr size_t nb_egress_threads = 4u;
@@ -239,5 +225,9 @@ class PsaSwitch : public Switch {
   std::unordered_map<mirror_id_t, port_t> mirroring_map;
   bool with_queueing_metadata{false};
 };
+
+}  // namespace bm::psa
+
+}  // namespace bm
 
 #endif  // PSA_SWITCH_PSA_SWITCH_H_

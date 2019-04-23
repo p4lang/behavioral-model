@@ -26,6 +26,9 @@
 #include <bm/bm_sim/counters.h>
 
 namespace bm  {
+
+namespace psa{
+
 class PSA_Counter : public bm::ExternType {
  public:
   BM_EXTERN_ATTRIBUTES {
@@ -42,9 +45,9 @@ class PSA_Counter : public bm::ExternType {
 
   void count(const Data &index);
 
-  Counter& get_counter(size_t idx);
+  Counter &get_counter(size_t idx);
 
-  const Counter& get_counter(size_t idx) const;
+  const Counter &get_counter(size_t idx) const;
 
   Counter::CounterErrorCode reset_counters();
 
@@ -55,5 +58,9 @@ class PSA_Counter : public bm::ExternType {
   Data type;
   std::unique_ptr<CounterArray> _counter;
 };
-}
+
+}  // namespace bm::psa
+
+}  // namespace bm
+
 #endif
