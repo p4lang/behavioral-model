@@ -22,6 +22,8 @@
 #ifndef PSA_SWITCH_PSA_COUNTER_H_
 #define PSA_SWITCH_PSA_COUNTER_H_
 
+#define SPEC_ID 0xffffffff
+
 #include <bm/bm_sim/extern.h>
 #include <bm/bm_sim/counters.h>
 
@@ -41,6 +43,7 @@ class PSA_Counter : public bm::ExternType {
         new CounterArray(get_name(),
                          get_id(),
                          n_counters.get<size_t>()));
+    _set_name_and_id(get_name() + ".$impl", SPEC_ID);
   }
 
   void count(const Data &index);

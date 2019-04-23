@@ -390,9 +390,9 @@ class truncate_ : public ActionPrimitive<const Data &> {
 
 REGISTER_PRIMITIVE_W_NAME("truncate", truncate_);
 
-}
+}  // namespace bm::psa
 
-}
+}  // namespace psa
 
 // dummy function, which ensures that this unit is not discarded by the linker
 // it is being called by the constructor of PsaSwitch
