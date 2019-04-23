@@ -134,10 +134,12 @@ class PsaSwitch : public Switch {
                 size_t index,
                 MatchTableAbstract::counter_value_t *bytes,
                 MatchTableAbstract::counter_value_t *packets) override {
-    std::cout << "reading counters" << std::endl;
     Context *context = get_context(cxt_id);
     ExternType *ex = context->get_extern_instance(counter_name).get();
+    if (!ex) return Counter::CounterErrorCode::INVALID_COUNTER_NAME;
     PSA_Counter *counter = static_cast<PSA_Counter*>(ex);
+    if (index >= counter->size()) 
+      return Counter::CounterErrorCode::INVALID_INDEX;
     counter->get_counter(index).query_counter(bytes, packets);
     return Counter::CounterErrorCode::SUCCESS;
   }
@@ -150,9 +152,22 @@ class PsaSwitch : public Switch {
                  MatchTableAbstract::counter_value_t packets) override {
     Context *context = get_context(cxt_id);
     ExternType *ex = context->get_extern_instance(counter_name).get();
+    if (!ex) return Counter::CounterErrorCode::INVALID_COUNTER_NAME;
     PSA_Counter *counter = static_cast<PSA_Counter*>(ex);
+    if (index >= counter->size())
+      return Counter::CounterErrorCode::INVALID_INDEX;
     counter->get_counter(index).write_counter(bytes, packets);
     return Counter::CounterErrorCode::SUCCESS;
+  }
+
+  Counter::CounterErrorCode
+  reset_counters(cxt_id_t cxt_id,
+                 const std::string &counter_name) override {
+    Context *context = get_context(cxt_id);
+    ExternType *ex = context->get_extern_instance(counter_name).get();
+    if (!ex) return Counter::CounterErrorCode::INVALID_COUNTER_NAME;
+    PSA_Counter *counter = static_cast<PSA_Counter*>(ex);
+    return counter->reset_counters();
   }
 
 
