@@ -18,6 +18,9 @@
  *
  */
 
+#ifndef SIMPLE_SWITCH_REGISTER_ACCESS_H_
+#define SIMPLE_SWITCH_REGISTER_ACCESS_H_
+
 #define PACKET_LENGTH_REG_IDX             0
 
 #define CLONE_MIRROR_SESSION_ID_REG_IDX   1
@@ -36,8 +39,6 @@
 #define RECIRCULATE_FLAG_REG_IDX          2
 #define RECIRCULATE_FLAG_MASK             0x000000000000ffff
 #define RECIRCULATE_FLAG_SHIFT            0
-
-//#define CLONE_SPEC_REG_IDX       1
 
 
 class RegisterAccess {
@@ -103,3 +104,5 @@ class RegisterAccess {
         pkt.set_register(RECIRCULATE_FLAG_REG_IDX, rv);
     }
 };
+
+#endif  // SIMPLE_SWITCH_REGISTER_ACCESS_H_
