@@ -251,7 +251,7 @@ SimpleSwitch::receive_(port_t port_num, const char *buffer, int len) {
   phv->get_field("standard_metadata.ingress_port").set(port_num);
   // using packet register 0 to store length, this register will be updated for
   // each add_header / remove_header primitive call
-  packet->set_register(PACKET_LENGTH_REG_IDX, len);
+  packet->set_register(RegisterAccess::PACKET_LENGTH_REG_IDX, len);
   phv->get_field("standard_metadata.packet_length").set(len);
   Field &f_instance_type = phv->get_field("standard_metadata.instance_type");
   f_instance_type.set(PKT_INSTANCE_TYPE_NORMAL);
@@ -440,14 +440,16 @@ SimpleSwitch::multicast(Packet *packet, unsigned int mgid) {
   auto *phv = packet->get_phv();
   auto &f_rid = phv->get_field("intrinsic_metadata.egress_rid");
   const auto pre_out = pre->replicate({mgid});
-  auto packet_size = packet->get_register(PACKET_LENGTH_REG_IDX);
+  auto packet_size =
+      packet->get_register(RegisterAccess::PACKET_LENGTH_REG_IDX);
   for (const auto &out : pre_out) {
     auto egress_port = out.egress_port;
     BMLOG_DEBUG_PKT(*packet, "Replicating packet on port {}", egress_port);
     f_rid.set(out.rid);
     std::unique_ptr<Packet> packet_copy = packet->clone_with_phv_ptr();
     RegisterAccess::clear_all(*packet_copy);
-    packet_copy->set_register(PACKET_LENGTH_REG_IDX, packet_size);
+    packet_copy->set_register(RegisterAccess::PACKET_LENGTH_REG_IDX,
+                              packet_size);
     enqueue(egress_port, std::move(packet_copy));
   }
 }
@@ -472,7 +474,8 @@ SimpleSwitch::ingress_thread() {
     BMLOG_DEBUG_PKT(*packet, "Processing packet received on port {}",
                     ingress_port);
 
-    auto ingress_packet_size = packet->get_register(PACKET_LENGTH_REG_IDX);
+    auto ingress_packet_size =
+        packet->get_register(RegisterAccess::PACKET_LENGTH_REG_IDX);
 
     /* This looks like it comes out of the blue. However this is needed for
        ingress cloning. The parser updates the buffer state (pops the parsed
@@ -501,10 +504,9 @@ SimpleSwitch::ingress_thread() {
     Field &f_egress_spec = phv->get_field("standard_metadata.egress_spec");
     port_t egress_spec = f_egress_spec.get_uint();
 
-    unsigned int clone_mirror_session_id =
+    auto clone_mirror_session_id =
         RegisterAccess::get_clone_mirror_session_id(*packet);
-    unsigned int clone_field_list =
-        RegisterAccess::get_clone_field_list(*packet);
+    auto clone_field_list = RegisterAccess::get_clone_field_list(*packet);
 
     int learn_id = RegisterAccess::get_lf_field_list(*packet);
     unsigned int mgid = 0u;
@@ -522,6 +524,9 @@ SimpleSwitch::ingress_thread() {
       RegisterAccess::set_clone_mirror_session_id(*packet, 0);
       RegisterAccess::set_clone_field_list(*packet, 0);
       MirroringSessionConfig config;
+      // Clear upper bit of clone_mirror_session_id, which is always
+      // set if a clone operation was performed.
+      clone_mirror_session_id &= 0x7fffu;
       bool is_session_configured = mirroring_get_session(
           static_cast<mirror_id_t>(clone_mirror_session_id), &config);
       if (is_session_configured) {
@@ -531,7 +536,8 @@ SimpleSwitch::ingress_thread() {
         p4object_id_t field_list_id = clone_field_list;
         std::unique_ptr<Packet> packet_copy = packet->clone_no_phv_ptr();
         RegisterAccess::clear_all(*packet_copy);
-        packet_copy->set_register(PACKET_LENGTH_REG_IDX, ingress_packet_size);
+        packet_copy->set_register(RegisterAccess::PACKET_LENGTH_REG_IDX,
+                                  ingress_packet_size);
         // we need to parse again
         // the alternative would be to pay the (huge) price of PHV copy for
         // every ingress packet
@@ -558,7 +564,7 @@ SimpleSwitch::ingress_thread() {
     }
 
     // RESUBMIT
-    unsigned int resubmit_flag = RegisterAccess::get_resubmit_flag(*packet);
+    auto resubmit_flag = RegisterAccess::get_resubmit_flag(*packet);
     if (resubmit_flag) {
       BMLOG_DEBUG_PKT(*packet, "Resubmitting packet");
       // get the packet ready for being parsed again at the beginning of
@@ -650,14 +656,13 @@ SimpleSwitch::egress_thread(size_t worker_id) {
     f_egress_spec.set(0);
 
     phv->get_field("standard_metadata.packet_length").set(
-        packet->get_register(PACKET_LENGTH_REG_IDX));
+        packet->get_register(RegisterAccess::PACKET_LENGTH_REG_IDX));
 
     egress_mau->apply(packet.get());
 
-    unsigned int clone_mirror_session_id =
+    auto clone_mirror_session_id =
         RegisterAccess::get_clone_mirror_session_id(*packet);
-    unsigned int clone_field_list =
-        RegisterAccess::get_clone_field_list(*packet);
+    auto clone_field_list = RegisterAccess::get_clone_field_list(*packet);
 
     // EGRESS CLONING
     if (clone_mirror_session_id) {
@@ -665,6 +670,9 @@ SimpleSwitch::egress_thread(size_t worker_id) {
       RegisterAccess::set_clone_mirror_session_id(*packet, 0);
       RegisterAccess::set_clone_field_list(*packet, 0);
       MirroringSessionConfig config;
+      // Clear upper bit of clone_mirror_session_id, which is always
+      // set if a clone operation was performed.
+      clone_mirror_session_id &= 0x7fffu;
       bool is_session_configured = mirroring_get_session(
           static_cast<mirror_id_t>(clone_mirror_session_id), &config);
       if (is_session_configured) {
@@ -699,8 +707,7 @@ SimpleSwitch::egress_thread(size_t worker_id) {
     deparser->deparse(packet.get());
 
     // RECIRCULATE
-    unsigned int recirculate_flag =
-        RegisterAccess::get_recirculate_flag(*packet);
+    auto recirculate_flag = RegisterAccess::get_recirculate_flag(*packet);
     if (recirculate_flag) {
       BMLOG_DEBUG_PKT(*packet, "Recirculating packet");
       p4object_id_t field_list_id = recirculate_flag;
@@ -716,7 +723,8 @@ SimpleSwitch::egress_thread(size_t worker_id) {
           .set(PKT_INSTANCE_TYPE_RECIRC);
       size_t packet_size = packet_copy->get_data_size();
       RegisterAccess::clear_all(*packet_copy);
-      packet_copy->set_register(PACKET_LENGTH_REG_IDX, packet_size);
+      packet_copy->set_register(RegisterAccess::PACKET_LENGTH_REG_IDX,
+                                packet_size);
       phv_copy->get_field("standard_metadata.packet_length").set(packet_size);
       // TODO(antonin): really it may be better to create a new packet here or
       // to fold this functionality into the Packet class?

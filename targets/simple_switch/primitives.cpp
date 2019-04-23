@@ -240,8 +240,8 @@ class add_header : public ActionPrimitive<Header &> {
       hdr.mark_valid();
       // updated the length packet register (register 0)
       auto &packet = get_packet();
-      packet.set_register(PACKET_LENGTH_REG_IDX,
-                          packet.get_register(PACKET_LENGTH_REG_IDX) +
+      packet.set_register(RegisterAccess::PACKET_LENGTH_REG_IDX,
+                          packet.get_register(RegisterAccess::PACKET_LENGTH_REG_IDX) +
                           hdr.get_nbytes_packet());
     }
   }
@@ -262,8 +262,8 @@ class remove_header : public ActionPrimitive<Header &> {
     if (hdr.is_valid()) {
       // updated the length packet register (register 0)
       auto &packet = get_packet();
-      packet.set_register(PACKET_LENGTH_REG_IDX,
-                          packet.get_register(PACKET_LENGTH_REG_IDX) -
+      packet.set_register(RegisterAccess::PACKET_LENGTH_REG_IDX,
+                          packet.get_register(RegisterAccess::PACKET_LENGTH_REG_IDX) -
                           hdr.get_nbytes_packet());
       hdr.mark_invalid();
     }
@@ -284,8 +284,12 @@ class clone_ingress_pkt_to_egress
   : public ActionPrimitive<const Data &, const Data &> {
   void operator ()(const Data &mirror_session_id, const Data &field_list_id) {
     auto &packet = get_packet();
+    // Assume mirror_session_id < (1u << 15) so that we can use most
+    // significant bit to always make the value non-0.  This enables
+    // cleanly supporting mirror_session_id == 0, in case that is ever
+    // helpful.
     RegisterAccess::set_clone_mirror_session_id(packet,
-        mirror_session_id.get<uint16_t>());
+        mirror_session_id.get<uint16_t>() | (1u << 15));
     RegisterAccess::set_clone_field_list(packet,
         field_list_id.get<uint16_t>());
   }
@@ -297,8 +301,9 @@ class clone_egress_pkt_to_egress
   : public ActionPrimitive<const Data &, const Data &> {
   void operator ()(const Data &mirror_session_id, const Data &field_list_id) {
     auto &packet = get_packet();
+    // See clone_ingress_pkt_to_egress for why the arithmetic.
     RegisterAccess::set_clone_mirror_session_id(packet,
-        mirror_session_id.get<uint16_t>());
+        mirror_session_id.get<uint16_t>() | (1u << 15));
     RegisterAccess::set_clone_field_list(packet,
         field_list_id.get<uint16_t>());
   }
