@@ -122,8 +122,8 @@ PsaSwitch::PsaSwitch(bool enable_swap)
 
   add_required_field("psa_egress_deparser_input_metadata", "egress_port");
 
-  import_counters();
   import_primitives();
+  import_counters();
 }
 
 #define PACKET_LENGTH_REG_IDX 0

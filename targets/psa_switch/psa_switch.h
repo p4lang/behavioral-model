@@ -34,6 +34,8 @@
 #include <vector>
 #include <functional>
 
+#include "externs/psa_counter.h"
+
 // TODO(antonin)
 // experimental support for priority queueing
 // to enable it, uncomment this flag
@@ -63,6 +65,12 @@ using bm::Field;
 using bm::FieldList;
 using bm::packet_id_t;
 using bm::p4object_id_t;
+using bm::Counter;
+using bm::MatchTableAbstract;
+using bm::cxt_id_t;
+using bm::Context;
+using bm::ExternType;
+using bm::PSA_Counter;
 
 
 class PsaSwitch : public Switch {
@@ -118,6 +126,35 @@ class PsaSwitch : public Switch {
   }
 
   void set_transmit_fn(TransmitFn fn);
+
+  // overriden interfaces
+  Counter::CounterErrorCode
+  read_counters(cxt_id_t cxt_id,
+                const std::string &counter_name,
+                size_t index,
+                MatchTableAbstract::counter_value_t *bytes,
+                MatchTableAbstract::counter_value_t *packets) override {
+    std::cout << "reading counters" << std::endl;
+    Context *context = get_context(cxt_id);
+    ExternType *ex = context->get_extern_instance(counter_name).get();
+    PSA_Counter *counter = static_cast<PSA_Counter*>(ex);
+    counter->get_counter(index).query_counter(bytes, packets);
+    return Counter::CounterErrorCode::SUCCESS;
+  }
+
+  Counter::CounterErrorCode
+  write_counters(cxt_id_t cxt_id,
+                 const std::string &counter_name,
+                 size_t index,
+                 MatchTableAbstract::counter_value_t bytes,
+                 MatchTableAbstract::counter_value_t packets) override {
+    Context *context = get_context(cxt_id);
+    ExternType *ex = context->get_extern_instance(counter_name).get();
+    PSA_Counter *counter = static_cast<PSA_Counter*>(ex);
+    counter->get_counter(index).write_counter(bytes, packets);
+    return Counter::CounterErrorCode::SUCCESS;
+  }
+
 
  private:
   static constexpr size_t nb_egress_threads = 4u;
