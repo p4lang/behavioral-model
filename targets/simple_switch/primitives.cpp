@@ -241,8 +241,8 @@ class add_header : public ActionPrimitive<Header &> {
       // updated the length packet register (register 0)
       auto &packet = get_packet();
       packet.set_register(RegisterAccess::PACKET_LENGTH_REG_IDX,
-                          packet.get_register(RegisterAccess::PACKET_LENGTH_REG_IDX) +
-                          hdr.get_nbytes_packet());
+          packet.get_register(RegisterAccess::PACKET_LENGTH_REG_IDX) +
+          hdr.get_nbytes_packet());
     }
   }
 };
@@ -263,8 +263,8 @@ class remove_header : public ActionPrimitive<Header &> {
       // updated the length packet register (register 0)
       auto &packet = get_packet();
       packet.set_register(RegisterAccess::PACKET_LENGTH_REG_IDX,
-                          packet.get_register(RegisterAccess::PACKET_LENGTH_REG_IDX) -
-                          hdr.get_nbytes_packet());
+          packet.get_register(RegisterAccess::PACKET_LENGTH_REG_IDX) -
+          hdr.get_nbytes_packet());
       hdr.mark_invalid();
     }
   }
