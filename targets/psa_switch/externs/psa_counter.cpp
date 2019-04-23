@@ -31,13 +31,13 @@ PSA_Counter::count(const Data &index) {
       index.get<size_t>()).increment_counter(get_packet());
 }
 
-Counter
-&PSA_Counter::get_counter(size_t idx) {
+Counter &
+PSA_Counter::get_counter(size_t idx) {
   return _counter->get_counter(idx);
 }
 
-const Counter
-&PSA_Counter::get_counter(size_t idx) const {
+const Counter &
+PSA_Counter::get_counter(size_t idx) const {
   return _counter->get_counter(idx);
 }
 
@@ -47,7 +47,7 @@ PSA_Counter::reset_counters(){
 }
 
 BM_REGISTER_EXTERN_W_NAME(Counter, PSA_Counter);
-BM_REGISTER_EXTERN_METHOD(PSA_Counter, count, const Data &);
+BM_REGISTER_EXTERN_W_NAME_METHOD(Counter, PSA_Counter, count, const Data &);
 
 }  // namespace bm::psa
 
