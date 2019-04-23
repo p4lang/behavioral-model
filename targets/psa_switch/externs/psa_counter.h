@@ -22,17 +22,17 @@
 #ifndef PSA_SWITCH_PSA_COUNTER_H_
 #define PSA_SWITCH_PSA_COUNTER_H_
 
-#define SPEC_ID 0xffffffff
-
 #include <bm/bm_sim/extern.h>
 #include <bm/bm_sim/counters.h>
 
-namespace bm  {
+namespace bm {
 
-namespace psa{
+namespace psa {
 
 class PSA_Counter : public bm::ExternType {
  public:
+  static constexpr p4object_id_t spec_id = 0xffffffff;
+
   BM_EXTERN_ATTRIBUTES {
     BM_EXTERN_ATTRIBUTE_ADD(n_counters);
     BM_EXTERN_ATTRIBUTE_ADD(type);
@@ -40,10 +40,9 @@ class PSA_Counter : public bm::ExternType {
   
   void init() override {
     _counter = std::unique_ptr<CounterArray>(
-        new CounterArray(get_name(),
-                         get_id(),
+        new CounterArray(get_name() + ".$impl",
+                         spec_id,
                          n_counters.get<size_t>()));
-    _set_name_and_id(get_name() + ".$impl", SPEC_ID);
   }
 
   void count(const Data &index);
