@@ -499,7 +499,7 @@ constant values.
 | ---------------- | ------------ | ------------ | ------------ | ------- |
 | `lo .. hi`       | yes (Note 1) | no           | no           | no      |
 | `val &&& mask`   | no           | yes (Note 2) | yes (Note 3) | no      |
-| `val`            | no (Note 4)  | yes (Note 5) | yes (Note 5) | yes     |
+| `val`            | yes (Note 4) | yes (Note 5) | yes (Note 5) | yes     |
 | `_` or `default` | yes (Note 6) | yes (Note 6) | yes (Note 6) | no      |
 
 Note 1: Restriction: `lo <= hi`. A run time search key value `k` matches if `lo
@@ -519,8 +519,8 @@ actually an arithmetic expression that divides `val` by `prefix_length`, and
 thus falls into the `val` case, which is exact match. There is no warning from
 the compiler because it is perfectly legal syntax for a division operation.
 
-Note 4: Not supported today, but there is an issue on `p4c` requesting to
-enhance this.
+Note 4: Equivalent to the range `val .. val`, so it behaves as exact match on
+`val`.
 
 Note 5: Equivalent to `val &&& mask` where `mask` is 1 in all bit positions of
 the field, so it behaves as exact match on `val`.
@@ -555,7 +555,7 @@ control ingress(inout headers_t hdr,
              1 ..  8 : a(1);
              6 .. 12 : a(2);  // ranges are allowed to overlap between entries
             15 .. 15 : a(3);
-            //17       : a(4);  // not supported
+            17       : a(4);  // equivalent to 17 .. 17
             // It is not required to have a "match anything" rule in a table,
             // but it is allowed (except for exact match fields), and several of
             // these examples have one.
