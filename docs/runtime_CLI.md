@@ -2,7 +2,7 @@
 TODO: Write help for any CLI not preceded by "###".
 ###
 
-act_prof_add_member_to_group
+`act_prof_add_member_to_group`
 act_prof_create_group
 act_prof_create_member
 act_prof_delete_group
@@ -29,6 +29,10 @@ meter_array_set_rates
 meter_get_rates
 
 ### meter_set_rates
+The syntax for the CLI is provided below.
+`RuntimeCmd: help meter_set_rates
+Configure rates for a meter: meter_set_rates <name> <index> <rate_1>:<burst_1> <rate_2>:<burst_2> ...`
+
 Meter behavior is specified in RFC 2698.
 
 The user enters the meter rate in bytes/microsecond and burst_size in
