@@ -43,67 +43,67 @@ class RegisterAccess {
     static constexpr uint64_t RECIRCULATE_FLAG_MASK = 0x000000000000ffff;
     static constexpr uint64_t RECIRCULATE_FLAG_SHIFT = 0;
 
-    static void clear_all(Packet &pkt) {
+    static void clear_all(Packet *pkt) {
         // except do not clear packet length
-        pkt.set_register(1, 0);
-        pkt.set_register(2, 0);
+        pkt->set_register(1, 0);
+        pkt->set_register(2, 0);
     }
-    static uint16_t get_clone_mirror_session_id(Packet &pkt) {
-        uint64_t rv = pkt.get_register(CLONE_MIRROR_SESSION_ID_REG_IDX);
+    static uint16_t get_clone_mirror_session_id(Packet *pkt) {
+        uint64_t rv = pkt->get_register(CLONE_MIRROR_SESSION_ID_REG_IDX);
         return static_cast<uint16_t>((rv & CLONE_MIRROR_SESSION_ID_MASK) >>
                                      CLONE_MIRROR_SESSION_ID_SHIFT);
     }
-    static void set_clone_mirror_session_id(Packet &pkt,
+    static void set_clone_mirror_session_id(Packet *pkt,
                                             uint16_t mirror_session_id) {
-        uint64_t rv = pkt.get_register(CLONE_MIRROR_SESSION_ID_REG_IDX);
+        uint64_t rv = pkt->get_register(CLONE_MIRROR_SESSION_ID_REG_IDX);
         rv = ((rv & ~CLONE_MIRROR_SESSION_ID_MASK) |
               (((uint64_t) mirror_session_id) <<
                CLONE_MIRROR_SESSION_ID_SHIFT));
-        pkt.set_register(CLONE_MIRROR_SESSION_ID_REG_IDX, rv);
+        pkt->set_register(CLONE_MIRROR_SESSION_ID_REG_IDX, rv);
     }
-    static uint16_t get_clone_field_list(Packet &pkt) {
-        uint64_t rv = pkt.get_register(CLONE_FIELD_LIST_REG_IDX);
+    static uint16_t get_clone_field_list(Packet *pkt) {
+        uint64_t rv = pkt->get_register(CLONE_FIELD_LIST_REG_IDX);
         return static_cast<uint16_t>((rv & CLONE_FIELD_LIST_MASK) >>
                                      CLONE_FIELD_LIST_SHIFT);
     }
-    static void set_clone_field_list(Packet &pkt, uint16_t field_list_id) {
-        uint64_t rv = pkt.get_register(CLONE_FIELD_LIST_REG_IDX);
+    static void set_clone_field_list(Packet *pkt, uint16_t field_list_id) {
+        uint64_t rv = pkt->get_register(CLONE_FIELD_LIST_REG_IDX);
         rv = ((rv & ~CLONE_FIELD_LIST_MASK) |
               (((uint64_t) field_list_id) << CLONE_FIELD_LIST_SHIFT));
-        pkt.set_register(CLONE_FIELD_LIST_REG_IDX, rv);
+        pkt->set_register(CLONE_FIELD_LIST_REG_IDX, rv);
     }
-    static uint16_t get_lf_field_list(Packet &pkt) {
-        uint64_t rv = pkt.get_register(LF_FIELD_LIST_REG_IDX);
+    static uint16_t get_lf_field_list(Packet *pkt) {
+        uint64_t rv = pkt->get_register(LF_FIELD_LIST_REG_IDX);
         return static_cast<uint16_t>((rv & LF_FIELD_LIST_MASK) >>
                                      LF_FIELD_LIST_SHIFT);
     }
-    static void set_lf_field_list(Packet &pkt, uint16_t field_list_id) {
-        uint64_t rv = pkt.get_register(LF_FIELD_LIST_REG_IDX);
+    static void set_lf_field_list(Packet *pkt, uint16_t field_list_id) {
+        uint64_t rv = pkt->get_register(LF_FIELD_LIST_REG_IDX);
         rv = ((rv & ~LF_FIELD_LIST_MASK) |
               (((uint64_t) field_list_id) << LF_FIELD_LIST_SHIFT));
-        pkt.set_register(LF_FIELD_LIST_REG_IDX, rv);
+        pkt->set_register(LF_FIELD_LIST_REG_IDX, rv);
     }
-    static uint16_t get_resubmit_flag(Packet &pkt) {
-        uint64_t rv = pkt.get_register(RESUBMIT_FLAG_REG_IDX);
+    static uint16_t get_resubmit_flag(Packet *pkt) {
+        uint64_t rv = pkt->get_register(RESUBMIT_FLAG_REG_IDX);
         return static_cast<uint16_t>((rv & RESUBMIT_FLAG_MASK) >>
                                      RESUBMIT_FLAG_SHIFT);
     }
-    static void set_resubmit_flag(Packet &pkt, uint16_t field_list_id) {
-        uint64_t rv = pkt.get_register(RESUBMIT_FLAG_REG_IDX);
+    static void set_resubmit_flag(Packet *pkt, uint16_t field_list_id) {
+        uint64_t rv = pkt->get_register(RESUBMIT_FLAG_REG_IDX);
         rv = ((rv & ~RESUBMIT_FLAG_MASK) |
               (((uint64_t) field_list_id) << RESUBMIT_FLAG_SHIFT));
-        pkt.set_register(RESUBMIT_FLAG_REG_IDX, rv);
+        pkt->set_register(RESUBMIT_FLAG_REG_IDX, rv);
     }
-    static uint16_t get_recirculate_flag(Packet &pkt) {
-        uint64_t rv = pkt.get_register(RECIRCULATE_FLAG_REG_IDX);
+    static uint16_t get_recirculate_flag(Packet *pkt) {
+        uint64_t rv = pkt->get_register(RECIRCULATE_FLAG_REG_IDX);
         return static_cast<uint16_t>((rv & RECIRCULATE_FLAG_MASK) >>
                                      RECIRCULATE_FLAG_SHIFT);
     }
-    static void set_recirculate_flag(Packet &pkt, uint16_t field_list_id) {
-        uint64_t rv = pkt.get_register(RECIRCULATE_FLAG_REG_IDX);
+    static void set_recirculate_flag(Packet *pkt, uint16_t field_list_id) {
+        uint64_t rv = pkt->get_register(RECIRCULATE_FLAG_REG_IDX);
         rv = ((rv & ~RECIRCULATE_FLAG_MASK) |
               (((uint64_t) field_list_id) << RECIRCULATE_FLAG_SHIFT));
-        pkt.set_register(RECIRCULATE_FLAG_REG_IDX, rv);
+        pkt->set_register(RECIRCULATE_FLAG_REG_IDX, rv);
     }
 };
 

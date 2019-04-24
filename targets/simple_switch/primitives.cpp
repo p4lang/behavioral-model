@@ -226,7 +226,7 @@ class generate_digest : public ActionPrimitive<const Data &, const Data &> {
     // discared receiver for now
     (void) receiver;
     auto &packet = get_packet();
-    RegisterAccess::set_lf_field_list(packet, learn_id.get<uint16_t>());
+    RegisterAccess::set_lf_field_list(&packet, learn_id.get<uint16_t>());
   }
 };
 
@@ -288,9 +288,9 @@ class clone_ingress_pkt_to_egress
     // significant bit to always make the value non-0.  This enables
     // cleanly supporting mirror_session_id == 0, in case that is ever
     // helpful.
-    RegisterAccess::set_clone_mirror_session_id(packet,
+    RegisterAccess::set_clone_mirror_session_id(&packet,
         mirror_session_id.get<uint16_t>() | (1u << 15));
-    RegisterAccess::set_clone_field_list(packet,
+    RegisterAccess::set_clone_field_list(&packet,
         field_list_id.get<uint16_t>());
   }
 };
@@ -302,9 +302,9 @@ class clone_egress_pkt_to_egress
   void operator ()(const Data &mirror_session_id, const Data &field_list_id) {
     auto &packet = get_packet();
     // See clone_ingress_pkt_to_egress for why the arithmetic.
-    RegisterAccess::set_clone_mirror_session_id(packet,
+    RegisterAccess::set_clone_mirror_session_id(&packet,
         mirror_session_id.get<uint16_t>() | (1u << 15));
-    RegisterAccess::set_clone_field_list(packet,
+    RegisterAccess::set_clone_field_list(&packet,
         field_list_id.get<uint16_t>());
   }
 };
@@ -314,7 +314,7 @@ REGISTER_PRIMITIVE(clone_egress_pkt_to_egress);
 class resubmit : public ActionPrimitive<const Data &> {
   void operator ()(const Data &field_list_id) {
     auto &packet = get_packet();
-    RegisterAccess::set_resubmit_flag(packet, field_list_id.get<uint16_t>());
+    RegisterAccess::set_resubmit_flag(&packet, field_list_id.get<uint16_t>());
   }
 };
 
@@ -323,7 +323,8 @@ REGISTER_PRIMITIVE(resubmit);
 class recirculate : public ActionPrimitive<const Data &> {
   void operator ()(const Data &field_list_id) {
     auto &packet = get_packet();
-    RegisterAccess::set_recirculate_flag(packet, field_list_id.get<uint16_t>());
+    RegisterAccess::set_recirculate_flag(&packet,
+                                         field_list_id.get<uint16_t>());
   }
 };
 
