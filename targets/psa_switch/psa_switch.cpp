@@ -378,16 +378,24 @@ PsaSwitch::egress_thread(size_t worker_id) {
 
     if (packet == nullptr) break;
 
+    phv = packet->get_phv();
+
+    // this reset() marks all headers as invalid - this is important since PSA
+    // deparses packets after ingress processing - so no guarantees can be made
+    // about their existence or validity while entering egress processing
+    phv->reset();
+
     Parser *parser = this->get_parser("egress_parser");
     parser->parse(packet.get());
-    Deparser *deparser = this->get_deparser("egress_deparser");
+
     Pipeline *egress_mau = this->get_pipeline("egress");
     egress_mau->apply(packet.get());
+
+    Deparser *deparser = this->get_deparser("egress_deparser");
     deparser->deparse(packet.get());
 
     if (port == PSA_PORT_RECIRCULATE) {
       BMLOG_DEBUG_PKT(*packet, "Recirculating packet");
-      phv = packet->get_phv();
 
       phv->reset();
       phv->reset_header_stacks();
