@@ -284,12 +284,14 @@ class clone_ingress_pkt_to_egress
   : public ActionPrimitive<const Data &, const Data &> {
   void operator ()(const Data &mirror_session_id, const Data &field_list_id) {
     auto &packet = get_packet();
-    // Assume mirror_session_id < (1u << 15) so that we can use most
-    // significant bit to always make the value non-0.  This enables
-    // cleanly supporting mirror_session_id == 0, in case that is ever
-    // helpful.
+    // We limit mirror_session_id values to small enough values that
+    // we can use one of the bit positions as a "clone was performed"
+    // indicator, making mirror_seesion_id stored here always non-0 if
+    // a clone was done.  This enables cleanly supporting
+    // mirror_session_id == 0, in case that is ever helpful.
     RegisterAccess::set_clone_mirror_session_id(&packet,
-        mirror_session_id.get<uint16_t>() | (1u << 15));
+        mirror_session_id.get<uint16_t>() |
+        RegisterAccess::MIRROR_SESSION_ID_VALID_MASK);
     RegisterAccess::set_clone_field_list(&packet,
         field_list_id.get<uint16_t>());
   }
@@ -303,7 +305,8 @@ class clone_egress_pkt_to_egress
     auto &packet = get_packet();
     // See clone_ingress_pkt_to_egress for why the arithmetic.
     RegisterAccess::set_clone_mirror_session_id(&packet,
-        mirror_session_id.get<uint16_t>() | (1u << 15));
+        mirror_session_id.get<uint16_t>() |
+        RegisterAccess::MIRROR_SESSION_ID_VALID_MASK);
     RegisterAccess::set_clone_field_list(&packet,
         field_list_id.get<uint16_t>());
   }

@@ -76,13 +76,23 @@ class SimpleSwitch::MirroringSessions {
   bool add_session(mirror_id_t mirror_id,
                    const MirroringSessionConfig &config) {
     Lock lock(mutex);
-    sessions_map[mirror_id] = config;
-    return true;
+    if (0 <= mirror_id && mirror_id <= RegisterAccess::MAX_MIRROR_SESSION_ID) {
+      sessions_map[mirror_id] = config;
+      return true;
+    } else {
+      bm::Logger::get()->error("mirror_id out of range. No session added.");
+      return false;
+    }
   }
 
   bool delete_session(mirror_id_t mirror_id) {
     Lock lock(mutex);
-    return sessions_map.erase(mirror_id) == 1;
+    if (0 <= mirror_id && mirror_id <= RegisterAccess::MAX_MIRROR_SESSION_ID) {
+      return sessions_map.erase(mirror_id) == 1;
+    } else {
+      bm::Logger::get()->error("mirror_id out of range. No session deleted.");
+      return false;
+    }
   }
 
   bool get_session(mirror_id_t mirror_id,
@@ -524,9 +534,9 @@ SimpleSwitch::ingress_thread() {
       RegisterAccess::set_clone_mirror_session_id(packet.get(), 0);
       RegisterAccess::set_clone_field_list(packet.get(), 0);
       MirroringSessionConfig config;
-      // Clear upper bit of clone_mirror_session_id, which is always
-      // set if a clone operation was performed.
-      clone_mirror_session_id &= 0x7fffu;
+      // Extract the part of clone_mirror_session_id that contains the
+      // actual session id.
+      clone_mirror_session_id &= RegisterAccess::MIRROR_SESSION_ID_MASK;
       bool is_session_configured = mirroring_get_session(
           static_cast<mirror_id_t>(clone_mirror_session_id), &config);
       if (is_session_configured) {
@@ -670,9 +680,9 @@ SimpleSwitch::egress_thread(size_t worker_id) {
       RegisterAccess::set_clone_mirror_session_id(packet.get(), 0);
       RegisterAccess::set_clone_field_list(packet.get(), 0);
       MirroringSessionConfig config;
-      // Clear upper bit of clone_mirror_session_id, which is always
-      // set if a clone operation was performed.
-      clone_mirror_session_id &= 0x7fffu;
+      // Extract the part of clone_mirror_session_id that contains the
+      // actual session id.
+      clone_mirror_session_id &= RegisterAccess::MIRROR_SESSION_ID_MASK;
       bool is_session_configured = mirroring_get_session(
           static_cast<mirror_id_t>(clone_mirror_session_id), &config);
       if (is_session_configured) {
