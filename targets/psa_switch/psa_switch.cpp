@@ -332,12 +332,6 @@ PsaSwitch::ingress_thread() {
       continue;
     }
 
-    Field &f_egress_spec = phv->get_field("psa_ingress_output_metadata.egress_port");
-    port_t egress_spec = f_egress_spec.get_uint();
-    port_t egress_port = egress_spec;
-    egress_port = egress_spec;
-    BMLOG_DEBUG_PKT(*packet, "Egress port is {}", egress_port);
-
     Deparser *deparser = this->get_deparser("ingress_deparser");
     deparser->deparse(packet.get());
 
@@ -357,6 +351,12 @@ PsaSwitch::ingress_thread() {
       }
       continue;
     }
+
+    Field &f_egress_spec = phv->get_field("psa_ingress_output_metadata.egress_port");
+    port_t egress_spec = f_egress_spec.get_uint();
+    port_t egress_port = egress_spec;
+    egress_port = egress_spec;
+    BMLOG_DEBUG_PKT(*packet, "Egress port is {}", egress_port);
 
     enqueue(egress_port, std::move(packet));
   }
