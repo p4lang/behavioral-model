@@ -309,9 +309,7 @@ PsaSwitch::ingress_thread() {
     if (packet == nullptr) break;
 
     port_t ingress_port = packet->get_ingress_port();
-    (void) ingress_port;
-    BMLOG_DEBUG_PKT(*packet, "Processing packet received on port {}",
-                    ingress_port);
+    BMLOG_DEBUG_PKT(*packet, "Packet received on port {}", ingress_port);
 
     phv = packet->get_phv();
 
@@ -352,10 +350,8 @@ PsaSwitch::ingress_thread() {
       continue;
     }
 
-    Field &f_egress_spec = phv->get_field("psa_ingress_output_metadata.egress_port");
-    port_t egress_spec = f_egress_spec.get_uint();
-    port_t egress_port = egress_spec;
-    egress_port = egress_spec;
+    Field &f_egress_port = phv->get_field("psa_ingress_output_metadata.egress_port");
+    port_t egress_port = f_egress_port.get_uint();
     BMLOG_DEBUG_PKT(*packet, "Egress port is {}", egress_port);
 
     enqueue(egress_port, std::move(packet));
