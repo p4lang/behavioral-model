@@ -319,7 +319,7 @@ PsaSwitch::ingress_thread() {
     parser->parse(packet.get());
 
     // set default std metadata values
-    phv->get_field("psa_ingress_output_metadata.drop").set(true);
+    phv->get_field("psa_ingress_output_metadata.drop").set(1);
 
     Pipeline *ingress_mau = this->get_pipeline("ingress");
     ingress_mau->apply(packet.get());
@@ -328,6 +328,7 @@ PsaSwitch::ingress_thread() {
     // prioritize dropping if marked as such - do not move below other checks
     Field &f_drop = phv->get_field("psa_ingress_output_metadata.drop");
     if (f_drop.get_int()) {
+      BMLOG_DEBUG_PKT(*packet, "Dropping packet marked as such from ingress");
       continue;
     }
 
@@ -391,7 +392,7 @@ PsaSwitch::egress_thread(size_t worker_id) {
     Pipeline *egress_mau = this->get_pipeline("egress");
     egress_mau->apply(packet.get());
     packet->reset_exit();
-    // TODO (peter): add stf test where exit is invoked but packet still gets
+    // TODO: add stf test where exit is invoked but packet still gets
     // recirc'd
 
     Deparser *deparser = this->get_deparser("egress_deparser");
