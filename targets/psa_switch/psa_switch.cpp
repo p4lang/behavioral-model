@@ -308,16 +308,22 @@ PsaSwitch::ingress_thread() {
     input_buffer.pop_back(&packet);
     if (packet == nullptr) break;
 
-    Parser *parser = this->get_parser("ingress_parser");
-    Pipeline *ingress_mau = this->get_pipeline("ingress");
-    phv = packet->get_phv();
-
     port_t ingress_port = packet->get_ingress_port();
     (void) ingress_port;
     BMLOG_DEBUG_PKT(*packet, "Processing packet received on port {}",
                     ingress_port);
 
+    phv = packet->get_phv();
+
+    Parser *parser = this->get_parser("ingress_parser");
     parser->parse(packet.get());
+
+    if (phv->has_field("psa_ingress_output_metadata.drop")) {
+      phv->get_field("psa_ingress_output_metadata.drop")
+        .set(true);
+    }
+
+    Pipeline *ingress_mau = this->get_pipeline("ingress");
     ingress_mau->apply(packet.get());
 
     // prioritize dropping if marked as such - do not move below other checks
