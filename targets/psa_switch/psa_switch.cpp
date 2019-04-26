@@ -318,51 +318,45 @@ PsaSwitch::ingress_thread() {
     Parser *parser = this->get_parser("ingress_parser");
     parser->parse(packet.get());
 
-    if (phv->has_field("psa_ingress_output_metadata.drop")) {
-      phv->get_field("psa_ingress_output_metadata.drop")
-        .set(true);
-    }
+    // set default std metadata values
+    phv->get_field("psa_ingress_output_metadata.drop").set(true);
 
     Pipeline *ingress_mau = this->get_pipeline("ingress");
     ingress_mau->apply(packet.get());
+    packet->reset_exit();
 
     // prioritize dropping if marked as such - do not move below other checks
-    if (phv->has_field("psa_ingress_output_metadata.drop")) {
-      Field &f_drop = phv->get_field("psa_ingress_output_metadata.drop");
-      if (f_drop.get_int()) {
-        continue;
-      }
+    Field &f_drop = phv->get_field("psa_ingress_output_metadata.drop");
+    if (f_drop.get_int()) {
+      continue;
     }
 
-    // handling multicast
-    unsigned int mgid = 0u;
-    if (phv->has_field("psa_ingress_output_metadata.multicast_group")) {
-      Field &f_mgid = phv->get_field("psa_ingress_output_metadata.multicast_group");
-      mgid = f_mgid.get_uint();
-
-      if(mgid != 0){
-        const auto pre_out = pre->replicate({mgid});
-        auto packet_size = packet->get_register(PACKET_LENGTH_REG_IDX);
-        for(const auto &out : pre_out){
-          auto egress_port = out.egress_port;
-          std::unique_ptr<Packet> packet_copy = packet->clone_with_phv_ptr();
-          packet_copy->set_register(PACKET_LENGTH_REG_IDX, packet_size);
-          enqueue(egress_port, std::move(packet_copy));
-        }
-        continue;
-      }
-    }
-
-    packet->reset_exit();
     Field &f_egress_spec = phv->get_field("psa_ingress_output_metadata.egress_port");
     port_t egress_spec = f_egress_spec.get_uint();
     port_t egress_port = egress_spec;
-
     egress_port = egress_spec;
     BMLOG_DEBUG_PKT(*packet, "Egress port is {}", egress_port);
 
     Deparser *deparser = this->get_deparser("ingress_deparser");
     deparser->deparse(packet.get());
+
+    // handling multicast
+    unsigned int mgid = 0u;
+    Field &f_mgid = phv->get_field("psa_ingress_output_metadata.multicast_group");
+    mgid = f_mgid.get_uint();
+
+    if(mgid != 0){
+      const auto pre_out = pre->replicate({mgid});
+      auto packet_size = packet->get_register(PACKET_LENGTH_REG_IDX);
+      for(const auto &out : pre_out){
+        auto egress_port = out.egress_port;
+        std::unique_ptr<Packet> packet_copy = packet->clone_with_phv_ptr();
+        packet_copy->set_register(PACKET_LENGTH_REG_IDX, packet_size);
+        enqueue(egress_port, std::move(packet_copy));
+      }
+      continue;
+    }
+
     enqueue(egress_port, std::move(packet));
   }
 }
@@ -396,6 +390,9 @@ PsaSwitch::egress_thread(size_t worker_id) {
 
     Pipeline *egress_mau = this->get_pipeline("egress");
     egress_mau->apply(packet.get());
+    packet->reset_exit();
+    // TODO (peter): add stf test where exit is invoked but packet still gets
+    // recirc'd
 
     Deparser *deparser = this->get_deparser("egress_deparser");
     deparser->deparse(packet.get());
