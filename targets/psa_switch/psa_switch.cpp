@@ -350,8 +350,7 @@ PsaSwitch::ingress_thread() {
     Field &f_resubmit = phv->get_field("psa_ingress_output_metadata.resubmit");
     if (f_resubmit.get_int()) {
       // since we resubmit the copy & toss original, we update the copy's metadata
-      PHV *copy_phv = packet_copy->get_phv();
-      copy_phv->get_field("psa_ingress_parser_input_metadata.packet_path").set(5);
+      phv_copy->get_field("psa_ingress_parser_input_metadata.packet_path").set(5);
       BMLOG_DEBUG_PKT(*packet, "Resubmitting packet");
       input_buffer.push_front(std::move(packet_copy));
       continue;
