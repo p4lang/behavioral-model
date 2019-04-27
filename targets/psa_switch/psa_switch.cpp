@@ -312,8 +312,8 @@ PsaSwitch::ingress_thread() {
     BMLOG_DEBUG_PKT(*packet, "Packet received on port {}", ingress_port);
 
     phv = packet->get_phv();
-
     Parser *parser = this->get_parser("ingress_parser");
+    ts_res ingress_timestamp = get_ts().count();
     parser->parse(packet.get());
 
     // pass relevant values from ingress parser
@@ -326,7 +326,7 @@ PsaSwitch::ingress_thread() {
         packet->get_error_code().get());
 
     phv->get_field("psa_ingress_input_metadata.ingress_timestamp")
-        .set(get_ts().count());
+        .set(ingress_timestamp);
 
     // set default metadata values according to PSA specification
     phv->get_field("psa_ingress_output_metadata.class_of_service").set(0);
@@ -399,6 +399,8 @@ PsaSwitch::egress_thread(size_t worker_id) {
     phv->reset();
 
     Parser *parser = this->get_parser("egress_parser");
+
+    get_ts()
     parser->parse(packet.get());
 
     // passing metadata in egress
