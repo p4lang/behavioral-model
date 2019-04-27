@@ -288,6 +288,7 @@ PsaSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
 }
 
 // used for ingress cloning, resubmit
+// TODO: use this for metadata perserving resubmit
 void
 PsaSwitch::copy_field_list_and_set_type(
     const std::unique_ptr<Packet> &packet,
@@ -344,6 +345,17 @@ PsaSwitch::ingress_thread() {
 
     Deparser *deparser = this->get_deparser("ingress_deparser");
     deparser->deparse(packet.get());
+
+    // resubmit - do not move below multicast
+    Field &f_resubmit = phv->get_field("psa_ingress_output_metadata.resubmit");
+    if (f_resubmit.get_int()) {
+      // since we resubmit the copy & toss original, we update the copy's metadata
+      PHV *copy_phv = packet_copy->get_phv();
+      copy_phv->get_field("psa_ingress_parser_input_metadata.packet_path").set(5);
+      BMLOG_DEBUG_PKT(*packet, "Resubmitting packet");
+      input_buffer.push_front(std::move(packet_copy));
+      continue;
+    }
 
     // handling multicast
     unsigned int mgid = 0u;
