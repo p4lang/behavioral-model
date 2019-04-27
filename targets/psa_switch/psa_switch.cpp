@@ -400,7 +400,6 @@ PsaSwitch::egress_thread(size_t worker_id) {
 
     Parser *parser = this->get_parser("egress_parser");
 
-    get_ts()
     parser->parse(packet.get());
 
     // passing metadata in egress
