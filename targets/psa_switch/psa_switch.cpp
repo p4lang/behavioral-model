@@ -316,8 +316,32 @@ PsaSwitch::ingress_thread() {
     Parser *parser = this->get_parser("ingress_parser");
     parser->parse(packet.get());
 
-    // set default std metadata values
+    // passing metadata
+    if (phv->has_field("psa_ingress_input_metadata.ingress_port")) {
+      phv->get_field("psa_ingress_input_metadata.ingress_port").set(ingress_port);
+    }
+
+    if (phv->has_field("psa_ingress_input_metadata.packet_path")) {
+      phv->get_field("psa_ingress_input_metadata.packet_path").set(
+          phv->get_field("psa_ingress_parser_input_metadata.packet_path"));
+    }
+
+    if (phv->has_field("psa_ingress_input_metadata.parser_error")) {
+      phv->get_field("psa_ingress_input_metadata.parser_error").set(
+          packet->get_error_code().get());
+    }
+
+    if (phv->has_field("psa_ingress_input_metadata.ingress_timestamp")) {
+      phv->get_field("psa_ingress_input_metadata.ingress_timestamp")
+          .set(get_ts().count());
+    }
+
+    // initialize ingress output values before running control block
+    phv->get_field("psa_ingress_output_metadata.class_of_service").set(0);
+    phv->get_field("psa_ingress_output_metadata.clone").set(0);
     phv->get_field("psa_ingress_output_metadata.drop").set(1);
+    phv->get_field("psa_ingress_output_metadata.resubmit").set(0);
+    phv->get_field("psa_ingress_output_metadata.multicast_group").set(0);
 
     Pipeline *ingress_mau = this->get_pipeline("ingress");
     ingress_mau->apply(packet.get());
@@ -384,6 +408,26 @@ PsaSwitch::egress_thread(size_t worker_id) {
 
     Parser *parser = this->get_parser("egress_parser");
     parser->parse(packet.get());
+
+    // passing metadata in egress
+    if (phv->has_field("psa_egress_input_metadata.egress_port")) {
+      phv->get_field("psa_egress_input_metadata.egress_port").set(
+        phv->get_field("psa_egress_parser_input_metadata.egress_port"));
+    }
+
+    if (phv->has_field("psa_egress_input_metadata.egress_timestamp")) {
+        phv->get_field("psa_egress_input_metadata.ingress_timestamp")
+            .set(get_ts().count());
+    }
+
+    if (phv->has_field("psa_egress_input_metadata.parser_error")) {
+        phv->get_field("psa_egress_input_metadata.parser_error").set(
+        packet->get_error_code().get());
+    }
+
+    // initialize egress output values
+    phv->get_field("psa_egress_output_metadata.clone").set(0);
+    phv->get_field("psa_egress_output_metadata.drop").set(0);
 
     Pipeline *egress_mau = this->get_pipeline("egress");
     egress_mau->apply(packet.get());
