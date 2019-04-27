@@ -316,7 +316,7 @@ PsaSwitch::ingress_thread() {
     Parser *parser = this->get_parser("ingress_parser");
     parser->parse(packet.get());
 
-    // passing metadata
+    // pass relevant values from ingress parser
     phv->get_field("psa_ingress_input_metadata.ingress_port").set(ingress_port);
 
     phv->get_field("psa_ingress_input_metadata.packet_path").set(
@@ -328,7 +328,7 @@ PsaSwitch::ingress_thread() {
     phv->get_field("psa_ingress_input_metadata.ingress_timestamp")
         .set(get_ts().count());
 
-    // initialize ingress output values before running control block
+    // set default metadata values according to PSA specification
     phv->get_field("psa_ingress_output_metadata.class_of_service").set(0);
     phv->get_field("psa_ingress_output_metadata.clone").set(0);
     phv->get_field("psa_ingress_output_metadata.drop").set(1);
