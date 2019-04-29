@@ -170,8 +170,8 @@ PsaSwitch::receive_(port_t port_num, const char *buffer, int len) {
   // each add_header / remove_header primitive call
   packet->set_register(PACKET_LENGTH_REG_IDX, len);
 
-  phv->get_field("psa_ingress_input_metadata.ingress_timestamp")
-    .set(get_ts().count());
+  phv->get_field("psa_ingress_input_metadata.ingress_timestamp").set(
+      get_ts().count());
 
   input_buffer.push_front(std::move(packet));
   return 0;
@@ -313,20 +313,15 @@ PsaSwitch::ingress_thread() {
 
     phv = packet->get_phv();
     Parser *parser = this->get_parser("ingress_parser");
-    ts_res ingress_timestamp = get_ts().count();
     parser->parse(packet.get());
 
     // pass relevant values from ingress parser
+    // ingress_timestamp is already set at receive time
     phv->get_field("psa_ingress_input_metadata.ingress_port").set(ingress_port);
-
     phv->get_field("psa_ingress_input_metadata.packet_path").set(
         phv->get_field("psa_ingress_parser_input_metadata.packet_path"));
-
     phv->get_field("psa_ingress_input_metadata.parser_error").set(
         packet->get_error_code().get());
-
-    phv->get_field("psa_ingress_input_metadata.ingress_timestamp")
-        .set(ingress_timestamp);
 
     // set default metadata values according to PSA specification
     phv->get_field("psa_ingress_output_metadata.class_of_service").set(0);
@@ -390,7 +385,6 @@ PsaSwitch::egress_thread(size_t worker_id) {
 #endif
 
     if (packet == nullptr) break;
-
     phv = packet->get_phv();
 
     // this reset() marks all headers as invalid - this is important since PSA
@@ -399,28 +393,24 @@ PsaSwitch::egress_thread(size_t worker_id) {
     phv->reset();
 
     Parser *parser = this->get_parser("egress_parser");
-
     parser->parse(packet.get());
 
-    // passing metadata in egress
     phv->get_field("psa_egress_input_metadata.egress_port").set(
         phv->get_field("psa_egress_parser_input_metadata.egress_port"));
-
-    phv->get_field("psa_egress_input_metadata.ingress_timestamp")
+    phv->get_field("psa_egress_input_metadata.egress_timestamp")
         .set(get_ts().count());
-
     phv->get_field("psa_egress_input_metadata.parser_error").set(
         packet->get_error_code().get());
 
-    // initialize egress output values
+    // default egress output values according to PSA spec
+    // clone_session_id is undefined by default
     phv->get_field("psa_egress_output_metadata.clone").set(0);
     phv->get_field("psa_egress_output_metadata.drop").set(0);
 
     Pipeline *egress_mau = this->get_pipeline("egress");
     egress_mau->apply(packet.get());
     packet->reset_exit();
-    // TODO: add stf test where exit is invoked but packet still gets
-    // recirc'd
+    // TODO(peter): add stf test where exit is invoked but packet still gets recirc'd
 
     Deparser *deparser = this->get_deparser("egress_deparser");
     deparser->deparse(packet.get());
