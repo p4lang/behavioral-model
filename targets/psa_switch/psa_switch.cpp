@@ -163,7 +163,7 @@ PsaSwitch::receive_(port_t port_num, const char *buffer, int len) {
   phv->reset_metadata();
 
   // TODO use appropriate enum member from JSON
-  phv->get_field("psa_ingress_parser_input_metadata.packet_path").set(PKT_INSTANCE_TYPE_NORMAL);
+  phv->get_field("psa_ingress_parser_input_metadata.packet_path").set(PACKET_PATH_NORMAL);
   phv->get_field("psa_ingress_parser_input_metadata.ingress_port").set(port_num);
 
   // using packet register 0 to store length, this register will be updated for
@@ -287,19 +287,6 @@ PsaSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
 #endif
 }
 
-// used for ingress cloning, resubmit
-// TODO: use this for metadata perserving resubmit
-void
-PsaSwitch::copy_field_list_and_set_type(
-    const std::unique_ptr<Packet> &packet,
-    const std::unique_ptr<Packet> &packet_copy,
-    p4object_id_t field_list_id) {
-  PHV *phv_copy = packet_copy->get_phv();
-  phv_copy->reset_metadata();
-  FieldList *field_list = this->get_field_list(field_list_id);
-  field_list->copy_fields_between_phvs(phv_copy, packet->get_phv());
-}
-
 void
 PsaSwitch::ingress_thread() {
   PHV *phv;
@@ -350,7 +337,8 @@ PsaSwitch::ingress_thread() {
     Field &f_resubmit = phv->get_field("psa_ingress_output_metadata.resubmit");
     if (f_resubmit.get_int()) {
       // since we resubmit the copy & toss original, we update the copy's metadata
-      phv_copy->get_field("psa_ingress_parser_input_metadata.packet_path").set(5);
+      phv_copy->get_field("psa_ingress_parser_input_metadata.packet_path").set(PACKET_PATH_RESUBMIT);
+      phv_copy->get_field("psa_ingress_input_metadata.ingress_timestamp").set(get_ts().count());
       BMLOG_DEBUG_PKT(*packet, "Resubmitting packet");
       input_buffer.push_front(std::move(packet_copy));
       continue;
@@ -443,11 +431,11 @@ PsaSwitch::egress_thread(size_t worker_id) {
       phv->get_field("psa_ingress_parser_input_metadata.ingress_port")
         .set(PSA_PORT_RECIRCULATE);
       phv->get_field("psa_ingress_parser_input_metadata.packet_path")
-        .set(PKT_INSTANCE_TYPE_RECIRC);
+        .set(PACKET_PATH_RECIRCULATE);
       phv->get_field("psa_ingress_input_metadata.ingress_port")
         .set(PSA_PORT_RECIRCULATE);
       phv->get_field("psa_ingress_input_metadata.packet_path")
-        .set(PKT_INSTANCE_TYPE_RECIRC);
+        .set(PACKET_PATH_RECIRCULATE);
       phv->get_field("psa_ingress_input_metadata.ingress_timestamp")
         .set(get_ts().count());
       input_buffer.push_front(std::move(packet));
