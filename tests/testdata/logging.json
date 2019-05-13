@@ -1,0 +1,45 @@
+{
+  "deparsers" : [
+    {
+      "name" : "deparser",
+      "id" : 0,
+      "source_info" : {
+        "filename" : "test.p4",
+        "line" : 123,
+        "column" : 4,
+        "source_fragment" : "TestDeparser"
+      },
+      "order" : [],
+      "primitives" : [
+        {
+          "op" : "log_msg",
+          "parameters" : [
+            {
+              "type" : "string",
+              "value" : "x = {}, y = {}"
+            },
+            {
+              "type" : "parameters_vector",
+              "value" : [
+                {
+                  "type" : "hexstr",
+                  "value" : "0x01"
+                },
+                {
+                  "type" : "hexstr",
+                  "value" : "0x02"
+                }
+              ]
+            }
+          ],
+          "source_info" : {
+            "filename" : "basic.p4",
+            "line" : 456,
+            "column" : 7,
+            "source_fragment" : "        log_msg(\\\"x = {}, y = {}\\\", {x, y});"
+          }
+        }
+      ]
+    }
+  ]
+}
