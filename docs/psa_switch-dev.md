@@ -14,7 +14,7 @@ new externs in PSA Switch.
 ## Background Knowledge
 For those who are familiar with the internals of BMV2 feel free
 to skip this section. For those who are new/less familiar with how BMV2
-operates, I reccomend reading `P4Objects.cpp` as a starting point
+operates, consider reading `P4Objects.cpp` as a starting point
 as this is where externs will be created. From here you can also see
 what the expected JSON for externs should be. Next, read the changes
 in the following [commit](https://github.com/p4lang/behavioral-model/pull/767).
@@ -30,7 +30,7 @@ PSA Switch.
    counters declared in P4 are translated to JSON in the p4c for PSA
    Switch. 
    This [commit](https://github.com/p4lang/p4c/commit/6d97bcf42f034ca113fa7a654fa998a7e10cba17)
-   is an exampe for how to emit an extern object to JSON, and
+   is an example for how to emit an extern object to JSON, and
    this [commit](https://github.com/p4lang/p4c/commit/bd6f231f7e6f24164f5d5156e0fad7a0680f2fa2)
    is an example for how to emit extern methods to JSON.
    If the examples aren't clear, one can always refer back to the JSON
@@ -41,12 +41,13 @@ PSA Switch.
 2. Create the extern type in PSA Switch. There are several important
    things to note.
    1. The extern type must sub-class `bm::ExternType`.
-   2. You must register the newly created extern type to the
+   2. The extern should live within the `bm::psa` namespace.
+   3. You must register the newly created extern type to the
       extern factory used by BMV2 to create externs from JSON 
       using `BM_REGISTER_EXTERN_W_NAME`.
-   3. You must also register any extern methods used by P4 using 
+   4. You must also register any extern methods used by P4 using 
       `BM_REGISTER_EXTERN_W_NAME_METHOD`.
-   4. Create an `import_yourExternNameHere` dummy method and call 
+   5. Create an `import_yourExternNameHere` dummy method and call 
       it within `psa_switch.cpp`.
 3. Provide P4 Runtime support if necessary. This means overriding 
    parts of the PSA Switch/P4 Runtime interface as necessary so 
