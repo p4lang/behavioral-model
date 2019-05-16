@@ -22,7 +22,7 @@ It details all the changes made to support the counter extern in PSA.
 It will also be useful to understand on a high level how P4 Runtime
 interacts with PSA Switch. Briefly skimming `runtime_CLI.py` will do.
 
-## Detailed Process
+## High-Level Process
 The following process should be taken when developing new externs in
 PSA Switch.
 
@@ -53,6 +53,27 @@ PSA Switch.
    parts of the PSA Switch/P4 Runtime interface as necessary so 
    that P4 Runtime can configure/monitor the newly developed extern.
 
+## Common Issues
+Here is a list of all the bugs encountered during the development of
+counters and might serve as a helpful resource for others.
+* The extern can't be created.
+  * Most likely a mis-match between the supplied and expected JSON format.
+  * Did you remember to register the extern into the extern factory?
+* The extern method is not being called inside of an action.
+  * Did you remember to register the extern method? These must be done
+    by the programmer.
+* P4 Runtime can't interact with my extern.
+  * Did you remember to override necessary method in the P4 Runtime
+    interface?
+* I created a new extern, added it to the Makefile but it isn't
+  being linked.
+  * Dont forget step 2.5 from above
+* Everything in BMV2 looks good, but it seems that P4c is
+  failing.
+  * Supporting additional externs might have allowed previous tests
+    marked as XFAIL to pass which will cause P4c to fail. Double
+    check the test case that has failed and see if this was the
+    issue.
 
 Refer to [this](https://github.com/p4lang/behavioral-model/pull/767) 
 as a complete example.
