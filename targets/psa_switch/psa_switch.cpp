@@ -301,6 +301,15 @@ PsaSwitch::ingress_thread() {
                     ingress_port);
 
     phv = packet->get_phv();
+
+    /* PSA wants us to resubmit the instance of the packet BEFORE ingress
+       processing, so store the "parsed headers" prior to parsing. Feels a bit
+       hacky though, same as in simple_switch.cpp
+
+       TODO */
+
+    const Packet::buffer_state_t packet_in_state = packet->save_buffer_state();
+
     Parser *parser = this->get_parser("ingress_parser");
     parser->parse(packet.get());
 
@@ -330,19 +339,22 @@ PsaSwitch::ingress_thread() {
       continue;
     }
 
-    Deparser *deparser = this->get_deparser("ingress_deparser");
-    deparser->deparse(packet.get());
-
-    // resubmit - do not move below multicast
+    // resubmit - these packets get immediately resub'd to ingress, and skip
+    //            deparsing for now, do not move below multicast or deparse
     Field &f_resubmit = phv->get_field("psa_ingress_output_metadata.resubmit");
     if (f_resubmit.get_int()) {
-      // since we resubmit the copy & toss original, we update the copy's metadata
-      phv_copy->get_field("psa_ingress_parser_input_metadata.packet_path").set(PACKET_PATH_RESUBMIT);
-      phv_copy->get_field("psa_ingress_input_metadata.ingress_timestamp").set(get_ts().count());
       BMLOG_DEBUG_PKT(*packet, "Resubmitting packet");
-      input_buffer.push_front(std::move(packet_copy));
+
+      packet->restore_buffer_state(packet_in_state);
+      phv->reset_metadata();
+      phv->get_field("psa_ingress_parser_input_metadata.packet_path").set(5);
+
+      input_buffer.push_front(std::move(packet));
       continue;
     }
+
+    Deparser *deparser = this->get_deparser("ingress_deparser");
+    deparser->deparse(packet.get());
 
     // handling multicast
     unsigned int mgid = 0u;
