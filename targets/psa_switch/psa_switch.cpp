@@ -302,9 +302,11 @@ PsaSwitch::ingress_thread() {
 
     phv = packet->get_phv();
 
-    /* PSA wants us to resubmit the instance of the packet BEFORE ingress
-       processing, so store the "parsed headers" prior to parsing. Feels a bit
-       hacky though, same as in simple_switch.cpp
+    /* Ingress cloning and resubmitting work on the packet before parsing.
+       `buffer_state` contains the `data_size` field which tracks how many
+       bytes are parsed by the parser ("lifted" into p4 headers). Here, we
+       track the buffer_state prior to parsing so that we can put it back
+       for packets that are cloned or resubmitted, same as in simple_switch.cpp
 
        TODO */
 
