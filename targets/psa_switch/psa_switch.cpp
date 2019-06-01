@@ -335,7 +335,7 @@ PsaSwitch::ingress_thread() {
     packet->reset_exit();
 
     // prioritize dropping if marked as such - do not move below other checks
-    Field &f_drop = phv->get_field("psa_ingress_output_metadata.drop");
+    const auto &f_drop = phv->get_field("psa_ingress_output_metadata.drop");
     if (f_drop.get_int()) {
       BMLOG_DEBUG_PKT(*packet, "Dropping packet at the end of ingress");
       continue;
@@ -343,7 +343,7 @@ PsaSwitch::ingress_thread() {
 
     // resubmit - these packets get immediately resub'd to ingress, and skip
     //            deparsing for now, do not move below multicast or deparse
-    Field &f_resubmit = phv->get_field("psa_ingress_output_metadata.resubmit");
+    const auto &f_resubmit = phv->get_field("psa_ingress_output_metadata.resubmit");
     if (f_resubmit.get_int()) {
       BMLOG_DEBUG_PKT(*packet, "Resubmitting packet");
 
@@ -360,7 +360,7 @@ PsaSwitch::ingress_thread() {
 
     // handling multicast
     unsigned int mgid = 0u;
-    Field &f_mgid = phv->get_field("psa_ingress_output_metadata.multicast_group");
+    const auto &f_mgid = phv->get_field("psa_ingress_output_metadata.multicast_group");
     mgid = f_mgid.get_uint();
 
     if(mgid != 0){
@@ -379,7 +379,7 @@ PsaSwitch::ingress_thread() {
       continue;
     }
 
-    Field &f_egress_port = phv->get_field("psa_ingress_output_metadata.egress_port");
+    const auto &f_egress_port = phv->get_field("psa_ingress_output_metadata.egress_port");
     port_t egress_port = f_egress_port.get_uint();
     BMLOG_DEBUG_PKT(*packet, "Egress port is {}", egress_port);
 
