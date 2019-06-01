@@ -342,7 +342,7 @@ PsaSwitch::ingress_thread() {
     }
 
     // resubmit - these packets get immediately resub'd to ingress, and skip
-    //            deparsing for now, do not move below multicast or deparse
+    //            deparsing, do not move below multicast or deparse
     const auto &f_resubmit = phv->get_field("psa_ingress_output_metadata.resubmit");
     if (f_resubmit.get_int()) {
       BMLOG_DEBUG_PKT(*packet, "Resubmitting packet");
