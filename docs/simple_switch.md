@@ -55,14 +55,16 @@ Here are the fields:
 - `egress_spec` (sm14, v1m) - Can be assigned a value in ingress code to
   control which output port a packet will go to.  The P4_14 primitive
   `drop`, and the v1model primitive action `mark_to_drop`, have the side
-  effect of assigning an implementation specific value to this field
+  effect of assigning an implementation specific value DROP_PORT to this field
   (511 decimal for simple_switch by default, but can be changed through
   the `--drop-port` target-specific command-line option), such that if
   `egress_spec` has that value at the end of ingress processing, the
   packet will be dropped and not stored in the packet buffer, nor sent
   to egress processing.  See the "after-ingress pseudocode" for relative
   priority of this vs. other possible packet operations at end of
-  ingress.
+  ingress.  If your P4 program assigns a value of DROP_PORT to `egress_spec`, it
+  will still behave according to the "after-ingress pseudocode", even if you
+  never call `mark_to_drop` (P4_16) or `drop` (P4_14).
 - `egress_port` (sm14, v1m) - Only intended to be accessed during
   egress processing, read only.  The output port this packet is
   destined to.
@@ -94,14 +96,6 @@ Here are the fields:
   0.  Calls to `verify_checksum` should be in the `VerifyChecksum`
   control in v1model, which is executed after the parser and before
   ingress.
-- `clone_spec` (v1m): should not be accessed directly. It is set by
-  the `clone` and `clone3` primitive actions in P4_16 programs, or the
-  `clone_ingress_pkt_to_egress` and `clone_egress_pkt_to_egress`
-  primitive actions for P4_14 programs, and is required for the packet
-  clone (aka mirror) feature. The "ingress to egress" clone primitive
-  action must be called from the ingress pipeline, and the "egress to
-  egress" clone primitive action must be called from the egress
-  pipeline.
 
 ## Intrinsic metadata
 
@@ -131,11 +125,8 @@ header_type intrinsic_metadata_t {
     fields {
         ingress_global_timestamp : 48;
         egress_global_timestamp : 48;
-        lf_field_list : 8;
         mcast_grp : 16;
         egress_rid : 16;
-        resubmit_flag : 8;
-        recirculate_flag : 8;
     }
 }
 metadata intrinsic_metadata_t intrinsic_metadata;
@@ -148,8 +139,6 @@ not be written to.
 starts egress processing. The clock is the same as for
 `ingress_global_timestamp`. This field should only be read from the egress
 pipeline, but should not be written to.
-- `lf_field_list`: used to store the learn id when calling `generate_digest`; do
-not access directly.
 - `mcast_grp`: needed for the multicast feature. This field needs to be written
 in the ingress pipeline when you wish the packet to be multicast. A value of 0
 means no multicast. This value must be one of a valid multicast group configured
@@ -159,32 +148,6 @@ end of ingress.
 - `egress_rid`: needed for the multicast feature. This field is only valid in
 the egress pipeline and can only be read from. It is used to uniquely identify
 multicast copies of the same ingress packet.
-- `resubmit_flag`: should not be accessed directly. It is set by the
-`resubmit` action primitive and is required for the resubmit
-feature. As a reminder, `resubmit` needs to be called in the ingress
-pipeline. See the "after-ingress pseudocode" for relative priority of
-this vs. other possible packet operations at end of ingress.
-- `recirculate_flag`: should not be accessed directly. It is set by the
-`recirculate` action primitive and is required for the recirculate feature. As a
-reminder, `recirculate` needs to be called from the egress pipeline.
-See the "after-egress pseudocode" for the relative priority of this
-vs. other possible packet operations at the end of egress processing.
-
-Several of these fields should be considered internal implementation
-details for how simple_switch implements some packet processing
-features.  They are: `lf_field_list`, `resubmit_flag`,
-`recirculate_flag`, and `clone_spec`.  They have the following
-properties in common:
-
-- They are initialized to 0, and are assigned a compiler-chosen non-0
-  value when the corresponding primitive action is called.
-- Your P4 program should never assign them a value directly.
-- Reading the values may be helpful for debugging.
-- Reading them may also be useful for knowing whether the
-  corresponding primitive action was called earlier in the
-  execution of the P4 program, but if you want to know whether such a
-  use is portable to P4 implementations other than simple_switch, you
-  will have to check the documentation for that other implementation.
 
 ### `queueing_metadata` header
 
@@ -238,17 +201,17 @@ file](../targets/simple_switch/primitives.cpp).
 After-ingress pseudocode - the short version:
 
 ```
-if (clone_spec != 0) {      // because your code called a clone primitive action
+if (a clone primitive action was called) {
     make a clone of the packet with details configured for the clone session
 }
-if (lf_field_list != 0) {   // because your code called generate_digest
+if (digest to generate) {   // because your code called generate_digest
     send a digest message to the control plane software
 }
-if (resubmit_flag != 0) {   // because your code called resubmit
+if (resubmit was called) {
     start ingress processing over again for the original packet
 } else if (mcast_grp != 0) {  // because your code assigned a value to mcast_grp
     multicast the packet to the output port(s) configured for group mcast_grp
-} else if (egress_spec == 511) {  // because your code called drop/mark_to_drop
+} else if (egress_spec == DROP_PORT) {  // e.g. because your code called drop/mark_to_drop
     Drop packet.
 } else {
     unicast the packet to the port equal to egress_spec
@@ -260,7 +223,7 @@ after ingress processing is complete.  The longer more detailed
 version:
 
 ```
-if (clone_spec != 0) {
+if (a clone primitive action was called) {
     // This condition will be true if your code called the `clone` or
     // `clone3` primitive action from a P4_16 program, or the
     // `clone_ingress_pkt_to_egress` primitive action in a P4_14
@@ -281,29 +244,27 @@ if (clone_spec != 0) {
     If it was a clone3 (P4_16) or clone_ingress_pkt_to_egress (P4_14)
     action, also preserve the final ingress values of the metadata
     fields specified in the field list argument, except assign
-    clone_spec a value of 0 always, and instance_type a value of
-    PKT_INSTANCE_TYPE_INGRESS_CLONE.
+    instance_type a value of PKT_INSTANCE_TYPE_INGRESS_CLONE.
 
     The cloned packet will continue processing at the beginning of
     your egress code.
     // fall through to code below
 }
-if (lf_field_list != 0) {
+if (digest to generate) {
     // This condition will be true if your code called the
     // generate_digest primitive action during ingress processing.
     Send a digest message to the control plane that contains the
     values of the fields in the specified field list.
     // fall through to code below
 }
-if (resubmit_flag != 0) {
+if (resubmit was called) {
     // This condition will be true if your code called the resubmit
     // primitive action during ingress processing.
     Start ingress over again for this packet, with its original
     unmodified packet contents and metadata values.  Preserve the
     final ingress values of any fields specified in the field list
     given as an argument to the last resubmit() primitive operation
-    called, except assign resubmit_flag a value of 0 always, and
-    instance_type a value of PKT_INSTANCE_TYPE_RESUBMIT.
+    called, except assign instance_type a value of PKT_INSTANCE_TYPE_RESUBMIT.
 } else if (mcast_grp != 0) {
     // This condition will be true if your code made an assignment to
     // standard_metadata.mcast_grp during ingress processing.  There
@@ -315,7 +276,7 @@ if (resubmit_flag != 0) {
     for the mcast_grp value.  Enqueue each one in the appropriate
     packet buffer queue.  The instance_type of each will be
     PKT_INSTANCE_TYPE_REPLICATION.
-} else if (egress_spec == 511) {
+} else if (egress_spec == DROP_PORT) {
     // This condition will be true if your code called the
     // mark_to_drop (P4_16) or drop (P4_14) primitive action during
     // ingress processing.
@@ -329,12 +290,12 @@ if (resubmit_flag != 0) {
 After-egress pseudocode - the short version:
 
 ```
-if (clone_spec != 0) {    // because your code called a clone primitive action
+if (a clone primitive action was called) {
     make a clone of the packet with details configured for the clone session
 }
-if (egress_spec == 511) {  // because your code called drop/mark_to_drop
+if (egress_spec == DROP_PORT) {  // e.g. because your code called drop/mark_to_drop
     Drop packet.
-} else if (recirculate_flag != 0) {  // because your code called recirculate
+} else if (recirculate was called) {
     start ingress processing over again for deparsed packet
 } else {
     Send the packet to the port in egress_port.
@@ -346,7 +307,7 @@ after egress processing is complete.  The longer more detailed
 version:
 
 ```
-if (clone_spec != 0) {
+if (a clone primitive action was called) {
     // This condition will be true if your code called the `clone` or
     // `clone3` primitive action from a P4_16 program, or the
     // `clone_egress_pkt_to_egress` primitive action in a P4_14
@@ -363,19 +324,18 @@ if (clone_spec != 0) {
     If it was a clone3 (P4_16) or clone_egress_pkt_to_egress (P4_14)
     action, also preserve the final egress values of the metadata
     fields specified in the field list argument, except assign
-    clone_spec a value of 0 always, and instance_type a value of
-    PKT_INSTANCE_TYPE_EGRESS_CLONE.
+    instance_type a value of PKT_INSTANCE_TYPE_EGRESS_CLONE.
 
     The cloned packet will continue processing at the beginning of
     your egress code.
     // fall through to code below
 }
-if (egress_spec == 511) {
+if (egress_spec == DROP_PORT) {
     // This condition will be true if your code called the
     // mark_to_drop (P4_16) or drop (P4_14) primitive action during
     // egress processing.
     Drop packet.
-} else if (recirculate_flag != 0) {
+} else if (recirculate was called) {
     // This condition will be true if your code called the recirculate
     // primitive action during egress processing.
     Start ingress over again, for the packet as constructed by the
@@ -383,8 +343,7 @@ if (egress_spec == 511) {
     ingress and egress processing.  Preserve the final egress values
     of any fields specified in the field list given as an argument to
     the last recirculate primitive action called, except assign
-    recirculate_flag a value of 0 always, and instance_type a value of
-    PKT_INSTANCE_TYPE_RECIRC.
+    instance_type a value of PKT_INSTANCE_TYPE_RECIRC.
 } else {
     Send the packet to the port in egress_port.  Since egress_port is
     read only during egress processing, note that its value must have
@@ -482,6 +441,124 @@ If an exact match table has entries defined via a `const entries` table
 property, there can be at most one matching entry for any search key, so the
 relative order that entries appear in the P4 program is unimportant in
 determining which entry will win.
+
+
+## Specifying match criteria for table entries using `const entries`
+
+The table below shows, for each `match_kind` value of P4_16 table key fields,
+which syntax is allowed for specifying the set of matching field values for a
+table entry in a `const entries` list.
+
+A restriction on all allowed cases is that `lo`, `hi`, `val`, and `mask` must be
+a legal possible value for the field, i.e. not outside of that field's range of
+values. All of them can be arithmetic expressions containing compile time
+constant values.
+
+|                  | `range`      | `ternary`    | `lpm`        | `exact` |
+| ---------------- | ------------ | ------------ | ------------ | ------- |
+| `lo .. hi`       | yes (Note 1) | no           | no           | no      |
+| `val &&& mask`   | no           | yes (Note 2) | yes (Note 3) | no      |
+| `val`            | yes (Note 4) | yes (Note 5) | yes (Note 5) | yes     |
+| `_` or `default` | yes (Note 6) | yes (Note 6) | yes (Note 6) | no      |
+
+Note 1: Restriction: `lo <= hi`. A run time search key value `k` matches if `lo
+<= k <= hi`.
+
+Note 2: Restriction: `val == (val & mask)`. Bit positions of `mask` equal to 1
+are exact match bit positions, and bit positions where `mask` is 0 are "wild
+card" or don't care bit position. A run time search key value `k` matches if `(k
+& mask) == (val & mask)`.
+
+Note 3: Restriction: `val == (val & mask)` and `mask` is a "prefix mask",
+i.e. it has all 1 bit positions consecutive and in the most significant bit
+positions of the field. WARNING: If you attempt to specify a prefix as `val /
+prefix_length` in a P4_16 program (the syntax used by some command line
+interfaces for specifying a prefix, such as `simple_switch_CLI`), that is
+actually an arithmetic expression that divides `val` by `prefix_length`, and
+thus falls into the `val` case, which is exact match. There is no warning from
+the compiler because it is perfectly legal syntax for a division operation.
+
+Note 4: Equivalent to the range `val .. val`, so it behaves as exact match on
+`val`.
+
+Note 5: Equivalent to `val &&& mask` where `mask` is 1 in all bit positions of
+the field, so it behaves as exact match on `val`.
+
+Note 6: Matches any allowed value for the field. Equivalent to
+`min_posible_field_value .. max_possible_field_value` for `range` fields, or `0
+&&& 0` for `ternary` and `lpm` fields.
+
+Below is a portion of a P4_16 program that demonstrates most of the allowed
+combinations of `match_kind` and syntax for specifying matching sets of values.
+
+```
+header h1_t {
+    bit<8> f1;
+}
+
+struct headers_t {
+    h1_t h1;
+}
+
+// ... later ...
+
+control ingress(inout headers_t hdr,
+                inout metadata_t m,
+                inout standard_metadata_t stdmeta)
+{
+    action a(bit<9> x) { stdmeta.egress_spec = x; }
+    table t1 {
+        key = { hdr.h1.f1 : range; }
+        actions = { a; }
+        const entries = {
+             1 ..  8 : a(1);
+             6 .. 12 : a(2);  // ranges are allowed to overlap between entries
+            15 .. 15 : a(3);
+            17       : a(4);  // equivalent to 17 .. 17
+            // It is not required to have a "match anything" rule in a table,
+            // but it is allowed (except for exact match fields), and several of
+            // these examples have one.
+            _        : a(5);
+        }
+    }
+    table t2 {
+        key = { hdr.h1.f1 : ternary; }
+        actions = { a; }
+        // There is no requirement to specify ternary match criteria using
+        // hexadecimal values.  I personally prefer it to make the mask bit
+        // positions more obvious.
+        const entries = {
+            0x04 &&& 0xfc : a(1);
+            0x40 &&& 0x72 : a(2);
+            0x50 &&& 0xff : a(3);
+            0xfe          : a(4);  // equivalent to 0xfe &&& 0xff
+            _             : a(5);
+        }
+    }
+    table t3 {
+        key = { hdr.h1.f1 : lpm; }
+        actions = { a; }
+        const entries = {
+            0x04 &&& 0xfc : a(1);
+            0x40 &&& 0xf8 : a(2);
+            0x04 &&& 0xff : a(3);
+            0xf9          : a(4);  // equivalent to 0xf9 &&& 0xff
+            _             : a(5);
+        }
+    }
+    table t4 {
+        key = { hdr.h1.f1 : exact; }
+        actions = { a; }
+        const entries = {
+            0x04 : a(1);
+            0x40 : a(2);
+            0x05 : a(3);
+            0xf9 : a(4);
+        }
+    }
+    // ... more code here ...
+}
+```
 
 
 ## P4_16 plus v1model architecture notes
