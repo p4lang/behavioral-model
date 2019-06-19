@@ -1,32 +1,30 @@
-###
-TODO: Write help for any CLI not preceded by "###".
-###
-
-act_prof_add_member_to_group
-act_prof_create_group
-act_prof_create_member
-act_prof_delete_group
-act_prof_delete_member
-act_prof_dump
-act_prof_dump_group
-act_prof_dump_member
-act_prof_modify_member
-act_prof_remove_member_from_group
-counter_read
-counter_reset
-help
-load_new_config_file
-mc_dump
-mc_mgrp_create
-mc_mgrp_destroy
-mc_node_associate
-mc_node_create
-mc_node_destroy
-mc_node_dissociate
-mc_node_update
-mc_set_lag_membership
-meter_array_set_rates
-meter_get_rates
+```
+TODO: act_prof_add_member_to_group
+TODO: act_prof_create_group
+TODO: act_prof_create_member
+TODO: act_prof_delete_group
+TODO: act_prof_delete_member
+TODO: act_prof_dump
+TODO: act_prof_dump_group
+TODO: act_prof_dump_member
+TODO: act_prof_modify_member
+TODO: act_prof_remove_member_from_group
+TODO: counter_read
+TODO: counter_reset
+TODO: help
+TODO: load_new_config_file
+TODO: mc_dump
+TODO: mc_mgrp_create
+TODO: mc_mgrp_destroy
+TODO: mc_node_associate
+TODO: mc_node_create
+TODO: mc_node_destroy
+TODO: mc_node_dissociate
+TODO: mc_node_update
+TODO: mc_set_lag_membership
+TODO: meter_array_set_rates
+TODO: meter_get_rates
+```
 
 ### meter_set_rates
 
@@ -37,22 +35,26 @@ RuntimeCmd: help meter_set_rates
 Configure rates for a meter: meter_set_rates <name> <index> <rate_1>:<burst_1> <rate_2>:<burst_2> ...
 ```
 
-Meter behavior is specified in RFC 2698.
+Meter behavior is specified in [RFC 2697](https://tools.ietf.org/html/rfc2697)
+and [RFC 2698](https://tools.ietf.org/html/rfc2698).
 
 The user enters the meter rate in bytes/microsecond and burst_size in bytes.  If
 the meter type is packets, the rate is entered in packets/microsecond and
 burst_size is the number of packets.
 
-port_add
-port_remove
-register_read
-register_reset
-register_write
-reset_state
-serialize_state
-set_crc16_parameters
-set_crc32_parameters
-shell
+
+```
+TODO: port_add
+TODO: port_remove
+TODO: register_read
+TODO: register_reset
+TODO: register_write
+TODO: reset_state
+TODO: serialize_state
+TODO: set_crc16_parameters
+TODO: set_crc32_parameters
+TODO: shell
+```
 
 ### show_actions
 
@@ -60,10 +62,12 @@ No parameters.  For every action in the currently loaded P4 program, shows the
 name and list of parameters.  For each parameter, the name and width in bits is
 shown.
 
+
 ### show_ports
 
 No parameters.  Shows the port numbers, the interface names they are associated
 with, and their status (e.g. up or down).
+
 
 ### show_tables
 
@@ -73,9 +77,12 @@ selector for tables created with those options), and a list of table search key
 fields, giving for each such field its name, match kind (e.g. `exact`, `lpm`,
 `ternary`, `range), and width in bits.
 
-TBD: `swap_configs`
 
-TBD: `switch_info`
+```
+TODO: swap_configs
+TODO: switch_info
+```
+
 
 ### table_add
 
@@ -132,29 +139,32 @@ program, without names.  The output of the `show_actions` command shows the name
 and width in bits of all parameters of every action.
 
 
-table_clear
-table_delete
-table_dump
-table_dump_entry
-table_dump_entry_from_key
-table_dump_group
-table_dump_member
-table_indirect_add
-table_indirect_add_member_to_group
-table_indirect_add_with_group
-table_indirect_create_group
-table_indirect_create_member
-table_indirect_delete
-table_indirect_delete_group
-table_indirect_delete_member
-table_indirect_modify_member
-table_indirect_remove_member_from_group
-table_indirect_reset_default
-table_indirect_set_default
-table_indirect_set_default_with_group
-table_info
-table_modify
-table_num_entries
+```
+TODO: table_clear
+TODO: table_delete
+TODO: table_dump
+TODO: table_dump_entry
+TODO: table_dump_entry_from_key
+TODO: table_dump_group
+TODO: table_dump_member
+TODO: table_indirect_add
+TODO: table_indirect_add_member_to_group
+TODO: table_indirect_add_with_group
+TODO: table_indirect_create_group
+TODO: table_indirect_create_member
+TODO: table_indirect_delete
+TODO: table_indirect_delete_group
+TODO: table_indirect_delete_member
+TODO: table_indirect_modify_member
+TODO: table_indirect_remove_member_from_group
+TODO: table_indirect_reset_default
+TODO: table_indirect_set_default
+TODO: table_indirect_set_default_with_group
+TODO: table_info
+TODO: table_modify
+TODO: table_num_entries
+```
+
 
 ### table_reset_default
 
@@ -166,6 +176,7 @@ Reset default entry for a match table: table_reset_default <table name>
 Changes the action executed by a table when a miss occurs back to its original
 value, as specified in the P4 program.  If no default action is specified in the
 P4 program, it is a no-op action, sometimes called `NoAction`.
+
 
 ### table_set_default
 
@@ -181,6 +192,9 @@ entries installed in the table.
 See documentation for the `table_add` command for how action parameters are
 specified.
 
-table_set_timeout
-table_show_actions
-write_config_to_file
+
+```
+TODO: table_set_timeout
+TODO: table_show_actions
+TODO: write_config_to_file
+```
