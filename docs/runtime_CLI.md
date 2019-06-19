@@ -75,7 +75,7 @@ No parameters.  For every table in the currently loaded P4 program, shows the
 name, implementation (often `None`, but can be an action profile or action
 selector for tables created with those options), and a list of table search key
 fields, giving for each such field its name, match kind (e.g. `exact`, `lpm`,
-`ternary`, `range), and width in bits.
+`ternary`, `range`), and width in bits.
 
 
 ```
@@ -102,10 +102,17 @@ shows the names, match kinds (`ternary`, `range`, `lpm`, or `exact`), and bit
 widths for every table, after the `mk=` string.
 
 Numeric values can be specified in decimal, or hexadecimal prefixed with `0x`.
-As a special case, 32-bit values can be specified like IPv4 addresses, in dotted
-decimal, e.g. `10.1.2.3`, and 48-bit values can be specified like Ethernet MAC
-addresses, with each byte in two hexadecimal digits, with bytes separated by
-`:`, e.g. `00:12:34:56:78:9a`.
+
+There are some special syntaxes accepted to specify numeric values for the
+convenience of some common network address formats:
+
+* 32-bit values can be specified like IPv4 addresses, in dotted decimal,
+  e.g. `10.1.2.3`
+* 128-bit values can be specified like IPv6 addresses in IETF notation,
+  e.g. `FEDC:BA98:7654:3210:FEDC:BA98:7654:3210` or `1080::8:800:200C:417A`.
+  See [RFC 2732](https://www.ietf.org/rfc/rfc2732.txt).
+* 48-bit values can be specified like Ethernet MAC addresses, with each byte in
+  two hexadecimal digits, with bytes separated by `:`, e.g. `00:12:34:56:78:9a`.
 
 Table search key fields with match kind `lpm` should have the value followed by
 the prefix length after a slash character `/`, e.g. `0x0a010203/24`.  The prefix
