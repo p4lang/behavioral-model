@@ -62,7 +62,7 @@ There are effectively two "levels" of objects involved in managing
 multicast replication lists:
 
 * Each multicast group is a set of multicast _nodes_.
-# Each multicast node that you create has one `egress_rid` value, and
+* Each multicast node that you create has one `egress_rid` value, and
   a set of `egress_port` values, which may not contain any duplicates.
 
 Suppose you want to configure simple_switch such that packets to be
