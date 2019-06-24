@@ -66,8 +66,8 @@ multicast replication lists:
   a set of `egress_port` values, which may not contain any duplicates.
 
 Suppose you want to configure simple_switch such that packets to be
-multicast with a `mcast_grp` value of 1113 should be replicated to
-this list of `(egress_port, egress_rid)` pairs:
+multicast with a `mcast_grp` value of 1113 will be replicated to this
+list of `(egress_port, egress_rid)` pairs:
 
 * (egress_port=0, egress_rid=5)
 * (egress_port=7, egress_rid=10)
@@ -91,7 +91,7 @@ Note the `handle 0` in the output.  Every time you create a multicast
 node, simple_switch at run time chooses an integer id or handle to
 "name" it, and that node handle must be used when referring to that
 node in other commands below.  The values are typically assigned from
-0 on up as new groups are created, but it is better if you do not rely
+0 on up as new nodes are created, but it is better if you do not rely
 on this detail.
 
 Create another multicast node for the copies to make with `egress_rid`
