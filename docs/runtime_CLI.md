@@ -15,7 +15,7 @@ TODO: help
 TODO: load_new_config_file
 ```
 
-### mc_dump, mc_mgrp_create mc_mgrp_destroy, mc_node_associate, mc_node_create, mc_node_destroy, mc_node_dissociate
+### mc_dump, mc_mgrp_create, mc_mgrp_destroy, mc_node_associate, mc_node_create, mc_node_destroy, mc_node_dissociate
 
 When ingress processing is complete in the v1model architecture, the
 ingress P4 code can assign values to a few fields in standard_metadata
