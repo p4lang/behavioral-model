@@ -6,7 +6,6 @@ source $THIS_DIR/common.sh
 check_lib libthrift libthrift-0.9.2
 
 set -e
-# Modified By Polly
 # Make it possible to get thrift in China
 # wget http://archive.apache.org/dist/thrift/0.9.2/thrift-0.9.2.tar.gz
 # tar -xzvf thrift-0.9.2.tar.gz
