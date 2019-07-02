@@ -691,7 +691,6 @@ This is supported:
             hdr.ethernet.dstAddr = 2;
         }
     }
-
 ```
 
 but this is not, as of 2019-Jul-01:
