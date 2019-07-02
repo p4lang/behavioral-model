@@ -677,7 +677,7 @@ These restrictions are actually restrictions of the `p4c` compiler, not of
 restrictions should see the issues below.
 
 The P4_16 language specification v1.1.0 permits `if` statements within action
-declarations.  `p4c`, when compiling for the traget BMv2 simple_switch, supports
+declarations.  `p4c`, when compiling for the target BMv2 simple_switch, supports
 some kinds of `if` statements, in particular ones that can be transformed into
 assignments using the ternary `condition ? true_expr : false_expr` operator.
 This is supported:
