@@ -442,6 +442,15 @@ ActionParamVectorFn::parameter_push_back_field(header_id_t h_id, int offset) {
 }
 
 void
+ActionParamVectorFn::parameter_push_back_last_header_stack_field(
+    header_stack_id_t header_stack, int field_offset) {
+  ActionParam param;
+  param.tag = ActionParam::LAST_HEADER_STACK_FIELD;
+  param.stack_field = {header_stack, field_offset};
+  param_vector.push_back(param);
+}
+
+void
 ActionParamVectorFn::parameter_push_back_param_vector() {
   af->parameter_push_back_param_vector(param_vector);
 }

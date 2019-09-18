@@ -131,7 +131,7 @@ TEST_F(LoggingMessage_Test, LoggingMessageError) {
   EXPECT_DEATH(testActionFnEntry(pkt.get()), "");
 }
 
-TEST_F(LoggingMessage_Test, DeparserLoggingNoError) {
+TEST_F(LoggingMessage_Test, InitObjectsNoError) {
   fs::path json_path = fs::path(TESTDATADIR) / fs::path("logging.json");
   std::ifstream is(json_path.string());
   LookupStructureFactory factory;

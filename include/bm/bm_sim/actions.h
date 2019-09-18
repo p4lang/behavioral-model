@@ -349,6 +349,11 @@ ActionParam::to<const std::vector<Data>>(ActionEngineState *state) const {
             state->action_data.get(
                           state->parameters_vector[i].action_data_offset));
       break;
+    case ActionParam::LAST_HEADER_STACK_FIELD:
+      result.push_back(
+            state->phv.get_header_stack(stack_field.header_stack).get_last()
+            .get_field(stack_field.field_offset));
+      break;
     default:
       _BM_UNREACHABLE("Default switch case should not be reachable");
     }
@@ -687,7 +692,7 @@ class ActionFn :  public NamedP4Object {
   virtual void parameter_push_back_field(header_id_t header, int field_offset);
   void parameter_push_back_header(header_id_t header);
   void parameter_push_back_header_stack(header_stack_id_t header_stack);
-  void parameter_push_back_last_header_stack_field(
+  virtual void parameter_push_back_last_header_stack_field(
       header_stack_id_t header_stack, int field_offset);
   void parameter_push_back_header_union(header_union_id_t header_union);
   void parameter_push_back_header_union_stack(
@@ -796,6 +801,8 @@ class ActionParamVectorFn : public ActionFn {
 
   void parameter_push_back_action_data(int offset);
   void parameter_push_back_const(const Data &data);
+  void parameter_push_back_last_header_stack_field(
+      header_stack_id_t header_stack, int field_offset);
   void parameter_push_back_field(header_id_t h_id, int offset);
   void parameter_push_back_param_vector();
 

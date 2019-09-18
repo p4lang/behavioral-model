@@ -432,7 +432,8 @@ P4Objects::process_single_param(ActionFn* action_fn,
   const auto type = cfg_parameter["type"].asString();
 
   if (typeid(*action_fn) == typeid(ActionParamVectorFn)
-            && type != "hexstr" && type != "runtime_data" && type != "field") {
+            && type != "hexstr" && type != "runtime_data" && type != "field"
+            && type != "stack_field") {
     throw json_exception(
               EFormat() << "Parameter type '"
               << type << "' not supported",
