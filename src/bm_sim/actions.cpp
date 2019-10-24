@@ -33,14 +33,24 @@
 namespace bm {
 
 ActionEngineState::ActionEngineState(Packet *pkt,
-                                     const ActionData &action_data,
-                                     const std::vector<Data> &const_values)
+                            const ActionData &action_data,
+                            const std::vector<Data> &const_values,
+                            const std::vector<ActionParam> &parameters_vector)
     : pkt(*pkt), phv(*pkt->get_phv()),
-      action_data(action_data), const_values(const_values) { }
+      action_data(action_data), const_values(const_values),
+      parameters_vector(parameters_vector) { }
 
 // the first tmp data register is reserved for internal engine use (register
 // index evaluation)
 size_t ActionFn::nb_data_tmps = 1;
+
+ActionFn::ActionFn(const std::string &name, p4object_id_t id, size_t num_params)
+    : NamedP4Object(name, id), num_params(num_params) { }
+
+ActionFn::ActionFn(const std::string &name, p4object_id_t id, size_t num_params,
+                   std::unique_ptr<SourceInfo> source_info)
+    : NamedP4Object(name, id, std::move(source_info)),
+      num_params(num_params) { }
 
 void
 ActionFn::parameter_push_back_field(header_id_t header, int field_offset) {
@@ -218,6 +228,29 @@ ActionFn::parameter_push_back_string(const std::string &str) {
 }
 
 void
+ActionFn::parameter_start_vector() {
+  ActionParam param;
+  param.tag = ActionParam::PARAMS_VECTOR;
+  auto start = static_cast<unsigned int>(sub_params.size());
+  // end will be adjusted correctly when parameter_end_vector is called
+  param.params_vector = {start, start /* end */};
+  params.push_back(param);
+
+  // we swap the 2 vectors so that subsequent calls to parameter_push_back_*
+  // methods append parameters to the end of sub_params (instead of params)
+  params.swap(sub_params);
+}
+
+void
+ActionFn::parameter_end_vector() {
+  params.swap(sub_params);
+  assert(params.back().tag == ActionParam::PARAMS_VECTOR &&
+         "no vector was started");
+  auto end = static_cast<unsigned int>(sub_params.size());
+  params.back().params_vector.end = end;
+}
+
+void
 ActionFn::push_back_primitive(ActionPrimitive_ *primitive,
                               std::unique_ptr<SourceInfo> source_info) {
   size_t param_offset = 0;
@@ -309,7 +342,8 @@ ActionFnEntry::push_back_action_data(const char *bytes, int nbytes) {
 
 void
 ActionFnEntry::execute(Packet *pkt) const {
-  ActionEngineState state(pkt, action_data, action_fn->const_values);
+  ActionEngineState state(pkt, action_data, action_fn->const_values,
+                          action_fn->sub_params);
 
   auto &primitives = action_fn->primitives;
   size_t param_offset = 0;

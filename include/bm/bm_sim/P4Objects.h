@@ -390,8 +390,11 @@ class P4Objects {
   void build_expression(const Json::Value &json_expression, Expression *expr,
                         ExprType *expr_type);
 
-  int add_primitive_to_action(const Json::Value &primitive,
-                              ActionFn *action_fn);
+  void add_primitive_to_action(const Json::Value &primitive,
+                               ActionFn *action_fn);
+  void process_single_param(ActionFn* action_fn,
+                            const Json::Value &cfg_parameter,
+                            const std::string &primitive_name);
 
   void parse_config_options(const Json::Value &root);
 
@@ -453,6 +456,7 @@ class P4Objects {
   std::vector<std::unique_ptr<ParseState> > parse_states{};
   // this is to give ActionFn objects a place to live
   std::vector<std::unique_ptr<ActionFn> > parse_methods{};
+  std::vector<std::unique_ptr<ActionFn> > deparse_methods{};
 
   // parse vsets
   std::unordered_map<std::string, std::unique_ptr<ParseVSet> > parse_vsets{};

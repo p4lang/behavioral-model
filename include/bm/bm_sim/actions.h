@@ -61,6 +61,7 @@
 //!   - `[const] HeaderStack &` for P4 header stacks
 //!   - `[const] HeaderUnionStack &` for P4 header union stacks
 //!   - `const std::string &` or `const char *` for strings
+//!   - `const std::vector<Data>` for lists of numerical values
 //!
 //! You can declare and register primitives anywhere in your switch target C++
 //! code.
@@ -159,16 +160,7 @@ struct ActionData {
   std::vector<Data> action_data{};
 };
 
-struct ActionEngineState {
-  Packet &pkt;
-  PHV &phv;
-  const ActionData &action_data;
-  const std::vector<Data> &const_values;
-
-  ActionEngineState(Packet *pkt,
-                    const ActionData &action_data,
-                    const std::vector<Data> &const_values);
-};
+struct ActionEngineState;
 
 class ExternType;
 
@@ -186,7 +178,7 @@ struct ActionParam {
         EXPRESSION,
         EXTERN_INSTANCE,
         STRING,
-        HEADER_UNION, HEADER_UNION_STACK} tag;
+        HEADER_UNION, HEADER_UNION_STACK, PARAMS_VECTOR} tag;
 
   union {
     unsigned int const_offset;
@@ -215,6 +207,13 @@ struct ActionParam {
     } register_gen;
 
     header_stack_id_t header_stack;
+
+    // for lists of numerical values, used for the log_msg primitive and nothing
+    // else at the moment
+    struct {
+      unsigned int start;
+      unsigned int end;
+    } params_vector;
 
     // special case when trying to access a field in the last header of a stack
     struct {
@@ -255,6 +254,19 @@ struct ActionParam {
 
   // convert to the correct type when calling a primitive
   template <typename T> T to(ActionEngineState *state) const;
+};
+
+struct ActionEngineState {
+  Packet &pkt;
+  PHV &phv;
+  const ActionData &action_data;
+  const std::vector<Data> &const_values;
+  const std::vector<ActionParam> &parameters_vector;
+
+  ActionEngineState(Packet *pkt,
+                    const ActionData &action_data,
+                    const std::vector<Data> &const_values,
+                    const std::vector<ActionParam> &parameters_vector);
 };
 
 // template specializations for ActionParam "casting"
@@ -471,6 +483,29 @@ const char *ActionParam::to<const char *>(ActionEngineState *state) const {
   return str->c_str();
 }
 
+// used for primitives that take as a parameter a "list" of values. Currently we
+// only support "const std::vector<Data>" as the type used by the C++ primitive
+// and currently this is only used by log_msg.
+// TODO(antonin): more types (e.g. "const std::vector<const Data &>") if needed
+// we can support list of other value types as well, e.g. list of headers
+// we are not limited to using a vector as the data structure either
+template <> inline
+const std::vector<Data>
+ActionParam::to<const std::vector<Data>>(ActionEngineState *state) const {
+  _BM_ASSERT(tag == ActionParam::PARAMS_VECTOR && "not a params vector");
+  std::vector<Data> vec;
+
+  for (auto i = params_vector.start ; i < params_vector.end ; i++) {
+    // re-use previously-defined cast method; note that we use to<const Data &>
+    // and not to<const Data>, as it does not exists
+    // if something in the parameters_vector cannot be cast to "const Data &",
+    // the code will assert
+    vec.push_back(state->parameters_vector[i].to<const Data &>(state));
+  }
+
+  return vec;
+}
+
 /* This is adapted from stack overflow code:
    http://stackoverflow.com/questions/11044504/any-solution-to-unpack-a-vector-to-function-arguments-in-c
 */
@@ -547,7 +582,7 @@ class ActionPrimitive_ {
   // (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60056).
   static thread_local Packet *pkt;
   static thread_local PHV *phv;
-  SourceInfo *call_source_info = nullptr;
+  SourceInfo *call_source_info{nullptr};
 
   P4Objects *get_p4objects() {
     return p4objects;
@@ -637,12 +672,10 @@ class ActionFn :  public NamedP4Object {
   friend class ActionFnEntry;
 
  public:
-  ActionFn(const std::string &name, p4object_id_t id, size_t num_params)
-      : NamedP4Object(name, id), num_params(num_params) { }
-    ActionFn(const std::string &name, p4object_id_t id, size_t num_params,
-             std::unique_ptr<SourceInfo> source_info)
-      : NamedP4Object(name, id, std::move(source_info)),
-        num_params(num_params) { }
+  ActionFn(const std::string &name, p4object_id_t id, size_t num_params);
+
+  ActionFn(const std::string &name, p4object_id_t id, size_t num_params,
+           std::unique_ptr<SourceInfo> source_info);
 
   // these parameter_push_back_* methods are not very well named. They are used
   // to push arguments to the primitives; and are independent of the actual
@@ -669,6 +702,15 @@ class ActionFn :  public NamedP4Object {
   void parameter_push_back_extern_instance(ExternType *extern_instance);
   void parameter_push_back_string(const std::string &str);
 
+  // These methods are used when we need to push a "vector of parameters"
+  // (i.e. when a primitive, such as log_msg, uses a list of values as one of
+  // its parameters). First parameter_start_vector is called to signal the
+  // beginning of the "vector of parameters", then the parameter_push_back_*
+  // methods are called as usual, and finally parameter_end_vector is called to
+  // signal the end.
+  void parameter_start_vector();
+  void parameter_end_vector();
+
   void push_back_primitive(ActionPrimitive_ *primitive,
                            std::unique_ptr<SourceInfo> source_info = nullptr);
 
@@ -677,8 +719,11 @@ class ActionFn :  public NamedP4Object {
   size_t get_num_params() const;
 
  private:
+  using ParameterList = std::vector<ActionParam>;
+
   std::vector<ActionPrimitiveCall> primitives{};
-  std::vector<ActionParam> params{};
+  ParameterList params{};
+  ParameterList sub_params{};
   RegisterSync register_sync{};
   std::vector<Data> const_values{};
   // should I store the objects in the vector, instead of pointers?
@@ -689,7 +734,6 @@ class ActionFn :  public NamedP4Object {
  private:
   static size_t nb_data_tmps;
 };
-
 
 class ActionFnEntry {
  public:
