@@ -755,7 +755,7 @@ programs, but this is not supported.
 
 As an example of a way to work around this limitation, suppose you
 wanted a struct with three fields x, y, and z with types `bit<8>`,
-`bit<3>, and `bit<6>`.  You can emulate this by making a register
+`bit<3>`, and `bit<6>`.  You can emulate this by making a register
 array with elements of type `bit<17>` (the total width of all 3
 fields), and use P4_16 bit slicing operations to separate the 3 fields
 from the 17-bit value after reading from the register array, and P4_16
