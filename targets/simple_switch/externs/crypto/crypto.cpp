@@ -39,11 +39,22 @@
 
 #include "simple_switch.h"
 
+using namespace bm;
 using std::endl;
 using std::cout;
 using std::string;
 using std::vector;
 
+#define SAK_SIZE 16
+#define SCI_SIZE 8
+#define PN_SIZE 4
+#define ADDR_SIZE 6
+#define SECTAG_SIZE 16
+#define ICV_SIZE 16
+#define IPV4_HDR_SIZE 20
+#define ETHERTYPE_SIZE 2
+
+#define SECURE_DATA_SIZE 123
 
 class ExternCrypt : public ExternType {
  public:
@@ -165,7 +176,7 @@ class ExternCrypt : public ExternType {
     get_packet().remove(get_packet().get_data_size());
     // make room for the ciphertext and write the ciphertext in it
     char *payload_start = get_packet().prepend(
-                           static_cast<uint64> (secure_data.size() +
+                           static_cast<uint64_t> (secure_data.size() +
                            integrity_check_value.size()));
     for (uint i = 0; i < secure_data.size(); i++) {
       payload_start[i] = secure_data[i];
@@ -265,8 +276,9 @@ class ExternCrypt : public ExternType {
     // first, remove all the data
     get_packet().remove(get_packet().get_data_size());
     // make room for the ciphertext and write the ciphertext in it
-    char *payload_start = get_packet().prepend(static_cast<uint64>
-                                               user_data.size());
+    char *payload_start = get_packet().prepend(
+                          static_cast<uint64_t> (secure_data.size()
+                          + user_data.size()));
     for (uint i = 0; i < user_data.size() - ETHERTYPE_SIZE; i++) {
       payload_start[i] = user_data[i + ETHERTYPE_SIZE];
     }
@@ -274,8 +286,8 @@ class ExternCrypt : public ExternType {
     // copy ethertype from encrypted packet
     std::stringstream ss_ethertype;
     for (uint i = 0; i < ETHERTYPE_SIZE; ++i)
-      ss_ethertype << std::setfill('0') << std::setw(2)
-      << std::hex << static_cast<int>user_data[i];
+      ss_ethertype << std::setfill('0') << std::setw(2) << std::hex
+      << static_cast<int>(user_data[i]);
     std::string ethertype_hexstr = ss_ethertype.str();
 
     out_ethertype.set(ethertype_hexstr);
@@ -471,7 +483,7 @@ class ExternCrypt : public ExternType {
       // std::cout << "[p4sec] K size " << K.size() <<  std::endl;
       // hexdump((char*)&K[0], K.size());
 
-      / /12 byte IV
+      // 12 byte IV
       std::vector<unsigned char> IV;
       IV.reserve(secure_channel_identifier.size() + packet_number.size());
       // The 64 most significant bits of the 96-bit IV are the octets of
