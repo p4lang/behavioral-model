@@ -39,7 +39,6 @@
 
 #include "simple_switch.h"
 
-using namespace bm;
 using std::endl;
 using std::cout;
 using std::string;
