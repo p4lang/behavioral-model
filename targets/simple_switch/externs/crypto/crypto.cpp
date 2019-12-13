@@ -25,23 +25,20 @@
 #include <bm/bm_sim/parser.h>
 #include <bm/bm_sim/tables.h>
 #include <bm/bm_sim/logger.h>
-
-#include <unistd.h>
-
 // needed for externs
 #include <bm/bm_sim/extern.h>
-#include "simple_switch.h"
+#include <unistd.h>
 
-
-#include <iostream>
-#include <fstream>
-#include <mutex>
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
+#include <mutex>
 #include <sstream>
 
-using namespace bm;
+#include "simple_switch.h"
+
 using std::endl;
 using std::cout;
 using std::string;
