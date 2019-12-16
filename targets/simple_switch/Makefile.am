@@ -33,7 +33,7 @@ $(top_builddir)/src/bm_sim/libbmsim.la \
 $(top_builddir)/src/bf_lpm_trie/libbflpmtrie.la \
 $(top_builddir)/src/BMI/libbmi.la \
 $(top_builddir)/third_party/jsoncpp/libjson.la \
--lboost_system $(THRIFT_LIB) -lboost_program_options -lboost_filesystem -lcrypto -lz
+-lboost_system $(THRIFT_LIB) -lboost_program_options -lboost_filesystem
 
 libsimpleswitch_runner_la_LIBADD = \
 $(PI_LIB) \

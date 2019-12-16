@@ -19,3 +19,28 @@ index ee1bc7e..3e06ae1 100644
  
  libsimpleswitch_runner_la_LIBADD = \
  $(PI_LIB) \
+
+# BUILD
+
+Since Makefile.am is changed, run "./configure" from root directory of behavioral-model.
+
+# P4 CODE
+
+See basic.p4.
+
+1. crypt.validate() is decryption.
+
+2. crypt.protect() is encryption.
+
+3. See extern ExternCrypt definition in the same file.
+
+4. Args to validate() and protect can be understood from P4 code and also this
+   paper: https://arxiv.org/abs/1904.07088
+
+# COMPILING P4 CODE
+
+Use following args with p4c-bm2-ss
+
+--emit-externs --p4runtime-file $(basename $@).p4info --p4runtime-format text
+
+# HOW to run simple_switch/simple_switch_grpc is TODO
