@@ -182,7 +182,7 @@ control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
     action drop() {
-        mark_to_drop();
+        mark_to_drop(standard_metadata);
     }
 
     action send_to_controller(bit<16> reason, egressSpec_t port){
