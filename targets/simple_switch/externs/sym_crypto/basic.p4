@@ -285,7 +285,7 @@ control MyIngress(inout headers hdr,
 
                 //headers from decrypted payload not parsed -> recirculate packet
                 meta.user_metadata.recirculated = true;
-                recirculate({meta.intrinsic_metadata, standard_metadata, meta.user_metadata});
+//                recirculate({meta.intrinsic_metadata, standard_metadata, meta.user_metadata});
             }
         }
 
