@@ -30,7 +30,6 @@ index 469933d..9d79d2d 100644
  REGISTER_HASH(hash_ex);
  REGISTER_HASH(bmv2_hash);
  
-+// using namespace bm;
 +using std::endl;
 +using std::cout;
 +using std::string;

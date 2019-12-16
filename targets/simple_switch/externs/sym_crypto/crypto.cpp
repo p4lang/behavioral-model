@@ -56,6 +56,7 @@ using std::vector;
 
 #define SECURE_DATA_SIZE 123
 
+namespace bm {
 class ExternCrypt : public ExternType {
  public:
   BM_EXTERN_ATTRIBUTES {
@@ -604,3 +605,4 @@ BM_REGISTER_EXTERN_W_NAME_METHOD(ext_crypt, ExternCrypt, protect, const Data &,
 BM_REGISTER_EXTERN_W_NAME_METHOD(ext_crypt, ExternCrypt, validate, const Data &,
                                  const Data &, const Data &, const Data &,
                                  const Data &, const Data &, Data &, Data &);
+}  // namespace bm

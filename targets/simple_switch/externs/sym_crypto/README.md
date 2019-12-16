@@ -1,6 +1,6 @@
 # ADD CRYPTO to SIMPLE_SWITCH
 
-Patch diffs-simple_switch.cpp to your behavioral-model repo
+Patch diffs-simple_switch-cpp to your behavioral-model repo
 
 # LINKING
 
