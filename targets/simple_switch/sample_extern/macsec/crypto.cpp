@@ -41,6 +41,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <vector>
 #include <iostream>
 #include <deque>
 #include <fstream>
@@ -83,41 +84,23 @@ class ExternCrypt : public ExternType {
                const Data &in_ipv4_hdr) {
     std::vector<unsigned char> secure_association_key = get_char_vector(
                                           in_sak.get_string(), SAK_SIZE);
-    // cout << "[p4sec] secure_association_key" << std::endl;
-    // hexdump((char*)&secure_association_key[0],
-    // secure_association_key.size());
-
     std::vector<unsigned char> secure_channel_identifier =
       get_char_vector(in_sci.get_string(), SCI_SIZE);
-    // cout << "[p4sec] secure_channel_identifier" << std::endl;
-    // hexdump((char*)&secure_channel_identifier[0],
-    // secure_channel_identifier.size());
 
     std::vector<unsigned char> packet_number =
         get_char_vector(in_pn.get_string(), PN_SIZE);
-    // cout << "[p4sec] packet_number" << std::endl;
-    // hexdump((char*)&packet_number[0], packet_number.size());
 
     std::vector<unsigned char> source_mac_address =
       get_char_vector(in_src_addr.get_string(), ADDR_SIZE);
-    // cout << "[p4sec] source_mac_address" << std::endl;
-    // hexdump((char*)&source_mac_address[0], source_mac_address.size());
 
     std::vector<unsigned char> destination_mac_address =
       get_char_vector(in_dst_addr.get_string(), ADDR_SIZE);
-    // cout << "[p4sec] destination_mac_address" << std::endl;
-    // hexdump((char*)&destination_mac_address[0],
-    // destination_mac_address.size());
 
     std::vector<unsigned char> security_tag =
       get_char_vector(in_sectag.get_string(), SECTAG_SIZE);
-    // cout << "[p4sec] security_tag" << std::endl;
-    // hexdump((char*)&security_tag[0], security_tag.size());
 
     std::vector<unsigned char> ethertype =
       get_char_vector(in_ethertype.get_string(), ETHERTYPE_SIZE);
-    // cout << "[p4sec] EtherType" << std::endl;
-    // hexdump((char*)&ethertype[0], ethertype.size());
 
     bool prepend_ipv4 = false;
     // must pass byte to external function
@@ -127,7 +110,6 @@ class ExternCrypt : public ExternType {
     // << in_prepend_ipv4_hdr.get_string() << std::endl;
     if (in_prepend_ipv4_hdr.get_string().compare("T") == 0) {
       prepend_ipv4 = true;
-      // cout << "[p4sec] prepend IPv4 Header" << std::endl;
     } else {
       // cout << "[p4sec] do not prepend IPv4 Header" << std::endl;
     }
@@ -135,8 +117,7 @@ class ExternCrypt : public ExternType {
     std::vector<unsigned char> ipv4_hdr;
     if (prepend_ipv4) {
       ipv4_hdr = get_char_vector(in_ipv4_hdr.get_string(), IPV4_HDR_SIZE);
-      // cout << "[p4sec] IPv4 Header" << std::endl;
-      // hexdump((char*)&ipv4_hdr[0], ipv4_hdr.size());
+      // hexdump((unsigned char*)&ipv4_hdr[0], ipv4_hdr.size());
     }
 
 
@@ -174,12 +155,6 @@ class ExternCrypt : public ExternType {
                         source_mac_address, security_tag, raw_packet_data,
                         secure_data, integrity_check_value);
 
-    // cout << "[p4sec] secure_data" << std::endl;
-    // hexdump((char*)&secure_data[0], secure_data.size());
-
-    // cout << "[p4sec] integrity_check_value" << std::endl;
-    // hexdump((char*)&integrity_check_value[0], integrity_check_value.size());
-
     // replace payload
     // first, remove all the data
     get_packet().remove(get_packet().get_data_size());
@@ -205,36 +180,21 @@ class ExternCrypt : public ExternType {
                 Data &out_ethertype) {
     std::vector<unsigned char> secure_association_key =
       get_char_vector(in_sak.get_string(), SAK_SIZE);
-    // cout << "[p4sec] secure_association_key" << std::endl;
-    // hexdump((char*)&secure_association_key[0],
-    // secure_association_key.size());
 
     std::vector<unsigned char> secure_channel_identifier =
       get_char_vector(in_sci.get_string(), SCI_SIZE);
-    // cout << "[p4sec] secure_channel_identifier" << std::endl;
-    // hexdump((char*)&secure_channel_identifier[0],
-    // secure_channel_identifier.size());
 
     std::vector<unsigned char> packet_number =
       get_char_vector(in_pn.get_string(), PN_SIZE);
-    // cout << "[p4sec] packet_number" << std::endl;
-    // hexdump((char*)&packet_number[0], packet_number.size());
 
     std::vector<unsigned char> source_mac_address =
       get_char_vector(in_src_addr.get_string(), ADDR_SIZE);
-    // cout << "[p4sec] source_mac_address" << std::endl;
-    // hexdump((char*)&source_mac_address[0], source_mac_address.size());
 
     std::vector<unsigned char> destination_mac_address =
       get_char_vector(in_dst_addr.get_string(), ADDR_SIZE);
-    // cout << "[p4sec] destination_mac_address" << std::endl;
-    // hexdump((char*)&destination_mac_address[0],
-    // destination_mac_address.size());
 
     std::vector<unsigned char> security_tag =
       get_char_vector(in_sectag.get_string(), SECTAG_SIZE);
-    // cout << "[p4sec] security_tag" << std::endl;
-    // hexdump((char*)&security_tag[0], security_tag.size());
 
     std::vector<unsigned char> secure_data;
     // calculate secure data length
@@ -254,12 +214,6 @@ class ExternCrypt : public ExternType {
               get_packet().data() + get_packet().get_data_size(),
               integrity_check_value.begin());
 
-    // cout << "[p4sec] secure_data" << std::endl;
-    // hexdump((char*)&secure_data[0], secure_data.size());
-
-    // cout << "[p4sec] integrity_check_value" << std::endl;
-    // hexdump((char*)&integrity_check_value[0], integrity_check_value.size());
-
     std::vector<unsigned char> user_data;
     user_data.reserve(secure_data_size);
 
@@ -270,17 +224,6 @@ class ExternCrypt : public ExternType {
                                     source_mac_address,
                                     security_tag, secure_data,
                                     integrity_check_value, user_data);
-
-
-    // cout << "[p4sec] user_data" << std::endl;
-    // hexdump((char*)&user_data[0], user_data.size());
-
-    // cout << "[p4sec] Ethertype" << std::endl;
-    // hexdump((char*)&user_data[0], ETHERTYPE_SIZE);
-
-    // cout << "[p4sec] decrypted payload" << std::endl;
-    // hexdump((char*)&user_data[ETHERTYPE_SIZE],
-    // user_data.size() - ETHERTYPE_SIZE);
 
     // replace payload
     // first, remove all the data
@@ -308,7 +251,6 @@ class ExternCrypt : public ExternType {
     // string fitted_str = fit_string(str, size);
     std::vector<unsigned char> vec(size, '\0');
     if (str.length() > size) {
-      // cout << "[p4sec] given string was too long" << std::endl;
       str.resize(size);
     }
     vec.insert(vec.cend()-size, str.begin(), str.end());
@@ -316,50 +258,19 @@ class ExternCrypt : public ExternType {
     return vec;
   }
 
-  void protection_function(std::vector<unsigned char> secure_association_key,
-                           std::vector<unsigned char> secure_channel_identifier,
-                           std::vector<unsigned char> packet_number,
-                           std::vector<unsigned char> destination_mac_address,
-                           std::vector<unsigned char> source_mac_address,
-                           std::vector<unsigned char> security_tag,
-                           std::vector<unsigned char> user_data,
-                           std::vector<unsigned char>& out_secure_data,
-                           std::vector<unsigned char>& out_integrity_check_value
+  void protection_function(  // first 3 args are exceed 80 chars on line
+                             // and this shifts left.
+                 const std::vector<unsigned char> &secure_association_key,
+                 const std::vector<unsigned char> &secure_channel_identifier,
+                 const std::vector<unsigned char> &packet_number,
+                 const std::vector<unsigned char> &destination_mac_address,
+                           const std::vector<unsigned char> &source_mac_address,
+                           const std::vector<unsigned char> &security_tag,
+                           const std::vector<unsigned char> &user_data,
+                           std::vector<unsigned char> &out_secure_data,
+                           std::vector<unsigned char> &out_integrity_check_value
                           ) {
-    // hier evtl assertions fuer die Laenge der Parameter
-    //
-    // std::cout << "[p4sec] secure_association_key size "
-    // << secure_association_key.size() <<  std::endl;
-    // hexdump((char*)&secure_association_key[0],
-    // secure_association_key.size());
-
-    // std::cout << "[p4sec] secure_channel_identifier size "
-    // << secure_channel_identifier.size() <<  std::endl;
-    // hexdump((char*)&secure_channel_identifier[0],
-    // secure_channel_identifier.size());
-
-    // std::cout << "[p4sec] packet_number size "
-    // << packet_number.size() <<  std::endl;
-    // hexdump((char*)&packet_number[0], packet_number.size());
-
-    // std::cout << "[p4sec] destination_mac_address size "
-    // << destination_mac_address.size() <<  std::endl;
-    // hexdump((char*)&destination_mac_address[0],
-    // destination_mac_address.size());
-
-    // std::cout << "[p4sec] source_mac_address size "
-    // << source_mac_address.size() <<  std::endl;
-    // hexdump((char*)&source_mac_address[0], source_mac_address.size());
-
-    // std::cout << "[p4sec] security_tag size "
-    // << security_tag.size() <<  std::endl;
-    // hexdump((char*)&security_tag[0], security_tag.size());
-
-    // std::cout << "[p4sec] user_data size " <<
-    // user_data.size() <<  std::endl;
-    // hexdump((char*)&user_data[0], user_data.size());
-
-
+    // here assertions for the length of the parameters.
     // terms K, IV, A, P, C, T used in section 2.1 of the GCM
     // specification ( GCM ) as submitted to NIST
 
@@ -368,9 +279,6 @@ class ExternCrypt : public ExternType {
     K.reserve(secure_association_key.size());
     K.insert(K.cend(), secure_association_key.cbegin(),
              secure_association_key.cend());
-
-    // std::cout << "[p4sec] K size " << K.size() <<  std::endl;
-    // hexdump((char*)&K[0], K.size());
 
     // 12 byte IV
     std::vector<unsigned char> IV;
@@ -382,10 +290,6 @@ class ExternCrypt : public ExternType {
     // The 32 least significant bits of the 96-bit IV are the octets of
     // the PN, encoded as a binary number
     IV.insert(IV.cend(), packet_number.cbegin(), packet_number.cend());
-
-    // std::cout << "[p4sec] IV size " << IV.size() <<  std::endl;
-    // hexdump((char*)&IV[0], IV.size());
-
 
     // A is the Destination MAC Address, Source MAC Address, and the octets
     // of the SecTAG concatenated in that order
@@ -406,17 +310,6 @@ class ExternCrypt : public ExternType {
     out_secure_data.resize(P.size(), '\0');
     out_integrity_check_value.resize(16, '\0');
 
-
-    // std::cout << "[p4sec] out_secure_data size "
-    // << out_secure_data.size() <<  std::endl;
-    // hexdump((char*)&out_secure_data[0], out_secure_data.size());
-
-    // std::cout << "[p4sec] out_integrity_check_value size "
-    // << out_integrity_check_value.size() <<  std::endl;
-    // hexdump((char*)&out_integrity_check_value[0],
-    // out_integrity_check_value.size());
-
-    // std::cout << "[p4sec] initilalizing encryption" << std::endl;
     int actual_size = 0, final_size = 0;
     EVP_CIPHER_CTX* e_ctx = EVP_CIPHER_CTX_new();
     EVP_EncryptInit(e_ctx, EVP_aes_128_gcm(), &K[0], &IV[0]);
@@ -436,52 +329,16 @@ class ExternCrypt : public ExternType {
     EVP_CIPHER_CTX_free(e_ctx);
   }
 
-  int validation_function(std::vector<unsigned char> secure_association_key,
-                          std::vector<unsigned char> secure_channel_identifier,
-                          std::vector<unsigned char> packet_number,
-                          std::vector<unsigned char> destination_mac_address,
-                          std::vector<unsigned char> source_mac_address,
-                          std::vector<unsigned char> security_tag,
-                          std::vector<unsigned char> secure_data,
-                          std::vector<unsigned char> integrity_check_value,
-                          std::vector<unsigned char>& out_user_data) {
-      // std::cout << "[p4sec] secure_association_key size "
-      // << secure_association_key.size() <<  std::endl;
-      // hexdump((char*)&secure_association_key[0],
-      // secure_association_key.size());
-
-      // std::cout << "[p4sec] secure_channel_identifier size "
-      // << secure_channel_identifier.size() <<  std::endl;
-      // hexdump((char*)&secure_channel_identifier[0],
-      // secure_channel_identifier.size());
-
-      // std::cout << "[p4sec] packet_number size "
-      // << packet_number.size() <<  std::endl;
-      // hexdump((char*)&packet_number[0], packet_number.size());
-
-      // std::cout << "[p4sec] destination_mac_address size "
-      // << destination_mac_address.size() <<  std::endl;
-      // hexdump((char*)&destination_mac_address[0],
-      // destination_mac_address.size());
-
-      // std::cout << "[p4sec] source_mac_address size "
-      // << source_mac_address.size() <<  std::endl;
-      // hexdump((char*)&source_mac_address[0], source_mac_address.size());
-
-      // std::cout << "[p4sec] security_tag size "
-      // << security_tag.size() <<  std::endl;
-      // hexdump((char*)&security_tag[0], security_tag.size());
-
-      // std::cout << "[p4sec] secure_data size "
-      // << secure_data.size() <<  std::endl;
-      // hexdump((char*)&secure_data[0], secure_data.size());
-
-      // std::cout << "[p4sec] integrity_check_value size "
-      // << integrity_check_value.size() <<  std::endl;
-      // hexdump((char*)&integrity_check_value[0],
-      // integrity_check_value.size());
-
-
+  int validation_function(
+               const std::vector<unsigned char> &secure_association_key,
+               const std::vector<unsigned char> &secure_channel_identifier,
+               const std::vector<unsigned char> &packet_number,
+               const std::vector<unsigned char> &destination_mac_address,
+                          const std::vector<unsigned char> &source_mac_address,
+                          const std::vector<unsigned char> &security_tag,
+                          const std::vector<unsigned char> &secure_data,
+                          std::vector<unsigned char> &integrity_check_value,
+                          std::vector<unsigned char> &out_user_data) {
       // terms K, IV, A, P, C, T used in section 2.1 of the GCM
       // specification ( GCM ) as submitted to NIST
 
@@ -490,9 +347,6 @@ class ExternCrypt : public ExternType {
       K.reserve(secure_association_key.size());
       K.insert(K.cend(), secure_association_key.cbegin(),
                secure_association_key.cend());
-
-      // std::cout << "[p4sec] K size " << K.size() <<  std::endl;
-      // hexdump((char*)&K[0], K.size());
 
       // 12 byte IV
       std::vector<unsigned char> IV;
@@ -505,8 +359,7 @@ class ExternCrypt : public ExternType {
       // the PN, encoded as a binary number
       IV.insert(IV.cend(), packet_number.cbegin(), packet_number.cend());
 
-      // std::cout << "[p4sec] IV size " << IV.size() <<  std::endl;
-      // hexdump((char*)&IV[0], IV.size());
+      hexdump((unsigned char*)&IV[0], IV.size());
 
 
       // A is the Destination MAC Address, Source MAC Address, and the
@@ -559,10 +412,9 @@ class ExternCrypt : public ExternType {
       return result;
   }
 
-  void hexdump(char *addr, int len) {
+  void hexdump(unsigned char *pc, int len) {
       int i;
       unsigned char buff[17];
-      unsigned char *pc = (unsigned char*)addr;
       // Process every byte in the data.
       for (i = 0; i < len; i++) {
           // Multiple of 16 means new line (with line offset).
@@ -570,7 +422,7 @@ class ExternCrypt : public ExternType {
           if ((i % 16) == 0) {
               // Just don't print ASCII for the zeroth line.
               if (i != 0)
-                  printf("  %s\n", buff);
+                  std::cout << buff << std::endl;
 
               // Output the offset.
               printf("[p4sec]  %04x ", i);
@@ -589,12 +441,12 @@ class ExternCrypt : public ExternType {
 
       // Pad out last line if not exactly 16 characters.
       while ((i % 16) != 0) {
-          printf("   ");
+          std::cout << "   ";
           i++;
       }
 
       // And print the final ASCII bit.
-      printf("  %s\n", buff);
+      std::cout << "  " <<  buff << std::endl;
   }
 };
 
@@ -616,3 +468,4 @@ BM_REGISTER_EXTERN_W_NAME_METHOD(ext_crypt, ExternCrypt, validate, const Data &,
                                  const Data &, const Data &, const Data &,
                                  const Data &, const Data &, Data &, Data &);
 }  // namespace bm
+

@@ -1,4 +1,4 @@
-# ADD CRYPTO to SIMPLE_SWITCH
+# ADD CRYPTO EXTERN to SIMPLE_SWITCH
 
 For reference, the extern is implemented in crypto.cpp in this directory.
 This cpp code is to be incorporated in
@@ -20,3 +20,6 @@ https://github.com/uni-tue-kn/p4-macsec/p4/p4/basic.p4
 
 basic.p4 is used to test the cryto extern code with simple_switch.
 
+basic.p4 is compiled using p4c with args shown in
+
+https://github.com/uni-tue-kn/p4-macsec/blob/master/p4/p4/Makefile
