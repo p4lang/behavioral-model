@@ -102,23 +102,16 @@ class ExternCrypt : public ExternType {
       get_char_vector(in_ethertype.get_string(), ETHERTYPE_SIZE);
 
     bool prepend_ipv4 = false;
-    // must pass byte to external function
-    // use 0x54 T as true
-    // use 0x46 F as false
-    // cout << "[p4sec] prepend IPv4 Header ? "
-    // << in_prepend_ipv4_hdr.get_string() << std::endl;
     if (in_prepend_ipv4_hdr.get_string().compare("T") == 0) {
       prepend_ipv4 = true;
     } else {
-      // cout << "[p4sec] do not prepend IPv4 Header" << std::endl;
+      cout << "[p4sec] do not prepend IPv4 Header" << std::endl;
     }
 
     std::vector<unsigned char> ipv4_hdr;
     if (prepend_ipv4) {
       ipv4_hdr = get_char_vector(in_ipv4_hdr.get_string(), IPV4_HDR_SIZE);
-      // hexdump((unsigned char*)&ipv4_hdr[0], ipv4_hdr.size());
     }
-
 
     vector<unsigned char> raw_packet_data;
     // calculate secure data length
