@@ -606,7 +606,7 @@ attributes for these objects are:
   - `support_timeout`: a boolean, `true` iff the match table supports ageing
   - `key`: the lookup key format, represented by a JSON array. Each member of
   the array is a JSON object with the following attributes:
-    - `match_type`: one of `valid`, `exact`, `lpm`, `ternary`, `range`
+    - `match_type`: one of `valid`, `exact`, `lpm`, `optional`, `ternary`, `range`
     - `target`: the field reference as a 2-tuple (or header as a string if
       `match_type` if `valid`)
     - `mask`: the static mask to be applied to the field, or null. Just like for
@@ -677,7 +677,7 @@ these objects are:
 
 The `match_type` for the table needs to follow the following rules:
 - If one match field is `range`, the table `match_type` has to be `range`
-- If one match field is `ternary`, the table `match_type` has to be `ternary`
+- If one match field is `ternary` or `optional`, the table `match_type` has to be `ternary`
 - If one match field is `lpm`, the table `match_type` is either `ternary` or
 `lpm`
 Note that it is not correct to have more than one `lpm` match field in the same
@@ -689,13 +689,13 @@ We describe the format of the match-action entries contained in the `entries`
 JSON array (see table JSON format above). Each entry is a JSON object with the
 following attributes:
 - `match_key`: a JSON array of objects with the following attributes:
-  - `match_type`: one of `valid`, `exact`, `lpm`, `ternary`, `range`
+  - `match_type`: one of `valid`, `exact`, `lpm`, `optional`, `ternary`, `range`
   - the other attributes depend on the `match_type`:
     - for `valid`: we need a `key` attribute which has to be a boolean
     - for `exact`: we need a `key` attribute which has to be a hexstring
     - for `lpm`: we need a `key` attribute which has to be a hexstring and a
     `prefix_length` attribute which has to be an integer
-    - for `ternary`: we need a `key` and a `mask` attributes which both have to
+    - for `ternary` or `optional`: we need a `key` and a `mask` attributes which both have to
     be hexstrings
     - for `range`: we need a `start` and a `end` attribute which both have to be
     hexstrings

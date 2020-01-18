@@ -50,11 +50,14 @@ struct MatchKeyParam {
   // VALID used to be before RANGE, but when RANGE support was added, it was
   // easier (implementation-wise) to put RANGE first. Note that this order only
   // matters for the implementation.
+  // TODO(jafingerhut): Where should OPTIONAL be added in this
+  // sequence, if order is important?
   enum class Type {
     RANGE,
     VALID,
     EXACT,
     LPM,
+    OPTIONAL,
     TERNARY
   };
 

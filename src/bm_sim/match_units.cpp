@@ -66,6 +66,8 @@ MatchKeyParam::type_to_string(Type t) {
       return "LPM";
     case Type::TERNARY:
       return "TERNARY";
+    case Type::OPTIONAL:
+      return "OPTIONAL";
   }
   return "";
 }
@@ -86,6 +88,7 @@ std::ostream& operator<<(std::ostream &out, const MatchKeyParam &p) {
       out << "/" << p.prefix_length;
       break;
     case MatchKeyParam::Type::TERNARY:
+    case MatchKeyParam::Type::OPTIONAL:
       out << " &&& ";
       dump_hexstring(out, p.mask);
       break;
@@ -383,6 +386,7 @@ class MatchKeyBuilderHelper {
           // should only happen for RangeMatchKey
           // range treated the same as ternary
         case MatchKeyParam::Type::TERNARY:
+        case MatchKeyParam::Type::OPTIONAL:
           {
             auto mask_start = key.mask.begin() + byte_offset;
             auto mask_end = mask_start + nbytes;
@@ -468,6 +472,7 @@ class MatchKeyBuilderHelper {
           break;
         case MatchKeyParam::Type::RANGE:
         case MatchKeyParam::Type::TERNARY:
+        case MatchKeyParam::Type::OPTIONAL:
           assert(0);
       }
       first_byte += param.key.size();
@@ -537,6 +542,7 @@ class MatchKeyBuilderHelper {
           break;
         case MatchKeyParam::Type::RANGE:
         case MatchKeyParam::Type::TERNARY:
+        case MatchKeyParam::Type::OPTIONAL:
           key->mask.append(param.mask);
           break;
       }
@@ -584,6 +590,7 @@ MatchKeyBuilder::match_params_sanity_check(
           return false;
         break;
       case MatchKeyParam::Type::TERNARY:
+      case MatchKeyParam::Type::OPTIONAL:
         if (param.mask.size() != nbytes) return false;
         break;
       case MatchKeyParam::Type::RANGE:

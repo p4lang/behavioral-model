@@ -51,7 +51,7 @@ create_match_unit(const std::string match_type, const size_t size,
   else if (match_type == "lpm")
     match_unit = std::unique_ptr<MULPM>(
         new MULPM(size, match_key_builder, lookup_factory));
-  else if (match_type == "ternary")
+  else if ((match_type == "ternary") || (match_type == "optional"))
     match_unit = std::unique_ptr<MUTernary>(
         new MUTernary(size, match_key_builder, lookup_factory));
   else if (match_type == "range")

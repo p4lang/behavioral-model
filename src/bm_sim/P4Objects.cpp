@@ -1469,7 +1469,8 @@ MatchKeyParam::Type match_name_to_match_type(const std::string &name) {
         {"lpm", MatchKeyParam::Type::LPM},
         {"ternary", MatchKeyParam::Type::TERNARY},
         {"valid", MatchKeyParam::Type::VALID},
-        {"range", MatchKeyParam::Type::RANGE} };
+        {"range", MatchKeyParam::Type::RANGE},
+        {"optional", MatchKeyParam::Type::OPTIONAL} };
 
   auto it = map_name_to_match_type.find(name);
   if (it == map_name_to_match_type.end())
@@ -1527,6 +1528,7 @@ std::vector<MatchKeyParam> parse_match_key(
                                cfg_f["prefix_length"].asInt());
         break;
       case MatchKeyParam::Type::TERNARY:
+      case MatchKeyParam::Type::OPTIONAL:
         match_key.emplace_back(match_type,
                                transform_hexstr(cfg_f["key"].asString()),
                                transform_hexstr(cfg_f["mask"].asString()));
