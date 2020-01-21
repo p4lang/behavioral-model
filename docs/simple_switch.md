@@ -401,7 +401,7 @@ the relative priority of the entries are highest priority first, to lowest
 priority last, based upon the order they appear in the P4 program.
 
 
-### Ternary and optional tables
+### Ternary tables
 
 If a table has no `range` field, but at least one `ternary` or `optional` field,
 it is implemented internally as a `ternary` table in BMv2. As for `range`
