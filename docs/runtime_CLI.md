@@ -12,8 +12,8 @@ TODO: act_prof_remove_member_from_group
 TODO: counter_read
 TODO: counter_reset
 TODO: counter_write
-TODO: get_time_elapsed
-TODO: get_time_since_epoch
+TODO: get_time_elapsed [simple_switch_CLI only]
+TODO: get_time_since_epoch [simple_switch_CLI only]
 TODO: help
 TODO: load_new_config_file
 ```
@@ -322,6 +322,8 @@ burst_size is the number of packets.
 
 ### mirroring_add, mirroring_add_mc, mirroring_delete, mirroring_get
 
+[simple_switch_CLI only]
+
 When any of these events happened during packet processing:
 
 + Your P4_16 v1model architecture program called `clone` or `clone3`
@@ -345,12 +347,8 @@ Search for occurrences of the word "clone" in [this
 article](https://github.com/p4lang/behavioral-model/blob/master/docs/simple_switch.md#pseudocode-for-what-happens-at-the-end-of-ingress-and-egress-processing)
 for more details on how `simple_switch` deals with cloned packets.
 
-TBD: How many clone sessions are supported by `simple_switch`, without
-using any special default compilation options nor modifications to the
-source code?
-
-`simple_switch` supports 1023 independent clone sessions, numbered
-from 1 up to 1023, also called mirroring sessions.  When a packet is
+`simple_switch` supports 32,768 independent clone sessions, numbered
+from 0 up to 32,767, also called mirroring sessions.  When a packet is
 cloned, you specify which clone session you want it to use in the P4
 program call of the clone operation.
 
@@ -423,8 +421,8 @@ TODO: reset_state
 TODO: serialize_state
 TODO: set_crc16_parameters
 TODO: set_crc32_parameters
-TODO: set_queue_depth
-TODO: set_queue_rate
+TODO: set_queue_depth [simple_switch_CLI only]
+TODO: set_queue_rate [simple_switch_CLI only]
 TODO: shell
 ```
 
