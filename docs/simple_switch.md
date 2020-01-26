@@ -339,10 +339,10 @@ if (a clone primitive action was called) {
 
     The contents of the cloned packet(s) will be as they are at the
     end of egress processing, including any changes made to the values
-    of fields in headers, whether headers were made valid or invalid.
-    Your deparser code will _not_ be executed for the egress-to-egress
-    cloned packets, nor will egress-to-egress cloned packets execute
-    your parser code again.
+    of fields in headers, and whether headers were made valid or
+    invalid.  Your deparser code will _not_ be executed for
+    egress-to-egress cloned packets, nor will your parser code be
+    executed for them.
 
     If it was a clone3 (P4_16) or clone_egress_pkt_to_egress (P4_14)
     action, also preserve the final egress values of the metadata
