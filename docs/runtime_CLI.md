@@ -348,7 +348,7 @@ processing.  Each of the clones is processed independently from each
 other, and independently from the original packet.
 
 Search for occurrences of the word "clone" in [this
-article](https://github.com/p4lang/behavioral-model/blob/master/docs/simple_switch.md#pseudocode-for-what-happens-at-the-end-of-ingress-and-egress-processing)
+article](simple_switch.md#pseudocode-for-what-happens-at-the-end-of-ingress-and-egress-processing)
 for more details on how `simple_switch` deals with cloned packets.
 
 `simple_switch` supports 32,768 independent clone sessions, numbered
