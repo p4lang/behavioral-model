@@ -1,3 +1,7 @@
+Most of the commands in here are common to runtime_CLI and
+simple_switch_CLI, but a few exist only in simple_switch_CLI.  Those
+are marked [simple_switch_CLI only].
+
 ```
 TODO: act_prof_add_member_to_group
 TODO: act_prof_create_group
@@ -25,7 +29,7 @@ ingress P4 code can assign values to a few fields in standard_metadata
 that control whether the packet is dropped, sent via unicast to one
 output port, or multicast replicated to a list of 0 or more output
 ports.  See
-[here](https://github.com/p4lang/behavioral-model/blob/master/docs/simple_switch.md#pseudocode-for-what-happens-at-the-end-of-ingress-and-egress-processing)
+[here](simple_switch.md#pseudocode-for-what-happens-at-the-end-of-ingress-and-egress-processing)
 for more details on how `simple_switch` decides between these
 alternatives.
 
