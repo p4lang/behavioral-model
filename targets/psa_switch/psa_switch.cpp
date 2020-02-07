@@ -319,7 +319,7 @@ PsaSwitch::ingress_thread() {
     // ingress_timestamp is already set at receive time
     phv->get_field("psa_ingress_input_metadata.ingress_port").set(ingress_port);
     phv->get_field("psa_ingress_input_metadata.packet_path").set(
-        phv->get_field("psa_ingress_parser_input_metadata.packet_path"));
+        phv->get_field("psa_ingress_parser_input_metadata.packet_path").get_int());
     phv->get_field("psa_ingress_input_metadata.parser_error").set(
         packet->get_error_code().get());
 
