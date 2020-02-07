@@ -68,6 +68,44 @@ class PsaSwitchAPI(runtime_CLI.RuntimeAPI):
         mirror_id = int(line)
         self.pswitch_client.mirroring_mapping_delete(mirror_id)
 
+    def do_set_max_recirculations(self, line):
+        ("Set packet recirculation limit: set_max_recirculations <value>\n"
+         "Where value is an integer between 0 and 254, or -1 (or 255) for unlimited")
+        value = int(line)
+        if not (value >= -1 and value <= 255):
+            print("Invalid value: %d" % value)
+        else:
+            self.pswitch_client.set_max_recirculations(value)
+
+    def do_set_max_resubmissions(self, line):
+        ("Set packet resubmission limit: set_max_resubmissions <value>\n"
+         "Where value is an integer between 0 and 254, or -1 (or 255) for unlimited")
+        value = int(line)
+        if not (value >= -1 and value <= 255):
+            print("Invalid value: %d" % value)
+        else:
+            self.pswitch_client.set_max_resubmissions(value)
+
+    def do_get_max_recirculations(self, line):
+        "Get packet recirculation limit"
+        value = self.pswitch_client.get_max_recirculations()
+        if value == -1:
+            print "unlimited (255)"
+        elif value < 0:
+            print value + 2**8  # convert to uint8_t
+        else:
+            print value
+
+    def do_get_max_resubmissions(self, line):
+        "Get packet resubmission limit"
+        value = self.pswitch_client.get_max_resubmissions()
+        if value == -1:
+            print "unlimited (255)"
+        elif value < 0:
+            print value + 2**8  # convert to uint8_t
+        else:
+            print value
+
     def do_get_time_elapsed(self, line):
         "Get time elapsed (in microseconds) since the switch started: get_time_elapsed"
         print self.pswitch_client.get_time_elapsed_us()

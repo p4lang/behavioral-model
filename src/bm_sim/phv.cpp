@@ -37,6 +37,8 @@ PHV::PHV(size_t num_headers, size_t num_header_stacks,
   header_stacks.reserve(num_header_stacks);
   header_unions.reserve(num_header_unions);
   header_union_stacks.reserve(num_header_union_stacks);
+  recirculations = 0;
+  resubmissions = 0;
 }
 
 void
@@ -69,6 +71,18 @@ void
 PHV::reset_headers() {
   for (auto &h : headers)
     h.reset();
+}
+
+void
+PHV::increment_resubmission_counter() {
+  if (resubmissions < UINT8_MAX)
+    resubmissions++;
+}
+
+void
+PHV::increment_recirculation_counter() {
+  if (recirculations < UINT8_MAX)
+    recirculations++;
 }
 
 void

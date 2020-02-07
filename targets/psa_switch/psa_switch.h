@@ -98,6 +98,11 @@ class PsaSwitch : public Switch {
   int set_egress_queue_rate(size_t port, const uint64_t rate_pps);
   int set_all_egress_queue_rates(const uint64_t rate_pps);
 
+  void set_max_recirculations(const uint8_t value);
+  void set_max_resubmissions(const uint8_t value);
+  uint8_t get_max_recirculations();
+  uint8_t get_max_resubmissions();
+
   // returns the number of microseconds elapsed since the switch started
   uint64_t get_time_elapsed_us() const;
 
@@ -161,6 +166,10 @@ class PsaSwitch : public Switch {
   static constexpr size_t nb_egress_threads = 4u;
   static constexpr port_t PSA_PORT_RECIRCULATE = 0xfffffffa;
   static packet_id_t packet_id;
+
+  // UINT8_MAX == unlimited
+  uint8_t max_recirculations = UINT8_MAX;
+  uint8_t max_resubmissions = UINT8_MAX;
 
   enum PktInstanceType {
     PACKET_PATH_NORMAL,

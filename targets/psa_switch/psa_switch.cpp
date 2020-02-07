@@ -101,6 +101,8 @@ PsaSwitch::PsaSwitch(bool enable_swap)
   add_required_field("psa_ingress_input_metadata", "packet_path");
   add_required_field("psa_ingress_input_metadata", "ingress_timestamp");
   add_required_field("psa_ingress_input_metadata", "parser_error");
+  add_required_field("psa_ingress_input_metadata", "max_recirculations");
+  add_required_field("psa_ingress_input_metadata", "max_resubmissions");
 
   add_required_field("psa_ingress_output_metadata", "class_of_service");
   add_required_field("psa_ingress_output_metadata", "clone");
@@ -119,6 +121,8 @@ PsaSwitch::PsaSwitch(bool enable_swap)
   add_required_field("psa_egress_input_metadata", "instance");
   add_required_field("psa_egress_input_metadata", "egress_timestamp");
   add_required_field("psa_egress_input_metadata", "parser_error");
+  add_required_field("psa_egress_input_metadata", "max_recirculations");
+  add_required_field("psa_egress_input_metadata", "max_resubmissions");
 
   add_required_field("psa_egress_output_metadata", "clone");
   add_required_field("psa_egress_output_metadata", "clone_session_id");
@@ -172,6 +176,9 @@ PsaSwitch::receive_(port_t port_num, const char *buffer, int len) {
 
   phv->get_field("psa_ingress_input_metadata.ingress_timestamp").set(
       get_ts().count());
+
+  phv->reset_recirculation_counter();
+  phv->reset_resubmission_counter();
 
   input_buffer.push_front(std::move(packet));
   return 0;
@@ -229,6 +236,26 @@ int
 PsaSwitch::set_all_egress_queue_rates(const uint64_t rate_pps) {
   egress_buffers.set_rate_for_all(rate_pps);
   return 0;
+}
+
+void
+PsaSwitch::set_max_recirculations(const uint8_t value) {
+  max_recirculations = value;
+}
+
+void
+PsaSwitch::set_max_resubmissions(const uint8_t value) {
+  max_resubmissions = value;
+}
+
+uint8_t
+PsaSwitch::get_max_recirculations() {
+  return max_recirculations;
+}
+
+uint8_t
+PsaSwitch::get_max_resubmissions() {
+  return max_resubmissions;
 }
 
 uint64_t
@@ -323,6 +350,11 @@ PsaSwitch::ingress_thread() {
     phv->get_field("psa_ingress_input_metadata.parser_error").set(
         packet->get_error_code().get());
 
+    phv->get_field("psa_ingress_input_metadata.max_recirculations").set(
+        max_recirculations - phv->get_recirculation_counter());
+    phv->get_field("psa_ingress_input_metadata.max_resubmissions").set(
+        max_resubmissions - phv->get_resubmission_counter());
+
     // set default metadata values according to PSA specification
     phv->get_field("psa_ingress_output_metadata.class_of_service").set(0);
     phv->get_field("psa_ingress_output_metadata.clone").set(0);
@@ -345,6 +377,13 @@ PsaSwitch::ingress_thread() {
     //            deparsing, do not move below multicast or deparse
     const auto &f_resubmit = phv->get_field("psa_ingress_output_metadata.resubmit");
     if (f_resubmit.get_int()) {
+      if (phv->get_resubmission_counter() > max_resubmissions) {
+        Logger::get()->warn("Reached max resubmission limit");
+        continue;
+      }
+      if (max_resubmissions != UINT8_MAX)
+        phv->increment_resubmission_counter();
+
       BMLOG_DEBUG_PKT(*packet, "Resubmitting packet");
 
       packet->restore_buffer_state(packet_in_state);
@@ -422,6 +461,11 @@ PsaSwitch::egress_thread(size_t worker_id) {
     phv->get_field("psa_egress_input_metadata.parser_error").set(
         packet->get_error_code().get());
 
+    phv->get_field("psa_egress_input_metadata.max_recirculations").set(
+        max_recirculations - phv->get_recirculation_counter());
+    phv->get_field("psa_egress_input_metadata.max_resubmissions").set(
+        max_resubmissions - phv->get_resubmission_counter());
+
     // default egress output values according to PSA spec
     // clone_session_id is undefined by default
     phv->get_field("psa_egress_output_metadata.clone").set(0);
@@ -436,6 +480,13 @@ PsaSwitch::egress_thread(size_t worker_id) {
     deparser->deparse(packet.get());
 
     if (port == PSA_PORT_RECIRCULATE) {
+      if (phv->get_recirculation_counter() > max_recirculations) {
+        Logger::get()->warn("Reached max recirculation limit");
+        continue;
+      }
+      if (max_recirculations != UINT8_MAX)
+        phv->increment_recirculation_counter();
+
       BMLOG_DEBUG_PKT(*packet, "Recirculating packet");
 
       phv->reset();

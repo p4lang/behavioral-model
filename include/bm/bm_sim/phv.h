@@ -288,6 +288,15 @@ class PHV {
   const std::string get_field_name(header_id_t header_index,
                                    int field_offset) const;
 
+  void increment_resubmission_counter(void);
+  void increment_recirculation_counter(void);
+
+  uint8_t get_recirculation_counter(void) { return recirculations; }
+  uint8_t get_resubmission_counter(void) { return resubmissions; }
+
+  void reset_recirculation_counter(void) { recirculations = 0; }
+  void reset_resubmission_counter(void) { resubmissions = 0; }
+
  private:
   // To  be used only by PHVFactory
   // all headers need to be pushed back in order (according to header_index) !!!
@@ -329,6 +338,8 @@ class PHV {
   size_t capacity_unions{0};
   size_t capacity_union_stacks{0};
   Debugger::PacketId packet_id;
+  uint8_t recirculations;
+  uint8_t resubmissions;
 };
 
 class PHVFactory {

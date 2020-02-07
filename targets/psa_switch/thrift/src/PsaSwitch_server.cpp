@@ -88,6 +88,26 @@ class PsaSwitchHandler : virtual public PsaSwitchIf {
     return switch_->set_all_egress_queue_rates(static_cast<uint64_t>(rate_pps));
   }
 
+  void set_max_recirculations(const int32_t value) {
+    bm::Logger::get()->trace("set_max_recirculations");
+    switch_->set_max_recirculations(static_cast<uint8_t> (value));
+  }
+
+  void set_max_resubmissions(const int32_t value) {
+    bm::Logger::get()->trace("set_max_resubmissions");
+    switch_->set_max_resubmissions(static_cast<uint8_t> (value));
+  }
+
+  int8_t get_max_recirculations() {
+    bm::Logger::get()->trace("get_max_recirculations");
+    return static_cast<int8_t> (switch_->get_max_recirculations());
+  }
+
+  int8_t get_max_resubmissions() {
+    bm::Logger::get()->trace("get_max_resubmissions");
+    return static_cast<int8_t> (switch_->get_max_resubmissions());
+  }
+
   int64_t get_time_elapsed_us() {
     bm::Logger::get()->trace("get_time_elapsed_us");
     // cast from unsigned to signed
