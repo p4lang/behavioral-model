@@ -10,7 +10,7 @@ on each attribute.
 
 ## Current bmv2 JSON format version
 
-The version described in this document is *2.22*.
+The version described in this document is *2.24*.
 
 The major version number will be increased by the compiler only when
 backward-compatibility of the JSON format is broken. After a major version
@@ -387,7 +387,7 @@ array item has the following attributes:
 - `id`: a unique integer (unique with respect to other parse value-sets)
 - `compressed_bitwidth`: the bitwidth of the values which can be added to the
 set. Note that this bitwidth does not include any padding.
-- `size` - number of elements in the set.
+- `max_size` - number of elements in the set.
 
 ### `deparsers`
 
