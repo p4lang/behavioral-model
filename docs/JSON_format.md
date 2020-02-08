@@ -387,6 +387,7 @@ array item has the following attributes:
 - `id`: a unique integer (unique with respect to other parse value-sets)
 - `compressed_bitwidth`: the bitwidth of the values which can be added to the
 set. Note that this bitwidth does not include any padding.
+- `size` - number of elements in the set.
 
 ### `deparsers`
 
