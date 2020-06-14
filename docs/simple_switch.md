@@ -1046,7 +1046,13 @@ time stamps will be within 1 microsecond of each other.  Time stamp
 values from switch #1 could easily be X microseconds later than, or
 earlier than, switch #2, and this time difference between pairs of
 switches could change from one time of starting a multi-switch system,
-versus another time.
+versus another time.  While it is possible to start pairs of
+`simple_switch` processes where X would be in the range -10 to +10
+microseconds, that would almost certainly be a lucky and unlikely
+chance that leads to such close timestamps.  Differences within plus
+or minus 2,000,000 microseconds should be fairly straightforward to
+achieve, if you go to at least a little bit of effort to start the
+processes at the same second as each other.
 
 Many commercial switch and NIC vendors implement standards like PTP
 ([Precision Time
