@@ -1076,16 +1076,16 @@ options:
   different switches, this method should require fairly low
   development effort to implement.
 + Implement PTP in some combination of P4 program and control plane
-  software, and run that on simple_switch.  This could easily be a
+  software, and run that on simple_switch.  This is likely to be a
   significant amount of time and effort to achieve, and given the
   variable latencies in software processing of packets in virtual
   and/or physical Ethernet interfaces on typical hosts, it seems
-  unlikely that synchronization closer than tens of microseconds would
-  be achievable.  Commercial PTP implementations can achieve more
-  tight synchronization because the PTP packet handling is implemented
-  within the physical Ethernet packet processing hardware, very close
-  to the physical transmission and reception of the data between
-  switches.
+  unlikely that synchronization closer than tens or hundreds of
+  microseconds would be achievable.  Commercial PTP implementations
+  can achieve more tight synchronization because the PTP packet
+  handling is implemented within the Ethernet packet processing
+  hardware, very close to the physical transmission and reception of
+  the data between switches.
 + Implement a newer synchronization algorithm like
   [HUYGENS](https://www.usenix.org/system/files/conference/nsdi18/nsdi18-geng.pdf).
   This is likely to be at least as much development effort as
