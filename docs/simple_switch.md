@@ -1036,13 +1036,13 @@ result parameter where the result is written.
 
 ### BMv2 timestamp implementation notes
 
-All time stamps in BMv2 as of 2020-Jun-14 are in units of
+All timestamps in BMv2 as of 2020-Jun-14 are in units of
 microseconds, and they all begin at 0 when the process begins,
 e.g. when `simple_switch` or `simple_switch_grpc` begins.
 
 Thus if one starts multiple `simple_switch` processes, either on the
 same system, or different systems, it is highly unlikely that their
-time stamps will be within 1 microsecond of each other.  Time stamp
+timestamps will be within 1 microsecond of each other.  Timestamp
 values from switch #1 could easily be X microseconds later than, or
 earlier than, switch #2, and this time difference between pairs of
 switches could change from one time of starting a multi-switch system,
@@ -1060,11 +1060,11 @@ Protocol](https://en.wikipedia.org/wiki/Precision_Time_Protocol)), but
 `simple_switch` does not.
 
 If one wants to use `simple_switch` and have some form of more closely
-synchronized time stamps between different switches, you have several
+synchronized timestamps between different switches, you have several
 options:
 
 + Modify `simple_switch` code so that the `ingress_global_timestamp`
-  and other time stamp values are calculated from the local system
+  and other timestamp values are calculated from the local system
   time, e.g. perhaps using a system call like `gettimeofday`.  Many
   systems today use NTP ([Network Time
   Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol)) to
@@ -1072,7 +1072,7 @@ options:
   Wikipedia article it can achieve better than one millisecond
   accuracy on local area networks under ideal conditions, and to
   within tens of milliseconds over the public Internet.  If your use
-  case can accomodate this much difference in the time stamps on
+  case can accomodate this much difference in the timestamps on
   different switches, this method should require fairly low
   development effort to implement.
 + Implement PTP in some combination of P4 program and control plane
