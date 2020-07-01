@@ -45,7 +45,9 @@ class PSA_Meter : public bm::ExternType {
     } else if (type == "packets") {
         meter_type = bm::MeterArray::MeterType::PACKETS;
     } else {
-        // TODO: error reporting
+        // TODO: Here Meter is made default as a BYTES meter.
+        // However, what really should been done here is error handling.
+        meter_type = bm::MeterArray::MeterType::BYTES;
     }
     _meter = std::unique_ptr<MeterArray>(
         new MeterArray(get_name() + ".$impl",
