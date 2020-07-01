@@ -35,6 +35,7 @@
 #include <functional>
 
 #include "externs/psa_counter.h"
+#include "externs/psa_meter.h"
 
 // TODO(antonin)
 // experimental support for priority queueing
