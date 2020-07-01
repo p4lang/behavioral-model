@@ -60,7 +60,9 @@ class PSA_Meter : public bm::ExternType {
         // 10 packets per second, burst size of 1
         Meter::rate_config_t peak_rate = {0.00001, 1};
         Meter::MeterErrorCode error = _meter->set_rates({committed_rate, peak_rate});
-        // TODO return error handling
+        if (error != bm::MeterArray::MeterErrorCode::SUCCESS) {
+            // TODO return error handling
+        }
   }
 
   void execute(const Data &index, Data &value);
