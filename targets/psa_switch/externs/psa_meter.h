@@ -46,7 +46,7 @@ class PSA_Meter : public bm::ExternType {
 
   const Meter &get_meter(size_t idx) const;
 
-  const Meter &get_Meter(size_t idx) const;
+  Meter::MeterErrorCode set_rates(const std::vector<Meter::rate_config_t> &configs);
 
   size_t size() const { return _meter->size(); };
 

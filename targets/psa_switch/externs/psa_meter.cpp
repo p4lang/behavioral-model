@@ -56,6 +56,11 @@ PSA_Meter::get_meter(size_t idx) const {
   return _meter->get_meter(idx);
 }
 
+Meter::MeterErrorCode
+PSA_Meter::set_rates(const std::vector<Meter::rate_config_t> &configs) {
+    return _meter->set_rates(configs);
+}
+
 BM_REGISTER_EXTERN_W_NAME(Meter, PSA_Meter);
 BM_REGISTER_EXTERN_W_NAME_METHOD(Meter, PSA_Meter, execute, const Data &, Data &);
 
