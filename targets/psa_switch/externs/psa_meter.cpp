@@ -42,8 +42,25 @@ PSA_Meter::init() {
 
 void
 PSA_Meter::execute(const Data &index, Data &value) {
-    unsigned int color_out = _meter->execute_meter(get_packet(), index.get<size_t>(), (unsigned int) 0);
-    value.set((size_t)color_out);
+    unsigned int color_out = _meter->execute_meter(get_packet(), index.get<size_t>(), static_cast<unsigned int>(0));
+
+    // color adjustment for PSA:
+    // bmv2 meter implementation assign higher value for busier flow:
+    // (bmv2-meter) GREEN = 0, YELLOW = 1, RED = 2.
+    // PSA specification order enums differently:
+    // (see p4c/p4include/psa.p4)
+    // (PSA-specification) RED = 0, GREEN = 1, YELLOW = 2.
+    // The following code maps color_out (bmv2-meter) to
+    // psa_color_out (PSA-specification).
+    unsigned int psa_color_out;
+    if (color_out == 0)
+        psa_color_out = 1;
+    else if (color_out == 1)
+        psa_color_out = 2;
+    else if (color_out == 2)
+        psa_color_out = 0;
+
+    value.set(static_cast<size_t>(psa_color_out));
 }
 
 Meter &
