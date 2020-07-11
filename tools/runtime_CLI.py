@@ -332,16 +332,23 @@ def load_json_str(json_str):
                                                   json_["header_types"])
                 table.key += [(field_name, match_type, bitwidth)]
 
-    for j_meter in get_json_key("meter_arrays"):
+    for j_meter in get_json_key("extern_instances"):
         meter_array = MeterArray(j_meter["name"], j_meter["id"])
-        if "is_direct" in j_meter and j_meter["is_direct"]:
-            meter_array.is_direct = True
-            meter_array.binding = j_meter["binding"]
-        else:
-            meter_array.is_direct = False
-            meter_array.size = j_meter["size"]
-        meter_array.type_ = MeterType.from_str(j_meter["type"])
-        meter_array.rate_count = j_meter["rate_count"]
+        attribute_values = j_meter.get("attribute_values", [])
+        for attr in attribute_values:
+            name = attr.get("name", [])
+            val_type = attr.get("type", [])
+            value = attr.get("value", [])
+            if name == "is_direct":
+                meter_array.is_direct = value == True
+            # TODO set meter_array.binding for direct_meter
+            # direct_meter not supported on PSA yet
+            elif name == "n_meters":
+                meter_array.size = value
+            elif name == "type":
+                meter_array.type_ = value
+            elif name == "rate_count":
+                meter_array.rate_count = value
 
     for j_counter in get_json_key("counter_arrays"):
         counter_array = CounterArray(j_counter["name"], j_counter["id"])
