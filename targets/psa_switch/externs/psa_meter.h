@@ -37,39 +37,14 @@ class PSA_Meter : public bm::ExternType {
     BM_EXTERN_ATTRIBUTE_ADD(is_direct);
     BM_EXTERN_ATTRIBUTE_ADD(rate_count);
   }
-  
-  void init() override {
-    bm::MeterArray::MeterType meter_type;
-    if (type == "bytes") {
-        meter_type = bm::MeterArray::MeterType::BYTES;
-    } else if (type == "packets") {
-        meter_type = bm::MeterArray::MeterType::PACKETS;
-    } else {
-        // TODO: Here Meter is made default as a BYTES meter.
-        // However, what really should been done here is error handling.
-        meter_type = bm::MeterArray::MeterType::BYTES;
-    }
-    _meter = std::unique_ptr<MeterArray>(
-        new MeterArray(get_name() + ".$impl",
-                         spec_id,
-                         meter_type,
-                         rate_count.get<size_t>(),
-                         n_meters.get<size_t>()));
 
-        // Default trTriColor meter rates
-        // 2 packets per second, burst size of 3
-        Meter::rate_config_t committed_rate = {0.000002, 3};
-        // 10 packets per second, burst size of 1
-        Meter::rate_config_t peak_rate = {0.00001, 1};
-        Meter::MeterErrorCode error = _meter->set_rates({committed_rate, peak_rate});
-        if (error != bm::MeterArray::MeterErrorCode::SUCCESS) {
-            // TODO return error handling
-        }
-  }
+  void init() override;
 
   void execute(const Data &index, Data &value);
 
-  Meter &get_Meter(size_t idx);
+  Meter &get_meter(size_t idx);
+
+  const Meter &get_meter(size_t idx) const;
 
   const Meter &get_Meter(size_t idx) const;
 

@@ -25,18 +25,34 @@ namespace bm {
 namespace psa {
 
 void
+PSA_Meter::init() {
+    bm::MeterArray::MeterType meter_type;
+    if (type == "bytes") {
+        meter_type = bm::MeterArray::MeterType::BYTES;
+    } else if (type == "packets") {
+        meter_type = bm::MeterArray::MeterType::PACKETS;
+    }
+    _meter = std::unique_ptr<MeterArray>(
+        new MeterArray(get_name() + ".$impl",
+                         spec_id,
+                         meter_type,
+                         rate_count.get<size_t>(),
+                         n_meters.get<size_t>()));
+}
+
+void
 PSA_Meter::execute(const Data &index, Data &value) {
     unsigned int color_out = _meter->execute_meter(get_packet(), index.get<size_t>(), (unsigned int) 0);
     value.set((size_t)color_out);
 }
 
 Meter &
-PSA_Meter::get_Meter(size_t idx) {
+PSA_Meter::get_meter(size_t idx) {
   return _meter->get_meter(idx);
 }
 
 const Meter &
-PSA_Meter::get_Meter(size_t idx) const {
+PSA_Meter::get_meter(size_t idx) const {
   return _meter->get_meter(idx);
 }
 
