@@ -29,7 +29,7 @@ PSA_Meter::init() {
     bm::MeterArray::MeterType meter_type;
     if (type == "bytes") {
         meter_type = bm::MeterArray::MeterType::BYTES;
-    } else if (type == "packets") {
+    } else {
         meter_type = bm::MeterArray::MeterType::PACKETS;
     }
     _meter = std::unique_ptr<MeterArray>(
