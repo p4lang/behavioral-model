@@ -332,42 +332,16 @@ def load_json_str(json_str):
                                                   json_["header_types"])
                 table.key += [(field_name, match_type, bitwidth)]
 
-    # If extern_instances exists in input json file,
-    # the json file follows PSA format.
-    # Else the json file follows v1model format.
-    if get_json_key("extern_instances"):
-        # PSA meter
-        for j_meter in get_json_key("extern_instances"):
-            if j_meter["type"] != "Meter":
-                continue
-            meter_array = MeterArray(j_meter["name"], j_meter["id"])
-            attribute_values = j_meter.get("attribute_values", [])
-            for attr in attribute_values:
-                name = attr.get("name", [])
-                val_type = attr.get("type", [])
-                value = attr.get("value", [])
-                if name == "is_direct":
-                    meter_array.is_direct = value == True
-                # TODO set meter_array.binding for direct_meter
-                # direct_meter not supported on PSA yet
-                elif name == "n_meters":
-                    meter_array.size = value
-                elif name == "type":
-                    meter_array.type_ = value
-                elif name == "rate_count":
-                    meter_array.rate_count = value
-    else:
-        # v1model meter
-        for j_meter in get_json_key("meter_arrays"):
-            meter_array = MeterArray(j_meter["name"], j_meter["id"])
-            if "is_direct" in j_meter and j_meter["is_direct"]:
-                meter_array.is_direct = True
-                meter_array.binding = j_meter["binding"]
-            else:
-                meter_array.is_direct = False
-                meter_array.size = j_meter["size"]
-            meter_array.type_ = MeterType.from_str(j_meter["type"])
-            meter_array.rate_count = j_meter["rate_count"]
+    for j_meter in get_json_key("meter_arrays"):
+        meter_array = MeterArray(j_meter["name"], j_meter["id"])
+        if "is_direct" in j_meter and j_meter["is_direct"]:
+            meter_array.is_direct = True
+            meter_array.binding = j_meter["binding"]
+        else:
+            meter_array.is_direct = False
+            meter_array.size = j_meter["size"]
+        meter_array.type_ = MeterType.from_str(j_meter["type"])
+        meter_array.rate_count = j_meter["rate_count"]
 
     for j_counter in get_json_key("counter_arrays"):
         counter_array = CounterArray(j_counter["name"], j_counter["id"])
@@ -416,6 +390,8 @@ def load_json_str(json_str):
     for key, c in suffix_count.items():
         if c > 1:
             del SUFFIX_LOOKUP_MAP[key]
+
+    return json_
 
 class UIn_Error(Exception):
     def __init__(self, info=""):
@@ -2534,7 +2510,7 @@ class RuntimeAPI(cmd.Cmd):
         return self._complete_crc(text, 32)
 
 def load_json_config(standard_client=None, json_path=None):
-    load_json_str(utils.get_json_config(standard_client, json_path))
+    return load_json_str(utils.get_json_config(standard_client, json_path))
 
 def main():
     args = get_parser().parse_args()

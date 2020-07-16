@@ -88,7 +88,43 @@ def main():
         args.thrift_ip, args.thrift_port, services
     )
 
-    runtime_CLI.load_json_config(standard_client, args.json)
+    json_ = runtime_CLI.load_json_config(standard_client, args.json)
+    def get_json_key(key):
+        return json_.get(key, [])
+
+    for j_meter in get_json_key("extern_instances"):
+        if j_meter["type"] != "Meter":
+            continue
+        meter_array = runtime_CLI.MeterArray(j_meter["name"], j_meter["id"])
+        attribute_values = j_meter.get("attribute_values", [])
+        for attr in attribute_values:
+            name = attr.get("name", [])
+            val_type = attr.get("type", [])
+            value = attr.get("value", [])
+            if name == "is_direct":
+                meter_array.is_direct = value == True
+            # TODO set meter_array.binding for direct_meter
+            # direct_meter not supported on PSA yet
+            elif name == "n_meters":
+                meter_array.size = value
+            elif name == "type":
+                meter_array.type_ = value
+            elif name == "rate_count":
+                meter_array.rate_count = value
+
+    suffix_count = runtime_CLI.Counter()
+    for res_type, res_dict in [
+            (runtime_CLI.ResType.meter_array, runtime_CLI.METER_ARRAYS)]:
+        for name, res in res_dict.items():
+            suffix = None
+            for s in reversed(name.split('.')):
+                suffix = s if suffix is None else s + '.' + suffix
+                key = (res_type, suffix)
+                runtime_CLI.SUFFIX_LOOKUP_MAP[key] = res
+                suffix_count[key] += 1
+    for key, c in suffix_count.items():
+        if c > 1:
+            del runtime_CLI.SUFFIX_LOOKUP_MAP[key]
 
     PsaSwitchAPI(args.pre, standard_client, mc_client, pswitch_client).cmdloop()
 
