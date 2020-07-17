@@ -76,21 +76,10 @@ class PsaSwitchAPI(runtime_CLI.RuntimeAPI):
         "Get time elapsed (in microseconds) since the switch clock's epoch: get_time_since_epoch"
         print self.pswitch_client.get_time_since_epoch_us()
 
-def main():
-    args = runtime_CLI.get_parser().parse_args()
+def load_json_psa(json):
 
-    args.pre = runtime_CLI.PreType.SimplePreLAG
-
-    services = runtime_CLI.RuntimeAPI.get_thrift_services(args.pre)
-    services.extend(PsaSwitchAPI.get_thrift_services())
-
-    standard_client, mc_client, pswitch_client = runtime_CLI.thrift_connect(
-        args.thrift_ip, args.thrift_port, services
-    )
-
-    json_ = runtime_CLI.load_json_config(standard_client, args.json)
     def get_json_key(key):
-        return json_.get(key, [])
+        return json.get(key, [])
 
     for j_meter in get_json_key("extern_instances"):
         if j_meter["type"] != "Meter":
@@ -112,19 +101,19 @@ def main():
             elif name == "rate_count":
                 meter_array.rate_count = value
 
-    suffix_count = runtime_CLI.Counter()
-    for res_type, res_dict in [
-            (runtime_CLI.ResType.meter_array, runtime_CLI.METER_ARRAYS)]:
-        for name, res in res_dict.items():
-            suffix = None
-            for s in reversed(name.split('.')):
-                suffix = s if suffix is None else s + '.' + suffix
-                key = (res_type, suffix)
-                runtime_CLI.SUFFIX_LOOKUP_MAP[key] = res
-                suffix_count[key] += 1
-    for key, c in suffix_count.items():
-        if c > 1:
-            del runtime_CLI.SUFFIX_LOOKUP_MAP[key]
+def main():
+    args = runtime_CLI.get_parser().parse_args()
+
+    args.pre = runtime_CLI.PreType.SimplePreLAG
+
+    services = runtime_CLI.RuntimeAPI.get_thrift_services(args.pre)
+    services.extend(PsaSwitchAPI.get_thrift_services())
+
+    standard_client, mc_client, pswitch_client = runtime_CLI.thrift_connect(
+        args.thrift_ip, args.thrift_port, services
+    )
+
+    runtime_CLI.load_json_config(standard_client, args.json, load_json_psa)
 
     PsaSwitchAPI(args.pre, standard_client, mc_client, pswitch_client).cmdloop()
 

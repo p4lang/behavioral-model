@@ -260,7 +260,7 @@ def reset_config():
 
     SUFFIX_LOOKUP_MAP.clear()
 
-def load_json_str(json_str):
+def load_json_str(json_str, architecture_spec=None):
 
     def get_header_type(header_name, j_headers):
         for h in j_headers:
@@ -367,6 +367,10 @@ def load_json_str(json_str):
         parse_vset = ParseVSet(j_parse_vset["name"], j_parse_vset["id"])
         parse_vset.bitwidth = j_parse_vset["compressed_bitwidth"]
 
+    if architecture_spec is not None:
+        # call architecture specific json parsing code
+        architecture_spec(json_)
+
     # Builds a dictionary mapping (object type, unique suffix) to the object
     # (Table, Action, etc...). In P4_16 the object name is the fully-qualified
     # name, which can be quite long, which is why we accept unique suffixes as
@@ -390,8 +394,6 @@ def load_json_str(json_str):
     for key, c in suffix_count.items():
         if c > 1:
             del SUFFIX_LOOKUP_MAP[key]
-
-    return json_
 
 class UIn_Error(Exception):
     def __init__(self, info=""):
@@ -2509,8 +2511,8 @@ class RuntimeAPI(cmd.Cmd):
     def complete_set_crc32_parameters(self, text, line, start_index, end_index):
         return self._complete_crc(text, 32)
 
-def load_json_config(standard_client=None, json_path=None):
-    return load_json_str(utils.get_json_config(standard_client, json_path))
+def load_json_config(standard_client=None, json_path=None, architecture_spec=None):
+    load_json_str(utils.get_json_config(standard_client, json_path), architecture_spec)
 
 def main():
     args = get_parser().parse_args()
