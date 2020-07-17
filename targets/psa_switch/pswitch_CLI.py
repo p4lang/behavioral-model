@@ -93,7 +93,7 @@ def load_json_psa(json):
             if name == "is_direct":
                 meter_array.is_direct = value == True
             # TODO set meter_array.binding for direct_meter
-            # direct_meter not supported on PSA yet
+            # direct_meter not supported on psa_switch yet
             elif name == "n_meters":
                 meter_array.size = value
             elif name == "type":
