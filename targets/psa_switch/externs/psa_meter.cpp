@@ -52,7 +52,7 @@ PSA_Meter::execute(const Data &index, Data &value) {
     // (PSA-specification) RED = 0, GREEN = 1, YELLOW = 2.
     // The following code maps color_out (bmv2-meter) to
     // psa_color_out (PSA-specification).
-    auto psa_color_out = 1;
+    bm::Meter::color_t psa_color_out = 1;
     switch(color_out) {
         case 0 :
             psa_color_out = 1;
