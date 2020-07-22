@@ -149,6 +149,9 @@ CalcBasedChecksum::update_(Packet *pkt) const {
 bool
 CalcBasedChecksum::verify_(const Packet &pkt) const {
   const uint64_t cksum = calculation->output(pkt);
+  std::stringstream ss;
+  ss << std::hex << cksum;
+  BMLOG_DEBUG_PKT(pkt, "Checksum is '{}': {}", get_name(), "0x"+ ss.str());
   const auto &f_cksum = pkt.get_phv()->get_field(header_id, field_offset);
   return (cksum == f_cksum.get<uint64_t>());
 }
