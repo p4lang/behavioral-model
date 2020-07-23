@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef INCLUDE_BM_BM_SIM_CHECKSUMS_H_
-#define INCLUDE_BM_BM_SIM_CHECKSUMS_H_
+#ifndef BM_BM_SIM_CHECKSUMS_H_
+#define BM_BM_SIM_CHECKSUMS_H_
 
 #include <string>
 #include <memory>
@@ -97,4 +97,4 @@ class IPv4Checksum : public Checksum {
 
 }  // namespace bm
 
-#endif  // INCLUDE_BM_BM_SIM_CHECKSUMS_H_
+#endif  // BM_BM_SIM_CHECKSUMS_H_
