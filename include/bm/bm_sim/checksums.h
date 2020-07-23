@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef BM_BM_SIM_CHECKSUMS_H_
-#define BM_BM_SIM_CHECKSUMS_H_
+#ifndef INCLUDE_BM_BM_SIM_CHECKSUMS_H_
+#define INCLUDE_BM_BM_SIM_CHECKSUMS_H_
 
 #include <string>
 #include <memory>
@@ -77,6 +77,9 @@ class CalcBasedChecksum : public Checksum {
  private:
   void update_(Packet *pkt) const override;
   bool verify_(const Packet &pkt) const override;
+#ifdef BM_LOG_DEBUG_ON
+  std::string convert(uint64_t val) const;
+#endif
 
  private:
   const NamedCalculation *calculation{nullptr};
@@ -94,4 +97,4 @@ class IPv4Checksum : public Checksum {
 
 }  // namespace bm
 
-#endif  // BM_BM_SIM_CHECKSUMS_H_
+#endif  // INCLUDE_BM_BM_SIM_CHECKSUMS_H_

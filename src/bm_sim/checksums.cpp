@@ -26,6 +26,7 @@
 
 #include <cstdint>
 #include <string>
+#include <sstream>
 
 namespace bm {
 
@@ -112,7 +113,8 @@ Checksum::verify(const Packet &pkt) const {
     return true;
   } else {
     bool valid = verify_(pkt);
-    BMLOG_DEBUG_PKT(pkt, "Verifying checksum '{}': {}", get_name(), valid);
+    BMLOG_DEBUG_PKT(pkt, "Verified checksum '{}': {}", get_name(),
+                    valid ? "passed" : "failed");
     return valid;
   }
 }
@@ -146,15 +148,21 @@ CalcBasedChecksum::update_(Packet *pkt) const {
   f_cksum.set(cksum);
 }
 
+#ifdef BM_LOG_DEBUG_ON
+std::string
+CalcBasedChecksum::convert(uint64_t val) const {
+    std::stringstream ss;
+    ss << std::hex << val;
+    return ("0x" + ss.str());
+}
+#endif
+
 bool
 CalcBasedChecksum::verify_(const Packet &pkt) const {
   const uint64_t cksum = calculation->output(pkt);
-  std::stringstream ss, ess;
-  ss << std::hex << cksum;
   const auto &f_cksum = pkt.get_phv()->get_field(header_id, field_offset);
-  ess << std::hex << f_cksum.get<uint64_t>();
-  BMLOG_DEBUG_PKT(pkt, "Checksum '{}': computed {} : in pkt {}",
-                  get_name(), "0x"+ ss.str(), "0x"+ ess.str());
+  BMLOG_DEBUG_PKT(pkt, "Checksum '{}': computed {} - actual {}",
+                  get_name(), convert(cksum), convert(f_cksum.get<uint64_t>()));
   return (cksum == f_cksum.get<uint64_t>());
 }
 
