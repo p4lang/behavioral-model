@@ -54,9 +54,9 @@ class PsaSwitchAPI(runtime_CLI.RuntimeAPI):
     def do_set_queue_depth(self, line):
         "Set depth of one / all egress queue(s): set_queue_depth <nb_pkts> [<egress_port>]"
         args = line.split()
-        depth = self.parse_int(args[0])
+        depth = self.parse_int(args[0], "nb_pkts")
         if len(args) > 1:
-            port = self.parse_int(args[1])
+            port = self.parse_int(args[1], "egress_port")
             self.pswitch_client.set_egress_queue_depth(port, depth)
         else:
             self.pswitch_client.set_all_egress_queue_depths(depth)
@@ -65,9 +65,9 @@ class PsaSwitchAPI(runtime_CLI.RuntimeAPI):
     def do_set_queue_rate(self, line):
         "Set rate of one / all egress queue(s): set_queue_rate <rate_pps> [<egress_port>]"
         args = line.split()
-        rate = self.parse_int(args[0])
+        rate = self.parse_int(args[0], "rate_pps")
         if len(args) > 1:
-            port = self.parse_int(args[1])
+            port = self.parse_int(args[1], "egress_port")
             self.pswitch_client.set_egress_queue_rate(port, rate)
         else:
             self.pswitch_client.set_all_egress_queue_rates(rate)
@@ -95,7 +95,7 @@ class PsaSwitchAPI(runtime_CLI.RuntimeAPI):
     @handle_bad_input
     def do_mirroring_delete(self, line):
         "Delete mirroring mapping: mirroring_delete <mirror_id>"
-        mirror_id = self.parse_int(line)
+        mirror_id = self.parse_int(line, "mirror_id")
         self.pswitch_client.mirroring_mapping_delete(mirror_id)
 
     @handle_bad_input
