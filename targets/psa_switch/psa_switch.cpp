@@ -70,7 +70,49 @@ namespace bm {
 
 namespace psa {
 
+static constexpr uint16_t MAX_MIRROR_SESSION_ID = (1u << 15) - 1;
 packet_id_t PsaSwitch::packet_id = 0;
+
+class PsaSwitch::MirroringSessions {
+ public:
+  bool add_session(mirror_id_t mirror_id,
+                   const MirroringSessionConfig &config) {
+    Lock lock(mutex);
+    if (0 <= mirror_id && mirror_id <= MAX_MIRROR_SESSION_ID) {
+      sessions_map[mirror_id] = config;
+      return true;
+    } else {
+      bm::Logger::get()->error("mirror_id out of range. No session added.");
+      return false;
+    }
+  }
+
+  bool delete_session(mirror_id_t mirror_id) {
+    Lock lock(mutex);
+    if (0 <= mirror_id && mirror_id <= MAX_MIRROR_SESSION_ID) {
+      return sessions_map.erase(mirror_id) == 1;
+    } else {
+      bm::Logger::get()->error("mirror_id out of range. No session deleted.");
+      return false;
+    }
+  }
+
+  bool get_session(mirror_id_t mirror_id,
+                   MirroringSessionConfig *config) const {
+    Lock lock(mutex);
+    auto it = sessions_map.find(mirror_id);
+    if (it == sessions_map.end()) return false;
+    *config = it->second;
+    return true;
+  }
+
+ private:
+  using Mutex = std::mutex;
+  using Lock = std::lock_guard<Mutex>;
+
+  mutable std::mutex mutex;
+  std::unordered_map<mirror_id_t, MirroringSessionConfig> sessions_map;
+};
 
 PsaSwitch::PsaSwitch(bool enable_swap)
   : Switch(enable_swap),
@@ -92,7 +134,8 @@ PsaSwitch::PsaSwitch(bool enable_swap)
         this->transmit_fn(port_num, buffer, len);
     }),
     pre(new McSimplePreLAG()),
-    start(clock::now()) {
+    start(clock::now()),
+    mirroring_sessions(new MirroringSessions()) {
   add_component<McSimplePreLAG>(pre);
 
   add_required_field("psa_ingress_parser_input_metadata", "ingress_port");
@@ -200,6 +243,23 @@ PsaSwitch::reset_target_state_() {
   get_component<McSimplePreLAG>()->reset_state();
 }
 
+bool
+PsaSwitch::mirroring_add_session(mirror_id_t mirror_id,
+                                    const MirroringSessionConfig &config) {
+  return mirroring_sessions->add_session(mirror_id, config);
+}
+
+bool
+PsaSwitch::mirroring_delete_session(mirror_id_t mirror_id) {
+  return mirroring_sessions->delete_session(mirror_id);
+}
+
+bool
+PsaSwitch::mirroring_get_session(mirror_id_t mirror_id,
+                                    MirroringSessionConfig *config) const {
+  return mirroring_sessions->get_session(mirror_id, config);
+}
+
 int
 PsaSwitch::set_egress_queue_depth(size_t port, const size_t depth_pkts) {
   egress_buffers.set_capacity(port, depth_pkts);
@@ -281,6 +341,28 @@ PsaSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
 }
 
 void
+PsaSwitch::multicast(Packet *packet, unsigned int mgid, PktInstanceType path) {
+  auto phv = packet->get_phv();
+  const auto pre_out = pre->replicate({mgid});
+  auto &f_instance = phv->get_field("psa_egress_input_metadata.instance");
+  auto &f_packet_path = phv->get_field("psa_egress_parser_input_metadata.packet_path");
+  auto packet_size = packet->get_register(PACKET_LENGTH_REG_IDX);
+  for (const auto &out : pre_out) {
+    auto egress_port = out.egress_port;
+    auto instance = out.rid;
+    BMLOG_DEBUG_PKT(*packet,
+                    "Replicating packet on port {} with instance {}",
+                    egress_port, instance);
+    f_instance.set(instance);
+    // TODO use appropriate enum member from JSON
+    f_packet_path.set(path);
+    std::unique_ptr<Packet> packet_copy = packet->clone_with_phv_ptr();
+    packet_copy->set_register(PACKET_LENGTH_REG_IDX, packet_size);
+    enqueue(egress_port, std::move(packet_copy));
+  }
+}
+
+void
 PsaSwitch::ingress_thread() {
   PHV *phv;
 
@@ -301,10 +383,9 @@ PsaSwitch::ingress_thread() {
        bytes are parsed by the parser ("lifted" into p4 headers). Here, we
        track the buffer_state prior to parsing so that we can put it back
        for packets that are cloned or resubmitted, same as in simple_switch.cpp
-
-       TODO */
-
+    */
     const Packet::buffer_state_t packet_in_state = packet->save_buffer_state();
+    auto ingress_packet_size = packet->get_register(PACKET_LENGTH_REG_IDX);
 
     // The PSA specification says that for all packets, whether they
     // are new ones from a port, or resubmitted, or recirculated, the
@@ -337,17 +418,53 @@ PsaSwitch::ingress_thread() {
     ingress_mau->apply(packet.get());
     packet->reset_exit();
 
-    // prioritize dropping if marked as such - do not move below other checks
-    const auto &f_drop = phv->get_field("psa_ingress_output_metadata.drop");
-    if (f_drop.get_int()) {
+    // ingress cloning - sent in their pre-ingress-thread state to either an egress
+    //                   port or a multicast group
+    //                 - dropped packets should still be cloned - do not move below drop
+    unsigned int clone = phv->get_field("psa_ingress_output_metadata.clone").get_uint();
+    if (clone) {
+      MirroringSessionConfig config;
+      unsigned int clone_session_id = phv->get_field("psa_ingress_output_metadata.clone_session_id").get_uint();
+      bool is_session_configured = mirroring_get_session(
+          static_cast<mirror_id_t>(clone_session_id), &config);
+      BMLOG_DEBUG_PKT(*packet, "Cloning packet at ingress to session id {}", clone_session_id);
+
+      if (is_session_configured) {
+        const Packet::buffer_state_t packet_out_state = packet->save_buffer_state();
+        packet->restore_buffer_state(packet_in_state);
+
+        std::unique_ptr<Packet> packet_copy = packet->clone_no_phv_ptr();
+        packet_copy->set_register(PACKET_LENGTH_REG_IDX, ingress_packet_size);
+        auto phv_copy = packet_copy->get_phv();
+        phv_copy->reset_metadata();
+        phv_copy->get_field("psa_egress_parser_input_metadata.packet_path").set(PACKET_PATH_CLONE_I2E);
+        phv_copy->get_field("psa_egress_input_metadata.packet_path").set(PACKET_PATH_CLONE_I2E);
+
+        if (config.mgid_valid) {
+          BMLOG_DEBUG_PKT(*packet_copy, "Cloning packet to multicast group {}", config.mgid);
+          multicast(packet_copy.get(), config.mgid, PACKET_PATH_CLONE_I2E);
+        }
+
+        if (config.egress_port_valid) {
+          BMLOG_DEBUG_PKT(*packet_copy, "Cloning packet to egress port {}", config.egress_port);
+          enqueue(config.egress_port, std::move(packet_copy));
+        }
+
+        packet->restore_buffer_state(packet_out_state);
+      }
+    }
+
+    // drop - packets marked via the ingress_drop action
+    unsigned int drop = phv->get_field("psa_ingress_output_metadata.drop").get_uint();
+    if (drop) {
       BMLOG_DEBUG_PKT(*packet, "Dropping packet at the end of ingress");
       continue;
     }
 
     // resubmit - these packets get immediately resub'd to ingress, and skip
     //            deparsing, do not move below multicast or deparse
-    const auto &f_resubmit = phv->get_field("psa_ingress_output_metadata.resubmit");
-    if (f_resubmit.get_int()) {
+    unsigned int resubmit = phv->get_field("psa_ingress_output_metadata.resubmit").get_uint();
+    if (resubmit) {
       BMLOG_DEBUG_PKT(*packet, "Resubmitting packet");
 
       packet->restore_buffer_state(packet_in_state);
@@ -366,46 +483,24 @@ PsaSwitch::ingress_thread() {
     const auto &f_ig_cos = phv->get_field("psa_ingress_output_metadata.class_of_service");
     const auto ig_cos = f_ig_cos.get_uint();
 
-    // handling multicast
-    unsigned int mgid = 0u;
-    const auto &f_mgid = phv->get_field("psa_ingress_output_metadata.multicast_group");
-    mgid = f_mgid.get_uint();
-
+    unsigned int mgid = phv->get_field("psa_ingress_output_metadata.multicast_group").get_uint();
     if (mgid != 0) {
       BMLOG_DEBUG_PKT(*packet,
                       "Multicast requested for packet with multicast group {}",
                       mgid);
-      const auto pre_out = pre->replicate({mgid});
-      auto &f_instance = phv->get_field("psa_egress_input_metadata.instance");
-      auto &f_eg_cos = phv->get_field("psa_egress_input_metadata.class_of_service");
-      auto packet_size = packet->get_register(PACKET_LENGTH_REG_IDX);
-      for(const auto &out : pre_out){
-        auto egress_port = out.egress_port;
-        auto instance = out.rid;
-        BMLOG_DEBUG_PKT(*packet,
-                        "Replicating packet on port {} with instance {}",
-                        egress_port, instance);
-        f_instance.set(instance);
-        // TODO use appropriate enum member from JSON
-        f_packet_path.set(PACKET_PATH_NORMAL_MULTICAST);
-        f_eg_cos.set(ig_cos);
-        std::unique_ptr<Packet> packet_copy = packet->clone_with_phv_ptr();
-        packet_copy->set_register(PACKET_LENGTH_REG_IDX, packet_size);
-        enqueue(egress_port, std::move(packet_copy));
-      }
+      multicast(packet.get(), mgid, PACKET_PATH_NORMAL_MULTICAST);
       continue;
     }
 
-    const auto &f_egress_port = phv->get_field("psa_ingress_output_metadata.egress_port");
     auto &f_instance = phv->get_field("psa_egress_input_metadata.instance");
     auto &f_eg_cos = phv->get_field("psa_egress_input_metadata.class_of_service");
-    port_t egress_port = f_egress_port.get_uint();
-    BMLOG_DEBUG_PKT(*packet, "Egress port is {}", egress_port);
     f_instance.set(0);
     // TODO use appropriate enum member from JSON
-    f_packet_path.set(PACKET_PATH_NORMAL_UNICAST);
     f_eg_cos.set(ig_cos);
 
+    f_packet_path.set(PACKET_PATH_NORMAL_UNICAST);
+    port_t egress_port = phv->get_field("psa_ingress_output_metadata.egress_port").get_uint();
+    BMLOG_DEBUG_PKT(*packet, "Egress port is {}", egress_port);
     enqueue(egress_port, std::move(packet));
   }
 }
