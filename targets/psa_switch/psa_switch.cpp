@@ -341,9 +341,10 @@ PsaSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
 }
 
 void
-PsaSwitch::multicast(Packet *packet, unsigned int mgid, PktInstanceType path) {
+PsaSwitch::multicast(Packet *packet, unsigned int mgid, PktInstanceType path, unsigned int class_of_service) {
   auto phv = packet->get_phv();
   const auto pre_out = pre->replicate({mgid});
+  auto &f_eg_cos = phv->get_field("psa_egress_input_metadata.class_of_service");
   auto &f_instance = phv->get_field("psa_egress_input_metadata.instance");
   auto &f_packet_path = phv->get_field("psa_egress_parser_input_metadata.packet_path");
   auto packet_size = packet->get_register(PACKET_LENGTH_REG_IDX);
@@ -353,6 +354,7 @@ PsaSwitch::multicast(Packet *packet, unsigned int mgid, PktInstanceType path) {
     BMLOG_DEBUG_PKT(*packet,
                     "Replicating packet on port {} with instance {}",
                     egress_port, instance);
+    f_eg_cos.set(class_of_service);
     f_instance.set(instance);
     // TODO use appropriate enum member from JSON
     f_packet_path.set(path);
@@ -418,6 +420,9 @@ PsaSwitch::ingress_thread() {
     ingress_mau->apply(packet.get());
     packet->reset_exit();
 
+    const auto &f_ig_cos = phv->get_field("psa_ingress_output_metadata.class_of_service");
+    const auto ig_cos = f_ig_cos.get_uint();
+
     // ingress cloning - sent in their pre-ingress-thread state to either an egress
     //                   port or a multicast group
     //                 - dropped packets should still be cloned - do not move below drop
@@ -438,11 +443,12 @@ PsaSwitch::ingress_thread() {
         auto phv_copy = packet_copy->get_phv();
         phv_copy->reset_metadata();
         phv_copy->get_field("psa_egress_parser_input_metadata.packet_path").set(PACKET_PATH_CLONE_I2E);
-        phv_copy->get_field("psa_egress_input_metadata.packet_path").set(PACKET_PATH_CLONE_I2E);
 
         if (config.mgid_valid) {
           BMLOG_DEBUG_PKT(*packet_copy, "Cloning packet to multicast group {}", config.mgid);
-          multicast(packet_copy.get(), config.mgid, PACKET_PATH_CLONE_I2E);
+          // TODO 0 as the last arg (for class_of_service) is currently a placeholder
+          // implement cos into cloning session configs
+          multicast(packet_copy.get(), config.mgid, PACKET_PATH_CLONE_I2E, 0);
         }
 
         if (config.egress_port_valid) {
@@ -480,15 +486,13 @@ PsaSwitch::ingress_thread() {
     deparser->deparse(packet.get());
 
     auto &f_packet_path = phv->get_field("psa_egress_parser_input_metadata.packet_path");
-    const auto &f_ig_cos = phv->get_field("psa_ingress_output_metadata.class_of_service");
-    const auto ig_cos = f_ig_cos.get_uint();
 
     unsigned int mgid = phv->get_field("psa_ingress_output_metadata.multicast_group").get_uint();
     if (mgid != 0) {
       BMLOG_DEBUG_PKT(*packet,
                       "Multicast requested for packet with multicast group {}",
                       mgid);
-      multicast(packet.get(), mgid, PACKET_PATH_NORMAL_MULTICAST);
+      multicast(packet.get(), mgid, PACKET_PATH_NORMAL_MULTICAST, ig_cos);
       continue;
     }
 

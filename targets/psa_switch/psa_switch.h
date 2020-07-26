@@ -244,7 +244,7 @@ class PsaSwitch : public Switch {
   void egress_thread(size_t worker_id);
   void transmit_thread();
 
-  void multicast(Packet *packet, unsigned int mgid, PktInstanceType path);
+  void multicast(Packet *packet, unsigned int mgid, PktInstanceType path, unsigned int class_of_service);
 
   bool get_mirroring_mapping(mirror_id_t mirror_id, port_t *port) const {
     const auto it = mirroring_map.find(mirror_id);
