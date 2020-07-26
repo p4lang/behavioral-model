@@ -194,7 +194,7 @@ PsaSwitch::receive_(port_t port_num, const char *buffer, int len) {
                                bm::PacketBuffer(len + 512, buffer, len));
 
   BMELOG(packet_in, *packet);
-  PHV *phv = packet->get_phv();
+  auto *phv = packet->get_phv();
 
   // many current p4 programs assume this
   // from psa spec - PSA does not mandate initialization of user-defined
@@ -326,7 +326,7 @@ PsaSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
     packet->set_egress_port(egress_port);
 
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
-    size_t priority = phv->has_field(SSWITCH_PRIORITY_QUEUEING_SRC) ?
+    auto priority = phv->has_field(SSWITCH_PRIORITY_QUEUEING_SRC) ?
         phv->get_field(SSWITCH_PRIORITY_QUEUEING_SRC).get<size_t>() : 0u;
     if (priority >= SSWITCH_PRIORITY_QUEUEING_NB_QUEUES) {
       bm::Logger::get()->error("Priority out of range, dropping packet");
@@ -423,18 +423,16 @@ PsaSwitch::ingress_thread() {
     const auto &f_ig_cos = phv->get_field("psa_ingress_output_metadata.class_of_service");
     const auto ig_cos = f_ig_cos.get_uint();
 
-    // ingress cloning - sent in their pre-ingress-thread state to either an egress
-    //                   port or a multicast group
+    // ingress cloning - each cloned packet is a copy of the packet as it entered the ingress parser
     //                 - dropped packets should still be cloned - do not move below drop
-    unsigned int clone = phv->get_field("psa_ingress_output_metadata.clone").get_uint();
+    auto clone = phv->get_field("psa_ingress_output_metadata.clone").get_uint();
     if (clone) {
       MirroringSessionConfig config;
-      unsigned int clone_session_id = phv->get_field("psa_ingress_output_metadata.clone_session_id").get_uint();
-      bool is_session_configured = mirroring_get_session(
-          static_cast<mirror_id_t>(clone_session_id), &config);
-      BMLOG_DEBUG_PKT(*packet, "Cloning packet at ingress to session id {}", clone_session_id);
+      auto clone_session_id = phv->get_field("psa_ingress_output_metadata.clone_session_id").get_uint();
+      auto is_session_configured = mirroring_get_session(static_cast<mirror_id_t>(clone_session_id), &config);
 
       if (is_session_configured) {
+        BMLOG_DEBUG_PKT(*packet, "Cloning packet at ingress to session id {}", clone_session_id);
         const Packet::buffer_state_t packet_out_state = packet->save_buffer_state();
         packet->restore_buffer_state(packet_in_state);
 
@@ -457,11 +455,15 @@ PsaSwitch::ingress_thread() {
         }
 
         packet->restore_buffer_state(packet_out_state);
+      } else {
+        BMLOG_DEBUG_PKT(*packet,
+                        "Cloning packet at ingress to unconfigured session id {} causes no clone packets to be created",
+                        clone_session_id);
       }
     }
 
     // drop - packets marked via the ingress_drop action
-    unsigned int drop = phv->get_field("psa_ingress_output_metadata.drop").get_uint();
+    auto drop = phv->get_field("psa_ingress_output_metadata.drop").get_uint();
     if (drop) {
       BMLOG_DEBUG_PKT(*packet, "Dropping packet at the end of ingress");
       continue;
@@ -469,7 +471,7 @@ PsaSwitch::ingress_thread() {
 
     // resubmit - these packets get immediately resub'd to ingress, and skip
     //            deparsing, do not move below multicast or deparse
-    unsigned int resubmit = phv->get_field("psa_ingress_output_metadata.resubmit").get_uint();
+    auto resubmit = phv->get_field("psa_ingress_output_metadata.resubmit").get_uint();
     if (resubmit) {
       BMLOG_DEBUG_PKT(*packet, "Resubmitting packet");
 
@@ -487,7 +489,7 @@ PsaSwitch::ingress_thread() {
 
     auto &f_packet_path = phv->get_field("psa_egress_parser_input_metadata.packet_path");
 
-    unsigned int mgid = phv->get_field("psa_ingress_output_metadata.multicast_group").get_uint();
+    auto mgid = phv->get_field("psa_ingress_output_metadata.multicast_group").get_uint();
     if (mgid != 0) {
       BMLOG_DEBUG_PKT(*packet,
                       "Multicast requested for packet with multicast group {}",
@@ -503,7 +505,7 @@ PsaSwitch::ingress_thread() {
     f_eg_cos.set(ig_cos);
 
     f_packet_path.set(PACKET_PATH_NORMAL_UNICAST);
-    port_t egress_port = phv->get_field("psa_ingress_output_metadata.egress_port").get_uint();
+    auto egress_port = phv->get_field("psa_ingress_output_metadata.egress_port").get<port_t>();
     BMLOG_DEBUG_PKT(*packet, "Egress port is {}", egress_port);
     enqueue(egress_port, std::move(packet));
   }
