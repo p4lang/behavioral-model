@@ -31,6 +31,7 @@
 #include <ostream>
 #include <string>
 #include <unordered_map>
+#include <iostream>
 
 #include "xxhash.h"
 #include "crc_tables.h"
@@ -310,6 +311,12 @@ struct crcCCITT {
 
 struct cksum16 {
   uint16_t operator()(const char *buf, size_t len) const {
+#ifdef BM_LOG_DEBUG_ON
+    std::cout << "Printing data: " << len << std::endl;
+    for (size_t i = 0; i < len; i++)
+      fprintf(stderr, "%02X", buf[i]);
+    std::cout << "\nEnd\n";
+#endif
     uint64_t sum = 0;
     const uint64_t *b = reinterpret_cast<const uint64_t *>(buf);
     uint32_t t1, t2;

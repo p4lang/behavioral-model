@@ -148,21 +148,21 @@ CalcBasedChecksum::update_(Packet *pkt) const {
   f_cksum.set(cksum);
 }
 
-#ifdef BM_LOG_DEBUG_ON
 std::string
 CalcBasedChecksum::convert(uint64_t val) const {
     std::stringstream ss;
     ss << std::hex << val;
     return ("0x" + ss.str());
 }
-#endif
 
 bool
 CalcBasedChecksum::verify_(const Packet &pkt) const {
   const uint64_t cksum = calculation->output(pkt);
   const auto &f_cksum = pkt.get_phv()->get_field(header_id, field_offset);
+#ifdef BM_LOG_DEBUG_ON
   BMLOG_DEBUG_PKT(pkt, "Checksum '{}': computed {} - actual {}",
                   get_name(), convert(cksum), convert(f_cksum.get<uint64_t>()));
+#endif
   return (cksum == f_cksum.get<uint64_t>());
 }
 
