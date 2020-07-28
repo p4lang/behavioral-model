@@ -77,7 +77,6 @@ class CalcBasedChecksum : public Checksum {
  private:
   void update_(Packet *pkt) const override;
   bool verify_(const Packet &pkt) const override;
-  std::string convert(uint64_t val) const;
 
  private:
   const NamedCalculation *calculation{nullptr};

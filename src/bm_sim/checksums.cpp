@@ -32,6 +32,13 @@ namespace bm {
 
 namespace {
 
+std::string
+convert(const uint64_t val) {
+    std::stringstream ss;
+    ss << "0x" << std::hex << val;
+    return (ss.str());
+}
+
 // TODO(antonin): remove this ? it is duplicated in calculations.cpp
 uint16_t cksum16(char *buf, size_t len) {
   uint64_t sum = 0;
@@ -148,21 +155,12 @@ CalcBasedChecksum::update_(Packet *pkt) const {
   f_cksum.set(cksum);
 }
 
-std::string
-CalcBasedChecksum::convert(uint64_t val) const {
-    std::stringstream ss;
-    ss << std::hex << val;
-    return ("0x" + ss.str());
-}
-
 bool
 CalcBasedChecksum::verify_(const Packet &pkt) const {
   const uint64_t cksum = calculation->output(pkt);
   const auto &f_cksum = pkt.get_phv()->get_field(header_id, field_offset);
-#ifdef BM_LOG_DEBUG_ON
   BMLOG_DEBUG_PKT(pkt, "Checksum '{}': computed {} - actual {}",
                   get_name(), convert(cksum), convert(f_cksum.get<uint64_t>()));
-#endif
   return (cksum == f_cksum.get<uint64_t>());
 }
 
