@@ -27,6 +27,26 @@ import os
 
 from pswitch_runtime import PsaSwitch
 
+ResType = runtime_CLI.enum('ResType', 'random')
+
+RANDOMS = {}
+
+def psa_reset_config():
+    RANDOMS.clear()
+
+class PsaRandom:
+    def __init__(self, name, id_):
+        self.name = name
+        self.id_ = id_
+        self.min = None
+        self.max = None
+
+        RANDOMS[name] = self
+
+    def random_str(self):
+        return "{0:30} [{1}, {2}]".format(self.name, self.min,
+                                          self.max)
+
 class PsaSwitchAPI(runtime_CLI.RuntimeAPI):
     @staticmethod
     def get_thrift_services():
@@ -78,6 +98,8 @@ class PsaSwitchAPI(runtime_CLI.RuntimeAPI):
 
 def load_json_psa(json):
 
+    psa_reset_config()
+
     def get_json_key(key):
         return json.get(key, [])
 
@@ -100,6 +122,34 @@ def load_json_psa(json):
                 meter_array.type_ = value
             elif name == "rate_count":
                 meter_array.rate_count = value
+
+    for j_random in get_json_key("extern_instances"):
+        if j_random["type"] != "Random":
+            continue
+        psa_random = PsaRandom(j_random["name"], j_random["id"])
+        attribute_values = j_meter.get("attribute_values", [])
+        for attr in attribute_values:
+            name = attr.get("name", [])
+            val_type = attr.get("type", [])
+            value = attr.get("value", [])
+            if name == "min":
+                psa_random.min = value
+            elif name == "max":
+                psa_random.max = value
+
+    suffix_count = runtime_CLI.Counter()
+    for res_type, res_dict in [
+            (ResType.random, RANDOMS)]:
+        for name, res in res_dict.items():
+            suffix = None
+            for s in reversed(name.split('.')):
+                suffix = s if suffix is None else s + '.' + suffix
+                key = (res_type, suffix)
+                runtime_CLI.SUFFIX_LOOKUP_MAP[key] = res
+                suffix_count[key] += 1
+    for key, c in suffix_count.items():
+        if c > 1:
+            del runtime_CLI.SUFFIX_LOOKUP_MAP[key]
 
 def main():
     args = runtime_CLI.get_parser().parse_args()
