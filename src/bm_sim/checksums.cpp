@@ -33,10 +33,10 @@ namespace bm {
 namespace {
 
 std::string
-convert(const uint64_t val) {
+convertU64ToHexStr(const uint64_t val) {
     std::stringstream ss;
     ss << "0x" << std::hex << val;
-    return (ss.str());
+    return ss.str();
 }
 
 // TODO(antonin): remove this ? it is duplicated in calculations.cpp
@@ -160,7 +160,8 @@ CalcBasedChecksum::verify_(const Packet &pkt) const {
   const uint64_t cksum = calculation->output(pkt);
   const auto &f_cksum = pkt.get_phv()->get_field(header_id, field_offset);
   BMLOG_DEBUG_PKT(pkt, "Checksum '{}': computed {} - actual {}",
-                  get_name(), convert(cksum), convert(f_cksum.get<uint64_t>()));
+                  get_name(), convertU64ToHexStr(cksum),
+                  convertU64ToHexStr(f_cksum.get<uint64_t>()));
   return (cksum == f_cksum.get<uint64_t>());
 }
 
