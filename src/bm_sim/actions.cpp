@@ -259,6 +259,14 @@ ActionFn::parameter_push_back_string(const std::string &str) {
   params.push_back(param);
 }
 
+void ActionFn::parameter_push_back_list(std::unique_ptr<List> str) {
+  ActionParam param;
+  param.tag = ActionParam::LIST;
+  lists.push_back(std::move(str));
+  param.list = lists.back().get();
+  params.push_back(param);
+}
+
 void
 ActionFn::parameter_start_vector() {
   ActionParam param;

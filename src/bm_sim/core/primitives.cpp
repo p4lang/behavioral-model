@@ -139,7 +139,7 @@ exit_::operator ()() {
 
 void
 log_msg::operator ()(const std::string &format,
-                     const std::vector<Data> data_vector) {
+                     const std::vector<const DataRepresentation*> data_vector) {
   std::string str = format;
   std::string::size_type open = 0;  // position of the opened bracket
   std::string::size_type end = 0;  // position of the matching closed bracket
@@ -168,8 +168,8 @@ log_msg::operator ()(const std::string &format,
     } else {
       if (counter < data_vector.size()) {
         str.replace(open, end - open + 1,
-                    data_vector[counter].get_string_repr());
-        open += data_vector[counter++].get_string_repr().size();
+                    data_vector[counter]->show());
+        open += data_vector[counter++]->show().size();
       } else {
         counter++;
         open += end - open;

@@ -82,9 +82,9 @@ class exit_ : public ActionPrimitive<> {
 };
 
 struct log_msg : public ActionPrimitive<const std::string &,
-                                        const std::vector<Data> > {
+                              const std::vector<const DataRepresentation*> > {
   void operator ()(const std::string &format,
-                   const std::vector<Data> data_vector);
+                   const std::vector<const DataRepresentation*> data_vector);
 };
 
 }  // namespace core

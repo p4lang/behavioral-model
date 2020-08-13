@@ -29,10 +29,12 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "fields.h"
 #include "named_p4object.h"
 #include "phv_forward.h"
+#include "data.h"
 
 namespace bm {
 
@@ -144,7 +146,7 @@ class HeaderType : public NamedP4Object {
 
 //! Used to represent P4 header instances. It includes a vector of Field
 //! objects.
-class Header : public NamedP4Object {
+class Header : public NamedP4Object, public DataRepresentation {
  public:
   using iterator = std::vector<Field>::iterator;
   using const_iterator = std::vector<Field>::const_iterator;
@@ -281,6 +283,39 @@ class Header : public NamedP4Object {
   //! string. The name is of the form <hdr_name>.<f_name>.
   const std::string get_field_full_name(int field_offset) const;
 
+  // The header and structure are represented by the class Header in bmv2.
+  // The difference between the header and the structure is in
+  // the metadata variable:
+  //  metadata = 0 for the header
+  //  metadata = 1 for the structure.
+  std::string show() const override {
+    std::string format = "{";
+    if (!is_metadata() && !is_valid()) {
+      // header is not valid
+      format.append("'" + get_field_name(fields.size()-1) + "': " + "0}");
+      return format;
+    }
+
+    if (!is_metadata()) {
+      // if it is a header, the valid field is added
+      format.append("'" + get_field_name(fields.size()-1) + "': " +
+          fields[fields.size()-1].get_string_repr() + ", ");
+    }
+
+    for (size_t i = 0; i < fields.size()-1; i++) {
+      // if it is a structure, the _padding field is skipped
+      if (get_field_name(i).substr(0, 8).compare("_padding") == 0) {
+        continue;
+      }
+      format.append("'" + get_field_name(i) + "': " +
+          fields[i].get_string_repr() + ", ");
+    }
+
+    format.erase(format.size()-2, format.size());
+    format.append("}");
+    return format;
+  }
+
   Header(const Header &other) = delete;
   Header &operator=(const Header &other) = delete;
 
@@ -320,6 +355,87 @@ class Header : public NamedP4Object {
   const Debugger::PacketId *packet_id{&Debugger::dummy_PacketId};
 #endif
 };
+
+
+// This is a helper class.
+// For now, this class is only used to represent the list, tuple and
+// structure with headers required for log_msg.
+class List : public DataRepresentation {
+ public:
+  List(std::vector<std::pair<int, Data>> vec_data,
+      std::vector<std::pair<int, header_id_t>> vec_header_id) {
+    const_values = vec_data;
+    header_ids = vec_header_id;
+  }
+
+  size_t get_num_const() const {
+    return const_values.size();
+  }
+
+  size_t get_num_header_id() const {
+    return header_ids.size();
+  }
+
+  header_id_t get_header_id(int i) const {
+    return header_ids[i].second;
+  }
+
+  void set_header(Header* h) {
+    headers.push_back(h);
+  }
+
+  void clear_headers() {
+    headers.clear();
+  }
+
+  std::string show() const override {
+    std::string format = "{";
+    int i = 0, j = 0;
+    int num_data = const_values.size();
+    int num_header = header_ids.size();
+
+    while (i < num_data && j < num_header) {
+      if (const_values[i].first < header_ids[j].first) {
+        format.append(const_values[i].second.show() + ", ");
+        i++;
+      } else {
+        if (headers[j]->show().find("is not valid") != std::string::npos) {
+          return headers[j]->show();
+        }
+        format.append(headers[j]->show() + ", ");
+        j++;
+      }
+    }
+    while (i < num_data) {
+      format.append(const_values[i].second.show() + ", ");
+      i++;
+    }
+    while (j < num_header) {
+      if (headers[j]->show().find("is not valid") != std::string::npos) {
+          return headers[j]->show();
+        }
+      format.append(headers[j]->show() + ", ");
+      j++;
+    }
+
+    format.erase(format.size()-2, format.size());
+    format.append("}");
+
+    return format;
+  }
+
+  List(const List &other) = delete;
+  List &operator=(const List &other) = delete;
+
+  List(List &&other) = default;
+  List &operator=(List &&other) = delete;
+
+ private:
+  std::vector<std::pair<int, Data>> const_values{};
+  std::vector<std::pair<int, header_id_t>> header_ids{};
+  std::vector<Header*> headers{};
+};
+
 
 }  // namespace bm
 

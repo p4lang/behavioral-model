@@ -32,6 +32,7 @@
 #include <set>
 #include <unordered_set>
 #include <exception>
+#include <utility>
 
 #include "jsoncpp/json.h"
 #include "crc_map.h"
@@ -336,7 +337,34 @@ P4Objects::process_single_param(ActionFn* action_fn,
   } else if (type == "parameters_vector") {
     action_fn->parameter_start_vector();
     for (const auto &cfg_parameter_value : cfg_parameter["value"]) {
-      process_single_param(action_fn, cfg_parameter_value, primitive_name);
+      if (cfg_parameter_value.isArray()) {
+        // In the case of structures with headers, lists, tuples
+        int position = 0;
+        std::vector<std::pair<int, Data>> vec_data{};
+        std::vector<std::pair<int, header_id_t>> vec_header_id{};
+        for (const auto &cfg : cfg_parameter_value) {
+          const auto type_cfg = cfg["type"].asString();
+          if (type_cfg == "hexstr") {
+            vec_data.push_back(
+                std::make_pair(position, Data(cfg["value"].asString())));
+          } else if (type_cfg == "header") {
+            const auto header_name = cfg["value"].asString();
+            auto header_id = get_header_id_cfg(header_name);
+            vec_header_id.push_back(std::make_pair(position, header_id));
+          } else if (type_cfg == "bool") {
+              int val = 0;
+              if (cfg["value"].asString() == "true") {
+                val = 1;
+              }
+              vec_data.push_back(std::make_pair(position, Data(val)));
+          }
+          position++;
+        }
+        action_fn->parameter_push_back_list(
+            std::unique_ptr<List>(new List(vec_data, vec_header_id)));
+      } else {
+        process_single_param(action_fn, cfg_parameter_value, primitive_name);
+      }
     }
     action_fn->parameter_end_vector();
   } else if (type == "runtime_data") {
