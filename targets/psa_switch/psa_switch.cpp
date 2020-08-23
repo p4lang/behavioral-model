@@ -289,11 +289,12 @@ PsaSwitch::ingress_thread() {
     input_buffer.pop_back(&packet);
     if (packet == nullptr) break;
 
-    port_t ingress_port = packet->get_ingress_port();
+    phv = packet->get_phv();
+    auto ingress_port =
+        phv->get_field("psa_ingress_parser_input_metadata.ingress_port").
+            get_uint();
     BMLOG_DEBUG_PKT(*packet, "Processing packet received on port {}",
                     ingress_port);
-
-    phv = packet->get_phv();
 
     /* Ingress cloning and resubmitting work on the packet before parsing.
        `buffer_state` contains the `data_size` field which tracks how many
