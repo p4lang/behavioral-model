@@ -212,7 +212,10 @@ class PsaSwitch : public Switch {
   //              by psa_switch and log an error msg / return error code
 
  private:
-  static constexpr size_t nb_egress_threads = 4u;
+  // temporarily setting this to 1 helps reduce nondeterminism fails in STF tests
+  // TODO figure out if we can make stf work around this
+  // TODO unrelated, make ingress threads configurable as well
+  static constexpr size_t nb_egress_threads = 1u;
   static constexpr port_t PSA_PORT_RECIRCULATE = 0xfffffffa;
   static packet_id_t packet_id;
 
