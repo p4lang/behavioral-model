@@ -428,8 +428,8 @@ PsaSwitch::ingress_thread() {
     auto clone = phv->get_field("psa_ingress_output_metadata.clone").get_uint();
     if (clone) {
       MirroringSessionConfig config;
-      auto clone_session_id = phv->get_field("psa_ingress_output_metadata.clone_session_id").get_uint();
-      auto is_session_configured = mirroring_get_session(static_cast<mirror_id_t>(clone_session_id), &config);
+      auto clone_session_id = phv->get_field("psa_ingress_output_metadata.clone_session_id").get<mirror_id_t>();
+      auto is_session_configured = mirroring_get_session(clone_session_id, &config);
 
       if (is_session_configured) {
         BMLOG_DEBUG_PKT(*packet, "Cloning packet at ingress to session id {}", clone_session_id);
@@ -567,8 +567,8 @@ PsaSwitch::egress_thread(size_t worker_id) {
     auto clone = phv->get_field("psa_egress_output_metadata.clone").get_uint();
     if (clone) {
       MirroringSessionConfig config;
-      auto clone_session_id = phv->get_field("psa_egress_output_metadata.clone_session_id").get_uint();
-      auto is_session_configured = mirroring_get_session(static_cast<mirror_id_t>(clone_session_id), &config);
+      auto clone_session_id = phv->get_field("psa_egress_output_metadata.clone_session_id").get<mirror_id_t>();
+      auto is_session_configured = mirroring_get_session(clone_session_id, &config);
 
       if (is_session_configured) {
         BMLOG_DEBUG_PKT(*packet, "Cloning packet after egress to session id {}", clone_session_id);
