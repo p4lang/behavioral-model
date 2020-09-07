@@ -596,6 +596,12 @@ PsaSwitch::egress_thread(size_t worker_id) {
       }
     }
 
+    auto drop = phv->get_field("psa_egress_output_metadata.drop").get_uint();
+    if (drop) {
+      BMLOG_DEBUG_PKT(*packet, "Dropping packet at the end of egress");
+      continue;
+    }
+
     if (port == PSA_PORT_RECIRCULATE) {
       BMLOG_DEBUG_PKT(*packet, "Recirculating packet");
 
