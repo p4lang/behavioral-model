@@ -35,15 +35,18 @@ PSA_Random::init() {
   max_val = max.get_uint64();
   range = max_val - min_val + 1;
 
-  if (range <= 0) {
+  if (min_val > max_val) {
     valid_range = false;
     Logger::get()->warn("Error: PSA extern random range must be positive.");
   }
 
+  /* Even though PSA spec mentioned range should be a power of 2 for
+   * max portability, bmv2 does not have to impose this restriction.
   if ((range & (range - 1)) != 0) {
     valid_range = false;
     Logger::get()->warn("Error: PSA extern random range must be a power of 2.");
   }
+  */
 }
 
 void
