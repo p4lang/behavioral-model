@@ -35,11 +35,17 @@ class PSA_Random : public bm::ExternType {
     BM_EXTERN_ATTRIBUTE_ADD(max);
   }
 
+  void init() override;
+
   void read(Data &value);
 
  private:
   Data min;
   Data max;
+  uint64_t min_val;
+  uint64_t max_val;
+  uint64_t range;
+  bool valid_range;
 };
 
 }  // namespace bm::psa
