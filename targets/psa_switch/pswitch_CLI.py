@@ -36,7 +36,7 @@ def handle_bad_input(f):
             return f(*args, **kwargs)
         except InvalidMirroringOperation as e:
             error = MirroringOperationErrorCode._VALUES_TO_NAMES[e.code]
-            print "Invalid mirroring operation (%s)" % error
+            print("Invalid mirroring operation (%s)" % error)
     return handle
 
 class PsaSwitchAPI(runtime_CLI.RuntimeAPI):
@@ -89,7 +89,7 @@ class PsaSwitchAPI(runtime_CLI.RuntimeAPI):
         mgrp = self.parse_int(args[1], "mgrp")
         config = MirroringSessionConfig(mgid=mgrp)
         self.pswitch_client.mirroring_session_add(mirror_id, config)
-        print "Associating multicast group", mgrp, "to mirroring session", mirror_id
+        print("Associating multicast group", mgrp, "to mirroring session", mirror_id)
 
     @handle_bad_input
     def do_mirroring_delete(self, line):
@@ -104,7 +104,7 @@ class PsaSwitchAPI(runtime_CLI.RuntimeAPI):
         self.exactly_n_args(args, 1)
         mirror_id = self.parse_int(args[0], "mirror_id")
         config = self.pswitch_client.mirroring_session_get(mirror_id)
-        print config
+        print(config)
 
     @handle_bad_input
     def do_get_time_elapsed(self, line):
