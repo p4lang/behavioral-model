@@ -1,5 +1,4 @@
-#!/usr/bin/env python2
-
+#!/usr/bin/env python3
 # Copyright 2013-present Barefoot Networks, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -110,12 +109,12 @@ class PsaSwitchAPI(runtime_CLI.RuntimeAPI):
     @handle_bad_input
     def do_get_time_elapsed(self, line):
         "Get time elapsed (in microseconds) since the switch started: get_time_elapsed"
-        print self.pswitch_client.get_time_elapsed_us()
+        print(self.pswitch_client.get_time_elapsed_us())
 
     @handle_bad_input
     def do_get_time_since_epoch(self, line):
         "Get time elapsed (in microseconds) since the switch clock's epoch: get_time_since_epoch"
-        print self.pswitch_client.get_time_since_epoch_us()
+        print(self.pswitch_client.get_time_since_epoch_us())
 
 def load_json_psa(json):
 

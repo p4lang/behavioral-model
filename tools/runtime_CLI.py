@@ -1,5 +1,4 @@
-#!/usr/bin/env python2
-
+#!/usr/bin/env python3
 # Copyright 2013-present Barefoot Networks, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,8 +41,8 @@ except:
     pass
 
 def enum(type_name, *sequential, **named):
-    enums = dict(zip(sequential, range(len(sequential))), **named)
-    reverse = dict((value, key) for key, value in enums.iteritems())
+    enums = dict(list(zip(sequential, list(range(len(sequential))))), **named)
+    reverse = dict((value, key) for key, value in enums.items())
 
     @staticmethod
     def to_str(x):
@@ -384,14 +383,14 @@ def load_json_str(json_str, architecture_spec=None):
             (ResType.counter_array, COUNTER_ARRAYS),
             (ResType.register_array, REGISTER_ARRAYS),
             (ResType.parse_vset, PARSE_VSETS)]:
-        for name, res in res_dict.items():
+        for name, res in list(res_dict.items()):
             suffix = None
             for s in reversed(name.split('.')):
                 suffix = s if suffix is None else s + '.' + suffix
                 key = (res_type, suffix)
                 SUFFIX_LOOKUP_MAP[key] = res
                 suffix_count[key] += 1
-    for key, c in suffix_count.items():
+    for key, c in list(suffix_count.items()):
         if c > 1:
             del SUFFIX_LOOKUP_MAP[key]
 
@@ -689,38 +688,38 @@ def handle_bad_input(f):
         try:
             return f(*args, **kwargs)
         except UIn_MatchKeyError as e:
-            print "Invalid match key:", e
+            print("Invalid match key:", e)
         except UIn_RuntimeDataError as e:
-            print "Invalid runtime data:", e
+            print("Invalid runtime data:", e)
         except UIn_Error as e:
-            print "Error:", e
+            print("Error:", e)
         except InvalidTableOperation as e:
             error = TableOperationErrorCode._VALUES_TO_NAMES[e.code]
-            print "Invalid table operation ({})".format(error)
+            print("Invalid table operation ({})".format(error))
         except InvalidCounterOperation as e:
             error = CounterOperationErrorCode._VALUES_TO_NAMES[e.code]
-            print "Invalid counter operation ({})".format(error)
+            print("Invalid counter operation ({})".format(error))
         except InvalidMeterOperation as e:
             error = MeterOperationErrorCode._VALUES_TO_NAMES[e.code]
-            print "Invalid meter operation ({})".format(error)
+            print("Invalid meter operation ({})".format(error))
         except InvalidRegisterOperation as e:
             error = RegisterOperationErrorCode._VALUES_TO_NAMES[e.code]
-            print "Invalid register operation ({})".format(error)
+            print("Invalid register operation ({})".format(error))
         except InvalidLearnOperation as e:
             error = LearnOperationErrorCode._VALUES_TO_NAMES[e.code]
-            print "Invalid learn operation ({})".format(error)
+            print("Invalid learn operation ({})".format(error))
         except InvalidSwapOperation as e:
             error = SwapOperationErrorCode._VALUES_TO_NAMES[e.code]
-            print "Invalid swap operation ({})".format(error)
+            print("Invalid swap operation ({})".format(error))
         except InvalidDevMgrOperation as e:
             error = DevMgrErrorCode._VALUES_TO_NAMES[e.code]
-            print "Invalid device manager operation ({})".format(error)
+            print("Invalid device manager operation ({})".format(error))
         except InvalidCrcOperation as e:
             error = CrcErrorCode._VALUES_TO_NAMES[e.code]
-            print "Invalid crc operation ({})".format(error)
+            print("Invalid crc operation ({})".format(error))
         except InvalidParseVSetOperation as e:
             error = ParseVSetOperationErrorCode._VALUES_TO_NAMES[e.code]
-            print "Invalid parser value set operation ({})".format(error)
+            print("Invalid parser value set operation ({})".format(error))
     return handle
 
 def handle_bad_input_mc(f):
@@ -741,7 +740,7 @@ def handle_bad_input_mc(f):
             return handle_bad_input(f)(*args, **kwargs)
         except EType as e:
             error = Codes._VALUES_TO_NAMES[e.code]
-            print "Invalid PRE operation (%s)" % error
+            print("Invalid PRE operation (%s)" % error)
     return handle
 
 def deprecated_act_prof(substitute, with_selection=False,
@@ -841,16 +840,16 @@ class RuntimeAPI(cmd.Cmd):
         self.pre_type = pre_type
 
     def do_greet(self, line):
-        print "hello"
+        print("hello")
 
     def do_EOF(self, line):
-        print
+        print()
         return True
 
     def do_shell(self, line):
         "Run a shell command"
         output = os.popen(line).read()
-        print output
+        print(output)
 
     def get_res(self, type_name, name, res_type):
         key = res_type, name
@@ -885,14 +884,14 @@ class RuntimeAPI(cmd.Cmd):
         "List tables defined in the P4 program: show_tables"
         self.exactly_n_args(line.split(), 0)
         for table_name in sorted(TABLES):
-            print TABLES[table_name].table_str()
+            print(TABLES[table_name].table_str())
 
     @handle_bad_input
     def do_show_actions(self, line):
         "List actions defined in the P4 program: show_actions"
         self.exactly_n_args(line.split(), 0)
         for action_name in sorted(ACTIONS):
-            print ACTIONS[action_name].action_str()
+            print(ACTIONS[action_name].action_str())
 
     def _complete_tables(self, text):
         return self._complete_res(TABLES, text)
@@ -908,7 +907,7 @@ class RuntimeAPI(cmd.Cmd):
         table_name = args[0]
         table = self.get_res("table", table_name, ResType.table)
         for action_name in sorted(table.actions):
-            print ACTIONS[action_name].action_str()
+            print(ACTIONS[action_name].action_str())
 
     def complete_table_show_actions(self, text, line, start_index, end_index):
         return self._complete_tables(text)
@@ -920,10 +919,10 @@ class RuntimeAPI(cmd.Cmd):
         self.exactly_n_args(args, 1)
         table_name = args[0]
         table = self.get_res("table", table_name, ResType.table)
-        print table.table_str()
-        print "*" * 80
+        print(table.table_str())
+        print("*" * 80)
         for action_name in sorted(table.actions):
-            print ACTIONS[action_name].action_str()
+            print(ACTIONS[action_name].action_str())
 
     def complete_table_info(self, text, line, start_index, end_index):
         return self._complete_tables(text)
@@ -971,12 +970,12 @@ class RuntimeAPI(cmd.Cmd):
 
     # for debugging
     def print_set_default(self, table_name, action_name, runtime_data):
-        print "Setting default action of", table_name
-        print "{0:20} {1}".format("action:", action_name)
-        print "{0:20} {1}".format(
+        print("Setting default action of", table_name)
+        print("{0:20} {1}".format("action:", action_name))
+        print("{0:20} {1}".format(
             "runtime data:",
             "\t".join(printable_byte_str(d) for d in runtime_data)
-        )
+        ))
 
     @handle_bad_input
     def do_table_set_default(self, line):
@@ -1033,15 +1032,15 @@ class RuntimeAPI(cmd.Cmd):
 
     # for debugging
     def print_table_add(self, match_key, action_name, runtime_data):
-        print "{0:20} {1}".format(
+        print("{0:20} {1}".format(
             "match key:",
             "\t".join(d.to_str() for d in match_key)
-        )
-        print "{0:20} {1}".format("action:", action_name)
-        print "{0:20} {1}".format(
+        ))
+        print("{0:20} {1}".format("action:", action_name))
+        print("{0:20} {1}".format(
             "runtime data:",
             "\t".join(printable_byte_str(d) for d in runtime_data)
-        )
+        ))
 
     @handle_bad_input
     def do_table_num_entries(self, line):
@@ -1053,7 +1052,7 @@ class RuntimeAPI(cmd.Cmd):
         table_name = args[0]
         table = self.get_res("table", table_name, ResType.table)
 
-        print self.client.bm_mt_get_num_entries(0, table.name)
+        print(self.client.bm_mt_get_num_entries(0, table.name))
 
     def complete_table_num_entries(self, text, line, start_index, end_index):
         return self._complete_tables(text)
@@ -1112,7 +1111,7 @@ class RuntimeAPI(cmd.Cmd):
 
         match_key = parse_match_key(table, match_key)
 
-        print "Adding entry to", MatchType.to_str(table.match_type), "match table", table_name
+        print("Adding entry to", MatchType.to_str(table.match_type), "match table", table_name)
 
         # disable, maybe a verbose CLI option?
         self.print_table_add(match_key, action_name, runtime_data)
@@ -1122,7 +1121,7 @@ class RuntimeAPI(cmd.Cmd):
             BmAddEntryOptions(priority = priority)
         )
 
-        print "Entry has been added with handle", entry_handle
+        print("Entry has been added with handle", entry_handle)
 
     def complete_table_add(self, text, line, start_index, end_index):
         return self._complete_table_and_action(text, line)
@@ -1149,7 +1148,7 @@ class RuntimeAPI(cmd.Cmd):
         except:
             raise UIn_Error("Bad format for timeout")
 
-        print "Setting a", timeout_ms, "ms timeout for entry", entry_handle
+        print("Setting a", timeout_ms, "ms timeout for entry", entry_handle)
 
         self.client.bm_mt_set_entry_ttl(0, table.name, entry_handle, timeout_ms)
 
@@ -1182,7 +1181,7 @@ class RuntimeAPI(cmd.Cmd):
             action_params = args[4:]
         runtime_data = self.parse_runtime_data(action, action_params)
 
-        print "Modifying entry", entry_handle, "for", MatchType.to_str(table.match_type), "match table", table_name
+        print("Modifying entry", entry_handle, "for", MatchType.to_str(table.match_type), "match table", table_name)
 
         entry_handle = self.client.bm_mt_modify_entry(
             0, table.name, entry_handle, action.name, runtime_data
@@ -1206,7 +1205,7 @@ class RuntimeAPI(cmd.Cmd):
         except:
             raise UIn_Error("Bad format for entry handle")
 
-        print "Deleting entry", entry_handle, "from", table_name
+        print("Deleting entry", entry_handle, "from", table_name)
 
         self.client.bm_mt_delete_entry(0, table.name, entry_handle)
 
@@ -1250,7 +1249,7 @@ class RuntimeAPI(cmd.Cmd):
         mbr_handle = self.client.bm_mt_act_prof_add_member(
             0, act_prof.name, action.name, runtime_data)
 
-        print "Member has been created with handle", mbr_handle
+        print("Member has been created with handle", mbr_handle)
 
     def complete_act_prof_create_member(self, text, line, start_index, end_index):
         return self._complete_act_prof_and_action(text, line)
@@ -1371,7 +1370,7 @@ class RuntimeAPI(cmd.Cmd):
 
         match_key = parse_match_key(table, match_key)
 
-        print "Adding entry to indirect match table", table.name
+        print("Adding entry to indirect match table", table.name)
 
         return table.name, match_key, handle, BmAddEntryOptions(priority = priority)
 
@@ -1385,7 +1384,7 @@ class RuntimeAPI(cmd.Cmd):
             0, table_name, match_key, handle, options
         )
 
-        print "Entry has been added with handle", entry_handle
+        print("Entry has been added with handle", entry_handle)
 
     def complete_table_indirect_add(self, text, line, start_index, end_index):
         return self._complete_tables(text)
@@ -1400,7 +1399,7 @@ class RuntimeAPI(cmd.Cmd):
             0, table_name, match_key, handle, options
         )
 
-        print "Entry has been added with handle", entry_handle
+        print("Entry has been added with handle", entry_handle)
 
     def complete_table_indirect_add_with_group(self, text, line, start_index, end_index):
         return self._complete_tables(text)
@@ -1421,7 +1420,7 @@ class RuntimeAPI(cmd.Cmd):
         except:
             raise UIn_Error("Bad format for entry handle")
 
-        print "Deleting entry", entry_handle, "from", table_name
+        print("Deleting entry", entry_handle, "from", table_name)
 
         self.client.bm_mt_indirect_delete_entry(0, table.name, entry_handle)
 
@@ -1501,7 +1500,7 @@ class RuntimeAPI(cmd.Cmd):
 
         grp_handle = self.client.bm_mt_act_prof_create_group(0, act_prof.name)
 
-        print "Group has been created with handle", grp_handle
+        print("Group has been created with handle", grp_handle)
 
     def complete_act_prof_create_group(self, text, line, start_index, end_index):
         return self._complete_act_profs(text)
@@ -1639,7 +1638,7 @@ class RuntimeAPI(cmd.Cmd):
         args = line.split()
         self.exactly_n_args(args, 1)
         mgrp = self.get_mgrp(args[0])
-        print "Creating multicast group", mgrp
+        print("Creating multicast group", mgrp)
         mgrp_hdl = self.mc_client.bm_mc_mgrp_create(0, mgrp)
         assert(mgrp == mgrp_hdl)
 
@@ -1650,7 +1649,7 @@ class RuntimeAPI(cmd.Cmd):
         args = line.split()
         self.exactly_n_args(args, 1)
         mgrp = self.get_mgrp(args[0])
-        print "Destroying multicast group", mgrp
+        print("Destroying multicast group", mgrp)
         self.mc_client.bm_mc_mgrp_destroy(0, mgrp)
 
     def ports_to_port_map_str(self, ports, description="port"):
@@ -1703,12 +1702,12 @@ class RuntimeAPI(cmd.Cmd):
             raise UIn_Error("Bad format for rid")
         port_map_str, lag_map_str = self.parse_ports_and_lags(args)
         if self.pre_type == PreType.SimplePre:
-            print "Creating node with rid", rid, "and with port map", port_map_str
+            print("Creating node with rid", rid, "and with port map", port_map_str)
             l1_hdl = self.mc_client.bm_mc_node_create(0, rid, port_map_str)
         else:
-            print "Creating node with rid", rid, ", port map", port_map_str, "and lag map", lag_map_str
+            print("Creating node with rid", rid, ", port map", port_map_str, "and lag map", lag_map_str)
             l1_hdl = self.mc_client.bm_mc_node_create(0, rid, port_map_str, lag_map_str)
-        print "node was created with handle", l1_hdl
+        print("node was created with handle", l1_hdl)
 
     def get_node_handle(self, s):
         try:
@@ -1725,10 +1724,10 @@ class RuntimeAPI(cmd.Cmd):
         l1_hdl = self.get_node_handle(args[0])
         port_map_str, lag_map_str = self.parse_ports_and_lags(args)
         if self.pre_type == PreType.SimplePre:
-            print "Updating node", l1_hdl, "with port map", port_map_str
+            print("Updating node", l1_hdl, "with port map", port_map_str)
             self.mc_client.bm_mc_node_update(0, l1_hdl, port_map_str)
         else:
-            print "Updating node", l1_hdl, "with port map", port_map_str, "and lag map", lag_map_str
+            print("Updating node", l1_hdl, "with port map", port_map_str, "and lag map", lag_map_str)
             self.mc_client.bm_mc_node_update(0, l1_hdl, port_map_str, lag_map_str)
 
     @handle_bad_input_mc
@@ -1739,7 +1738,7 @@ class RuntimeAPI(cmd.Cmd):
         self.exactly_n_args(args, 2)
         mgrp = self.get_mgrp(args[0])
         l1_hdl = self.get_node_handle(args[1])
-        print "Associating node", l1_hdl, "to multicast group", mgrp
+        print("Associating node", l1_hdl, "to multicast group", mgrp)
         self.mc_client.bm_mc_node_associate(0, mgrp, l1_hdl)
 
     @handle_bad_input_mc
@@ -1750,7 +1749,7 @@ class RuntimeAPI(cmd.Cmd):
         self.exactly_n_args(args, 2)
         mgrp = self.get_mgrp(args[0])
         l1_hdl = self.get_node_handle(args[1])
-        print "Dissociating node", l1_hdl, "from multicast group", mgrp
+        print("Dissociating node", l1_hdl, "from multicast group", mgrp)
         self.mc_client.bm_mc_node_dissociate(0, mgrp, l1_hdl)
 
     @handle_bad_input_mc
@@ -1760,7 +1759,7 @@ class RuntimeAPI(cmd.Cmd):
         args = line.split()
         self.exactly_n_args(args, 1)
         l1_hdl = int(line.split()[0])
-        print "Destroying node", l1_hdl
+        print("Destroying node", l1_hdl)
         self.mc_client.bm_mc_node_destroy(0, l1_hdl)
 
     @handle_bad_input_mc
@@ -1779,7 +1778,7 @@ class RuntimeAPI(cmd.Cmd):
         except:
             raise UIn_Error("Bad format for lag index")
         port_map_str = self.ports_to_port_map_str(args[1:], description="lag")
-        print "Setting lag membership:", lag_index, "<-", port_map_str
+        print("Setting lag membership:", lag_index, "<-", port_map_str)
         self.mc_client.bm_mc_set_lag_membership(0, lag_index, port_map_str)
 
     @handle_bad_input_mc
@@ -1790,7 +1789,7 @@ class RuntimeAPI(cmd.Cmd):
         try:
             mc_json = json.loads(json_dump)
         except:
-            print "Exception when retrieving MC entries"
+            print("Exception when retrieving MC entries")
             return
 
         l1_handles = {}
@@ -1800,29 +1799,29 @@ class RuntimeAPI(cmd.Cmd):
         for h in mc_json["l2_handles"]:
             l2_handles[h["handle"]] = (h["ports"], h["lags"])
 
-        print "=========="
-        print "MC ENTRIES"
+        print("==========")
+        print("MC ENTRIES")
         for mgrp in mc_json["mgrps"]:
-            print "**********"
+            print("**********")
             mgid = mgrp["id"]
-            print "mgrp({})".format(mgid)
+            print("mgrp({})".format(mgid))
             for L1h in mgrp["l1_handles"]:
                 rid, L2h = l1_handles[L1h]
-                print "  -> (L1h={}, rid={})".format(L1h, rid),
+                print("  -> (L1h={}, rid={})".format(L1h, rid), end=' ')
                 ports, lags = l2_handles[L2h]
-                print "-> (ports=[{}], lags=[{}])".format(
+                print("-> (ports=[{}], lags=[{}])".format(
                     ", ".join([str(p) for p in ports]),
-                    ", ".join([str(l) for l in lags]))
+                    ", ".join([str(l) for l in lags])))
 
-        print "=========="
-        print "LAGS"
+        print("==========")
+        print("LAGS")
         if "lags" in mc_json:
             for lag in mc_json["lags"]:
-                print "lag({})".format(lag["id"]),
-                print "-> ports=[{}]".format(", ".join([str(p) for p in ports]))
+                print("lag({})".format(lag["id"]), end=' ')
+                print("-> ports=[{}]".format(", ".join([str(p) for p in ports])))
         else:
-            print "None for this PRE type"
-        print "=========="
+            print("None for this PRE type")
+        print("==========")
 
     @handle_bad_input
     def do_load_new_config_file(self, line):
@@ -1832,7 +1831,7 @@ class RuntimeAPI(cmd.Cmd):
         filename = args[0]
         if not os.path.isfile(filename):
             raise UIn_Error("Not a valid filename")
-        print "Loading new Json config"
+        print("Loading new Json config")
         with open(filename, 'r') as f:
             json_str = f.read()
             try:
@@ -1845,7 +1844,7 @@ class RuntimeAPI(cmd.Cmd):
     @handle_bad_input
     def do_swap_configs(self, line):
         "Swap the 2 existing configs, need to have called load_new_config_file before"
-        print "Swapping configs"
+        print("Swapping configs")
         self.client.bm_swap_configs()
 
     @handle_bad_input
@@ -1928,11 +1927,11 @@ class RuntimeAPI(cmd.Cmd):
         else:
             rates = self.client.bm_meter_get_rates(0, meter.name, index)
         if len(rates) != meter.rate_count:
-            print "WARNING: expected", meter.rate_count, "rates",
-            print "but only received", len(rates)
+            print("WARNING: expected", meter.rate_count, "rates", end=' ')
+            print("but only received", len(rates))
         for idx, rate in enumerate(rates):
-            print "{}: info rate = {}, burst size = {}".format(
-                idx, rate.units_per_micros, rate.burst_size)
+            print("{}: info rate = {}, burst size = {}".format(
+                idx, rate.units_per_micros, rate.burst_size))
 
     def complete_meter_get_rates(self, text, line, start_index, end_index):
         return self._complete_meters(text)
@@ -1954,12 +1953,12 @@ class RuntimeAPI(cmd.Cmd):
             raise UIn_Error("Bad format for index")
         if counter.is_direct:
             table_name = counter.binding
-            print "this is the direct counter for table", table_name
+            print("this is the direct counter for table", table_name)
             # index = index & 0xffffffff
             value = self.client.bm_mt_read_counter(0, table_name, index)
         else:
             value = self.client.bm_counter_read(0, counter.name, index)
-        print "%s[%d]= " % (counter_name, index), value
+        print("%s[%d]= " % (counter_name, index), value)
 
     def complete_counter_read(self, text, line, start_index, end_index):
         return self._complete_counters(text)
@@ -1988,11 +1987,11 @@ class RuntimeAPI(cmd.Cmd):
             raise UIn_Error("Bad format for bytes")
         if counter.is_direct:
             table_name = counter.binding
-            print "writing to direct counter for table", table_name
+            print("writing to direct counter for table", table_name)
             value = self.client.bm_mt_write_counter(0, table_name, index, BmCounterValue(packets=pkts, bytes = byts))
         else:
             self.client.bm_counter_write(0, counter_name, index, BmCounterValue(packets=pkts, bytes = byts))
-        print "%s[%d] has been updated" % (counter_name, index)
+        print("%s[%d] has been updated" % (counter_name, index))
 
     def complete_counter_write(self, text, line, start_index, end_index):
         return self._complete_counters(text)
@@ -2006,7 +2005,7 @@ class RuntimeAPI(cmd.Cmd):
         counter = self.get_res("counter", counter_name, ResType.counter_array)
         if counter.is_direct:
             table_name = counter.binding
-            print "this is the direct counter for table", table_name
+            print("this is the direct counter for table", table_name)
             value = self.client.bm_mt_reset_counters(0, table_name)
         else:
             value = self.client.bm_counter_reset_all(0, counter.name)
@@ -2033,12 +2032,12 @@ class RuntimeAPI(cmd.Cmd):
             except:
                 raise UIn_Error("Bad format for index")
             value = self.client.bm_register_read(0, register.name, index)
-            print "{}[{}]=".format(register_name, index), value
+            print("{}[{}]=".format(register_name, index), value)
         else:
             sys.stderr.write("register index omitted, reading entire array\n")
             entries = self.client.bm_register_read_all(0, register.name)
-            print "{}=".format(register_name), ", ".join(
-                [str(e) for e in entries])
+            print("{}=".format(register_name), ", ".join(
+                [str(e) for e in entries]))
 
     def complete_register_read(self, text, line, start_index, end_index):
         return self._complete_registers(text)
@@ -2083,36 +2082,36 @@ class RuntimeAPI(cmd.Cmd):
         return self._complete_res(REGISTER_ARRAYS, text)
 
     def dump_action_and_data(self, action_name, action_data):
-        print "Action entry: {} - {}".format(
-            action_name, ", ".join([hexstr(a) for a in action_data]))
+        print("Action entry: {} - {}".format(
+            action_name, ", ".join([hexstr(a) for a in action_data])))
 
     def dump_action_entry(self, a_entry):
         if a_entry.action_type == BmActionEntryType.NONE:
-            print "EMPTY"
+            print("EMPTY")
         elif a_entry.action_type == BmActionEntryType.ACTION_DATA:
             self.dump_action_and_data(a_entry.action_name, a_entry.action_data)
         elif a_entry.action_type == BmActionEntryType.MBR_HANDLE:
-            print "Index: member({})".format(a_entry.mbr_handle)
+            print("Index: member({})".format(a_entry.mbr_handle))
         elif a_entry.action_type == BmActionEntryType.GRP_HANDLE:
-            print "Index: group({})".format(a_entry.grp_handle)
+            print("Index: group({})".format(a_entry.grp_handle))
 
     def dump_one_member(self, member):
-        print "Dumping member {}".format(member.mbr_handle)
+        print("Dumping member {}".format(member.mbr_handle))
         self.dump_action_and_data(member.action_name, member.action_data)
 
     def dump_members(self, members):
         for m in members:
-            print "**********"
+            print("**********")
             self.dump_one_member(m)
 
     def dump_one_group(self, group):
-        print "Dumping group {}".format(group.grp_handle)
-        print "Members: [{}]".format(", ".join(
-            [str(h) for h in group.mbr_handles]))
+        print("Dumping group {}".format(group.grp_handle))
+        print("Members: [{}]".format(", ".join(
+            [str(h) for h in group.mbr_handles])))
 
     def dump_groups(self, groups):
         for g in groups:
-            print "**********"
+            print("**********")
             self.dump_one_group(g)
 
     def dump_one_entry(self, table, entry):
@@ -2135,20 +2134,20 @@ class RuntimeAPI(cmd.Cmd):
                     "ternary": dump_ternary, "valid": dump_valid,
                     "range": dump_range}
 
-        print "Dumping entry {}".format(hex(entry.entry_handle))
-        print "Match key:"
+        print("Dumping entry {}".format(hex(entry.entry_handle)))
+        print("Match key:")
         for p, k in zip(entry.match_key, table.key):
             assert(k[1] == p.type)
             pdumper = pdumpers[MatchType.to_str(p.type)]
-            print "* {0:{w}}: {1:10}{2}".format(
+            print("* {0:{w}}: {1:10}{2}".format(
                 k[0], MatchType.to_str(p.type).upper(),
-                pdumper(p), w=out_name_w)
+                pdumper(p), w=out_name_w))
         if entry.options.priority >= 0:
-            print "Priority: {}".format(entry.options.priority)
+            print("Priority: {}".format(entry.options.priority))
         self.dump_action_entry(entry.action_entry)
         if entry.life is not None:
-            print "Life: {}ms since hit, timeout is {}ms".format(
-                entry.life.time_since_hit_ms, entry.life.timeout_ms)
+            print("Life: {}ms since hit, timeout is {}ms".format(
+                entry.life.time_since_hit_ms, entry.life.timeout_ms))
 
     @handle_bad_input
     def do_table_dump_entry(self, line):
@@ -2238,13 +2237,13 @@ class RuntimeAPI(cmd.Cmd):
     def _dump_act_prof(self, act_prof):
         act_prof_name = act_prof.name
         members = self.client.bm_mt_act_prof_get_members(0, act_prof.name)
-        print "=========="
-        print "MEMBERS"
+        print("==========")
+        print("MEMBERS")
         self.dump_members(members)
         if act_prof.with_selection:
             groups = self.client.bm_mt_act_prof_get_groups(0, act_prof.name)
-            print "=========="
-            print "GROUPS"
+            print("==========")
+            print("GROUPS")
             self.dump_groups(groups)
 
     @handle_bad_input
@@ -2269,11 +2268,11 @@ class RuntimeAPI(cmd.Cmd):
         table = self.get_res("table", table_name, ResType.table)
         entries = self.client.bm_mt_get_entries(0, table.name)
 
-        print "=========="
-        print "TABLE ENTRIES"
+        print("==========")
+        print("TABLE ENTRIES")
 
         for e in entries:
-            print "**********"
+            print("**********")
             self.dump_one_entry(table, e)
 
         if table.type_ == TableType.indirect or\
@@ -2283,11 +2282,11 @@ class RuntimeAPI(cmd.Cmd):
 
         # default entry
         default_entry = self.client.bm_mt_get_default_entry(0, table.name)
-        print "=========="
-        print "Dumping default entry"
+        print("==========")
+        print("Dumping default entry")
         self.dump_action_entry(default_entry)
 
-        print "=========="
+        print("==========")
 
     def complete_table_dump(self, text, line, start_index, end_index):
         return self._complete_tables(text)
@@ -2333,7 +2332,7 @@ class RuntimeAPI(cmd.Cmd):
         "List parser value sets defined in the P4 program: show_pvs"
         self.exactly_n_args(line.split(), 0)
         for pvs_name in sorted(PARSE_VSETS):
-            print PARSE_VSETS[pvs_name].parse_vset_str()
+            print(PARSE_VSETS[pvs_name].parse_vset_str())
 
     @handle_bad_input
     def do_pvs_add(self, line):
@@ -2382,7 +2381,7 @@ class RuntimeAPI(cmd.Cmd):
 
         values = self.client.bm_parse_vset_get(0, pvs_name)
         for v in values:
-            print hexstr(v)
+            print(hexstr(v))
 
     def complete_pvs_get(self, text, line, start_index, end_index):
         return self._complete_pvs(text)
@@ -2433,15 +2432,15 @@ class RuntimeAPI(cmd.Cmd):
         "Shows the ports connected to the switch: show_ports"
         self.exactly_n_args(line.split(), 0)
         ports = self.client.bm_dev_mgr_show_ports()
-        print "{:^10}{:^20}{:^10}{}".format(
-            "port #", "iface name", "status", "extra info")
-        print "=" * 50
+        print("{:^10}{:^20}{:^10}{}".format(
+            "port #", "iface name", "status", "extra info"))
+        print("=" * 50)
         for port_info in ports:
             status = "UP" if port_info.is_up else "DOWN"
             extra_info = "; ".join(
-                [k + "=" + v for k, v in port_info.extra.items()])
-            print "{:^10}{:^20}{:^10}{}".format(
-                port_info.port_num, port_info.iface_name, status, extra_info)
+                [k + "=" + v for k, v in list(port_info.extra.items())])
+            print("{:^10}{:^20}{:^10}{}".format(
+                port_info.port_num, port_info.iface_name, status, extra_info))
 
     @handle_bad_input
     def do_switch_info(self, line):
@@ -2451,7 +2450,7 @@ class RuntimeAPI(cmd.Cmd):
         attributes = [t[2] for t in info.thrift_spec[1:]]
         out_attr_w = 5 + max(len(a) for a in attributes)
         for a in attributes:
-            print "{:{w}}: {}".format(a, getattr(info, a), w=out_attr_w)
+            print("{:{w}}: {}".format(a, getattr(info, a), w=out_attr_w))
 
     @handle_bad_input
     def do_reset_state(self, line):
@@ -2496,7 +2495,7 @@ class RuntimeAPI(cmd.Cmd):
 
     def _complete_crc(self, text, crc_width=16):
         crcs = sorted(
-            [c for c, w in CUSTOM_CRC_CALCS.items() if w == crc_width])
+            [c for c, w in list(CUSTOM_CRC_CALCS.items()) if w == crc_width])
         if not text:
             return crcs
         return [c for c in crcs if c.startswith(text)]

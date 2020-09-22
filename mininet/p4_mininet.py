@@ -40,14 +40,14 @@ class P4Host(Host):
         return r
 
     def describe(self):
-        print "**********"
-        print self.name
-        print "default interface: %s\t%s\t%s" %(
+        print("**********")
+        print(self.name)
+        print("default interface: %s\t%s\t%s" %(
             self.defaultIntf().name,
             self.defaultIntf().IP(),
             self.defaultIntf().MAC()
-        )
-        print "**********"
+        ))
+        print("**********")
 
 class P4Switch(Switch):
     """P4 virtual switch"""
@@ -112,7 +112,7 @@ class P4Switch(Switch):
         "Start up a new P4 switch"
         info("Starting P4 switch {}.\n".format(self.name))
         args = [self.sw_path]
-        for port, intf in self.intfs.items():
+        for port, intf in list(self.intfs.items()):
             if not intf.IP():
                 args.extend(['-i', str(port) + "@" + intf.name])
         if self.pcap_dump:
