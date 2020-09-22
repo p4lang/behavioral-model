@@ -19,6 +19,16 @@
 #
 #
 
+
+# enable prints without line break
+from __future__ import print_function
+# bind raw_input to input for Python2<>3 compatibility
+try:
+    input = raw_input
+except NameError:
+    pass
+
+
 import nnpy
 import struct
 import sys
@@ -27,6 +37,7 @@ import argparse
 import cmd
 from collections import defaultdict
 from functools import wraps
+
 
 try:
     import runtime_CLI
@@ -611,7 +622,7 @@ class DebuggerAPI(cmd.Cmd):
     def init_runtime_CLI(self):
         runtime_CLI.load_json_str(self.json_cfg)
         self.runtime_CLI = runtime_CLI.RuntimeAPI(
-            runtime_CLI.PreType.None, self.standard_client, mc_client=None)
+            runtime_CLI.PreType.none, self.standard_client, mc_client=None)
 
     def attach(self):
         print("Connecting to the switch...")

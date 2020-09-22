@@ -19,6 +19,9 @@
 #
 #
 
+# enable prints without line break
+from __future__ import print_function
+
 import argparse
 import cmd
 from collections import Counter
@@ -28,6 +31,9 @@ import struct
 import json
 from functools import wraps
 import bmpy_utils as utils
+
+
+
 
 from bm_runtime.standard import Standard
 from bm_runtime.standard.ttypes import *
@@ -726,7 +732,7 @@ def handle_bad_input_mc(f):
     @wraps(f)
     def handle(*args, **kwargs):
         pre_type = args[0].pre_type
-        if pre_type == PreType.None:
+        if pre_type == PreType.none:
             return handle_bad_input(f)(*args, **kwargs)
         EType = {
             PreType.SimplePre : SimplePre.InvalidMcOperation,
@@ -1620,7 +1626,7 @@ class RuntimeAPI(cmd.Cmd):
 
 
     def check_has_pre(self):
-        if self.pre_type == PreType.None:
+        if self.pre_type == PreType.none:
             raise UIn_Error(
                 "Cannot execute this command without packet replication engine"
             )
