@@ -885,7 +885,7 @@ def parse_bool(s):
 def hexstr(v):
     if sys.version_info >= (3, 0):
         # different byte processing in Python 3
-        return ":".join([format(c, "02x") for c in v])
+        return "".join([format(c, "02x") for c in v])
     return "".join("{:02x}".format(ord(c)) for c in v)
 
 
