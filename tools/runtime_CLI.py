@@ -2046,7 +2046,8 @@ class RuntimeAPI(cmd.Cmd):
             value = self.client.bm_mt_read_counter(0, table_name, index)
         else:
             value = self.client.bm_counter_read(0, counter.name, index)
-        print("%s[%d]= " % (counter_name, index), value)
+        print("%s[%d]= %d bytes %d packets" %
+              (counter_name, index, value.bytes, value.packets))
 
     def complete_counter_read(self, text, line, start_index, end_index):
         return self._complete_counters(text)
