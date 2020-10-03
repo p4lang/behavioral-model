@@ -72,7 +72,7 @@ class FieldMap:
         json_ = json.loads(json_cfg)
 
         # special case where the switch was started with an empty config
-        if len(list(json_.keys())) == 0:
+        if len(json_.keys()) == 0:
             return
 
         header_types = json_["header_types"]
@@ -109,7 +109,7 @@ class FieldMap:
         return self.fields_rev[name]
 
     def get_all_fields(self):
-        return list(self.fields_rev.keys())
+        return self.fields_rev.keys()
 
 
 field_map = FieldMap()
@@ -177,14 +177,14 @@ class ObjectMap:
             7: "deparser",
         }
         self.ids_rev = {}
-        for k, v in list(self.ids.items()):
+        for k, v in self.ids.items():
             self.ids_rev[v] = k
 
     def load_names(self, json_cfg):
         json_ = json.loads(json_cfg)
 
         # special case where the switch was started with an empty config
-        if len(list(json_.keys())) == 0:
+        if len(json_.keys()) == 0:
             return
 
         for type_ in {"parser", "deparser", "action", "pipeline"}:
@@ -345,7 +345,7 @@ def make_init_function(P, t, fmt):
         self.type = t
         if not fmt:
             return
-        for k, v in list(kwargs.items()):
+        for k, v in kwargs.items():
             if k not in list(zip(*fmt))[0]:
                 continue
             setattr(self, k, v)
@@ -521,7 +521,7 @@ MsgTypeToCLS = {
 }
 
 CLSToMsgType = {}
-for k, v in list(MsgTypeToCLS.items()):
+for k, v in MsgTypeToCLS.items():
     CLSToMsgType[v] = k
 
 FIELD_ID_CTR = 0xffffffffffffffff
@@ -883,7 +883,7 @@ class DebuggerAPI(cmd.Cmd):
     def complete_break(self, text, line, start_index, end_index):
         args = line.split()
         args_cnt = len(args)
-        obj_types = list(obj_map.ids.values())
+        obj_types = obj_map.ids.values()
         fields = sorted(get_all_fields())
         if (args_cnt == 1 and not text) or\
            (args_cnt == 2 and text):
@@ -891,7 +891,7 @@ class DebuggerAPI(cmd.Cmd):
         if (args_cnt == 2 and not text) or\
            (args_cnt == 3 and text):
             obj_type = args[1]
-            obj_names = list(obj_map.store[obj_type].names.values())
+            obj_names = obj_map.store[obj_type].names.values()
             return [n for n in obj_names if n.startswith(text)]
         return []
 
@@ -1162,7 +1162,7 @@ shortcuts = {
     "break" : "b",
     "delete" : "d",
 }
-for long_name, short_name in list(shortcuts.items()):
+for long_name, short_name in shortcuts.items():
     f_do = getattr(DebuggerAPI, "do_" + long_name)
     setattr(DebuggerAPI, "do_" + short_name, f_do)
     if hasattr(DebuggerAPI, "complete_" + long_name):

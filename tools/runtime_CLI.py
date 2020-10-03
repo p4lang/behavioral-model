@@ -102,8 +102,7 @@ def get_parser():
                         type=str, action="store", required=False)
 
     parser.add_argument('--pre', help='Packet Replication Engine used by target',
-                        type=str, choices=[
-                            'None', 'SimplePre', 'SimplePreLAG'],
+                        type=str, choices=['None', 'SimplePre', 'SimplePreLAG'],
                         default=PreType.SimplePre, action=ActionToPreType)
 
     return parser
@@ -404,14 +403,14 @@ def load_json_str(json_str, architecture_spec=None):
             (ResType.counter_array, COUNTER_ARRAYS),
             (ResType.register_array, REGISTER_ARRAYS),
             (ResType.parse_vset, PARSE_VSETS)]:
-        for name, res in list(res_dict.items()):
+        for name, res in res_dict.items():
             suffix = None
             for s in reversed(name.split('.')):
                 suffix = s if suffix is None else s + '.' + suffix
                 key = (res_type, suffix)
                 SUFFIX_LOOKUP_MAP[key] = res
                 suffix_count[key] += 1
-    for key, c in list(suffix_count.items()):
+    for key, c in suffix_count.items():
         if c > 1:
             del SUFFIX_LOOKUP_MAP[key]
 
@@ -2534,7 +2533,7 @@ class RuntimeAPI(cmd.Cmd):
         for port_info in ports:
             status = "UP" if port_info.is_up else "DOWN"
             extra_info = "; ".join(
-                [k + "=" + v for k, v in list(port_info.extra.items())])
+                [k + "=" + v for k, v in port_info.extra.items()])
             print("{:^10}{:^20}{:^10}{}".format(
                 port_info.port_num, port_info.iface_name, status, extra_info))
 
@@ -2591,7 +2590,7 @@ class RuntimeAPI(cmd.Cmd):
 
     def _complete_crc(self, text, crc_width=16):
         crcs = sorted(
-            [c for c, w in list(CUSTOM_CRC_CALCS.items()) if w == crc_width])
+            [c for c, w in CUSTOM_CRC_CALCS.items() if w == crc_width])
         if not text:
             return crcs
         return [c for c in crcs if c.startswith(text)]
