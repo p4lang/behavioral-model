@@ -32,8 +32,8 @@ sudo apt-get install -y \
     g++ \
     $LIBSSL_DEV \
     libffi-dev \
-    python-dev \
-    python-pip \
+    python3-dev \
+    python3-pip \
     wget
 
 tmpdir=`mktemp -d -p .`
