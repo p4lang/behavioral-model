@@ -19,9 +19,6 @@
 #
 #
 
-# enable prints without line break
-from __future__ import print_function
-
 import argparse
 import cmd
 from collections import Counter
@@ -662,10 +659,7 @@ def parse_match_key(table, key_fields):
 
 
 def printable_byte_str(s):
-    if sys.version_info >= (3, 0):
-        # different byte processing in Python 3
-        return ":".join([format(c, "02x") for c in s])
-    return "".join("{:02x}".format(ord(c)) for c in s)
+    return ":".join([format(c, "02x") for c in s])
 
 
 def BmMatchParam_to_str(self):
@@ -882,10 +876,7 @@ def parse_bool(s):
 
 
 def hexstr(v):
-    if sys.version_info >= (3, 0):
-        # different byte processing in Python 3
-        return "".join([format(c, "02x") for c in v])
-    return "".join("{:02x}".format(ord(c)) for c in v)
+    return "".join([format(c, "02x") for c in v])
 
 
 class RuntimeAPI(cmd.Cmd):

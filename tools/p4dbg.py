@@ -19,16 +19,6 @@
 #
 #
 
-
-# enable prints without line break
-from __future__ import print_function
-# bind raw_input to input for Python2<>3 compatibility
-try:
-    input = raw_input
-except NameError:
-    pass
-
-
 import nnpy
 import struct
 import sys

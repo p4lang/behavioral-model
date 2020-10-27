@@ -18,8 +18,6 @@
 # Antonin Bas (antonin@barefootnetworks.com)
 #
 #
-# enable prints without line break
-from __future__ import print_function
 
 import nnpy
 import struct
