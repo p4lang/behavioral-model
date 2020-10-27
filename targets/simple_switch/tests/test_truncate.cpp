@@ -17,12 +17,12 @@
 
 #include <bm/bm_apps/packet_pipe.h>
 
-#include <boost/filesystem.hpp>
-
 #include <string>
 #include <memory>
 #include <vector>
 #include <algorithm>  // for std::fill_n
+
+#include <boost/filesystem.hpp>
 
 #include "simple_switch.h"
 
@@ -105,13 +105,13 @@ class SimpleSwitch_TruncateP4 : public ::testing::Test {
   static const std::string test_json;
 };
 
-const std::string SimpleSwitch_TruncateP4::packet_in_addr =
+const char SimpleSwitch_TruncateP4::packet_in_addr[] =
     "inproc://packets";
 
 SimpleSwitch *SimpleSwitch_TruncateP4::test_switch = nullptr;
 
-const std::string SimpleSwitch_TruncateP4::testdata_dir = TESTDATADIR;
-const std::string SimpleSwitch_TruncateP4::test_json =
+const char SimpleSwitch_TruncateP4::testdata_dir[] = TESTDATADIR;
+const char SimpleSwitch_TruncateP4::test_json[] =
     "truncate.json";
 
 TEST_F(SimpleSwitch_TruncateP4, Truncate) {

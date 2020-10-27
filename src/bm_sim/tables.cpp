@@ -14,15 +14,16 @@
  */
 
 /*
- * Antonin Bas (antonin@barefootnetworks.com)
+ *  Antonin Bas (antonin@barefootnetworks.com)
  *
  */
-
 #include <bm/bm_sim/tables.h>
+
 #include <bm/bm_sim/debugger.h>
 #include <bm/bm_sim/logger.h>
 
 #include <string>
+
 
 namespace bm {
 
@@ -35,7 +36,7 @@ MatchActionTable::MatchActionTable(
 const ControlFlowNode *
 MatchActionTable::operator()(Packet *pkt) const {
   // TODO(antonin)
-  // this is temporary while we experiment with the debugger
+  //  this is temporary while we experiment with the debugger
   DEBUGGER_NOTIFY_CTR(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
       DBG_CTR_TABLE | get_id());

@@ -114,7 +114,7 @@ class NotificationsTest : public ::testing::Test {
   NotificationsListener notifications;
 };
 
-const std::string NotificationsTest::notifications_addr =
+const char NotificationsTest::notifications_addr[] =
     "inproc://notifications";
 
 TEST_F(NotificationsTest, Ageing) {
