@@ -93,14 +93,14 @@ class SimpleSwitch_ParserErrorP4 : public ::testing::Test {
   }
 
  protected:
-  static const std::string packet_in_addr;
+  static const char packet_in_addr[];
   static SimpleSwitch *test_switch;
   bm_apps::PacketInject packet_inject;
   PacketInReceiver receiver{};
 
  private:
-  static const std::string testdata_dir;
-  static const std::string test_json;
+  static const char testdata_dir[];
+  static const char test_json[];
 };
 
 const char SimpleSwitch_ParserErrorP4::packet_in_addr[] =

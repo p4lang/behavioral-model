@@ -139,16 +139,16 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
   }
 
  protected:
-  static const std::string event_logger_addr;
-  static const std::string packet_in_addr;
+  static const char event_logger_addr[];
+  static const char packet_in_addr[];
   static SimpleSwitch *test_switch;
   bm_apps::PacketInject packet_inject;
   PacketInReceiver receiver{};
   NNEventListener events;
 
  private:
-  static const std::string testdata_dir;
-  static const std::string test_json;
+  static const char testdata_dir[];
+  static const char test_json[];
 };
 
 // In theory, I could be using an 'inproc' transport here. However, I observe a

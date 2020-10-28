@@ -913,7 +913,7 @@ TEST(P4Objects, UserProvidedMatchFieldName) {
   auto expected_string = R"entry(Dumping entry 0
 Match key:
 * MyName.MyH.MyF      : EXACT     01
-Action entry: a -
+Action entry: a - 
 )entry";
   EXPECT_EQ(entry_string, expected_string);
 }

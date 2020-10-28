@@ -108,7 +108,7 @@ class NotificationsTest : public ::testing::Test {
     notifications.start();
   }
 
-  static const std::string notifications_addr;
+  static const char notifications_addr[];
 
   std::shared_ptr<bm::TransportIface> transport;
   NotificationsListener notifications;
