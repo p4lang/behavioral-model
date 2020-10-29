@@ -59,6 +59,6 @@ namespace bignum {
 
 }  // namespace bignum
 
-}  // namespace bm
+} // namespace bm
 
 #endif  // BM_BM_SIM_BIGNUM_H_
