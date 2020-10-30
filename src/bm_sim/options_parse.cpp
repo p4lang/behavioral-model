@@ -18,11 +18,10 @@
  *
  */
 
-#include <bm/bm_sim/options_parse.h>
-
 #include <bm/bm_sim/P4Objects.h>
 #include <bm/bm_sim/event_logger.h>
 #include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/options_parse.h>
 #include <bm/config.h>
 
 #include <cassert>

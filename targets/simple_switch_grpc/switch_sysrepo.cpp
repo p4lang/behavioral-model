@@ -33,7 +33,6 @@
 
 #include <boost/optional.hpp>
 
-
 extern "C" {
 #include "sysrepo.h"
 #include "sysrepo/values.h"
