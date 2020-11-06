@@ -542,18 +542,12 @@ const List &ActionParam::to<const List &>(ActionEngineState *state) const {
   return ActionParam::to<List &>(state);
 }
 
-// used for primitives that take as a parameter a "list" of values. Currently we
-// only support "const std::vector<const DataRepresentation*>" as the type
-// used by the C++ primitive and currently this is only used by log_msg.
-// TODO(antonin): more types (e.g. "const std::vector<const Data &>") if needed
-// we can support list of other value types as well, e.g. list of headers
-// we are not limited to using a vector as the data structure either
 template <> inline
-const std::vector<const DataRepresentation*>
-ActionParam::to<const std::vector<const DataRepresentation*>>(
+const std::vector<const StringRepresentationIface*>
+ActionParam::to<const std::vector<const StringRepresentationIface*> > (
     ActionEngineState *state) const {
   _BM_ASSERT(tag == ActionParam::PARAMS_VECTOR && "not a params vector");
-  std::vector<const DataRepresentation*> vec;
+  std::vector<const StringRepresentationIface*> vec;
 
   for (auto i = params_vector.start ; i < params_vector.end ; i++) {
     if (state->parameters_vector[i].tag == ActionParam::HEADER) {
@@ -564,13 +558,31 @@ ActionParam::to<const std::vector<const DataRepresentation*>>(
       const List* list = &state->parameters_vector[i].to<const List &>(state);
       vec.push_back(list);
     } else {
-      // re-use previously-defined cast method; note that we use
-      // to<const Data &> and not to<const Data>, as it does not exists
-      // if something in the parameters_vector cannot be cast to
-      // "const Data &", the code will assert
       const Data* data = &state->parameters_vector[i].to<const Data &>(state);
       vec.push_back(data);
     }
+  }
+
+  return vec;
+}
+
+// used for primitives that take as a parameter a "list" of values. Currently we
+// only support "const std::vector<Data>" as the type used by the C++ primitive
+// and currently this is only used by log_msg.
+// TODO(antonin): more types (e.g. "const std::vector<const Data &>") if needed
+// we can support list of other value types as well, e.g. list of headers
+// we are not limited to using a vector as the data structure either
+template <> inline
+const std::vector<Data>
+ActionParam::to<const std::vector<Data>>(ActionEngineState *state) const {
+  _BM_ASSERT(tag == ActionParam::PARAMS_VECTOR && "not a params vector");
+  std::vector<Data> vec;
+  for (auto i = params_vector.start ; i < params_vector.end ; i++) {
+    // re-use previously-defined cast method; note that we use to<const Data &>
+    // and not to<const Data>, as it does not exists
+    // if something in the parameters_vector cannot be cast to "const Data &",
+    // the code will assert
+    vec.push_back(state->parameters_vector[i].to<const Data &>(state));
   }
 
   return vec;

@@ -146,7 +146,7 @@ class HeaderType : public NamedP4Object {
 
 //! Used to represent P4 header instances. It includes a vector of Field
 //! objects.
-class Header : public NamedP4Object, public DataRepresentation {
+class Header : public NamedP4Object, public StringRepresentationIface {
  public:
   using iterator = std::vector<Field>::iterator;
   using const_iterator = std::vector<Field>::const_iterator;
@@ -288,33 +288,7 @@ class Header : public NamedP4Object, public DataRepresentation {
   // the metadata variable:
   //  metadata = 0 for the header
   //  metadata = 1 for the structure.
-  std::string show() const override {
-    std::string format = "{";
-    if (!is_metadata() && !is_valid()) {
-      // header is not valid
-      format.append("'" + get_field_name(fields.size()-1) + "': " + "0}");
-      return format;
-    }
-
-    if (!is_metadata()) {
-      // if it is a header, the valid field is added
-      format.append("'" + get_field_name(fields.size()-1) + "': " +
-          fields[fields.size()-1].get_string_repr() + ", ");
-    }
-
-    for (size_t i = 0; i < fields.size()-1; i++) {
-      // if it is a structure, the _padding field is skipped
-      if (get_field_name(i).substr(0, 8).compare("_padding") == 0) {
-        continue;
-      }
-      format.append("'" + get_field_name(i) + "': " +
-          fields[i].get_string_repr() + ", ");
-    }
-
-    format.erase(format.size()-2, format.size());
-    format.append("}");
-    return format;
-  }
+  std::string get_string_repr() const override;
 
   Header(const Header &other) = delete;
   Header &operator=(const Header &other) = delete;
@@ -360,7 +334,7 @@ class Header : public NamedP4Object, public DataRepresentation {
 // This is a helper class.
 // For now, this class is only used to represent the list, tuple and
 // structure with headers required for log_msg.
-class List : public DataRepresentation {
+class List : public StringRepresentationIface {
  public:
   List(std::vector<std::pair<int, Data>> vec_data,
       std::vector<std::pair<int, header_id_t>> vec_header_id) {
@@ -388,41 +362,7 @@ class List : public DataRepresentation {
     headers.clear();
   }
 
-  std::string show() const override {
-    std::string format = "{";
-    int i = 0, j = 0;
-    int num_data = const_values.size();
-    int num_header = header_ids.size();
-
-    while (i < num_data && j < num_header) {
-      if (const_values[i].first < header_ids[j].first) {
-        format.append(const_values[i].second.show() + ", ");
-        i++;
-      } else {
-        if (headers[j]->show().find("is not valid") != std::string::npos) {
-          return headers[j]->show();
-        }
-        format.append(headers[j]->show() + ", ");
-        j++;
-      }
-    }
-    while (i < num_data) {
-      format.append(const_values[i].second.show() + ", ");
-      i++;
-    }
-    while (j < num_header) {
-      if (headers[j]->show().find("is not valid") != std::string::npos) {
-          return headers[j]->show();
-        }
-      format.append(headers[j]->show() + ", ");
-      j++;
-    }
-
-    format.erase(format.size()-2, format.size());
-    format.append("}");
-
-    return format;
-  }
+  std::string get_string_repr() const override;
 
   List(const List &other) = delete;
   List &operator=(const List &other) = delete;

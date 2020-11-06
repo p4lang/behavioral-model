@@ -39,14 +39,14 @@ namespace bm {
 
 using bignum::Bignum;
 
-// DataRepresentation is used to represent data for log_msg.
+// StringRepresentationIface is used to represent data for log_msg.
 // if log_msg is to support a data type, the class for that type
 // should inherit this class and override show method.
 // For now the subclasses are Data, Header and List.
-class DataRepresentation {
+class StringRepresentationIface {
  public:
-  virtual ~DataRepresentation() {}
-  virtual std::string show() const = 0;
+  virtual ~StringRepresentationIface() {}
+  virtual std::string get_string_repr() const = 0;
 };
 
 
@@ -67,7 +67,7 @@ class DataRepresentation {
 //! Note that Data includes a Bignum (for arbitrary arithmetic). Therefore,
 //! operations involving Data can be rather costly. In particular, constructing
 //! a Data instance involves a heap memory allocation.
-class Data : public DataRepresentation {
+class Data : public StringRepresentationIface {
  public:
   Data() {}
 
@@ -228,7 +228,7 @@ class Data : public DataRepresentation {
     return s;
   }
 
-  std::string get_string_repr() const {
+  std::string get_string_repr() const override {
     assert(arith);
     return value.convert_to<std::string>();
   }
@@ -435,9 +435,6 @@ class Data : public DataRepresentation {
     return out;
   }
 
-  std::string show() const override {
-    return get_string_repr();
-  }
   // Copy constructor
   //! NC
   Data(const Data &other)

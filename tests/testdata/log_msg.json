@@ -1,0 +1,322 @@
+{
+  "header_types" : [
+    {
+      "name" : "Structure1",
+      "id" : 1,
+      "fields" : [
+        ["val1", 7, false],
+        ["val2", 7, false],
+        ["_padding", 2, false]
+      ]
+    },
+    {
+      "name" : "Header",
+      "id" : 2,
+      "fields" : [
+        ["val1", 4, false],
+        ["val2", 4, false]
+      ]
+    },
+    {
+      "name" : "ethernet_t",
+      "id" : 4,
+      "fields" : [
+        ["dstAddr", 48, false],
+        ["srcAddr", 48, false],
+        ["etherType", 16, false]
+      ]
+    }
+  ],
+  "headers" : [
+    {
+      "name" : "str1_0",
+      "id" : 0,
+      "header_type" : "Structure1",
+      "metadata" : true,
+      "pi_omit" : true
+    },
+    {
+      "name" : "hdr1_0",
+      "id" : 1,
+      "header_type" : "Header",
+      "metadata" : false,
+      "pi_omit" : true
+    },
+    {
+      "name" : "str3_0_val5",
+      "id" : 2,
+      "header_type" : "Structure1",
+      "metadata" : true,
+      "pi_omit" : true
+    },
+    {
+      "name" : "ethernet",
+      "id" : 5,
+      "header_type" : "ethernet_t",
+      "metadata" : false,
+      "pi_omit" : true
+    }
+  ],
+  "parsers" : [
+    {
+      "name" : "parser",
+      "id" : 0,
+      "init_state" : "start",
+      "parse_states" : [
+        {
+          "name" : "start",
+          "id" : 0,
+          "parser_ops" : [
+            {
+              "parameters" : [
+                {
+                  "type" : "regular",
+                  "value" : "ethernet"
+                }
+              ],
+              "op" : "extract"
+            }
+          ],
+          "transitions" : [
+            {
+              "type" : "default",
+              "value" : null,
+              "mask" : null,
+              "next_state" : null
+            }
+          ],
+          "transition_key" : []
+        }
+      ]
+    }
+  ],
+  "deparsers" : [
+    {
+      "name" : "deparser",
+      "id" : 0,
+      "source_info" : {
+        "filename" : "test.p4",
+        "line" : 75,
+        "column" : 8,
+        "source_fragment" : "deparserImpl"
+      },
+      "order" : ["ethernet"],
+      "primitives" : []
+    }
+  ],
+  "actions" : [
+    {
+      "name" : "test55",
+      "id" : 0,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["str1_0", "val1"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x02"
+            }
+          ],
+          "source_info" : {
+            "filename" : "test.p4",
+            "line" : 55,
+            "column" : 8,
+            "source_fragment" : "Structure1 str1 = {2, 3};"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["str1_0", "val2"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x03"
+            }
+          ],
+          "source_info" : {
+            "filename" : "test.p4",
+            "line" : 55,
+            "column" : 8,
+            "source_fragment" : "Structure1 str1 = {2, 3};"
+          }
+        },
+        {
+          "op" : "log_msg",
+          "parameters" : [
+            {
+              "type" : "string",
+              "value" : "str1 = {}"
+            },
+            {
+              "type" : "parameters_vector",
+              "value" : [
+                {
+                  "type" : "header",
+                  "value" : "str1_0"
+                }
+              ]
+            }
+          ],
+          "source_info" : {
+            "filename" : "test.p4",
+            "line" : 56,
+            "column" : 8,
+            "source_fragment" : "        log_msg(\\\"str1 = {}\\\", {str1});"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["hdr1_0", "val1"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x04"
+            }
+          ],
+          "source_info" : {
+            "filename" : "test.p4",
+            "line" : 57,
+            "column" : 8,
+            "source_fragment" : "Header hdr1 = {4, 1};"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["hdr1_0", "val2"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x01"
+            }
+          ],
+          "source_info" : {
+            "filename" : "test.p4",
+            "line" : 57,
+            "column" : 8,
+            "source_fragment" : "Header hdr1 = {4, 1};"
+          }
+        },
+        {
+          "op" : "log_msg",
+          "parameters" : [
+            {
+              "type" : "string",
+              "value" : "str2 = {}"
+            },
+            {
+              "type" : "parameters_vector",
+              "value" : [
+                [
+                  {
+                    "type" : "hexstr",
+                    "value" : "0x03"
+                  },
+                  {
+                    "type" : "header",
+                    "value" : "hdr1_0"
+                  }
+                ]
+              ]
+            }
+          ],
+          "source_info" : {
+            "filename" : "test.p4",
+            "line" : 59,
+            "column" : 8,
+            "source_fragment" : "        log_msg(\\\"str2 = {}\\\", {str2});"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["str3_0_val5", "val1"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x02"
+            }
+          ],
+          "source_info" : {
+            "filename" : "test.p4",
+            "line" : 55,
+            "column" : 28,
+            "source_fragment" : "2, 3 }; ..."
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["str3_0_val5", "val2"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x03"
+            }
+          ],
+          "source_info" : {
+            "filename" : "test.p4",
+            "line" : 55,
+            "column" : 31,
+            "source_fragment" : "3 }; ..."
+          }
+        },
+        {
+          "op" : "log_msg",
+          "parameters" : [
+            {
+              "type" : "string",
+              "value" : "str3 = {}"
+            },
+            {
+              "type" : "parameters_vector",
+              "value" : [
+                [
+                  {
+                    "type" : "hexstr",
+                    "value" : "0x03"
+                  },
+                  {
+                    "type" : "header",
+                    "value" : "hdr1_0"
+                  },
+                  {
+                    "type" : "bool",
+                    "value" : false
+                  },
+                  {
+                    "type" : "header",
+                    "value" : "str3_0_val5"
+                  }
+                ]
+              ]
+            }
+          ],
+          "source_info" : {
+            "filename" : "test.p4",
+            "line" : 61,
+            "column" : 8,
+            "source_fragment" : "        log_msg(\\\"str3 = {}\\\", {str3});"
+          }
+        }
+      ]
+    }
+  ]
+}
