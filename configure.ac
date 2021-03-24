@@ -4,7 +4,7 @@
 AC_PREREQ([2.68])
 AC_INIT([bm], [m4_esyscmd(tools/get_version.sh)],
         [antonin@barefootnetworks.com])
-AM_INIT_AUTOMAKE([foreign subdir-objects])
+AM_INIT_AUTOMAKE([1.9 tar-pax foreign subdir-objects])
 AC_CONFIG_SRCDIR([src/bm_sim/checksums.cpp])
 AC_CONFIG_HEADERS([config.h])
 
