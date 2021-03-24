@@ -1,0 +1,8 @@
+usr/lib/*/libbmall.so.*
+usr/lib/*/libbmp4apps.so.*
+usr/lib/*/libbmpdfixed.so.*
+usr/lib/*/libbmpdfixedthrift.so.*
+usr/lib/*/libpsaswitch_thrift.so.*
+usr/lib/*/libruntimestubs.so.*
+usr/lib/*/libsimpleswitch_runner.so.*
+usr/lib/*/libsimpleswitch_thrift.so.*

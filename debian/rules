@@ -1,0 +1,15 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+DH_VERBOSE = 1
+
+%:
+	dh $@ --with python3
+
+override_dh_auto_configure:
+	dh_auto_configure -- --with-pdfixed --enable-debugger --with-thrift --with-nanomsg
+
+override_dh_auto_install:
+	make DESTDIR=$(CURDIR)/debian/tmp install
+	find $(CURDIR)/debian/tmp -name __pycache__ -type d | xargs rm -rf
