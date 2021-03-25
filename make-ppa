@@ -95,10 +95,10 @@ fi
 if [ ${DPUT} -ne 0 ] ; then
    changeFiles=`find . -mindepth 1 -maxdepth 1 -name "*.changes"`
    for changeFile in ${changeFiles} ; do
-      if [[ ${changeFile} =~ .*[0-9](ppa|ubuntu)[0-9].* ]] ; then
-         dput ppa ${changeFile}
-      else
+      if [[ ${changeFile} =~ -[0-9]_source.changes$ ]] ; then
          dput mentors ${changeFile}
+      else
+         dput ppa ${changeFile}
       fi
    done
 fi

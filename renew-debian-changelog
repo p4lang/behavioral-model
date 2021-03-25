@@ -25,14 +25,14 @@ UPSTREAM_VERSION=`echo $DEBIAN_VERSION  | sed -e "s/-[0-9]*$//"`
 PLAIN_VERSION=`echo $UPSTREAM_VERSION   | sed -e "s/\([0-9\.]*\)[-+~].*$/\1/"`
 
 GIT_VERSION="g`env LANG=en date -u +"%Y%m%d%H%M"`"
-GIT_ID="${GIT_VERSION}~`cat .git/ORIG_HEAD | cut -b 1-6`"   # Name may not be too long! Just take 8 digits ...
+GIT_ID="${GIT_VERSION}~`cat .git/ORIG_HEAD | cut -b 1-6`"   # Name may not be too long! Just take 6 digits ...
 
 # ------ Change configure.ac ------------------------------------------------
 sed "s#AC_INIT(\[bm[a-z0-9]*\],.*,#AC_INIT([bm], [${PACKAGE_VERSION}+$GIT_ID],#g" <configure.ac >configure.ac.new
 
 # ------ Create debian/changelog --------------------------------------------
 (
-   echo "bm (${UPSTREAM_VERSION}+${GIT_ID}) unstable; urgency=medium"
+   echo "bm (${UPSTREAM_VERSION}+${GIT_ID}-1ppa1) unstable; urgency=medium"
    echo ""
    echo "  * Self-made package"
    echo ""
