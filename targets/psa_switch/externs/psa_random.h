@@ -42,8 +42,6 @@ class PSA_Random : public bm::ExternType {
   Data max;
   uint64_t min_val;
   uint64_t max_val;
-  uint64_t range;
-  bool valid_range;
 };
 
 }  // namespace bm::psa
