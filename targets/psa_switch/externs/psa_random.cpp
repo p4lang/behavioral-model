@@ -30,30 +30,17 @@ namespace psa {
 
 void
 PSA_Random::init() {
-  valid_range = true;
   min_val = min.get_uint64();
   max_val = max.get_uint64();
-  range = max_val - min_val + 1;
+  _BM_ASSERT((max_val > min_val) && "[Error] Random number range must be positive.");
 
-  if (min_val > max_val) {
-    valid_range = false;
-    Logger::get()->warn("Error: PSA extern random range must be positive.");
-  }
-
-  /* Even though PSA spec mentioned range should be a power of 2 for
-   * max portability, bmv2 does not have to impose this restriction.
-  if ((range & (range - 1)) != 0) {
-    valid_range = false;
-    Logger::get()->warn("Error: PSA extern random range must be a power of 2.");
-  }
-  */
+  /* Note: Even though PSA spec mentioned range should be a power of 2 for
+   * max portability, bmv2 does not impose this restriction.
+   */
 }
 
 void
 PSA_Random::read(Data &value) {
-  if (!valid_range)
-    return;
-
   using engine = std::default_random_engine;
   using hash = std::hash<std::thread::id>;
   static thread_local engine generator(hash()(std::this_thread::get_id()));

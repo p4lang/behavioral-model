@@ -28,8 +28,6 @@ namespace psa {
 
 class PSA_Random : public bm::ExternType {
  public:
-  static constexpr p4object_id_t spec_id = 0xfffffffd;
-
   BM_EXTERN_ATTRIBUTES {
     BM_EXTERN_ATTRIBUTE_ADD(min);
     BM_EXTERN_ATTRIBUTE_ADD(max);
