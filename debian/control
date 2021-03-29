@@ -44,13 +44,6 @@ Depends: p4lang-bmv2-libs (= ${binary:Version}),
          ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends}
-Recommends: hipercontracer,
-            netperfmeter,
-            rsplib-tools,
-            subnetcalc,
-            tcpdump,
-            tsctp,
-            tshark
 Description: p4lang behavioral-model (binaries)
  This is the second version of the P4 software switch (also known as behavioral
  model), nicknamed bmv2.
