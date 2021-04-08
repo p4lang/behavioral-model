@@ -73,7 +73,7 @@ ENV BM_DEPS automake \
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends $BM_DEPS
-ADD https://api.github.com/repos/p4lang/PI/git/refs/heads/master .PI.head.json
+ADD https://api.github.com/repos/p4lang/PI/git/refs/heads/main .PI.head.json
 RUN git clone https://github.com/p4lang/PI/
 WORKDIR /PI
 RUN git submodule update --init --recursive
