@@ -41,9 +41,11 @@ namespace sswitch {
 /* static */
 constexpr uint32_t SimpleSwitchRunner::default_drop_port;
 
-SimpleSwitchRunner::SimpleSwitchRunner(uint32_t cpu_port, uint32_t drop_port)
+SimpleSwitchRunner::SimpleSwitchRunner(uint32_t cpu_port, uint32_t drop_port,
+                                       bool egress_spec_init_to_drop)
     : cpu_port(cpu_port),
-      simple_switch(new SimpleSwitch(true /* enable_swap */, drop_port)) { }
+      simple_switch(new SimpleSwitch(true /* enable_swap */, drop_port,
+                                     egress_spec_init_to_drop)) { }
 
 SimpleSwitchRunner::~SimpleSwitchRunner() = default;
 

@@ -51,6 +51,11 @@ main(int argc, char* argv[]) {
       "When using standard v1model.p4, this value must fit within 9 bits. "
       "You will need to use this command-line option when you wish to use port "
       "511 as a valid dataplane port or as the CPU port.");
+  simple_switch_parser.add_flag_option(
+      "egress-spec-init-to-drop",
+      "Change the default initial value of standard_metadata.egress_spec "
+      "at the beginning of ingress so that it is equal to drop-port. "
+      "Without specifying this option, this field's initial value is 0.");
   simple_switch_parser.add_string_option(
       "dp-grpc-server-addr",
       "Use a gRPC channel to inject and receive dataplane packets; "
@@ -101,6 +106,13 @@ main(int argc, char* argv[]) {
       drop_port = sswitch_grpc::SimpleSwitchGrpcRunner::default_drop_port;
     else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
       std::exit(1);
+  }
+
+  bool egress_spec_init_to_drop_flag = false;
+  {
+    auto rc = simple_switch_parser.get_flag_option(
+        "egress-spec-init-to-drop", &egress_spec_init_to_drop_flag);
+    if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS) std::exit(1);
   }
 
   auto &runner = sswitch_grpc::SimpleSwitchGrpcRunner::get_instance(

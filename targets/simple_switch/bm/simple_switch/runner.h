@@ -39,7 +39,8 @@ class SimpleSwitchRunner {
   static constexpr uint32_t default_drop_port = 511;
 
   explicit SimpleSwitchRunner(uint32_t cpu_port = 0,
-                              uint32_t drop_port = default_drop_port);
+                              uint32_t drop_port = default_drop_port,
+                              bool egress_spec_init_to_drop = false);
   ~SimpleSwitchRunner();
 
   int init_and_start(const bm::OptionsParser &parser);

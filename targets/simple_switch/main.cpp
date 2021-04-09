@@ -46,6 +46,11 @@ main(int argc, char* argv[]) {
   simple_switch_parser.add_uint_option(
       "drop-port",
       "Choose drop port number (default is 511)");
+  simple_switch_parser.add_flag_option(
+      "egress-spec-init-to-drop",
+      "Change the default initial value of standard_metadata.egress_spec "
+      "at the beginning of ingress so that it is equal to drop-port. "
+      "Without specifying this option, this field's initial value is 0.");
 
   bm::OptionsParser parser;
   parser.parse(argc, argv, &simple_switch_parser);
@@ -65,7 +70,15 @@ main(int argc, char* argv[]) {
       std::exit(1);
   }
 
-  simple_switch = new SimpleSwitch(enable_swap_flag, drop_port);
+  bool egress_spec_init_to_drop_flag = false;
+  {
+    auto rc = simple_switch_parser.get_flag_option(
+        "egress-spec-init-to-drop", &egress_spec_init_to_drop_flag);
+    if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS) std::exit(1);
+  }
+
+  simple_switch = new SimpleSwitch(enable_swap_flag, drop_port,
+                                   egress_spec_init_to_drop_flag);
 
   int status = simple_switch->init_from_options_parser(parser);
   if (status != 0) std::exit(status);

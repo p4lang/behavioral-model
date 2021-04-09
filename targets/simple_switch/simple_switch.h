@@ -86,7 +86,8 @@ class SimpleSwitch : public Switch {
  public:
   // by default, swapping is off
   explicit SimpleSwitch(bool enable_swap = false,
-                        port_t drop_port = default_drop_port);
+                        port_t drop_port = default_drop_port,
+                        bool egress_spec_init_to_drop = false);
 
   ~SimpleSwitch();
 
@@ -184,6 +185,7 @@ class SimpleSwitch : public Switch {
 
  private:
   port_t drop_port;
+  bool egress_spec_init_to_drop = false;
   std::vector<std::thread> threads_;
   std::unique_ptr<InputBuffer> input_buffer;
   // for these queues, the write operation is non-blocking and we drop the

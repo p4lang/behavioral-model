@@ -498,8 +498,10 @@ SimpleSwitchGrpcRunner::SimpleSwitchGrpcRunner(
     std::string grpc_server_addr,
     bm::DevMgrIface::port_t cpu_port,
     std::string dp_grpc_server_addr,
-    bm::DevMgrIface::port_t drop_port)
-    : simple_switch(new SimpleSwitch(enable_swap, drop_port)),
+    bm::DevMgrIface::port_t drop_port,
+    bool egress_spec_init_to_drop)
+    : simple_switch(new SimpleSwitch(enable_swap, drop_port,
+                                     egress_spec_init_to_drop)),
       grpc_server_addr(grpc_server_addr), cpu_port(cpu_port),
       dp_grpc_server_addr(dp_grpc_server_addr),
       dp_service(nullptr),
