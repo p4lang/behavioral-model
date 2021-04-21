@@ -39,6 +39,17 @@ namespace bm {
 
 using bignum::Bignum;
 
+// StringRepresentationIface is used to represent data for log_msg.
+// if log_msg is to support a data type, the class for that type
+// should inherit this class and override show method.
+// For now the subclasses are Data, Header and List.
+class StringRepresentationIface {
+ public:
+  virtual ~StringRepresentationIface() {}
+  virtual std::string get_string_repr() const = 0;
+};
+
+
 //! Data is a very important class in bmv2. It can be used to represent an
 //! arbitrarily large number. It is also the base class for the Field and
 //! Register classes. Arithmetic expressions are evaluated using Data as
@@ -56,7 +67,7 @@ using bignum::Bignum;
 //! Note that Data includes a Bignum (for arbitrary arithmetic). Therefore,
 //! operations involving Data can be rather costly. In particular, constructing
 //! a Data instance involves a heap memory allocation.
-class Data {
+class Data : public StringRepresentationIface {
  public:
   Data() {}
 
@@ -217,7 +228,7 @@ class Data {
     return s;
   }
 
-  std::string get_string_repr() const {
+  std::string get_string_repr() const override {
     assert(arith);
     return value.convert_to<std::string>();
   }

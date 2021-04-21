@@ -342,4 +342,57 @@ Header::set_union_membership(HeaderUnion *header_union, size_t idx) {
   union_membership.reset(new UnionMembership(header_union, idx));
 }
 
+std::string Header::get_string_repr() const {
+    std::string format = "{";
+
+    if (!is_metadata()) {
+      // if it is a header, the valid field is added
+      format.append("'" + get_field_name(fields.size()-1) + "': " +
+          fields[fields.size()-1].get_string_repr() + ", ");
+    }
+
+    for (size_t i = 0; i < fields.size()-1; i++) {
+      // if it is a structure, the _padding field is skipped
+      if (get_field_name(i).substr(0, 8).compare("_padding") == 0) {
+        continue;
+      }
+      format.append("'" + get_field_name(i) + "': " +
+          fields[i].get_string_repr() + ", ");
+    }
+
+    format.erase(format.size()-2, format.size());
+    format.append("}");
+    return format;
+  }
+
+  std::string List::get_string_repr() const {
+    std::string format = "{";
+    int i = 0, j = 0;
+    int num_data = const_values.size();
+    int num_header = header_ids.size();
+
+    while (i < num_data && j < num_header) {
+      if (const_values[i].first < header_ids[j].first) {
+        format.append(const_values[i].second.get_string_repr() + ", ");
+        i++;
+      } else {
+        format.append(headers[j]->get_string_repr() + ", ");
+        j++;
+      }
+    }
+    while (i < num_data) {
+      format.append(const_values[i].second.get_string_repr() + ", ");
+      i++;
+    }
+    while (j < num_header) {
+      format.append(headers[j]->get_string_repr() + ", ");
+      j++;
+    }
+
+    format.erase(format.size()-2, format.size());
+    format.append("}");
+
+    return format;
+  }
+
 }  // namespace bm

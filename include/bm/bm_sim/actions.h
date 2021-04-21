@@ -181,10 +181,12 @@ struct ActionParam {
         EXPRESSION_HEADER_UNION, EXPRESSION_HEADER_UNION_STACK,
         EXTERN_INSTANCE,
         STRING,
-        HEADER_UNION, HEADER_UNION_STACK, PARAMS_VECTOR} tag;
+        HEADER_UNION, HEADER_UNION_STACK, PARAMS_VECTOR, LIST} tag;
 
   union {
     unsigned int const_offset;
+
+    List* list;
 
     struct {
       header_id_t header;
@@ -522,6 +524,48 @@ const char *ActionParam::to<const char *>(ActionEngineState *state) const {
   return str->c_str();
 }
 
+template <> inline
+List &ActionParam::to<List &>(ActionEngineState *state) const {
+  (void) state;
+  assert(tag == ActionParam::LIST);
+
+  list->clear_headers();
+  for (size_t i = 0; i < list->get_num_header_id(); i++) {
+    Header* h = &state->phv.get_header(list->get_header_id(i));
+    list->set_header(h);
+  }
+  return *list;
+}
+
+template <> inline
+const List &ActionParam::to<const List &>(ActionEngineState *state) const {
+  return ActionParam::to<List &>(state);
+}
+
+template <> inline
+const std::vector<const StringRepresentationIface*>
+ActionParam::to<const std::vector<const StringRepresentationIface*> > (
+    ActionEngineState *state) const {
+  _BM_ASSERT(tag == ActionParam::PARAMS_VECTOR && "not a params vector");
+  std::vector<const StringRepresentationIface*> vec;
+
+  for (auto i = params_vector.start ; i < params_vector.end ; i++) {
+    if (state->parameters_vector[i].tag == ActionParam::HEADER) {
+      const Header* header = &state->parameters_vector[i].to<const Header &>(
+          state);
+      vec.push_back(header);
+    } else if (state->parameters_vector[i].tag == ActionParam::LIST) {
+      const List* list = &state->parameters_vector[i].to<const List &>(state);
+      vec.push_back(list);
+    } else {
+      const Data* data = &state->parameters_vector[i].to<const Data &>(state);
+      vec.push_back(data);
+    }
+  }
+
+  return vec;
+}
+
 // used for primitives that take as a parameter a "list" of values. Currently we
 // only support "const std::vector<Data>" as the type used by the C++ primitive
 // and currently this is only used by log_msg.
@@ -533,7 +577,6 @@ const std::vector<Data>
 ActionParam::to<const std::vector<Data>>(ActionEngineState *state) const {
   _BM_ASSERT(tag == ActionParam::PARAMS_VECTOR && "not a params vector");
   std::vector<Data> vec;
-
   for (auto i = params_vector.start ; i < params_vector.end ; i++) {
     // re-use previously-defined cast method; note that we use to<const Data &>
     // and not to<const Data>, as it does not exists
@@ -742,6 +785,7 @@ class ActionFn :  public NamedP4Object {
                                       ExprType expr_type);
   void parameter_push_back_extern_instance(ExternType *extern_instance);
   void parameter_push_back_string(const std::string &str);
+  void parameter_push_back_list(std::unique_ptr<List> str);
 
   // These methods are used when we need to push a "vector of parameters"
   // (i.e. when a primitive, such as log_msg, uses a list of values as one of
@@ -771,6 +815,7 @@ class ActionFn :  public NamedP4Object {
   std::vector<std::unique_ptr<Expression> > expressions{};
   std::vector<std::string> strings{};
   size_t num_params;
+  std::vector<std::unique_ptr<List>> lists{};
 
  private:
   static size_t nb_data_tmps;

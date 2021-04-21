@@ -29,10 +29,12 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "fields.h"
 #include "named_p4object.h"
 #include "phv_forward.h"
+#include "data.h"
 
 namespace bm {
 
@@ -144,7 +146,7 @@ class HeaderType : public NamedP4Object {
 
 //! Used to represent P4 header instances. It includes a vector of Field
 //! objects.
-class Header : public NamedP4Object {
+class Header : public NamedP4Object, public StringRepresentationIface {
  public:
   using iterator = std::vector<Field>::iterator;
   using const_iterator = std::vector<Field>::const_iterator;
@@ -281,6 +283,13 @@ class Header : public NamedP4Object {
   //! string. The name is of the form <hdr_name>.<f_name>.
   const std::string get_field_full_name(int field_offset) const;
 
+  // The header and structure are represented by the class Header in bmv2.
+  // The difference between the header and the structure is in
+  // the metadata variable:
+  //  metadata = 0 for the header
+  //  metadata = 1 for the structure.
+  std::string get_string_repr() const override;
+
   Header(const Header &other) = delete;
   Header &operator=(const Header &other) = delete;
 
@@ -320,6 +329,53 @@ class Header : public NamedP4Object {
   const Debugger::PacketId *packet_id{&Debugger::dummy_PacketId};
 #endif
 };
+
+
+// This is a helper class.
+// For now, this class is only used to represent the list, tuple and
+// structure with headers required for log_msg.
+class List : public StringRepresentationIface {
+ public:
+  List(std::vector<std::pair<int, Data>> vec_data,
+      std::vector<std::pair<int, header_id_t>> vec_header_id) {
+    const_values = vec_data;
+    header_ids = vec_header_id;
+  }
+
+  size_t get_num_const() const {
+    return const_values.size();
+  }
+
+  size_t get_num_header_id() const {
+    return header_ids.size();
+  }
+
+  header_id_t get_header_id(int i) const {
+    return header_ids[i].second;
+  }
+
+  void set_header(Header* h) {
+    headers.push_back(h);
+  }
+
+  void clear_headers() {
+    headers.clear();
+  }
+
+  std::string get_string_repr() const override;
+
+  List(const List &other) = delete;
+  List &operator=(const List &other) = delete;
+
+  List(List &&other) = default;
+  List &operator=(List &&other) = delete;
+
+ private:
+  std::vector<std::pair<int, Data>> const_values{};
+  std::vector<std::pair<int, header_id_t>> header_ids{};
+  std::vector<Header*> headers{};
+};
+
 
 }  // namespace bm
 
