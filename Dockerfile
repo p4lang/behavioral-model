@@ -39,8 +39,8 @@ ENV BM_RUNTIME_DEPS libboost-program-options1.58.0 \
                     python
 COPY . /behavioral-model/
 WORKDIR /behavioral-model/
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
+RUN apt-get update -qq && \
+    apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
     ln -sf /usr/bin/python3 /usr/bin/python && \
     ./autogen.sh && \
     if [ "$GCOV" != "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-coverage --enable-Werror; fi && \
@@ -57,8 +57,8 @@ RUN apt-get update && \
     (test "$sswitch_grpc" = "no") && \
     ldconfig && \
     (test "$IMAGE_TYPE" = "build" && \
-      apt-get purge -y $BM_DEPS && \
-      apt-get autoremove --purge -y && \
+      apt-get purge -qq $BM_DEPS && \
+      apt-get autoremove --purge -qq && \
       rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/* && \
       echo 'Build image ready') || \
     (test "$IMAGE_TYPE" = "test" && \
