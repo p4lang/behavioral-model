@@ -2,11 +2,6 @@ ARG PARENT_VERSION=latest
 FROM p4lang/pi:${PARENT_VERSION}
 LABEL maintainer="Antonin Bas <antonin@barefootnetworks.com>"
 
-# Default to using 2 make jobs, which is a good default for CI. If you're
-# building locally or you know there are more cores available, you may want to
-# override this.
-ARG MAKEFLAGS=-j2
-
 # Select the type of image we're building. Use `build` for a normal build, which
 # is optimized for image size. Use `test` if this image will be used for
 # testing; in this case, the source code and build-only dependencies will not be
@@ -50,13 +45,13 @@ RUN apt-get update && \
     ./autogen.sh && \
     if [ "$GCOV" != "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-coverage --enable-Werror; fi && \
     if [ "$GCOV" = "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror; fi && \
-    make && \
+    make -j$(nproc) && \
     make install-strip && \
     (test "$sswitch_grpc" = "yes" && \
       cd targets/simple_switch_grpc/ && \
       ./autogen.sh && \
       ./configure --enable-Werror && \
-      make && \
+      make -j$(nproc) && \
       make install-strip && \
       cd -) || \
     (test "$sswitch_grpc" = "no") && \
