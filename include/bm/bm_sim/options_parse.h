@@ -85,6 +85,8 @@ class OptionsParser {
   std::string packet_in_addr{};
   std::string event_logger_addr{};
   std::string file_logger{};
+  size_t max_file_size{5};
+  size_t max_files{3};
   bool console_logging{false};
   // by default everything is logged
   Logger::LogLevel log_level{Logger::LogLevel::TRACE};

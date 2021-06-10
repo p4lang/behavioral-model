@@ -126,6 +126,10 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
       ("log-level,L", po::value<std::string>(),
        "Set log level, supported values are "
        "'trace', 'debug', 'info', 'warn', 'error', off'; default is 'trace'")
+      ("log-max-files", po::value<size_t>(), 
+       "Set number of switch log files generated (default: 3) ")
+      ("log-max-file-size", po::value<size_t>(),
+       "Set the maximum file size for each generated switch log (default: 5 MB)" )
       ("log-flush", "If used with '--log-file', the logger will flush to disk "
        "after every log message")
 #ifdef BM_NANOMSG_ON
@@ -303,6 +307,14 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
       exit(1);
     }
     log_level = levels_map[log_level_str];
+  }
+
+  if (vm.count("log-max-file-size")) {
+    max_file_size = vm["log-max-file-size"].as<size_t>();
+  }
+
+  if (vm.count("log-max-files")) {
+    max_files = vm["log-max-files"].as<size_t>();
   }
 
   auto log_requested = console_logging || !file_logger.empty();

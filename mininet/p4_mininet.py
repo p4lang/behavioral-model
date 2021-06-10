@@ -60,6 +60,7 @@ class P4Switch(Switch):
                  verbose = False,
                  device_id = None,
                  enable_debugger = False,
+                 log_file = True,
                  **kwargs):
         Switch.__init__(self, name, **kwargs)
         assert(sw_path)
@@ -86,7 +87,11 @@ class P4Switch(Switch):
             self.device_id = P4Switch.device_id
             P4Switch.device_id += 1
         self.nanomsg = "ipc:///tmp/bm-{}-log.ipc".format(self.device_id)
-
+        self.log_level = "debug"
+        if(log_file):
+            self.log_file = "/tmp/bm-{}.log".format(self.device_id)
+        self.max_files = "10"
+        self.max_file_size = "10"
     @classmethod
     def setup(cls):
         pass
@@ -129,6 +134,14 @@ class P4Switch(Switch):
             args.append("--debugger")
         if self.log_console:
             args.append("--log-console")
+        if self.log_level:
+            args.extend(['--log-level', self.log_level])
+        if self.log_file:
+            args.extend(['--log-file', self.log_file])
+        if self.max_file_size:
+            args.extend(['--log-max-file-size', self.max_file_size])
+        # if self.max_files:
+        #     args.extend(['--log-max-files', self.max_files])
         logfile = "/tmp/p4s.{}.log".format(self.name)
         info(' '.join(args) + "\n")
 
