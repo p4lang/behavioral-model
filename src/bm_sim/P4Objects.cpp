@@ -2168,11 +2168,11 @@ P4Objects::init_objects(std::istream *is,
 
     init_errors(cfg_root);  // parser errors
 
+    init_calculations(cfg_root);
+
     init_parsers(cfg_root, &init_state);
 
     init_deparsers(cfg_root);
-
-    init_calculations(cfg_root);
 
     init_counter_arrays(cfg_root);
 
