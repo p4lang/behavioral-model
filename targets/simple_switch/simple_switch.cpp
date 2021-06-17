@@ -197,9 +197,11 @@ class SimpleSwitch::InputBuffer {
   QueueImpl queue_lo;
 };
 
-SimpleSwitch::SimpleSwitch(bool enable_swap, port_t drop_port)
+SimpleSwitch::SimpleSwitch(bool enable_swap, port_t drop_port,
+                           bool egress_spec_init_to_drop)
   : Switch(enable_swap),
     drop_port(drop_port),
+    egress_spec_init_to_drop(egress_spec_init_to_drop),
     input_buffer(new InputBuffer(
         1024 /* normal capacity */, 1024 /* resubmit/recirc capacity */)),
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
@@ -489,6 +491,15 @@ SimpleSwitch::ingress_thread() {
     (void) ingress_port;
     BMLOG_DEBUG_PKT(*packet, "Processing packet received on port {}",
                     ingress_port);
+
+    if (egress_spec_init_to_drop) {
+        // If no assignment is made to either of egress_spec and
+        // mcast_grp fields during ingress processing, it will be
+        // dropped at the end of ingress.
+        BMLOG_DEBUG_PKT(*packet, "Initializing egress_spec to drop_port={}",
+                        drop_port);
+        phv->get_field("standard_metadata.egress_spec").set(drop_port);
+    }
 
     auto ingress_packet_size =
         packet->get_register(RegisterAccess::PACKET_LENGTH_REG_IDX);

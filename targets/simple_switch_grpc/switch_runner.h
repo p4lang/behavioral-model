@@ -53,10 +53,11 @@ class SimpleSwitchGrpcRunner {
       std::string grpc_server_addr = "0.0.0.0:9559",
       bm::DevMgrIface::port_t cpu_port = 0,
       std::string dp_grpc_server_addr = "",
-      bm::DevMgrIface::port_t drop_port = default_drop_port) {
+      bm::DevMgrIface::port_t drop_port = default_drop_port,
+      bool egress_spec_init_to_drop = false) {
     static SimpleSwitchGrpcRunner instance(
         enable_swap, grpc_server_addr, cpu_port, dp_grpc_server_addr,
-        drop_port);
+        drop_port, egress_spec_init_to_drop);
     return instance;
   }
 
@@ -74,7 +75,8 @@ class SimpleSwitchGrpcRunner {
                          std::string grpc_server_addr = "0.0.0.0:9559",
                          bm::DevMgrIface::port_t cpu_port = 0,
                          std::string dp_grpc_server_addr = "",
-                         bm::DevMgrIface::port_t drop_port = default_drop_port);
+                         bm::DevMgrIface::port_t drop_port = default_drop_port,
+                         bool egress_spec_init_to_drop = false);
   ~SimpleSwitchGrpcRunner();
 
   void port_status_cb(bm::DevMgrIface::port_t port,
