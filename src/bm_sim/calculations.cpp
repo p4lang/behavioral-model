@@ -126,14 +126,6 @@ BufBuilder::operator()(const Packet &pkt, ByteContainer *buf) const {
   }
 }
 
-namespace hash {
-
-uint64_t xxh64(const char *buffer, size_t s) {
-  return XXH64(buffer, s, 0);
-}
-
-}  // namespace hash
-
 namespace {
 
 /* This code was adapted from:
@@ -442,6 +434,39 @@ std::ostream &operator<<(std::ostream &out, const crc_config_t<T> &c) {
 }
 
 }  // namespace detail
+
+namespace hash {
+
+uint64_t xxh64(const char *buffer, size_t s) {
+  return XXH64(buffer, s, 0);
+}
+
+uint16_t CRC16(const char *buffer, size_t s) {
+  crc16 algo;
+  return algo(buffer, s);
+}
+
+uint16_t CRC16_CUSTOM(const char *buffer, size_t s) {
+  crc16_custom algo;
+  return algo(buffer, s);
+}
+
+uint32_t CRC32(const char *buffer, size_t s) {
+  crc32 algo;
+  return algo(buffer, s);
+}
+
+uint32_t CRC32_CUSTOM(const char *buffer, size_t s) {
+  crc32_custom algo;
+  return algo(buffer, s);
+}
+
+uint64_t IDENTITY(const char *buffer, size_t s) {
+  identity algo;
+  return algo(buffer, s);
+}
+
+}  // namespace hash
 
 template <typename T>
 CustomCrcErrorCode

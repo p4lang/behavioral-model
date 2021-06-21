@@ -68,7 +68,6 @@ extern int import_meters();
 extern int import_random();
 extern int import_checksums();
 
-
 namespace bm {
 
 namespace psa {

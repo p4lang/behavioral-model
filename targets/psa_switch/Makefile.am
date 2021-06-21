@@ -8,7 +8,6 @@ THRIFT_IDL = $(srcdir)/thrift/psa_switch.thrift
 
 noinst_LTLIBRARIES = libpsaswitch.la
 
-
 libpsaswitch_la_SOURCES = \
 psa_switch.cpp psa_switch.h \
 primitives.cpp \

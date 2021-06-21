@@ -22,8 +22,6 @@
 #define PSA_SWITCH_PSA_CHECKSUM_H_
 
 #include <bm/bm_sim/extern.h>
-#include <bm/bm_sim/calculations.h>
-
 
 namespace bm {
 
@@ -33,6 +31,7 @@ class PSA_Checksum : public bm::ExternType {
  public:
 
   BM_EXTERN_ATTRIBUTES {
+    BM_EXTERN_ATTRIBUTE_ADD(hash);
   }
 
   void init() override;
@@ -43,9 +42,12 @@ class PSA_Checksum : public bm::ExternType {
 
   void clear();
 
-  void update(const NamedCalculation& calculation);
+  void update(const std::vector<Field> fields);
+
+  uint64_t compute(const char *buffer, size_t s);
 
  private:
+  std::string hash;
   Data internal;
 
 };

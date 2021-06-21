@@ -344,6 +344,11 @@ class NamedCalculation : public NamedP4Object, public Calculation_<uint64_t> {
 namespace hash {
 
 uint64_t xxh64(const char *buffer, size_t s);
+uint16_t CRC16(const char *buffer, size_t s);
+uint32_t CRC32(const char *buffer, size_t s);
+uint16_t CRC16_CUSTOM(const char *buffer, size_t s);
+uint32_t CRC32_CUSTOM(const char *buffer, size_t s);
+uint64_t IDENTITY(const char *buffer, size_t s);
 
 }  // namespace hash
 
