@@ -89,6 +89,12 @@ struct psa_identity {
 
 } // namespace
 
+REGISTER_HASH(psa_crc16);
+REGISTER_HASH(psa_crc32);
+REGISTER_HASH(psa_crc16_custom);
+REGISTER_HASH(psa_crc32_custom);
+REGISTER_HASH(psa_identity);
+
 namespace bm {
 
 namespace psa {
