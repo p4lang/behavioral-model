@@ -58,33 +58,33 @@ std::string prepareDataForHash(bm::Data input) {
 }
 
 struct psa_crc16 {
-    uint16_t operator()(const char *buf, size_t s) const {
-        return bm::hash::CRC16(buf,s);
-    }
+  uint16_t operator()(const char *buf, size_t s) const {
+    return bm::hash::CRC16(buf, s);
+  }
 };
 
 struct psa_crc32 {
-    uint32_t operator()(const char *buf, size_t s) const {
-        return bm::hash::CRC32(buf,s);
-    }
+  uint32_t operator()(const char *buf, size_t s) const {
+    return bm::hash::CRC32(buf, s);
+  }
 };
 
 struct psa_crc16_custom {
-    uint16_t operator()(const char *buf, size_t s) const {
-        return bm::hash::CRC16_CUSTOM(buf,s);
-    }
+  uint16_t operator()(const char *buf, size_t s) const {
+    return bm::hash::CRC16_CUSTOM(buf, s);
+  }
 };
 
 struct psa_crc32_custom {
-    uint32_t operator()(const char *buf, size_t s) const {
-        return bm::hash::CRC32_CUSTOM(buf,s);
-    }
+  uint32_t operator()(const char *buf, size_t s) const {
+    return bm::hash::CRC32_CUSTOM(buf, s);
+  }
 };
 
 struct psa_identity {
-    uint64_t operator()(const char *buf, size_t s) const {
-        return bm::hash::IDENTITY(buf,s);
-    }
+  uint64_t operator()(const char *buf, size_t s) const {
+    return bm::hash::IDENTITY(buf, s);
+  }
 };
 
 } // namespace
@@ -111,11 +111,7 @@ PSA_Checksum::get(Field& dst) const {
 
 void
 PSA_Checksum::get_verify(Field& dst, Field& equOp) const {
-  if (equOp.get<uint64_t>()!=internal.get<uint64_t>()) {
-    dst.set(false);
-  } else {
-    dst.set(true);
-  }
+  dst.set(equOp.get<uint64_t>()==internal.get<uint64_t>());
 }
 
 void
@@ -133,7 +129,7 @@ PSA_Checksum::update(const std::vector<Field> fields) {
   // They need to be concatenated to one single data which represents value from packet.
   for(int i=fields.size()-1;i>=0;i--) {
     Data shift_value;
-    shift_value.shift_left(Data(fields.at(i).get<uint64_t>()),Data(current_bits_offset));
+    shift_value.shift_left(Data(fields.at(i).get<uint64_t>()), Data(current_bits_offset));
     input.add(input,shift_value);
     current_bits_offset+=fields.at(i).get_nbits();
   }
@@ -147,35 +143,35 @@ PSA_Checksum::update(const std::vector<Field> fields) {
   // Then the hash algorithm will process it as 0x4F.
   std::string hex=prepareDataForHash(input);
 
-  uint64_t cksum= this->compute(hex.data(),hex.size());
+  uint64_t cksum= this->compute(hex.data(), hex.size());
   internal.set(cksum);
 }
 
 uint64_t PSA_Checksum::compute(const char *buffer, size_t s) {
   if (hash=="CRC16") {
     psa_crc16 algo;
-    return algo(buffer,s);
+    return algo(buffer, s);
   } if (hash=="CRC16_CUSTOM") {
     psa_crc16_custom algo;
-    return algo(buffer,s);
+    return algo(buffer, s);
   } else if (hash=="CRC32") {
     psa_crc32 algo;
-    return algo(buffer,s);
+    return algo(buffer, s);
   } else if (hash=="CRC32_CUSTOM") {
     psa_crc32_custom algo;
-    return algo(buffer,s);
+    return algo(buffer, s);
   } else if (hash=="IDENTITY") {
     psa_identity algo;
-    return algo(buffer,s);
+    return algo(buffer, s);
   }
   return 0;
 }
 
-BM_REGISTER_EXTERN_W_NAME(Checksum,PSA_Checksum);
-BM_REGISTER_EXTERN_W_NAME_METHOD(Checksum, PSA_Checksum,update, const std::vector<Field>);
-BM_REGISTER_EXTERN_W_NAME_METHOD(Checksum, PSA_Checksum,get, Field &);
-BM_REGISTER_EXTERN_W_NAME_METHOD(Checksum, PSA_Checksum,get_verify, Field &, Field &);
-BM_REGISTER_EXTERN_W_NAME_METHOD(Checksum, PSA_Checksum,clear);
+BM_REGISTER_EXTERN_W_NAME(Checksum, PSA_Checksum);
+BM_REGISTER_EXTERN_W_NAME_METHOD(Checksum, PSA_Checksum, update, const std::vector<Field>);
+BM_REGISTER_EXTERN_W_NAME_METHOD(Checksum, PSA_Checksum, get, Field &);
+BM_REGISTER_EXTERN_W_NAME_METHOD(Checksum, PSA_Checksum, get_verify, Field &, Field &);
+BM_REGISTER_EXTERN_W_NAME_METHOD(Checksum, PSA_Checksum, clear);
 
 }  // namespace bm::psa
 
