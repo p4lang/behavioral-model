@@ -422,6 +422,51 @@ REGISTER_HASH(crc32_custom);
 using crc64_custom = crc_custom<uint64_t>;
 REGISTER_HASH(crc64_custom);
 
+namespace {
+
+struct CRC16 {
+  uint16_t operator()(const char *buf, size_t len) const {
+    crc16 algo;
+    return algo(buf, len);
+  }
+};
+
+struct CRC16_CUSTOM {
+  uint16_t operator()(const char *buf, size_t len) const {
+    crc16_custom algo;
+    return algo(buf, len);
+  }
+};
+
+struct CRC32 {
+  uint32_t operator()(const char *buf, size_t len) const {
+    crc32 algo;
+    return algo(buf, len);
+  }
+};
+
+struct CRC32_CUSTOM {
+  uint32_t operator()(const char *buf, size_t len) const {
+    crc32_custom algo;
+    return algo(buf, len);
+  }
+};
+
+struct IDENTITY {
+  uint64_t operator()(const char *buf, size_t len) const {
+    identity algo;
+    return algo(buf, len);
+  }
+};
+
+}  // namespace
+
+REGISTER_HASH(CRC16);
+REGISTER_HASH(CRC16_CUSTOM);
+REGISTER_HASH(CRC32);
+REGISTER_HASH(CRC32_CUSTOM);
+REGISTER_HASH(IDENTITY);
+
 namespace detail {
 
 template <typename T>
