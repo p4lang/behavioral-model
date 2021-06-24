@@ -35,21 +35,21 @@ uint64_t convertHexStrToU64(std::string hex) {
 std::string prepareDataForHash(bm::Data input) {
   std::string hex_ascii;
   std::string hex_hex;
-  int k=0;
-  while (input!=bm::Data(0)) {
+  int k = 0;
+  while (input != bm::Data(0)) {
     bm::Data mod16;
     mod16.mod(input, bm::Data(16));
-    hex_ascii+=hex_digits[mod16.get<uint8_t>()];
-    input.divide(input,bm::Data(16));
+    hex_ascii += hex_digits[mod16.get<uint8_t>()];
+    input.divide(input, bm::Data(16));
     k++;
-    if (k%2==0) {
+    if (k % 2 == 0) {
       std::reverse(hex_ascii.begin(), hex_ascii.end());
-      uint64_t c=convertHexStrToU64(hex_ascii);
-      hex_hex+=c;
+      uint64_t c = convertHexStrToU64(hex_ascii);
+      hex_hex += c;
       hex_ascii.clear();
-    } else if (k%2==1 && input==bm::Data(0)) {
-      uint64_t c=convertHexStrToU64(hex_ascii);
-      hex_hex+=c;
+    } else if (k % 2 == 1 && input == bm::Data(0)) {
+      uint64_t c = convertHexStrToU64(hex_ascii);
+      hex_hex += c;
       hex_ascii.clear();
     }
   }
@@ -111,7 +111,7 @@ PSA_Checksum::get(Field& dst) const {
 
 void
 PSA_Checksum::get_verify(Field& dst, Field& equOp) const {
-  dst.set(equOp.get<uint64_t>()==internal.get<uint64_t>());
+  dst.set(equOp.get<uint64_t>() == internal.get<uint64_t>());
 }
 
 void
@@ -123,15 +123,15 @@ void
 PSA_Checksum::update(const std::vector<Field> fields) {
   Data input;
   input.set(0);
-  int current_bits_offset=0;
+  int current_bits_offset = 0;
 
   // Vector fields has separate field values as its elements.
   // They need to be concatenated to one single data which represents value from packet.
-  for(int i=fields.size()-1;i>=0;i--) {
+  for(int i = fields.size() - 1 ; i >= 0 ; i--) {
     Data shift_value;
     shift_value.shift_left(Data(fields.at(i).get<uint64_t>()), Data(current_bits_offset));
-    input.add(input,shift_value);
-    current_bits_offset+=fields.at(i).get_nbits();
+    input.add(input, shift_value);
+    current_bits_offset += fields.at(i).get_nbits();
   }
 
   // Data input is in decimal format and it needs to be converted to hexadecimal,
@@ -141,26 +141,26 @@ PSA_Checksum::update(const std::vector<Field> fields) {
   // If "4F" is directly passed to hash algorithm, it will process it as 0x34 0x46.
   // So, it is important to convert the hex value 0x4F to ASCII char which is 'O'.
   // Then the hash algorithm will process it as 0x4F.
-  std::string hex=prepareDataForHash(input);
+  std::string hex = prepareDataForHash(input);
 
-  uint64_t cksum= this->compute(hex.data(), hex.size());
+  uint64_t cksum = this->compute(hex.data(), hex.size());
   internal.set(cksum);
 }
 
 uint64_t PSA_Checksum::compute(const char *buffer, size_t s) {
-  if (hash=="CRC16") {
+  if (hash == "CRC16") {
     psa_crc16 algo;
     return algo(buffer, s);
-  } if (hash=="CRC16_CUSTOM") {
+  } if (hash == "CRC16_CUSTOM") {
     psa_crc16_custom algo;
     return algo(buffer, s);
-  } else if (hash=="CRC32") {
+  } else if (hash == "CRC32") {
     psa_crc32 algo;
     return algo(buffer, s);
-  } else if (hash=="CRC32_CUSTOM") {
+  } else if (hash == "CRC32_CUSTOM") {
     psa_crc32_custom algo;
     return algo(buffer, s);
-  } else if (hash=="IDENTITY") {
+  } else if (hash == "IDENTITY") {
     psa_identity algo;
     return algo(buffer, s);
   }
