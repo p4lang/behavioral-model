@@ -24,7 +24,7 @@
 
 namespace {
 
-static const unsigned char hex_digits[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+static const unsigned char hex_digits[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
 uint64_t convertHexStrToU64(std::string hex) {
   uint64_t a;
