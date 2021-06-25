@@ -249,12 +249,33 @@ class Data {
     export_bytes();
   }
 
+  //! Performs a modulo operation. The following needs to be true: \p src1 >= 0
+  //! and \p src2 > 0.
+  template<typename T,
+           typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
+  friend T operator%(const Data &src1, const T &src2) {
+    assert(src1.arith);
+    assert(src1.value >= 0 && src2 > 0);
+    return src1.value.convert_to<T>() % src2;
+  }
+
   //! Performs a division operation. The following needs to be true: \p src1 >=
   //! 0 and \p src2 > 0.
   void divide(const Data &src1, const Data &src2) {
     assert(src1.arith && src2.arith);
     assert(src1.value >= 0 && src2.value > 0);
     value = src1.value / src2.value;
+    export_bytes();
+  }
+
+  //! Performs a division operation. The following needs to be true: \p src1 >=
+  //! 0 and \p src2 > 0.
+  template<typename T,
+           typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
+  void divide(const Data &src1, const T &src2) {
+    assert(src1.arith);
+    assert(src1.value >= 0 && src2 > 0);
+    value = src1.value / src2;
     export_bytes();
   }
 
@@ -388,8 +409,24 @@ class Data {
   }
 
   //! NC
+  template<typename T,
+           typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
+  friend bool operator==(const Data &lhs, const T &rhs) {
+    assert(lhs.arith);
+    return lhs.value.convert_to<T>() == rhs;
+  }
+
+  //! NC
   friend bool operator!=(const Data &lhs, const Data &rhs) {
     assert(lhs.arith && rhs.arith);
+    return !(lhs == rhs);
+  }
+
+  //! NC
+  template<typename T,
+           typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
+  friend bool operator!=(const Data &lhs, const T &rhs) {
+    assert(lhs.arith);
     return !(lhs == rhs);
   }
 

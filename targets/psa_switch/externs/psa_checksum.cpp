@@ -26,29 +26,29 @@ namespace {
 
 static const unsigned char hex_digits[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
-uint64_t convertHexStrToU64(std::string hex) {
-  uint64_t a;
+uint8_t convertHexStrToU8(std::string hex) {
+  int a;
   std::istringstream(hex) >> std::hex >> a;
-  return a;
+  return static_cast<uint8_t>(a);
 }
 
-std::string prepareDataForHash(bm::Data input) {
+std::string prepareDataForHash(bm::Data &input) {
   std::string hex_ascii;
   std::string hex_hex;
-  int k = 0;
-  while (input != bm::Data(0)) {
-    bm::Data mod16;
-    mod16.mod(input, bm::Data(16));
-    hex_ascii += hex_digits[mod16.get<uint8_t>()];
-    input.divide(input, bm::Data(16));
+  uint8_t k = 0;
+  const uint8_t base = 16;
+  while (input != 0) {
+    hex_ascii += hex_digits[input % base];
+    input.divide(input, base);
     k++;
     if (k % 2 == 0) {
       std::reverse(hex_ascii.begin(), hex_ascii.end());
-      uint64_t c = convertHexStrToU64(hex_ascii);
+      uint8_t c = convertHexStrToU8(hex_ascii);
       hex_hex += c;
       hex_ascii.clear();
-    } else if (k % 2 == 1 && input == bm::Data(0)) {
-      uint64_t c = convertHexStrToU64(hex_ascii);
+      k=0;
+    } else if (k % 2 == 1 && input == 0) {
+      uint8_t c = convertHexStrToU8(hex_ascii);
       hex_hex += c;
       hex_ascii.clear();
     }
@@ -123,13 +123,13 @@ void
 PSA_Checksum::update(const std::vector<Field> fields) {
   Data input;
   input.set(0);
-  int current_bits_offset = 0;
+  uint16_t current_bits_offset = 0;
 
   // Vector fields has separate field values as its elements.
   // They need to be concatenated to one single data which represents value from packet.
   for(int i = fields.size() - 1 ; i >= 0 ; i--) {
     Data shift_value;
-    shift_value.shift_left(Data(fields.at(i).get<uint64_t>()), Data(current_bits_offset));
+    shift_value.shift_left(Data(fields.at(i).get<uint64_t>()), current_bits_offset);
     input.add(input, shift_value);
     current_bits_offset += fields.at(i).get_nbits();
   }

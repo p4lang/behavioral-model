@@ -36,9 +36,9 @@ class PSA_Checksum : public bm::ExternType {
 
   void init() override;
 
-  void get(Field& dst) const;
+  void get(Field &dst) const;
 
-  void get_verify(Field& dst, Field& equOp) const;
+  void get_verify(Field &dst, Field &equOp) const;
 
   void clear();
 
