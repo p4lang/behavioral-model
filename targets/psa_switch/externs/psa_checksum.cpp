@@ -19,7 +19,6 @@
 
 
 #include "psa_checksum.h"
-#include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/calculations.h>
 
 namespace {
@@ -101,22 +100,22 @@ namespace psa {
 
 void
 PSA_Checksum::init() {
-  this->clear();
+  clear();
 }
 
 void
 PSA_Checksum::get(Field& dst) const {
-  dst.set(internal.get<uint64_t>());
+  dst.set(internal);
 }
 
 void
 PSA_Checksum::get_verify(Field& dst, Field& equOp) const {
-  dst.set(equOp.get<uint64_t>() == internal.get<uint64_t>());
+  dst.set(equOp.get<uint64_t>() == internal);
 }
 
 void
 PSA_Checksum::clear() {
-  internal.set(0);
+  internal = 0;
 }
 
 void
@@ -143,8 +142,7 @@ PSA_Checksum::update(const std::vector<Field> fields) {
   // Then the hash algorithm will process it as 0x4F.
   std::string hex = prepareDataForHash(input);
 
-  uint64_t cksum = this->compute(hex.data(), hex.size());
-  internal.set(cksum);
+  internal = compute(hex.data(), hex.size());
 }
 
 uint64_t PSA_Checksum::compute(const char *buffer, size_t s) {

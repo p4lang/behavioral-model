@@ -48,7 +48,7 @@ class PSA_Checksum : public bm::ExternType {
 
  private:
   std::string hash;
-  Data internal;
+  uint64_t internal;
 
 };
 
