@@ -34,25 +34,26 @@ uint8_t convertHexStrToU8(std::string hex) {
 std::string prepareDataForHash(bm::Data &input) {
   std::string hex_ascii;
   std::string hex_hex;
-  uint8_t k = 0;
   const uint8_t base = 16;
+
   while (input != 0) {
     hex_ascii += hex_digits[input % base];
     input.divide(input, base);
-    k++;
-    if (k % 2 == 0) {
-      std::reverse(hex_ascii.begin(), hex_ascii.end());
-      uint8_t c = convertHexStrToU8(hex_ascii);
-      hex_hex += c;
-      hex_ascii.clear();
-      k=0;
-    } else if (k % 2 == 1 && input == 0) {
-      uint8_t c = convertHexStrToU8(hex_ascii);
-      hex_hex += c;
-      hex_ascii.clear();
-    }
   }
-  std::reverse(hex_hex.begin(), hex_hex.end());
+  std::reverse(hex_ascii.begin(), hex_ascii.end());
+
+  if(hex_ascii.size() % 2 != 0) {
+    hex_ascii.insert(hex_ascii.size()-1, 1, '0');
+  }
+
+  for (size_t i = 0; i < hex_ascii.size(); i += 2) {
+    std::string hex_byte;
+    hex_byte += hex_ascii[i];
+    hex_byte += hex_ascii[i+1];
+    uint8_t num = convertHexStrToU8(hex_byte);
+    hex_hex += num;
+  }
+
   return hex_hex;
 }
 
@@ -86,7 +87,7 @@ struct psa_identity {
   }
 };
 
-} // namespace
+}  // namespace
 
 REGISTER_HASH(psa_crc16);
 REGISTER_HASH(psa_crc32);
@@ -138,8 +139,8 @@ PSA_Checksum::update(const std::vector<Field> fields) {
   // Hash algorithms process the data in chunks of bytes (chars).
   // If the hex value from input is "4F", it semantically means 0x4F.
   // If "4F" is directly passed to hash algorithm, it will process it as 0x34 0x46.
-  // So, it is important to convert the hex value 0x4F to ASCII char which is 'O'.
-  // Then the hash algorithm will process it as 0x4F.
+  // So, it is important to convert "4F" to char with value 0x4F in ASCII table,
+  // which is 'O'. Then the hash algorithm will process it as 0x4F.
   std::string hex = prepareDataForHash(input);
 
   internal = compute(hex.data(), hex.size());
