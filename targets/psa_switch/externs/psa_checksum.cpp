@@ -49,14 +49,11 @@ std::string prepareDataForHash(bm::Data &input, uint16_t num_bits) {
     num_hex_digits++;
   }
 
-  if(hex_ascii.size() % 2 != 0) {
-    hex_ascii.insert(hex_ascii.size()-1, 1, '0');
-  }
-
   for (size_t i = 0; i < hex_ascii.size(); i += 2) {
     std::string hex_byte;
     hex_byte += hex_ascii[i];
-    hex_byte += hex_ascii[i+1];
+    if(i != hex_ascii.size() - 1)
+      hex_byte += hex_ascii[i+1];
     uint8_t num = convertHexStrToU8(hex_byte);
     hex_hex += num;
   }
