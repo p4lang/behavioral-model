@@ -31,16 +31,23 @@ uint8_t convertHexStrToU8(std::string hex) {
   return static_cast<uint8_t>(a);
 }
 
-std::string prepareDataForHash(bm::Data &input) {
+std::string prepareDataForHash(bm::Data &input, uint16_t num_bits) {
   std::string hex_ascii;
   std::string hex_hex;
   const uint8_t base = 16;
+  uint8_t num_hex_digits = 0;
 
   while (input != 0) {
     hex_ascii += hex_digits[input % base];
+    num_hex_digits++;
     input.divide(input, base);
   }
   std::reverse(hex_ascii.begin(), hex_ascii.end());
+
+  while(num_hex_digits * 4 < num_bits) {
+    hex_ascii.insert(hex_ascii.begin(), 1, '0');
+    num_hex_digits++;
+  }
 
   if(hex_ascii.size() % 2 != 0) {
     hex_ascii.insert(hex_ascii.size()-1, 1, '0');
@@ -141,7 +148,7 @@ PSA_Checksum::update(const std::vector<Field> fields) {
   // If "4F" is directly passed to hash algorithm, it will process it as 0x34 0x46.
   // So, it is important to convert "4F" to char with value 0x4F in ASCII table,
   // which is 'O'. Then the hash algorithm will process it as 0x4F.
-  std::string hex = prepareDataForHash(input);
+  std::string hex = prepareDataForHash(input, current_bits_offset);
 
   internal = compute(hex.data(), hex.size());
 }
