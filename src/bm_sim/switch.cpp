@@ -252,8 +252,9 @@ SwitchWContexts::init_from_options_parser(
   if (parser.console_logging)
     Logger::set_logger_console();
 
-  if (parser.file_logger != "")
-    Logger::set_logger_file(parser.file_logger, parser.log_flush);
+  if (parser.file_logger != "") {
+    Logger::set_logger_file(parser.file_logger, parser.max_file_size, parser.max_files, parser.log_flush);
+  }
 
   Logger::set_log_level(parser.log_level);
 

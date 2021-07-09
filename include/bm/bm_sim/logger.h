@@ -91,6 +91,8 @@ class Logger {
   //! Log all messages to the given file. If \p force_flush is true, the logger
   //! will flush to disk after every log message.
   static void set_logger_file(const std::string &filename,
+                              size_t max_file_size, 
+                              size_t max_files,
                               bool force_flush = false);
 
   //! Log all messages to the given output stream. Mostly used for testing.
