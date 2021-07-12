@@ -1,0 +1,7 @@
+usr/bin/bm_CLI
+usr/bin/bm_nanomsg_events
+usr/bin/bm_p4dbg
+usr/bin/psa_switch
+usr/bin/psa_switch_CLI
+usr/bin/simple_switch
+usr/bin/simple_switch_CLI

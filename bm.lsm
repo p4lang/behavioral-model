@@ -1,0 +1,13 @@
+Begin4
+Title:          bm
+Version:        1.14.0+g202103241137~14040a
+Entered-date:   2021-03-24
+Description:    This is the second version of the P4 software switch
+                (also known as behavioral model), nicknamed bmv2.
+Keywords:       Software Switch, P4
+Author:         Antonin Bas <antonin@barefootnetworks.com>
+Primary-site:   https://github.com/p4lang/behavioral-model/tags
+Original-site:  https://github.com/p4lang/behavioral-model/tags
+Platforms:      Linux
+Copying-policy: Apache
+End
