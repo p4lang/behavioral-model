@@ -34,16 +34,13 @@ convert_hex_str_to_u8(std::string hex) {
 
 std::string
 restore_packet_value_from_input_fields(const std::vector<bm::Field> &fields) {
-  std::string hex_ascii;
-  std::string hex_hex;
+  std::string pkt_val;
   const uint8_t base = 16;
   uint8_t num_hex_digits = 0;
-  bm::Data input;
-  input.set(0);
+  bm::Data input(0);
   uint16_t current_bits_offset = 0;
 
-  // Vector fields has separate field values as its elements.
-  // They need to be concatenated to one single data which represents value from packet.
+  // Concatenate fields in one single data
   for(int i = fields.size() - 1 ; i >= 0 ; i--) {
     bm::Data shift_value;
     shift_value.shift_left(bm::Data(fields.at(i).get<uint64_t>()), current_bits_offset);
@@ -51,35 +48,42 @@ restore_packet_value_from_input_fields(const std::vector<bm::Field> &fields) {
     current_bits_offset += fields.at(i).get_nbits();
   }
 
-  // Data input is in decimal format and it needs to be converted to hexadecimal,
-  // because value in packet is in hexadecimal.
+  // Convert input from decimal to hexadecimal format,
+  // in order to restore original hexadecimal value from packet
   while (input != 0) {
-    hex_ascii += hex_digits[input % base];
+    pkt_val += hex_digits[input % base];
     num_hex_digits++;
     input.divide(input, base);
   }
-  std::reverse(hex_ascii.begin(), hex_ascii.end());
+  std::reverse(pkt_val.begin(), pkt_val.end());
 
   while(num_hex_digits * 4 < current_bits_offset) {
-    hex_ascii.insert(hex_ascii.begin(), 1, '0');
+    pkt_val.insert(pkt_val.begin(), 1, '0');
     num_hex_digits++;
   }
+
+  return pkt_val;
+}
+
+std::string
+prepare_data_for_hash(std::string val_hex) {
+  std::string data;
 
   // Hash algorithms process the data in chunks of bytes (chars).
   // If the hex value from input is "4F", it semantically means 0x4F.
   // If "4F" is directly passed to hash algorithm, it will process it as 0x34 0x46.
   // So, it is important to convert "4F" to char with value 0x4F in ASCII table,
   // which is 'O'. Then the hash algorithm will process it as 0x4F.
-  for (size_t i = 0; i < hex_ascii.size(); i += 2) {
+  for (size_t i = 0; i < val_hex.size(); i += 2) {
     std::string hex_byte;
-    hex_byte += hex_ascii[i];
-    if(i != hex_ascii.size() - 1)
-      hex_byte += hex_ascii[i + 1];
+    hex_byte += val_hex[i];
+    if(i != val_hex.size() - 1)
+      hex_byte += val_hex[i + 1];
     uint8_t num = convert_hex_str_to_u8(hex_byte);
-    hex_hex += num;
+    data += num;
   }
 
-  return hex_hex;
+  return data;
 }
 
 struct psa_crc16 {
@@ -146,8 +150,9 @@ PSA_Checksum::clear() {
 
 void
 PSA_Checksum::update(const std::vector<Field> fields) {
-  std::string hex = restore_packet_value_from_input_fields(fields);
-  internal = compute(hex.data(), hex.size());
+  std::string val = restore_packet_value_from_input_fields(fields);
+  std::string buf = prepare_data_for_hash(val);
+  internal = compute(buf.data(), buf.size());
 }
 
 uint64_t
