@@ -38,26 +38,26 @@ restore_packet_value_from_input_fields(const std::vector<bm::Field> &fields) {
   const uint8_t base = 16;
   uint8_t num_hex_digits = 0;
   bm::Data input(0);
-  uint16_t current_bits_offset = 0;
+  uint16_t n_bits = 0;
+  bm::Data field_shl;
 
   // Concatenate fields in one single data
   for(int i = fields.size() - 1 ; i >= 0 ; i--) {
-    bm::Data shift_value;
-    shift_value.shift_left(bm::Data(fields.at(i).get<uint64_t>()), current_bits_offset);
-    input.add(input, shift_value);
-    current_bits_offset += fields.at(i).get_nbits();
+    field_shl.shift_left(fields.at(i), n_bits);
+    input.add(input, field_shl);
+    n_bits += fields.at(i).get_nbits();
   }
 
   // Convert input from decimal to hexadecimal format,
   // in order to restore original hexadecimal value from packet
-  while (input != 0) {
+  while (input.get<uint64_t>() != 0) {
     pkt_val += hex_digits[input % base];
     num_hex_digits++;
     input.divide(input, base);
   }
   std::reverse(pkt_val.begin(), pkt_val.end());
 
-  while(num_hex_digits * 4 < current_bits_offset) {
+  while(num_hex_digits * 4 < n_bits) {
     pkt_val.insert(pkt_val.begin(), 1, '0');
     num_hex_digits++;
   }
