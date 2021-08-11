@@ -36,10 +36,11 @@ namespace bm {
 ActionEngineState::ActionEngineState(Packet *pkt,
                             const ActionData &action_data,
                             const std::vector<Data> &const_values,
-                            const std::vector<ActionParam> &parameters_vector)
+                            const std::vector<ActionParam> &parameters_vector,
+                            const std::vector<ActionParam> &field_list)
     : pkt(*pkt), phv(*pkt->get_phv()),
       action_data(action_data), const_values(const_values),
-      parameters_vector(parameters_vector) { }
+      parameters_vector(parameters_vector), field_list(field_list) { }
 
 // the first tmp data register is reserved for internal engine use (register
 // index evaluation)
@@ -283,6 +284,25 @@ ActionFn::parameter_end_vector() {
 }
 
 void
+ActionFn::parameter_start_field_list() {
+  ActionParam param;
+  param.tag = ActionParam::FIELD_LIST;
+  auto start = static_cast<unsigned int>(sub_params.size());
+  param.field_list = {start, start /* end */};
+  params.push_back(param);
+  params.swap(sub_params);
+}
+
+void
+ActionFn::parameter_end_field_list() {
+  params.swap(sub_params);
+  assert(params.back().tag == ActionParam::FIELD_LIST &&
+         "no field list was started");
+  auto end = static_cast<unsigned int>(sub_params.size());
+  params.back().field_list.end = end;
+}
+
+void
 ActionFn::push_back_primitive(ActionPrimitive_ *primitive,
                               std::unique_ptr<SourceInfo> source_info) {
   size_t param_offset = 0;
@@ -375,7 +395,7 @@ ActionFnEntry::push_back_action_data(const char *bytes, int nbytes) {
 void
 ActionFnEntry::execute(Packet *pkt) const {
   ActionEngineState state(pkt, action_data, action_fn->const_values,
-                          action_fn->sub_params);
+                          action_fn->sub_params, action_fn->sub_params);
 
   auto &primitives = action_fn->primitives;
   size_t param_offset = 0;
