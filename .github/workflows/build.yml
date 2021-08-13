@@ -23,8 +23,10 @@ jobs:
         elif [[ "$GITHUB_REF" =~ "stable" ]]; then
             TAG="stable"
         else
+            echo "Invalid Github ref $GITHUB_REF"
             exit 1
         fi
+        echo "Tag is $TAG"
         echo "::set-output name=tag::$TAG"
     - name: Build and push Docker image to registry
       env:
@@ -32,5 +34,5 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        docker build -t p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }}
+        docker build -t p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }} .
         docker push p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }}
