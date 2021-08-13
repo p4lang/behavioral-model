@@ -25,7 +25,7 @@ jobs:
         else
             exit 1
         fi
-        echo '::set-output name=tag::$TAG'
+        echo "::set-output name=tag::$TAG"
     - name: Build and push Docker image to registry
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
