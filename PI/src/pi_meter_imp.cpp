@@ -83,10 +83,12 @@ pi_status_t _pi_meter_set(pi_session_handle_t session_handle,
   std::string m_name(pi_p4info_meter_name_from_id(p4info, meter_id));
 
   auto rates = pibmv2::convert_from_meter_spec(meter_spec);
-  // We could check if this is a (P4Runtime) "reset" operation (rates are set to
-  // max<uint64_t> and burst sizes are set to max<uint32_t>) and call
-  // reset_rates instead. However, the behavior is pretty much the same.
-  auto error_code = pibmv2::switch_->meter_set_rates(0, m_name, index, rates);
+  bm::Meter::MeterErrorCode error_code;
+  if (rates.empty()) {  // is this a P4Runtime "reset" operation?
+    error_code = pibmv2::switch_->meter_reset_rates(0, m_name, index);
+  } else {
+    error_code = pibmv2::switch_->meter_set_rates(0, m_name, index, rates);
+  }
   if (error_code != bm::Meter::MeterErrorCode::SUCCESS)
     return convert_error_code(error_code);
   return PI_STATUS_SUCCESS;
@@ -136,8 +138,13 @@ pi_status_t _pi_meter_set_direct(pi_session_handle_t session_handle,
   std::string t_name = get_direct_t_name(p4info, meter_id);
 
   auto rates = pibmv2::convert_from_meter_spec(meter_spec);
-  auto error_code = pibmv2::switch_->mt_set_meter_rates(
+  bm::MatchErrorCode error_code;
+  if (rates.empty()) {  // is this a P4Runtime "reset" operation?
+    error_code = pibmv2::switch_->mt_reset_meter_rates(0, t_name, entry_handle);
+  } else {
+    error_code = pibmv2::switch_->mt_set_meter_rates(
       0, t_name, entry_handle, rates);
+  }
   if (error_code != bm::MatchErrorCode::SUCCESS)
     return pibmv2::convert_error_code(error_code);
   return PI_STATUS_SUCCESS;

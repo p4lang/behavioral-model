@@ -696,8 +696,13 @@ void set_direct_resources(const pi_p4info_t *p4info, pi_dev_id_t dev_id,
         {
           auto rates = pibmv2::convert_from_meter_spec(
               reinterpret_cast<pi_meter_spec_t *>(config->config));
-          error_code = pibmv2::switch_->mt_set_meter_rates(
-              0, t_name, entry_handle, rates);
+          if (rates.empty()) {  // is this a P4Runtime "reset" operation?
+            error_code = pibmv2::switch_->mt_reset_meter_rates(
+                0, t_name, entry_handle);
+          } else {
+            error_code = pibmv2::switch_->mt_set_meter_rates(
+                0, t_name, entry_handle, rates);
+          }
         }
         break;
       default:  // TODO(antonin): what to do?

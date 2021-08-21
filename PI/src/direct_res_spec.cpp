@@ -49,6 +49,16 @@ void convert_to_counter_data(pi_counter_data_t *to,
 std::vector<bm::Meter::rate_config_t> convert_from_meter_spec(
     const pi_meter_spec_t *meter_spec) {
   std::vector<bm::Meter::rate_config_t> rates;
+
+  // default meter config
+  // it may make more sense to change PI to pass a NULL pointer in this case...
+  if (meter_spec->cir == static_cast<uint64_t>(-1) &&
+      meter_spec->cburst == static_cast<uint32_t>(-1) &&
+      meter_spec->pir == static_cast<uint64_t>(-1) &&
+      meter_spec->pburst == static_cast<uint32_t>(-1)) {
+    return rates;  // empty vector
+  }
+
   auto conv_packets = [](uint64_t r, uint32_t b) {
     bm::Meter::rate_config_t new_rate;
     new_rate.info_rate = static_cast<double>(r) / 1000000.;
