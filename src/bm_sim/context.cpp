@@ -413,6 +413,15 @@ Context::mt_get_meter_rates(const std::string &table_name,
   return abstract_table->get_meter_rates(handle, configs);
 }
 
+MatchErrorCode
+Context::mt_reset_meter_rates(const std::string &table_name,
+                              entry_handle_t handle) {
+  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
+  if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
+  return abstract_table->reset_meter_rates(handle);
+}
+
 MatchTableType
 Context::mt_get_type(const std::string &table_name) const {
   boost::shared_lock<boost::shared_mutex> lock(request_mutex);
@@ -579,6 +588,15 @@ Context::meter_get_rates(
   if (idx >= meter_array->size()) return Meter::INVALID_INDEX;
   *configs = meter_array->get_meter(idx).get_rates();
   return Meter::SUCCESS;
+}
+
+Context::MeterErrorCode
+Context::meter_reset_rates(const std::string &meter_name, size_t idx) {
+  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  MeterArray *meter_array = p4objects_rt->get_meter_array_rt(meter_name);
+  if (!meter_array) return Meter::INVALID_METER_NAME;
+  if (idx >= meter_array->size()) return Meter::INVALID_INDEX;
+  return meter_array->get_meter(idx).reset_rates();
 }
 
 Context::RegisterErrorCode
