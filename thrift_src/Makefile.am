@@ -94,6 +94,7 @@ thrift_files.ts: $(srcdir)/standard.thrift $(srcdir)/simple_pre.thrift $(srcdir)
 	$(THRIFT) -o $(builddir) --gen py -r $(srcdir)/simple_pre.thrift
 	$(THRIFT) -out $(builddir)/gen-cpp/bm --gen cpp -r $(srcdir)/simple_pre_lag.thrift
 	$(THRIFT) -o $(builddir) --gen py -r $(srcdir)/simple_pre_lag.thrift
+	touch $(thrift_cxx_files)
 	if mkdir $(top_srcdir)/tools/bm_runtime.test 2>/dev/null; then \
 	  rm -rf $(top_srcdir)/tools/bm_runtime/; \
 	  cp -r $(builddir)/gen-py/bm_runtime/ $(top_srcdir)/tools/; \

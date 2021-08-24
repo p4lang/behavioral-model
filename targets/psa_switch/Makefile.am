@@ -100,6 +100,7 @@ thrift_files.ts: $(THRIFT_IDL)
 	@mkdir -p $(builddir)/gen-cpp/bm
 	$(THRIFT) -out $(builddir)/gen-cpp/bm --gen cpp -r $(THRIFT_IDL)
 	$(THRIFT) -o $(builddir) --gen py -r $(THRIFT_IDL)
+	touch $(psa_switch_thrift_files)
 	if mkdir $(srcdir)/pswitch_runtime.test 2>/dev/null; then \
 	  rm -rf $(srcdir)/pswitch_runtime/; \
 	  cp -r $(builddir)/gen-py/pswitch_runtime/ $(srcdir)/; \
