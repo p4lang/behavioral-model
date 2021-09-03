@@ -14,7 +14,8 @@ primitives.cpp \
 externs/psa_counter.h externs/psa_counter.cpp \
 externs/psa_meter.h externs/psa_meter.cpp \
 externs/psa_random.h externs/psa_random.cpp \
-externs/psa_internet_checksum.h externs/psa_internet_checksum.cpp
+externs/psa_internet_checksum.h externs/psa_internet_checksum.cpp \
+externs/psa_hash.h externs/psa_hash.cpp
 
 libpsaswitch_la_LIBADD = \
 $(top_builddir)/src/bm_sim/libbmsim.la \
