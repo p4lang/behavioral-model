@@ -58,7 +58,7 @@ prepare_data_for_algo(const std::vector<bm::Field> &fields) {
     }
 
     // Fill with zeros to the actual size
-    while(n_bytes * 8 < n_bits) {
+    while (n_bytes * 8 < n_bits) {
         buf.insert(buf.begin(), 1, 0);
         n_bytes++;
     }
