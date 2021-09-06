@@ -19,7 +19,6 @@
 
 
 #include "psa_hash.h"
-#include <bm/bm_sim/calculations.h>
 
 namespace {
 
@@ -66,43 +65,7 @@ prepare_data_for_algo(const std::vector<bm::Field> &fields) {
     return buf;
 }
 
-struct psa_crc16 {
-    uint16_t operator()(const char *buf, size_t s) const {
-        return bm::hash::CRC16(buf, s);
-    }
-};
-
-struct psa_crc32 {
-    uint32_t operator()(const char *buf, size_t s) const {
-        return bm::hash::CRC32(buf, s);
-    }
-};
-
-struct psa_crc16_custom {
-    uint16_t operator()(const char *buf, size_t s) const {
-        return bm::hash::CRC16_CUSTOM(buf, s);
-    }
-};
-
-struct psa_crc32_custom {
-    uint32_t operator()(const char *buf, size_t s) const {
-        return bm::hash::CRC32_CUSTOM(buf, s);
-    }
-};
-
-struct psa_identity {
-    uint64_t operator()(const char *buf, size_t s) const {
-        return bm::hash::IDENTITY(buf, s);
-    }
-};
-
 }  // namespace
-
-REGISTER_HASH(psa_crc16);
-REGISTER_HASH(psa_crc32);
-REGISTER_HASH(psa_crc16_custom);
-REGISTER_HASH(psa_crc32_custom);
-REGISTER_HASH(psa_identity);
 
 namespace bm {
 
@@ -110,6 +73,7 @@ namespace psa {
 
 void
 PSA_Hash::init() {
+    this->calc = bm::CalculationsMap::get_instance()->get_copy(algo);
 }
 
 void
@@ -138,23 +102,7 @@ PSA_Hash::get_hash_mod(Field &dst, const Data &base, const std::vector<Field> &f
 
 uint64_t
 PSA_Hash::compute(const char *buf, size_t s) {
-    if (algo == "CRC16") {
-        psa_crc16 calc;
-        return calc(buf, s);
-    } if (algo == "CRC16_CUSTOM") {
-        psa_crc16_custom calc;
-        return calc(buf, s);
-    } else if (algo == "CRC32") {
-        psa_crc32 calc;
-        return calc(buf, s);
-    } else if (algo == "CRC32_CUSTOM") {
-        psa_crc32_custom calc;
-        return calc(buf, s);
-    } else if (algo == "IDENTITY") {
-        psa_identity calc;
-        return calc(buf, s);
-    }
-    return 0;
+    return this->calc.get()->output(buf, s);
 }
 
 BM_REGISTER_EXTERN_W_NAME(Hash, PSA_Hash);

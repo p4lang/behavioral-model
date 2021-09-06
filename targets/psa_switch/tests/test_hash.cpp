@@ -124,7 +124,8 @@ class PSA_HashTest : public ::testing::Test {
         parser.parse(packet.get());
 
         instance.get()->_register_attributes();
-        instance->_set_attribute<std::string>("algo", "CRC16");
+        instance->_set_attribute<std::string>("algo", "crc16");
+        instance->init();
 
         import_hash();
     }

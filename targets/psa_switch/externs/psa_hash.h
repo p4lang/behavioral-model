@@ -22,6 +22,7 @@
 #define PSA_SWITCH_PSA_HASH_H_
 
 #include <bm/bm_sim/extern.h>
+#include <bm/bm_sim/calculations.h>
 
 namespace bm {
 
@@ -44,6 +45,7 @@ class PSA_Hash : public bm::ExternType {
 
  private:
   std::string algo;
+  std::unique_ptr<bm::CalculationsMap::MyC> calc;
 
 };
 
