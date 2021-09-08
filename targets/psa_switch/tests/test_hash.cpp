@@ -210,7 +210,7 @@ TEST_F(PSA_HashTest, PSA_HashMethods) {
     actionFn_gh2.parameter_end_field_list();
 
     phv->get_field("meta.input").set(0x456);
-    hash = 0x92b2;
+    hash = 0xfe82;
     actionFnEntry_gh2(packet.get());
     ASSERT_EQ(hash, phv->get_field("meta.dst").get<uint16_t>());
 }
