@@ -60,7 +60,6 @@ PSA_Hash::init() {
 
 void
 PSA_Hash::get_hash(Field &dst, const std::vector<Field> &fields) {
-  Data input(0);
   uint64_t hash;
 
   std::string buf = build_buffer(fields);
@@ -71,7 +70,6 @@ PSA_Hash::get_hash(Field &dst, const std::vector<Field> &fields) {
 
 void
 PSA_Hash::get_hash_mod(Field &dst, const Data &base, const std::vector<Field> &fields, const Data &max) {
-  Data input(0);
   uint64_t hash;
 
   std::string buf = build_buffer(fields);
