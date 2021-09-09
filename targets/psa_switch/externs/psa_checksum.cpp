@@ -22,29 +22,22 @@
 
 namespace {
 
-std::string
-build_buffer(const std::vector<bm::Field> &fields) {
-  bm::Data help;
-  bm::Data input;
-  static const bm::Data mask(0xFF);
-  std::string buf;
-  uint16_t n_bits = 0;
-
-  // Concatenate fields in one single data
-  for (int i = fields.size() - 1; i >= 0; i--) {
-    help.shift_left(fields.at(i), n_bits);
-    input.add(input, help);
-    n_bits += fields.at(i).get_nbits();
+void
+build_buffer(const std::vector<bm::Field> &fields, bm::ByteContainer &buf) {
+  int nbits = 0;
+  int nbytes;
+  for (const auto &field : fields) {
+    nbits += field.get_nbits();
   }
-
-  // Extract byte chunks
-  while (!input.test_eq(0)) {
-    help.bit_and(input, mask);
-    buf.insert(buf.begin(), 1, help.get<uint8_t>());
-    input.shift_right(input, 8);
+  nbytes = (nbits + 7) / 8;
+  nbits = (nbytes * 8 - nbits);  // pad to the left with 0s
+  for (const auto &field : fields) {
+    int nbits_ = nbits + field.get_nbits();
+    buf.resize((nbits_ + 7) / 8, '\x00');
+    char *ptr = buf.data() + (nbits / 8);
+    field.deparse(ptr, nbits % 8);
+    nbits = nbits_;
   }
-
-  return buf;
 }
 
 }  // namespace
@@ -55,7 +48,7 @@ namespace psa {
 
 void
 PSA_Checksum::init() {
-  this->calc = bm::CalculationsMap::get_instance()->get_copy(hash);
+  this->calc = CalculationsMap::get_instance()->get_copy(hash);
   clear();
 }
 
@@ -76,9 +69,8 @@ PSA_Checksum::clear() {
 
 void
 PSA_Checksum::update(const std::vector<Field> fields) {
-  Data input(0);
-
-  std::string buf = build_buffer(fields);
+  ByteContainer buf;
+  build_buffer(fields, buf);
   internal = compute(buf.data(), buf.size());
 }
 
