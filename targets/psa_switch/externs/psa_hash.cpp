@@ -22,10 +22,11 @@
 
 namespace {
 
-void
-build_buffer(const std::vector<bm::Field> &fields, bm::ByteContainer &buf) {
+bm::ByteContainer
+build_buffer(const std::vector<bm::Field> &fields) {
   int nbits = 0;
   int nbytes;
+  bm::ByteContainer buf;
   for (const auto &field : fields) {
     nbits += field.get_nbits();
   }
@@ -38,6 +39,7 @@ build_buffer(const std::vector<bm::Field> &fields, bm::ByteContainer &buf) {
     field.deparse(ptr, nbits % 8);
     nbits = nbits_;
   }
+  return buf;
 }
 
 }  // namespace
@@ -54,8 +56,7 @@ PSA_Hash::init() {
 void
 PSA_Hash::get_hash(Field &dst, const std::vector<Field> &fields) {
   uint64_t hash;
-  ByteContainer buf;
-  build_buffer(fields, buf);
+  ByteContainer buf = build_buffer(fields);
   hash = compute(buf.data(), buf.size());
   dst.set(hash);
 }
@@ -63,8 +64,7 @@ PSA_Hash::get_hash(Field &dst, const std::vector<Field> &fields) {
 void
 PSA_Hash::get_hash_mod(Field &dst, const Data &base, const std::vector<Field> &fields, const Data &max) {
   uint64_t hash;
-  ByteContainer buf;
-  build_buffer(fields, buf);
+  ByteContainer buf = build_buffer(fields);
   hash = compute(buf.data(), buf.size());
   uint64_t result = base.get<uint64_t>() + (hash % max.get<uint64_t>());
   dst.set(result);
