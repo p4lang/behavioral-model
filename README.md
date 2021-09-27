@@ -23,26 +23,16 @@ performance of bmv2, refer to this [document](docs/performance.md).
 
 ## Dependencies
 
-On Ubuntu 16.04, the following packages are required:
+The following packages are required:
 
-- automake
-- cmake
-- libjudy-dev
-- libgmp-dev
-- libpcap-dev
-- libboost-dev
-- libboost-test-dev
-- libboost-program-options-dev
-- libboost-system-dev
-- libboost-filesystem-dev
-- libboost-thread-dev
-- libevent-dev
-- libtool
-- flex
-- bison
-- pkg-config
-- g++
-- libssl-dev
+### Ubuntu 16.04
+
+```console
+sudo apt-get install -y automake cmake libjudy-dev libgmp-dev \
+    libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
+    libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
+    libevent-dev libtool flex bison pkg-config g++ libssl-dev
+```
 
 You also need to install the following from source. Feel free to use the
 install scripts under travis/.
@@ -51,6 +41,15 @@ install scripts under travis/.
   (tested up to 0.12.1)
 - [nanomsg 1.0.0](https://github.com/nanomsg/nanomsg/releases/tag/1.0.0) or
   later
+
+### Fedora
+
+```console
+sudo dnf install -y automake cmake Judy-devel gmp-devel libpcap-devel \
+    boost-devel boost-system boost-thread boost-filesystem boost-test \
+    libevent-devel libtool flex bison pkg-config g++ openssl-devel \
+    thrift-devel nanomsg-devel
+```
 
 To use the CLI, you will need to install the
 [nnpy](https://github.com/nanomsg/nnpy) Python package. Feel free to use
