@@ -1,4 +1,5 @@
 /* Copyright 2013-present Barefoot Networks, Inc.
+ * Copyright 2021 VMware, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
  */
 
 /*
- * Antonin Bas (antonin@barefootnetworks.com)
+ * Antonin Bas
  *
  */
 
@@ -30,7 +31,6 @@
 #include "BMI/bmi_port.h"
 
 #include <fcntl.h>
-#include <Judy.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -45,8 +45,7 @@ typedef struct bmi_port_s {
 } bmi_port_t;
 
 typedef struct bmi_port_mgr_s {
-  bmi_port_t *ports_info;
-  Pvoid_t ports_map;
+  bmi_port_t *ports; // sorted by port number
   int port_count;
   int max_port_count;
   int socketpairfd[2];
@@ -68,21 +67,56 @@ static inline int port_in_use(bmi_port_t *port) {
 }
 
 static inline bmi_port_t *get_port(bmi_port_mgr_t *port_mgr, int port_num) {
-  Word_t *pinfo;
-  JLG(pinfo, port_mgr->ports_map, (Word_t) port_num);
-  return (pinfo == NULL) ? NULL : (bmi_port_t *) *pinfo;
+  int a = 0;
+  int b = port_mgr->port_count;
+  while (a < b) {
+    int idx = a + (b - a) / 2;
+    int num = port_mgr->ports[idx].port_num;
+    if (port_num < num) {
+      b = idx;
+    } else if (port_num > num) {
+      a = idx + 1;
+    } else {
+      return &port_mgr->ports[idx];
+    }
+  }
+  return NULL;
+}
+
+static inline bmi_port_t *insert_port(bmi_port_mgr_t *port_mgr, int port_num) {
+  int a = 0;
+  int b = port_mgr->port_count;
+  while (a < b) {
+    int idx = a + (b - a) / 2;
+    int num = port_mgr->ports[idx].port_num;
+    if (port_num < num) {
+      b = idx;
+    } else if (port_num > num) {
+      a = idx + 1;
+    } else {
+      return NULL; // port already exists, return NULL
+    }
+  }
+  // insert the new element at position "a"
+  size_t size = (port_mgr->port_count - a) * sizeof(*port_mgr->ports);
+  memmove(&port_mgr->ports[a + 1], &port_mgr->ports[a], size);
+  return &port_mgr->ports[a];
+}
+
+static inline void *delete_port(bmi_port_mgr_t *port_mgr, bmi_port_t *port) {
+  size_t size =
+      (port_mgr->port_count - port->port_num - 1) * sizeof(*port_mgr->ports);
+  memmove(port, port + 1, size);
 }
 
 static void *run_select(void *data) {
   bmi_port_mgr_t *port_mgr = (bmi_port_mgr_t *) data;
   int n;
-  Word_t port_num;
-  bmi_port_t *port_info;
+  bmi_port_t *port;
   const char *pkt_data;
   int pkt_len;
   fd_set fds;
   int max_fd;
-  Word_t *pinfo;
 
   struct timeval timeout;
   while(1) {
@@ -123,27 +157,26 @@ static void *run_select(void *data) {
     /* if we had a mutex for each port, there would potentially be a lot of
     overhead to acquire / release the lock at each iteration - we would need to
     hold the lock to call FD_ISSET... */
-    port_num = 0;
-    JLF(pinfo, port_mgr->ports_map, port_num);
-    while (n && pinfo != NULL) {
-      port_info = (bmi_port_t *) *pinfo;
-      assert(port_info->bmi);
+    int idx = 0;
+    while (n && idx < port_mgr->port_count) {
+      port = &port_mgr->ports[idx];
+      assert(port->bmi);
 
-      if (FD_ISSET(port_info->fd, &fds)) {
+      if (FD_ISSET(port->fd, &fds)) {
         --n;
-        pkt_len = bmi_interface_recv(port_info->bmi, &pkt_data);
+        pkt_len = bmi_interface_recv(port->bmi, &pkt_data);
         if (pkt_len >= 0) {
           assert(port_mgr->packet_handler);
           port_mgr->packet_handler(
-              (int) port_num, pkt_data, pkt_len, port_mgr->cookie);
-          pthread_mutex_lock(&port_info->stats_lock);
-          port_info->stats.in_packets += 1;
-          port_info->stats.in_octets += pkt_len;
-          pthread_mutex_unlock(&port_info->stats_lock);
+              port->port_num, pkt_data, pkt_len, port_mgr->cookie);
+          pthread_mutex_lock(&port->stats_lock);
+          port->stats.in_packets += 1;
+          port->stats.in_octets += pkt_len;
+          pthread_mutex_unlock(&port->stats_lock);
         }
       }
 
-      JLN(pinfo, port_mgr->ports_map, port_num);
+      ++idx;
     }
 
     pthread_rwlock_unlock(&port_mgr->lock);
@@ -164,8 +197,7 @@ int bmi_port_create_mgr(bmi_port_mgr_t **port_mgr, int max_port_count) {
   memset(port_mgr_, 0, sizeof(bmi_port_mgr_t));
 
   port_mgr_->max_port_count = max_port_count;
-  port_mgr_->ports_info = calloc(
-      max_port_count, sizeof(*port_mgr_->ports_info));
+  port_mgr_->ports = calloc(max_port_count, sizeof(*port_mgr_->ports));
 
   if (socketpair(PF_LOCAL, SOCK_STREAM, 0, port_mgr_->socketpairfd)) {
     perror("socketpair");
@@ -180,9 +212,10 @@ int bmi_port_create_mgr(bmi_port_mgr_t **port_mgr, int max_port_count) {
     return exitCode;
 
   int i;
+  bmi_port_t *port;
   for(i = 0; i < max_port_count; i++) {
-    bmi_port_t *port_info = &port_mgr_->ports_info[i];
-    exitCode = pthread_mutex_init(&port_info->stats_lock, NULL);
+    port = &port_mgr_->ports[i];
+    exitCode = pthread_mutex_init(&port->stats_lock, NULL);
     if (exitCode != 0)
       return exitCode;
   }
@@ -223,15 +256,6 @@ int bmi_port_send(bmi_port_mgr_t *port_mgr,
   return exitCode;
 }
 
-static bmi_port_t *scan_for_free_port(bmi_port_mgr_t *port_mgr) {
-  int i;
-  for (i = 0; i < port_mgr->max_port_count; i++) {
-    bmi_port_t *port_info = &port_mgr->ports_info[i];
-    if (!port_in_use(port_info)) return port_info;
-  }
-  return NULL;
-}
-
 /* internal version of bmi_port_interface_add which doesn't acquire a lock */
 static int _bmi_port_interface_add(bmi_port_mgr_t *port_mgr,
                                    const char *ifname, int port_num,
@@ -245,13 +269,10 @@ static int _bmi_port_interface_add(bmi_port_mgr_t *port_mgr,
   bmi_interface_t *bmi;
   if (bmi_interface_create(&bmi, ifname) != 0) return -1;
 
-  port = scan_for_free_port(port_mgr);
+  port = insert_port(port_mgr, port_num);
   assert(port != NULL);
 
-  Word_t *pinfo;
-  JLI(pinfo, port_mgr->ports_map, (Word_t) port_num);
-  *pinfo = (Word_t) port;
-
+  port->port_num = port_num;
   port->ifname = strdup(ifname);
 
   if (pcap_input_dump)
@@ -303,11 +324,10 @@ static int _bmi_port_interface_remove(bmi_port_mgr_t *port_mgr, int port_num) {
 
   if (bmi_interface_destroy(port->bmi) != 0) return -1;
 
-  memset(port, 0, sizeof(bmi_port_t));
+  // call to delete_port must be before port_count decrement
+  delete_port(port_mgr, port);
 
-  int rc;
-  JLD(rc, port_mgr->ports_map, (Word_t) port_num);
-  assert(rc == 1);
+  port->bmi = NULL;
 
   port_mgr->port_count--;
 
@@ -324,21 +344,19 @@ int bmi_port_interface_remove(bmi_port_mgr_t *port_mgr, int port_num) {
 
 int bmi_port_destroy_mgr(bmi_port_mgr_t *port_mgr) {
   pthread_rwlock_wrlock(&port_mgr->lock);
-  Word_t port_num = 0;
-  Word_t *pinfo;
-  JLF(pinfo, port_mgr->ports_map, port_num);
-  while (pinfo != NULL) {
-    _bmi_port_interface_remove(port_mgr, (int) port_num);
-    JLN(pinfo, port_mgr->ports_map, port_num);
+  bmi_port_t *port;
+  int i;
+  for (i = 0; i < port_mgr->port_count; i++) {
+    port = &port_mgr->ports[i];
+    _bmi_port_interface_remove(port_mgr, port->port_num);
   }
 
   port_mgr->max_fd = -1;  // used to signal the thread it needs to terminate
   pthread_rwlock_unlock(&port_mgr->lock);
   pthread_join(port_mgr->select_thread, NULL);
 
-  int i;
   for(i = 0; i < port_mgr->max_port_count; i++) {
-    bmi_port_t *port = &port_mgr->ports_info[i];
+    port = &port_mgr->ports[i];
     pthread_mutex_destroy(&port->stats_lock);
   }
 
@@ -346,9 +364,7 @@ int bmi_port_destroy_mgr(bmi_port_mgr_t *port_mgr) {
   close(port_mgr->socketpairfd[1]);
 
   pthread_rwlock_destroy(&port_mgr->lock);
-  free(port_mgr->ports_info);
-  int rc;
-  JLFA(rc, port_mgr->ports_map);
+  free(port_mgr->ports);
   free(port_mgr);
 
   return 0;
