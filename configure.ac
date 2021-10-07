@@ -184,9 +184,8 @@ AS_IF([test "$want_nanomsg" = yes], [
     AC_DEFINE([NANOMSG_ON], [], [Enable Nanomsg support])
 ])
 
-# Check for pthread, libjudy, libgmp, libpcap
+# Check for pthread, libgmp, libpcap
 AX_PTHREAD([], [AC_MSG_ERROR([Missing pthread library])])
-AC_CHECK_LIB([Judy], [Judy1Next], [], [AC_MSG_ERROR([Missing libJudy])])
 AC_CHECK_LIB([gmp], [__gmpz_init], [], [AC_MSG_ERROR([Missing libgmp])])
 AC_CHECK_LIB([pcap], [pcap_create], [], [AC_MSG_ERROR([Missing libpcap])])
 AC_CHECK_LIB([pcap], [pcap_set_immediate_mode], [pcap_fix=yes], [pcap_fix=no])
