@@ -62,10 +62,6 @@ typedef struct bmi_port_mgr_s {
   pthread_rwlock_t lock;
 } bmi_port_mgr_t;
 
-static inline int port_in_use(bmi_port_t *port) {
-  return (port->bmi != NULL);
-}
-
 static inline bmi_port_t *get_port(bmi_port_mgr_t *port_mgr, int port_num) {
   int a = 0;
   int b = port_mgr->port_count;
@@ -104,8 +100,8 @@ static inline bmi_port_t *insert_port(bmi_port_mgr_t *port_mgr, int port_num) {
 }
 
 static inline void *delete_port(bmi_port_mgr_t *port_mgr, bmi_port_t *port) {
-  size_t size =
-      (port_mgr->port_count - port->port_num - 1) * sizeof(*port_mgr->ports);
+  int idx = port - port_mgr->ports;
+  size_t size = (port_mgr->port_count - idx - 1) * sizeof(*port_mgr->ports);
   memmove(port, port + 1, size);
 }
 
@@ -312,7 +308,6 @@ int bmi_port_interface_add(bmi_port_mgr_t *port_mgr,
 static int _bmi_port_interface_remove(bmi_port_mgr_t *port_mgr, int port_num) {
   bmi_port_t *port = get_port(port_mgr, port_num);
   if (!port) return -1;
-  assert(port_in_use(port));
 
   free(port->ifname);
 
@@ -326,8 +321,6 @@ static int _bmi_port_interface_remove(bmi_port_mgr_t *port_mgr, int port_num) {
 
   // call to delete_port must be before port_count decrement
   delete_port(port_mgr, port);
-
-  port->bmi = NULL;
 
   port_mgr->port_count--;
 
@@ -381,8 +374,6 @@ int bmi_port_interface_is_up(bmi_port_mgr_t *port_mgr,
     return -1;
   }
 
-  assert(port_in_use(port));
-
   char c = 0;
   char path[1024];
   snprintf(path, sizeof(path), "/sys/class/net/%s/operstate", port->ifname);
@@ -416,8 +407,6 @@ int bmi_port_get_stats(bmi_port_mgr_t *port_mgr,
     return -1;
   }
 
-  assert(port_in_use(port));
-
   pthread_mutex_lock(&port->stats_lock);
   *port_stats = port->stats;
   pthread_mutex_unlock(&port->stats_lock);
@@ -437,8 +426,6 @@ int bmi_port_clear_stats(bmi_port_mgr_t *port_mgr,
     pthread_rwlock_unlock(&port_mgr->lock);
     return -1;
   }
-
-  assert(port_in_use(port));
 
   pthread_mutex_lock(&port->stats_lock);
   if (port_stats != NULL)
