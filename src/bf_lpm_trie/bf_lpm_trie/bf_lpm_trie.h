@@ -1,4 +1,5 @@
 /* Copyright 2013-present Barefoot Networks, Inc.
+ * Copyright 2021 VMware, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
  */
 
 /*
- * Antonin Bas (antonin@barefootnetworks.com)
+ * Antonin Bas
  *
  */
 
@@ -30,7 +31,7 @@ extern "C"{
   
 typedef struct bf_lpm_trie_s bf_lpm_trie_t;
 
-typedef unsigned long value_t;
+typedef uintptr_t value_t;
 
 bf_lpm_trie_t *bf_lpm_trie_create(size_t key_width_bytes, bool auto_shrink);
 
