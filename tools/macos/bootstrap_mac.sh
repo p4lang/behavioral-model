@@ -59,7 +59,4 @@ pip install scapy
 /usr/local/bin/pip install pycparser
 brew install ${brews_dir}/nnpy.rb
 
-# libjudy
-brew install ${brews_dir}/libjudy.rb
-
 /usr/local/bin/pip install PyYAML

@@ -15,7 +15,6 @@ fi
 sudo apt-get install -y \
     automake \
     cmake \
-    libjudy-dev \
     libgmp-dev \
     libpcap-dev \
     libboost-dev \

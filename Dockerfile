@@ -1,6 +1,6 @@
 ARG PARENT_VERSION=latest
 FROM p4lang/pi:${PARENT_VERSION}
-LABEL maintainer="Antonin Bas <antonin@barefootnetworks.com>"
+LABEL maintainer="Antonin Bas <antonin.bas@gmail.com>"
 
 # Select the type of image we're building. Use `build` for a normal build, which
 # is optimized for image size. Use `test` if this image will be used for
@@ -20,7 +20,6 @@ ENV BM_DEPS automake \
             curl \
             git \
             lcov \
-            libjudy-dev \
             libgmp-dev \
             libpcap-dev \
             libboost-dev \
@@ -34,7 +33,7 @@ ENV BM_RUNTIME_DEPS libboost-program-options1.58.0 \
                     libboost-system1.58.0 \
                     libboost-filesystem1.58.0 \
                     libboost-thread1.58.0 \
-                    libgmp10 libjudydebian1 \
+                    libgmp10 \
                     libpcap0.8 \
                     python
 COPY . /behavioral-model/

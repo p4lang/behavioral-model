@@ -28,7 +28,7 @@ The following packages are required:
 ### Ubuntu 16.04
 
 ```console
-sudo apt-get install -y automake cmake libjudy-dev libgmp-dev \
+sudo apt-get install -y automake cmake libgmp-dev \
     libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
     libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
     libevent-dev libtool flex bison pkg-config g++ libssl-dev
@@ -45,7 +45,7 @@ install scripts under travis/.
 ### Fedora
 
 ```console
-sudo dnf install -y automake cmake Judy-devel gmp-devel libpcap-devel \
+sudo dnf install -y automake cmake gmp-devel libpcap-devel \
     boost-devel boost-system boost-thread boost-filesystem boost-test \
     libevent-devel libtool flex bison pkg-config g++ openssl-devel \
     thrift-devel nanomsg-devel
