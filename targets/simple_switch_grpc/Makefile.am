@@ -72,7 +72,7 @@ proto_grpc_files = \
 ../../services/grpc_out/p4/bm/dataplane_interface.grpc.pb.cc \
 ../../services/grpc_out/p4/bm/dataplane_interface.grpc.pb.h
 
-includep4bmdir = $(includedir)/../../services/p4/bm/
+includep4bmdir = $(includedir)/p4/bm/
 nodist_includep4bm_HEADERS = \
 ../../services/cpp_out/p4/bm/dataplane_interface.pb.h \
 ../../services/grpc_out/p4/bm/dataplane_interface.grpc.pb.h
@@ -80,7 +80,7 @@ nodist_includep4bm_HEADERS = \
 BUILT_SOURCES = $(proto_cpp_files) $(proto_grpc_files)
 
 if HAVE_GRPC_PY_PLUGIN
-p4bmpydir = $(pythondir)/../../services/p4/bm
+p4bmpydir = $(pythondir)/p4/bm
 nodist_p4bmpy_PYTHON = \
 ../../services/py_out/p4/bm/dataplane_interface_pb2.py \
 ../../services/py_out/p4/bm/__init__.py
