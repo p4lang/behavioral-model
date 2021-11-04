@@ -21,6 +21,46 @@ production-grade software switch like [Open
 vSwitch](https://www.openvswitch.org/). For more information about the
 performance of bmv2, refer to this [document](docs/performance.md).
 
+## Installing packaged versions of BMv2
+
+BMv2 has package support for several Ubuntu and Debian distributions.
+
+### Ubuntu
+
+For Ubuntu 20.04 and Ubuntu 21.04 it can be installed as follows:
+
+```bash
+. /etc/os-release
+echo "deb http://download.opensuse.org/repositories/home:/p4lang/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/home:p4lang.list
+curl -L "http://download.opensuse.org/repositories/home:/p4lang/xUbuntu_${VERSION_ID}/Release.key" | sudo apt-key add -
+sudo apt-get update
+sudo apt install p4lang-bmv2
+```
+
+### Debian
+
+For Debian 11 (Bullseye) it can be installed as follows:
+
+```bash
+echo 'deb http://download.opensuse.org/repositories/home:/p4lang/Debian_11/ /' | sudo tee /etc/apt/sources.list.d/home:p4lang.list
+curl -fsSL https://download.opensuse.org/repositories/home:p4lang/Debian_11/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_p4lang.gpg > /dev/null
+sudo apt update
+sudo apt install p4lang-bmv2
+```
+
+If you cannot use a repository to install BMv2, you can download the `.deb` file
+for your release and install it manually. You need to download a new file each
+time you want to upgrade BMv2.
+
+1. Go to https://build.opensuse.org/package/show/home:p4lang/p4lang-bmv2, click on
+"Download package" and choose your operating system version.
+
+2. Install BMv2, changing the path below to the path where you downloaded the package.
+
+```bash
+sudo dpkg -i /path/to/package.deb
+```
+
 ## Dependencies
 
 The following packages are required:
