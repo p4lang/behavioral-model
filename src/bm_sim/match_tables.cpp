@@ -265,7 +265,7 @@ MatchTableAbstract::write_counters(entry_handle_t handle,
 MatchErrorCode
 MatchTableAbstract::set_meter_rates(
     entry_handle_t handle,
-    const std::vector<Meter::rate_config_t> &configs) const {
+    const std::vector<Meter::rate_config_t> &configs) {
   if (!with_meters) return MatchErrorCode::METERS_DISABLED;
   auto lock = lock_write();
   if (!is_valid_handle(handle)) return MatchErrorCode::INVALID_HANDLE;
@@ -284,6 +284,17 @@ MatchTableAbstract::get_meter_rates(
   const Meter &meter = match_unit_->get_meter(handle);
   *configs = meter.get_rates();
   return MatchErrorCode::SUCCESS;
+}
+
+MatchErrorCode
+MatchTableAbstract::reset_meter_rates(entry_handle_t handle) {
+  if (!with_meters) return MatchErrorCode::METERS_DISABLED;
+  auto lock = lock_write();
+  if (!is_valid_handle(handle)) return MatchErrorCode::INVALID_HANDLE;
+  Meter &meter = match_unit_->get_meter(handle);
+  Meter::MeterErrorCode rc = meter.reset_rates();
+  return (rc == Meter::MeterErrorCode::SUCCESS) ?
+      MatchErrorCode::SUCCESS : MatchErrorCode::ERROR;
 }
 
 MatchErrorCode

@@ -168,11 +168,12 @@ class MatchTableAbstract : public NamedP4Object {
                                 counter_value_t packets);
 
   MatchErrorCode set_meter_rates(
-      entry_handle_t handle,
-      const std::vector<Meter::rate_config_t> &configs) const;
+      entry_handle_t handle, const std::vector<Meter::rate_config_t> &configs);
 
   MatchErrorCode get_meter_rates(
       entry_handle_t handle, std::vector<Meter::rate_config_t> *configs) const;
+
+  MatchErrorCode reset_meter_rates(entry_handle_t handle);
 
   MatchErrorCode set_entry_ttl(entry_handle_t handle, unsigned int ttl_ms);
 

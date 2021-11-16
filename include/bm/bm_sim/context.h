@@ -341,6 +341,9 @@ class Context final {
   mt_get_meter_rates(const std::string &table_name, entry_handle_t handle,
                      std::vector<Meter::rate_config_t> *configs);
 
+  MatchErrorCode
+  mt_reset_meter_rates(const std::string &table_name, entry_handle_t handle);
+
   Counter::CounterErrorCode
   read_counters(const std::string &counter_name,
                 size_t index,
@@ -368,6 +371,9 @@ class Context final {
   MeterErrorCode
   meter_get_rates(const std::string &meter_name, size_t idx,
                   std::vector<Meter::rate_config_t> *configs);
+
+  MeterErrorCode
+  meter_reset_rates(const std::string &meter_name, size_t idx);
 
   RegisterErrorCode
   register_read(const std::string &register_name,

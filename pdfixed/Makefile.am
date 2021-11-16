@@ -95,6 +95,7 @@ pdfixed_thrift_files.ts: $(pd_conn_mgr_IDL) $(pd_mc_IDL) $(pd_sswitch_IDL) $(pd_
 	$(THRIFT) -o $(builddir)/pd_thrift_gen/ --gen py -r $(pd_conn_mgr_IDL)
 	$(THRIFT) -o $(builddir)/pd_thrift_gen/ --gen py -r $(pd_mc_IDL)
 	$(THRIFT) -o $(builddir)/pd_thrift_gen/ --gen py -r $(pd_sswitch_IDL)
+	touch $(pdfixed_thrift_files_cxx)
 	@mv -f pdfixed_thrift_files.tmp $@
 $(BUILT_SOURCES): pdfixed_thrift_files.ts
 ## Recover from the removal of $@

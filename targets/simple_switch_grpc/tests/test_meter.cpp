@@ -87,7 +87,7 @@ TEST_F(SimpleSwitchGrpcTest_Meter, ReadDefault) {
     EXPECT_TRUE(status.ok());
   }
 
-  {
+  auto read_entry = [this, &table_entry]() -> const p4v1::TableEntry & {
     p4v1::ReadRequest read_request;
     read_request.set_device_id(device_id);
     auto read_entity = read_request.add_entities();
@@ -102,13 +102,34 @@ TEST_F(SimpleSwitchGrpcTest_Meter, ReadDefault) {
     auto status = reader->Finish();
     EXPECT_TRUE(status.ok());
     EXPECT_EQ(read_response.entities_size(), 1);
-    const auto &read_entry = read_response.entities(0).table_entry();
-    ASSERT_TRUE(read_entry.has_meter_config());
-    const auto &meter_config = read_entry.meter_config();
-    EXPECT_EQ(meter_config.pir(), -1);
-    EXPECT_EQ(meter_config.pburst(), -1);
-    EXPECT_EQ(meter_config.cir(), -1);
-    EXPECT_EQ(meter_config.cburst(), -1);
+    const auto &rentry = read_response.entities(0).table_entry();
+    return rentry;
+  };
+
+  {
+    const auto &rentry = read_entry();
+    ASSERT_FALSE(rentry.has_meter_config());
+  }
+
+  {
+    // This modify should not change anything since we use a default / empty
+    // meter config.
+    p4v1::WriteRequest write_request;
+    write_request.set_device_id(device_id);
+    auto update = write_request.add_updates();
+    update->set_type(p4v1::Update_Type_MODIFY);
+    auto entity = update->mutable_entity();
+    entity->mutable_direct_meter_entry()->mutable_table_entry()
+        ->CopyFrom(table_entry);
+    p4v1::WriteResponse write_response;
+    ClientContext context;
+    auto status = Write(&context, write_request, &write_response);
+    EXPECT_TRUE(status.ok());
+  }
+
+  {
+    const auto &rentry = read_entry();
+    ASSERT_FALSE(rentry.has_meter_config());
   }
 }
 

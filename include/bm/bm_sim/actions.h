@@ -181,7 +181,7 @@ struct ActionParam {
         EXPRESSION_HEADER_UNION, EXPRESSION_HEADER_UNION_STACK,
         EXTERN_INSTANCE,
         STRING,
-        HEADER_UNION, HEADER_UNION_STACK, PARAMS_VECTOR} tag;
+        HEADER_UNION, HEADER_UNION_STACK, PARAMS_VECTOR, FIELD_LIST} tag;
 
   union {
     unsigned int const_offset;
@@ -217,6 +217,11 @@ struct ActionParam {
       unsigned int start;
       unsigned int end;
     } params_vector;
+
+    struct {
+      unsigned int start;
+      unsigned int end;
+    } field_list;
 
     // special case when trying to access a field in the last header of a stack
     struct {
@@ -265,11 +270,13 @@ struct ActionEngineState {
   const ActionData &action_data;
   const std::vector<Data> &const_values;
   const std::vector<ActionParam> &parameters_vector;
+  const std::vector<ActionParam> &field_list;
 
   ActionEngineState(Packet *pkt,
                     const ActionData &action_data,
                     const std::vector<Data> &const_values,
-                    const std::vector<ActionParam> &parameters_vector);
+                    const std::vector<ActionParam> &parameters_vector,
+                    const std::vector<ActionParam> &field_list);
 };
 
 // template specializations for ActionParam "casting"
@@ -545,6 +552,23 @@ ActionParam::to<const std::vector<Data>>(ActionEngineState *state) const {
   return vec;
 }
 
+template <> inline
+const std::vector<Field>
+ActionParam::to<const std::vector<Field>>(ActionEngineState *state) const {
+  _BM_ASSERT(tag == ActionParam::FIELD_LIST && "not a field list");
+  std::vector<Field> vec;
+
+  for (auto i = field_list.start ; i < field_list.end ; i++) {
+    // re-use previously-defined cast method; note that we use to<const Field &>
+    // and not to<const Field>, as it does not exists
+    // if something in the field list cannot be cast to "const Field &",
+    // the code will assert
+    vec.push_back(state->field_list[i].to<const Field &>(state));
+  }
+
+  return vec;
+}
+
 /* This is adapted from stack overflow code:
    http://stackoverflow.com/questions/11044504/any-solution-to-unpack-a-vector-to-function-arguments-in-c
 */
@@ -751,6 +775,8 @@ class ActionFn :  public NamedP4Object {
   // signal the end.
   void parameter_start_vector();
   void parameter_end_vector();
+  void parameter_start_field_list();
+  void parameter_end_field_list();
 
   void push_back_primitive(ActionPrimitive_ *primitive,
                            std::unique_ptr<SourceInfo> source_info = nullptr);
