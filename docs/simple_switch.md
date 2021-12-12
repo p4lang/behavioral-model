@@ -72,15 +72,15 @@ Here are the fields:
 - `instance_type` (sm14, v1m) - Contains a value that can be read by
   your P4 code.  In ingress code, the value can be used to distinguish
   whether the packet is newly arrived from a port (`NORMAL`), it was
-  the result of a resubmit primitive action (`RESUBMIT`), or it was
-  the result of a recirculate primitive action (`RECIRC`).  In egress
-  processing, can be used to determine whether the packet was produced
-  as the result of an ingress-to-egress clone primitive action
-  (`INGRESS_CLONE`), egress-to-egress clone primitive action
-  (`EGRESS_CLONE`), multicast replication specified during ingress
-  processing (`REPLICATION`), or none of those, so a normal unicast
-  packet from ingress (`NORMAL`).  Until such time as similar
-  constants are pre-defined for you, you may copy [this
+  the result of a resubmit primitive action (`RESUBMIT`), or it was the
+  result of a recirculate primitive action (`RECIRC`).  In egress processing,
+  can be used to determine whether the packet was produced as the
+  result of an ingress-to-egress clone primitive action (`INGRESS_CLONE`),
+  egress-to-egress clone primitive action (`EGRESS_CLONE`), multicast
+  replication specified during ingress processing (`REPLICATION`), or
+  none of those, so a normal unicast packet from ingress (`NORMAL`).
+  Until such time as similar constants are pre-defined for you, you
+  may copy [this
   list](https://github.com/p4lang/p4c/blob/master/testdata/p4_14_samples/switch_20160512/includes/intrinsic.p4#L62-L68)
   of constants into your code.
 - `parser_status` (sm14) or `parser_error` (v1m) - `parser_status` is
@@ -227,6 +227,7 @@ if (a clone primitive action was called) {
     // `clone_preserving_field_list` extern function from a P4_16
     // program, or the `clone_ingress_pkt_to_egress` primitive action
     // in a P4_14 program, during ingress processing.
+
     Create zero or more clones of the packet.  The cloned packet(s)
     will be enqueued in the packet buffer, destined for the egress
     port(s) configured in the clone session whose numeric id was given
@@ -327,6 +328,7 @@ if (a clone primitive action was called) {
     // `clone_preserving_field_list` extern function from a P4_16
     // program, or the `clone_egress_pkt_to_egress` primitive action
     // in a P4_14 program, during egress processing.
+
     Create zero or more clones of the packet.  The cloned packet(s)
     will be enqueued in the packet buffer, destined for the egress
     port(s) configured in the clone session whose numeric id was given
