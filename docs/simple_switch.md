@@ -50,8 +50,7 @@ Here are the fields:
   ingress port on which the packet arrived to the device.  Read only.
 - `packet_length` (sm14, v1m) - For new packets from a port, or
   recirculated packets, the length of the packet in bytes.  For cloned
-  or resubmitted packets, you may need to include this in a list of
-  fields to preserve, otherwise its value will become 0.
+  or resubmitted packets, its value will become 0.
 - `egress_spec` (sm14, v1m) - Can be assigned a value in ingress code to
   control which output port a packet will go to.  The P4_14 primitive
   `drop`, and the v1model primitive action `mark_to_drop`, have the side
@@ -73,15 +72,15 @@ Here are the fields:
 - `instance_type` (sm14, v1m) - Contains a value that can be read by
   your P4 code.  In ingress code, the value can be used to distinguish
   whether the packet is newly arrived from a port (`NORMAL`), it was
-  the result of a resubmit primitive action (`RESUBMIT`), or it was the
-  result of a recirculate primitive action (`RECIRC`).  In egress processing,
-  can be used to determine whether the packet was produced as the
-  result of an ingress-to-egress clone primitive action (`INGRESS_CLONE`),
-  egress-to-egress clone primitive action (`EGRESS_CLONE`), multicast
-  replication specified during ingress processing (`REPLICATION`), or
-  none of those, so a normal unicast packet from ingress (`NORMAL`).
-  Until such time as similar constants are pre-defined for you, you
-  may copy [this
+  the result of a resubmit primitive action (`RESUBMIT`), or it was
+  the result of a recirculate primitive action (`RECIRC`).  In egress
+  processing, can be used to determine whether the packet was produced
+  as the result of an ingress-to-egress clone primitive action
+  (`INGRESS_CLONE`), egress-to-egress clone primitive action
+  (`EGRESS_CLONE`), multicast replication specified during ingress
+  processing (`REPLICATION`), or none of those, so a normal unicast
+  packet from ingress (`NORMAL`).  Until such time as similar
+  constants are pre-defined for you, you may copy [this
   list](https://github.com/p4lang/p4c/blob/master/testdata/p4_14_samples/switch_20160512/includes/intrinsic.p4#L62-L68)
   of constants into your code.
 - `parser_status` (sm14) or `parser_error` (v1m) - `parser_status` is
@@ -225,10 +224,9 @@ version:
 ```
 if (a clone primitive action was called) {
     // This condition will be true if your code called the `clone` or
-    // `clone3` primitive action from a P4_16 program, or the
-    // `clone_ingress_pkt_to_egress` primitive action in a P4_14
-    // program, during ingress processing.
-
+    // `clone_preserving_field_list` extern function from a P4_16
+    // program, or the `clone_ingress_pkt_to_egress` primitive action
+    // in a P4_14 program, during ingress processing.
     Create zero or more clones of the packet.  The cloned packet(s)
     will be enqueued in the packet buffer, destined for the egress
     port(s) configured in the clone session whose numeric id was given
@@ -248,10 +246,11 @@ if (a clone primitive action was called) {
     packet reached this occurrence of ingress processing via a
     recirculate operation, for example.)
 
-    If it was a clone3 (P4_16) or clone_ingress_pkt_to_egress (P4_14)
-    action, also preserve the final ingress values of the metadata
-    fields specified in the field list argument, except assign
-    instance_type a value of PKT_INSTANCE_TYPE_INGRESS_CLONE.
+    If it was a clone_preserving_field_list (P4_16) or
+    clone_ingress_pkt_to_egress (P4_14) action, also preserve the
+    final ingress values of the metadata fields specified in the field
+    list argument.  The value of instance_type will be
+    PKT_INSTANCE_TYPE_INGRESS_CLONE for the cloned packet(s).
 
     Each cloned packet will be processed by your parser code again.
     In many cases this will result in exactly the same headers being
@@ -271,13 +270,16 @@ if (digest to generate) {
     // fall through to code below
 }
 if (resubmit was called) {
-    // This condition will be true if your code called the resubmit
-    // primitive action during ingress processing.
+    // This condition will be true if your code called the
+    // `resubmit_preserving_field_list` extern function from a P4_16
+    // program, or the `resubmit` primitive from a P4_14 program,
+    // during ingress processing.
     Start ingress over again for this packet, with its original
     unmodified packet contents and metadata values.  Preserve the
-    final ingress values of any fields specified in the field list
-    given as an argument to the last resubmit() primitive operation
-    called, except assign instance_type a value of PKT_INSTANCE_TYPE_RESUBMIT.
+    final ingress values of any user-defined metadata fields
+    determined by the field list given as an argument to the last
+    resubmit operation called.  The resubmitted packet will have
+    instance_type equal to PKT_INSTANCE_TYPE_RESUBMIT.
 } else if (mcast_grp != 0) {
     // This condition will be true if your code made an assignment to
     // standard_metadata.mcast_grp during ingress processing.  There
@@ -322,10 +324,9 @@ version:
 ```
 if (a clone primitive action was called) {
     // This condition will be true if your code called the `clone` or
-    // `clone3` primitive action from a P4_16 program, or the
-    // `clone_egress_pkt_to_egress` primitive action in a P4_14
-    // program, during egress processing.
-
+    // `clone_preserving_field_list` extern function from a P4_16
+    // program, or the `clone_egress_pkt_to_egress` primitive action
+    // in a P4_14 program, during egress processing.
     Create zero or more clones of the packet.  The cloned packet(s)
     will be enqueued in the packet buffer, destined for the egress
     port(s) configured in the clone session whose numeric id was given
@@ -344,13 +345,15 @@ if (a clone primitive action was called) {
     egress-to-egress cloned packets, nor will your parser code be
     executed for them.
 
-    If it was a clone3 (P4_16) or clone_egress_pkt_to_egress (P4_14)
-    action, also preserve the final egress values of the metadata
-    fields specified in the field list argument, except assign
-    instance_type a value of PKT_INSTANCE_TYPE_EGRESS_CLONE.  Each
-    cloned packet will have the same standard_metadata fields
-    overwritten that all packets that begin egress processing do,
-    e.g. egress_port, egress_spec, egress_global_timestamp, etc.
+    If it was a clone_preserving_field_list (P4_16) or
+    clone_egress_pkt_to_egress (P4_14) action, also preserve the final
+    egress values of the metadata fields specified in the field list
+    argument.  The value of instance_type will be
+    PKT_INSTANCE_TYPE_EGRESS_CLONE for the cloned packet(s).  Each
+    cloned packet will have the its standard_metadata fields
+    initialized in the same way that all packets that begin egress
+    processing do, e.g. egress_port, egress_spec,
+    egress_global_timestamp, etc.
 
     Each cloned packet will continue processing at the beginning of
     your egress code.
@@ -362,15 +365,17 @@ if (egress_spec == DROP_PORT) {
     // egress processing.
     Drop packet.
 } else if (recirculate was called) {
-    // This condition will be true if your code called the recirculate
-    // primitive action during egress processing.
+    // This condition will be true if your code called the
+    // `recirculate_preserving_field_list` extern function from a
+    // P4_16 program, or the `recirculate` primitive action from a
+    // P4_14 program, during egress processing.
     Start processing the packet over again.  That is, take the packet
     as constructed by the deparser, with any modifications made to the
     packet during both ingress and egress processing, and give that
     packet as input to the parser.  Preserve the final egress values
-    of any fields specified in the field list given as an argument to
-    the last recirculate primitive action called, except assign
-    instance_type a value of PKT_INSTANCE_TYPE_RECIRC.
+    of any fields whose field list id is given as an argument to the
+    last recirculate primitive action called.  The instance_type of
+    the recirculated packet will be PKT_INSTANCE_TYPE_RECIRC.
 } else {
     Send the packet to the port in egress_port.  Since egress_port is
     read only during egress processing, note that its value must have
@@ -607,104 +612,37 @@ control ingress(inout headers_t hdr,
 ```
 
 
-## Restrictions on recirculate, resubmit, and clone operations
+## Notes on recirculate, resubmit, and clone operations
 
-Recirculate, resubmit, and clone operations _that do not preserve
-metadata_, i.e. they have an empty list of fields whose value should
-be preserved, work as expected when using p4c and simple_switch, with
-either P4_14 as the source language, or P4_16 plus the v1model
-architecture.
+This section is up to date as long if you are using a version of p4c
+after this pull request was merged:
 
-Unfortunately, at least some of these operations that attempt to
-preserve metadata _do not work correctly_ -- they still cause the
-packet to be recirculated, resubmitted, or cloned, but they do not
-preserve the desired metadata field values.
++ https://github.com/p4lang/p4c/pull/2902
++ Merged with this commit on 2021-Dec-06:
+  https://github.com/p4lang/p4c/commit/2be448f018e88095a13e8a68e1c7cc1641038cd8
 
-This is a known issue that has been discussed at length by the p4c
-developers and P4 language design work group, and the decision made
-is:
+After those changes, all recirculate, resubmit, and clone operations
+should work correctly, even if they specify user-defined metadata
+fields to be preserved.
 
-* Long term, the P4_16 [Portable Switch
-  Architecture](https://p4.org/specs/) uses a different mechanism for
-  specifying metadata to preserve than the v1model architecture uses,
-  and should work correctly.  As of October 2019 the implementation of
-  PSA is not complete, so this does not help one write working code
-  today.
-* If someone wishes to volunteer to make changes to p4c and/or
-  simple_switch for improving this situation, please contact the P4
-  language design work group and coordinate with them.
-  * The preferred form of help would be to complete the Portable
-    Switch Architecture implementation.
-  * Another possibility would be enhancing the v1model architecture
-    implementation.  Several approaches for doing so that have been
-    discussed are described
-    [here](https://github.com/jafingerhut/p4-guide/blob/master/v1model-special-ops/README-resubmit-examples.md).
+An example use of the `@field_list(index_number)` annotation required
+in order to cause user-defined metadata fields to be preserved with
+one of these operations is given in the
+[`v1model.p4`](https://github.com/p4lang/p4c/blob/main/p4include/v1model.p4)
+include file that is part of `p4c`.  See the documentation of the
+`resubmit_preserving_field_list` extern function.
 
-Note that this issue affects not only P4_16 programs using the v1model
-architecture, but also P4_14 programs compiled using the `p4c`
-compiler, because internally `p4c` translates P4_14 to P4_16 code
-before the part of the compiler that causes the problem to occur.
+Note that the `@field_list` annotation is only supported for
+user-defined metadata fields.  It is not supported for parsed packet
+header fields, nor for standard metadata fields.  If you wish to
+preserve any of these other values, you should copy their values to
+user-defined metadata fields that have the `@field_list` annotation on
+them.
 
-The fundamental issue is that P4_14 has the `field_list` construct,
-which is a restricted kind of _named reference_ to other fields.  When
-these field lists are used in P4_14 for recirculate, resubmit, and
-clone operations that preserve metadata, they direct the target not
-only to read those field values, but also later write them (for the
-packet after recirculating, resubmitting, or cloning).  P4_16 field
-lists using the syntax `{field_1, field_2, ...}` are restricted to
-accessing the current values of the fields at the time the statement
-or expression is executed, but do not represent any kind of reference,
-and by the P4_16 language specification cannot cause the values of
-those fields to change at another part of the program.
-
-
-### Hints on distinguishing when metadata is preserved correctly
-
-Below are some details for anyone trying, by hook or by crook, to make
-preservation of metadata work with the current p4c implementation,
-without the future improvements mentioned above.
-
-There is no known simple rule to determine which invocations of these
-operations will preserve metadata correctly and which will not.  If
-you want at least some indication, examine the BMv2 JSON file produced
-as output from the compiler.
-
-The Python program
-[bmv2-json-check.py](https://github.com/p4pktgen/p4pktgen/blob/master/tools/bmv2-json-check.py)
-attempts to determine whether any field list used to preserve metadata
-fields for recirculate, resubmit, or clone operations looks like it
-has the name of a compiler-generated temporary variable.  Warning: its
-methods are fairly basic, and thus there is no guarantee that if the
-script says there is no problem, metadata preservation will work
-correctly, or conversely that if the script says there are suspicious
-things found, metadata preservation will not work correctly.  It
-automates what is described below.
-
-Every recirculate, resubmit, and clone operation is represented in
-JSON data inside the BMv2 JSON file.  Search for one of these strings,
-_with_ the double quote marks around them:
-
-* `"recirculate"` - only parameter is a field_list id
-* `"resubmit"` - only parameter is a field_list id
-* `"clone_ingress_pkt_to_egress"` - second parameter is a field_list id
-* `"clone_egress_pkt_to_egress"` - second parameter is a field_list id
-
-You can find the fields in each field list in the section of the BMv2
-JSON file with the key `"field_lists"`.  Whatever the field names are
-there, simple_switch _will preserve the values of fields with those
-names_.  The primary issue is whether those fields correspond to the
-same storage locations that the compiler uses to represent the fields
-you want to preserve.
-
-In some cases they are, which is often the case if the field names in
-the BMv2 JSON file look the same as, or similar to, the field names in
-your P4 source code.
-
-In some cases they represent different storage locations,
-e.g. compiler-generated temporary variables used to hold a copy of the
-field you want to preserve.  A field name beginning with `tmp.` is a
-hint of this as of p4c 2019-Oct, but this is a p4c implementation
-detail that could change.
+Also note that there may be implementation-specific oddities in `p4c`
+if you preserve user-defined metadata fields that are inside of
+structs or headers that are nested one or more levels deep within the
+user-defined metadata struct.
 
 
 ## P4_16 plus v1model architecture notes
@@ -1091,3 +1029,106 @@ options:
   This is likely to be at least as much development effort as
   implementing PTP, but seems likely to be able to achieve tighter
   time synchronization.
+
+
+## Restrictions on recirculate, resubmit, and clone operations
+
+Note: This section is for historical reference purposes.  It applies
+for versions of p4c before this pull request was merged:
+
++ https://github.com/p4lang/p4c/pull/2902
++ Merged with this commit on 2021-Dec-06:
+  https://github.com/p4lang/p4c/commit/2be448f018e88095a13e8a68e1c7cc1641038cd8
+
+Recirculate, resubmit, and clone operations _that do not preserve
+metadata_, i.e. they have an empty list of fields whose value should
+be preserved, work as expected when using p4c and simple_switch, with
+either P4_14 as the source language, or P4_16 plus the v1model
+architecture.
+
+Unfortunately, at least some of these operations that attempt to
+preserve metadata _do not work correctly_ -- they still cause the
+packet to be recirculated, resubmitted, or cloned, but they do not
+preserve the desired metadata field values.
+
+This is a known issue that has been discussed at length by the p4c
+developers and P4 language design work group, and the decision made
+is:
+
+* Long term, the P4_16 [Portable Switch
+  Architecture](https://p4.org/specs/) uses a different mechanism for
+  specifying metadata to preserve than the v1model architecture uses,
+  and should work correctly.  As of October 2019 the implementation of
+  PSA is not complete, so this does not help one write working code
+  today.
+* If someone wishes to volunteer to make changes to p4c and/or
+  simple_switch for improving this situation, please contact the P4
+  language design work group and coordinate with them.
+  * The preferred form of help would be to complete the Portable
+    Switch Architecture implementation.
+
+Note that this issue affects not only P4_16 programs using the v1model
+architecture, but also P4_14 programs compiled using the `p4c`
+compiler, because internally `p4c` translates P4_14 to P4_16 code
+before the part of the compiler that causes the problem to occur.
+
+The fundamental issue is that P4_14 has the `field_list` construct,
+which is a restricted kind of _named reference_ to other fields.  When
+these field lists are used in P4_14 for recirculate, resubmit, and
+clone operations that preserve metadata, they direct the target not
+only to read those field values, but also later write them (for the
+packet after recirculating, resubmitting, or cloning).  P4_16 field
+lists using the syntax `{field_1, field_2, ...}` are restricted to
+accessing the current values of the fields at the time the statement
+or expression is executed, but do not represent any kind of reference,
+and by the P4_16 language specification cannot cause the values of
+those fields to change at another part of the program.
+
+
+### Hints on distinguishing when metadata is preserved correctly
+
+Below are some details for anyone trying, by hook or by crook, to make
+preservation of metadata work with the current p4c implementation,
+without the future improvements mentioned above.
+
+There is no known simple rule to determine which invocations of these
+operations will preserve metadata correctly and which will not.  If
+you want at least some indication, examine the BMv2 JSON file produced
+as output from the compiler.
+
+The Python program
+[bmv2-json-check.py](https://github.com/p4pktgen/p4pktgen/blob/master/tools/bmv2-json-check.py)
+attempts to determine whether any field list used to preserve metadata
+fields for recirculate, resubmit, or clone operations looks like it
+has the name of a compiler-generated temporary variable.  Warning: its
+methods are fairly basic, and thus there is no guarantee that if the
+script says there is no problem, metadata preservation will work
+correctly, or conversely that if the script says there are suspicious
+things found, metadata preservation will not work correctly.  It
+automates what is described below.
+
+Every recirculate, resubmit, and clone operation is represented in
+JSON data inside the BMv2 JSON file.  Search for one of these strings,
+_with_ the double quote marks around them:
+
+* `"recirculate"` - only parameter is a field_list id
+* `"resubmit"` - only parameter is a field_list id
+* `"clone_ingress_pkt_to_egress"` - second parameter is a field_list id
+* `"clone_egress_pkt_to_egress"` - second parameter is a field_list id
+
+You can find the fields in each field list in the section of the BMv2
+JSON file with the key `"field_lists"`.  Whatever the field names are
+there, simple_switch _will preserve the values of fields with those
+names_.  The primary issue is whether those fields correspond to the
+same storage locations that the compiler uses to represent the fields
+you want to preserve.
+
+In some cases they are, which is often the case if the field names in
+the BMv2 JSON file look the same as, or similar to, the field names in
+your P4 source code.
+
+In some cases they represent different storage locations,
+e.g. compiler-generated temporary variables used to hold a copy of the
+field you want to preserve.  A field name beginning with `tmp.` is a
+hint of this as of p4c 2019-Oct up through 2021-Dec-05, but this is a
+p4c implementation detail that could change.
