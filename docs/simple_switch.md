@@ -616,7 +616,7 @@ control ingress(inout headers_t hdr,
 
 ## Notes on recirculate, resubmit, and clone operations
 
-This section is up to date as long if you are using a version of p4c
+This section is up to date as long as you are using a version of p4c
 after this pull request was merged:
 
 + https://github.com/p4lang/p4c/pull/2902
