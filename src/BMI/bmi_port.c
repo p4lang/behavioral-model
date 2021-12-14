@@ -99,7 +99,7 @@ static inline bmi_port_t *insert_port(bmi_port_mgr_t *port_mgr, int port_num) {
   return &port_mgr->ports[a];
 }
 
-static inline void *delete_port(bmi_port_mgr_t *port_mgr, bmi_port_t *port) {
+static inline void delete_port(bmi_port_mgr_t *port_mgr, bmi_port_t *port) {
   int idx = port - port_mgr->ports;
   size_t size = (port_mgr->port_count - idx - 1) * sizeof(*port_mgr->ports);
   memmove(port, port + 1, size);
