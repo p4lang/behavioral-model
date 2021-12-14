@@ -12,7 +12,7 @@ services:
 stages:
   - test
   - name: deploy
-    if: repo = p4lang/behavioral-model AND branch = master
+    if: repo = p4lang/behavioral-model AND branch = main
 
 matrix:
   include:
@@ -34,7 +34,7 @@ matrix:
         skip_cleanup: true
         on:
           repo: p4lang/behavioral-model
-          branch: master
+          branch: main
 
 addons:
   apt:
