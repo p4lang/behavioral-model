@@ -186,9 +186,11 @@ int bmi_start_mgr(bmi_port_mgr_t* port_mgr) {
 }
 
 int bmi_port_create_mgr(bmi_port_mgr_t **port_mgr, int max_port_count) {
-  bmi_port_mgr_t *port_mgr_ = malloc(sizeof(bmi_port_mgr_t));
   int exitCode;
+
   if (!port_mgr) return -1;
+
+  bmi_port_mgr_t *port_mgr_ = malloc(sizeof(bmi_port_mgr_t));
 
   memset(port_mgr_, 0, sizeof(bmi_port_mgr_t));
 
@@ -197,6 +199,8 @@ int bmi_port_create_mgr(bmi_port_mgr_t **port_mgr, int max_port_count) {
 
   if (socketpair(PF_LOCAL, SOCK_STREAM, 0, port_mgr_->socketpairfd)) {
     perror("socketpair");
+    free(port_mgr_->ports);
+    free(port_mgr_);
     return -1;
   }
 
