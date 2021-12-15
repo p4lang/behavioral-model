@@ -1,4 +1,5 @@
 /* Copyright 2013-present Barefoot Networks, Inc.
+ * Copyright 2021 VMware, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
  */
 
 /*
- * Antonin Bas (antonin@barefootnetworks.com)
+ * Antonin Bas
  *
  */
 
@@ -115,7 +116,7 @@ class SimpleSwitch::MirroringSessions {
 };
 
 // Arbitrates which packets are processed by the ingress thread. Resubmit and
-// recirculate packets go to a high priority queue, while normal pakcets go to a
+// recirculate packets go to a high priority queue, while normal packets go to a
 // low priority queue. We assume that starvation is not going to be a problem.
 // Resubmit packets are dropped if the queue is full in order to make sure the
 // ingress thread cannot deadlock. We do the same for recirculate packets even
@@ -591,10 +592,15 @@ SimpleSwitch::ingress_thread() {
       // TODO(antonin): a copy is not needed here, but I don't yet have an
       // optimized way of doing this
       std::unique_ptr<Packet> packet_copy = packet->clone_no_phv_ptr();
+      PHV *phv_copy = packet_copy->get_phv();
       copy_field_list_and_set_type(packet, packet_copy,
                                    PKT_INSTANCE_TYPE_RESUBMIT,
                                    field_list_id);
       RegisterAccess::clear_all(packet_copy.get());
+      packet_copy->set_register(RegisterAccess::PACKET_LENGTH_REG_IDX,
+                                ingress_packet_size);
+      phv_copy->get_field("standard_metadata.packet_length")
+          .set(ingress_packet_size);
       input_buffer->push_front(
           InputBuffer::PacketType::RESUBMIT, std::move(packet_copy));
       continue;
@@ -700,6 +706,11 @@ SimpleSwitch::egress_thread(size_t worker_id) {
         field_list->copy_fields_between_phvs(phv_copy, phv);
         phv_copy->get_field("standard_metadata.instance_type")
             .set(PKT_INSTANCE_TYPE_EGRESS_CLONE);
+        auto packet_size =
+            packet->get_register(RegisterAccess::PACKET_LENGTH_REG_IDX);
+        RegisterAccess::clear_all(packet_copy.get());
+        packet_copy->set_register(RegisterAccess::PACKET_LENGTH_REG_IDX,
+                                  packet_size);
         if (config.mgid_valid) {
           BMLOG_DEBUG_PKT(*packet, "Cloning packet to MGID {}", config.mgid);
           multicast(packet_copy.get(), config.mgid);
@@ -707,7 +718,6 @@ SimpleSwitch::egress_thread(size_t worker_id) {
         if (config.egress_port_valid) {
           BMLOG_DEBUG_PKT(*packet, "Cloning packet to egress port {}",
                           config.egress_port);
-          RegisterAccess::clear_all(packet_copy.get());
           enqueue(config.egress_port, std::move(packet_copy));
         }
       }
