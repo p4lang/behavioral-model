@@ -48,9 +48,7 @@ Here are the fields:
 
 - `ingress_port` (sm14, v1m) - For new packets, the number of the
   ingress port on which the packet arrived to the device.  Read only.
-- `packet_length` (sm14, v1m) - For new packets from a port, or
-  recirculated packets, the length of the packet in bytes.  For cloned
-  or resubmitted packets, its value will become 0.
+- `packet_length` (sm14, v1m) - The length of the packet in bytes.
 - `egress_spec` (sm14, v1m) - Can be assigned a value in ingress code to
   control which output port a packet will go to.  The P4_14 primitive
   `drop`, and the v1model primitive action `mark_to_drop`, have the side
