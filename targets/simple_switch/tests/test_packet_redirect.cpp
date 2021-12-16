@@ -1,4 +1,5 @@
 /* Copyright 2013-present Barefoot Networks, Inc.
+ * Copyright 2021 VMware, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
  */
 
 /*
- * Antonin Bas (antonin@barefootnetworks.com)
+ * Antonin Bas
  *
  */
 
@@ -350,7 +351,19 @@ TEST_F(SimpleSwitch_PacketRedirectP4_CloneI2E, CloneI2E) {
   int recv_port_1 = -1;
   int recv_port_2 = -1;
   receiver.read(recv_buffer, sizeof(pkt), &recv_port_1);
+  // check standard_metadata.packet_length: it should be 2 for the original
+  // packet and 4 for the clone
+  if (recv_port_1 == port_out) {
+    ASSERT_EQ(2, static_cast<int>(recv_buffer[1]));
+  } else {
+    ASSERT_EQ(4, static_cast<int>(recv_buffer[1]));
+  }
   receiver.read(recv_buffer, sizeof(pkt), &recv_port_2);
+  if (recv_port_2 == port_out) {
+    ASSERT_EQ(2, static_cast<int>(recv_buffer[1]));
+  } else {
+    ASSERT_EQ(4, static_cast<int>(recv_buffer[1]));
+  }
   // TODO(antonin): make sure the right packet comes out of the right port
   ASSERT_TRUE((recv_port_1 == port_out && recv_port_2 == port_out_copy) ||
               (recv_port_1 == port_out_copy && recv_port_2 == port_out));
@@ -409,8 +422,25 @@ TEST_F(SimpleSwitch_PacketRedirectP4_CloneI2E, CloneI2E_Multicast) {
   char recv_buffer[kMaxBufSize];
   int recv_port_1 = -1, recv_port_2 = -1, recv_port_3 = -1;
   receiver.read(recv_buffer, sizeof(pkt), &recv_port_1);
+  // check standard_metadata.packet_length: it should be 2 for the original
+  // packet and 4 for the clone and multicast copies
+  if (recv_port_1 == port_out) {
+    ASSERT_EQ(2, static_cast<int>(recv_buffer[1]));
+  } else {
+    ASSERT_EQ(4, static_cast<int>(recv_buffer[1]));
+  }
   receiver.read(recv_buffer, sizeof(pkt), &recv_port_2);
+  if (recv_port_2 == port_out) {
+    ASSERT_EQ(2, static_cast<int>(recv_buffer[1]));
+  } else {
+    ASSERT_EQ(4, static_cast<int>(recv_buffer[1]));
+  }
   receiver.read(recv_buffer, sizeof(pkt), &recv_port_3);
+  if (recv_port_3 == port_out) {
+    ASSERT_EQ(2, static_cast<int>(recv_buffer[1]));
+  } else {
+    ASSERT_EQ(4, static_cast<int>(recv_buffer[1]));
+  }
   // TODO(antonin): make sure the right packet comes out of the right port
   ASSERT_EQ(std::set<int>({recv_port_1, recv_port_2, recv_port_3}),
             std::set<int>({port_out, port_out_copy, port_out_mc_copy}));
@@ -502,7 +532,10 @@ TEST_F(SimpleSwitch_PacketRedirectP4_CloneE2E, CloneE2E) {
   int recv_port_1 = -1;
   int recv_port_2 = -1;
   receiver.read(recv_buffer, sizeof(pkt), &recv_port_1);
+  // check standard_metadata.packet_length
+  ASSERT_EQ(2, static_cast<int>(recv_buffer[1]));
   receiver.read(recv_buffer, sizeof(pkt), &recv_port_2);
+  ASSERT_EQ(2, static_cast<int>(recv_buffer[1]));
   // TODO(antonin): make sure the right packet comes out of the right port
   ASSERT_TRUE((recv_port_1 == port_out && recv_port_2 == port_out_copy) ||
               (recv_port_1 == port_out_copy && recv_port_2 == port_out));
@@ -560,8 +593,12 @@ TEST_F(SimpleSwitch_PacketRedirectP4_CloneE2E, CloneE2E_Multicast) {
   char recv_buffer[kMaxBufSize];
   int recv_port_1 = -1, recv_port_2 = -1, recv_port_3 = -1;
   receiver.read(recv_buffer, sizeof(pkt), &recv_port_1);
+  // check standard_metadata.packet_length
+  ASSERT_EQ(2, static_cast<int>(recv_buffer[1]));
   receiver.read(recv_buffer, sizeof(pkt), &recv_port_2);
+  ASSERT_EQ(2, static_cast<int>(recv_buffer[1]));
   receiver.read(recv_buffer, sizeof(pkt), &recv_port_3);
+  ASSERT_EQ(2, static_cast<int>(recv_buffer[1]));
   // TODO(antonin): make sure the right packet comes out of the right port
   ASSERT_EQ(std::set<int>({recv_port_1, recv_port_2, recv_port_3}),
             std::set<int>({port_out, port_out_copy, port_out_mc_copy}));
@@ -644,6 +681,8 @@ TEST_F(SimpleSwitch_PacketRedirectP4, Resubmit) {
   char recv_buffer[kMaxBufSize];
   int recv_port = -1;
   receiver.read(recv_buffer, sizeof(pkt), &recv_port);
+  // check standard_metadata.packet_length
+  ASSERT_EQ(2, static_cast<int>(recv_buffer[1]));
   ASSERT_EQ(port_out_2, recv_port);
 
 #ifdef BM_ELOG_ON
@@ -721,6 +760,8 @@ TEST_F(SimpleSwitch_PacketRedirectP4, Recirculate) {
   char recv_buffer[kMaxBufSize];
   int recv_port = -1;
   receiver.read(recv_buffer, sizeof(pkt), &recv_port);
+  // check standard_metadata.packet_length
+  ASSERT_EQ(2, static_cast<int>(recv_buffer[1]));
   ASSERT_EQ(port_out_2, recv_port);
 
 #ifdef BM_ELOG_ON
