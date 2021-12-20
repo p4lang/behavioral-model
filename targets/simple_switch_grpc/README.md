@@ -3,7 +3,7 @@
 This is an alternative version of the simple_switch target, which does not use
 the Thrift runtime server for table programming (unless required, see below).
 Instead it starts a gRPC server which implements
-[p4untime.proto](https://github.com/p4lang/PI/blob/master/proto/p4/p4runtime.proto).
+[p4untime.proto](https://github.com/p4lang/p4runtime/blob/main/proto/p4/v1/p4runtime.proto).
 
 Make sure you read this README and [FAQ](#faq) before asking a question on
 Github or the p4-dev mailing list.
