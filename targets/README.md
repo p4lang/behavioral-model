@@ -44,7 +44,7 @@ References:
 
 + [Specification documents](https://p4.org/specs/) for P4_14 and P4_16
   languages.
-+ The include file [`v1model.p4`](https://github.com/p4lang/p4c/blob/master/p4include/v1model.p4)
++ The include file [`v1model.p4`](https://github.com/p4lang/p4c/blob/main/p4include/v1model.p4)
   defining the `v1model` architecture for P4_16 programs, and the
   [`simple_switch` documentation](../docs/simple_switch.md) giving
   more details of this architecture and its implementation in

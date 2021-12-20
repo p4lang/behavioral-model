@@ -11,11 +11,11 @@ should be starting with the [bmv2 README]
 (https://github.com/p4lang/behavioral-model).
 
 The bmv2 code already comes with 3 example targets: [simple_router]
-(https://github.com/p4lang/behavioral-model/tree/master/targets/simple_router),
+(https://github.com/p4lang/behavioral-model/tree/main/targets/simple_router),
 [l2_switch]
-(https://github.com/p4lang/behavioral-model/tree/master/targets/l2_switch) and
+(https://github.com/p4lang/behavioral-model/tree/main/targets/l2_switch) and
 [simple_switch]
-(https://github.com/p4lang/behavioral-model/tree/master/targets/simple_switch).
+(https://github.com/p4lang/behavioral-model/tree/main/targets/simple_switch).
 simple_router is the smallest and simplest one, and I suggest starting with
 it. l2_switch introduces some additional complexity by including a packet
 replication engine (to support multicast). simple_switch is the standard P4
