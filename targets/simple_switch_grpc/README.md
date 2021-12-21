@@ -3,7 +3,7 @@
 This is an alternative version of the simple_switch target, which does not use
 the Thrift runtime server for table programming (unless required, see below).
 Instead it starts a gRPC server which implements
-[p4untime.proto](https://github.com/p4lang/PI/blob/master/proto/p4/p4runtime.proto).
+[p4untime.proto](https://github.com/p4lang/p4runtime/blob/main/proto/p4/v1/p4runtime.proto).
 
 Make sure you read this README and [FAQ](#faq) before asking a question on
 Github or the p4-dev mailing list.
@@ -80,7 +80,7 @@ released specification](https://p4.org/specs/).
 We are working on supporting gNMI and OpenConfig YANG models as part of the
 P4Runtime server. We are using [sysrepo](https://github.com/sysrepo/sysrepo) as
 our YANG configuration data store and operational state manager. See [this
-README](https://github.com/p4lang/PI/blob/master/proto/README.md) for more
+README](https://github.com/p4lang/PI/blob/main/proto/README.md) for more
 information on how to try it out. After installing sysrepo, building and
 installing the PI project with sysrepo support enabled, you will need to
 configure simple_switch_grpc with `--with-sysrepo` and build it again.
@@ -182,7 +182,7 @@ by P4Runtime.
 Refer to [Enabling the Thrift server](#enabling-the-thrift-server) above. Use
 `--with-thrift` when configuring bmv2 and simple_switch_grpc.
 
-#### What's the difference between the [PI folder in this repository](https://github.com/p4lang/behavioral-model/tree/master/PI) and the [PI repository](https://github.com/p4lang/PI)? How do they relate to simple_switch and simple_switch_grpc?
+#### What's the difference between the [PI folder in this repository](https://github.com/p4lang/behavioral-model/tree/main/PI) and the [PI repository](https://github.com/p4lang/PI)? How do they relate to simple_switch and simple_switch_grpc?
 
 The PI repository includes all the core code for the PI project: common server
 code, P4Runtime & P4Info Protobuf IDL definitions, implementation of the
@@ -192,7 +192,7 @@ implement P4Runtime using the PI C interface. All these targets have to do is
 implement a "few" C functions, such as `_pi_table_entry_add`.
 
 The PI repository also includes [a reference implementation of the PI interface
-for bmv2](https://github.com/p4lang/PI/tree/master/targets/bmv2). This
+for bmv2](https://github.com/p4lang/PI/tree/main/targets/bmv2). This
 implementation uses the bmv2 Thrift RPC server. In other words, the P4Runtime
 RPC calls are mapped to PI C function calls, which in-turn are mapped to bmv2
 Thrift RPC calls. This implementation enables controlling multiple bmv2
@@ -209,6 +209,6 @@ P4Runtime server and the bmv2 device are run in the same process
 (simple_switch_grpc), you can only have a single bmv2 device for a given
 P4Runtime server. The PI C implementation used by simple_switch_grpc, which
 directly accesses bmv2 internal data structures, is located in the [PI folder in
-this repository](https://github.com/p4lang/behavioral-model/tree/master/PI).
+this repository](https://github.com/p4lang/behavioral-model/tree/main/PI).
 
 We encourage newcomers to use simple_switch_grpc if possible.

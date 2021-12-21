@@ -41,7 +41,7 @@ The `v1model.p4` standard_metadata field `mcast_grp` specifies one of
 simple_switch can use a larger range of multicast group ids.  The
 range given here is limited by the definition of the `mcast_grp`
 standard_metadata field in [p4c's `v1model.p4` include
-file](https://github.com/p4lang/p4c/blob/master/p4include/v1model.p4),
+file](https://github.com/p4lang/p4c/blob/main/p4include/v1model.p4),
 which has type `bit<16>`.
 
 For packets that should be multicast replicated, the PRE looks up the

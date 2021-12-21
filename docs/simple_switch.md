@@ -79,7 +79,7 @@ Here are the fields:
   none of those, so a normal unicast packet from ingress (`NORMAL`).
   Until such time as similar constants are pre-defined for you, you
   may copy [this
-  list](https://github.com/p4lang/p4c/blob/master/testdata/p4_14_samples/switch_20160512/includes/intrinsic.p4#L62-L68)
+  list](https://github.com/p4lang/p4c/blob/main/testdata/p4_14_samples/switch_20160512/includes/intrinsic.p4#L62-L68)
   of constants into your code.
 - `parser_status` (sm14) or `parser_error` (v1m) - `parser_status` is
   the name in the P4_14 language specification.  It has been renamed
@@ -895,7 +895,7 @@ for array elements for packet processing, the Thrift API (used by
 `simple_switch_CLI`, and perhaps some switch controller software) only
 supports control plane read and write operations for array elements up
 to 64 bits wide (see the type `BmRegisterValue` in file
-[`standard.thrift`](https://github.com/p4lang/behavioral-model/blob/master/thrift_src/standard.thrift),
+[`standard.thrift`](https://github.com/p4lang/behavioral-model/blob/main/thrift_src/standard.thrift),
 which is a 64-bit integer as of October 2019).  The P4Runtime API does
 not have this limitation, but there is no P4Runtime implementation of
 register read and write operations yet for simple_switch:

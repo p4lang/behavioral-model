@@ -1,6 +1,6 @@
 # BEHAVIORAL MODEL (bmv2)
 
-[![Build Status](https://travis-ci.org/p4lang/behavioral-model.svg?branch=master)](https://travis-ci.org/p4lang/behavioral-model)
+[![Build Status](https://travis-ci.org/p4lang/behavioral-model.svg?branch=main)](https://travis-ci.org/p4lang/behavioral-model)
 
 This is the second version of the reference P4 software switch, nicknamed bmv2
 (for behavioral model version 2). The software switch is written in C++11. It
@@ -106,7 +106,7 @@ There are currently 2 P4 compilers available for bmv2 on p4lang:
  * [p4c](https://github.com/p4lang/p4c) includes a bmv2 backend and is the
    recommended compiler to use, as it supports both P4_14 and P4_16
    programs. Refer to the
-   [README](https://github.com/p4lang/p4c/blob/master/README.md) for information
+   [README](https://github.com/p4lang/p4c/blob/main/README.md) for information
    on how to install and use p4c. At the moment, the bmv2 p4c backend supports
    the v1model architecture, with some tentative support for the PSA
    architecture. P4_16 programs written for v1model can be executed with the
