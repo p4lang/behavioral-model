@@ -506,7 +506,7 @@ def ipv6Addr_to_bytes(addr):
     except:
         raise UIn_BadIPv6Error()
     try:
-        return [ord(b) for b in ip.packed]
+        return list(ip.packed)
     except:
         raise UIn_BadIPv6Error()
 
