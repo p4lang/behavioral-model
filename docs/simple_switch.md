@@ -1031,6 +1031,57 @@ options:
   time synchronization.
 
 
+### BMv2 idle timeout implementation notes
+
+The BMv2 v1model implementation supports the table property
+`support_timeout`.  If not specified for a table, its value is false.
+If you assign this table property the value of true when defining a
+table, as shown in the table definition below, then BMv2 will maintain
+independent state for each entry of the table to detect when it has
+been longer than a configured time interval since the entry was last
+matched.
+
+```
+    // Definitions of actions have been omitted in this code snippet.
+    // Their definitions do not affect the behavior of the
+    // `support_timeout` table property.
+
+    table mac_da_fwd {
+        key = {
+            hdr.ethernet.dstAddr: exact;
+        }
+        actions = {
+            set_port;
+            my_drop;
+        }
+        support_timeout = true;
+        default_action = my_drop;
+    }
+```
+
+See Sections
+["Idle-timeout"](https://p4.org/p4-spec/p4runtime/v1.3.0/P4Runtime-Spec.html#sec-idle-timeout)
+and ["Table Idle Timeout
+Notification"](https://p4.org/p4-spec/p4runtime/v1.3.0/P4Runtime-Spec.html#sec-table-idle-timeout-notification)
+in the P4Runtime Specification for how a controller can configure the
+time interval for each entry it adds to such a table, and the contents
+of IdleTimeoutNotification messages sent from the switch to a
+P4Runtime controller when a table entry has not been matched for
+longer than its configured `idle_timeout_ns` duration.
+
+The BMv2 v1model implementation of this feature does a "background
+sweep" of all entries in all tables with `support_timeout = true`
+every 2 seconds, so effectively idle timeout configurations are
+rounded up to the next multiple of 2 seconds.
+
+If a table entry has not been matched for long enough, and thus sends
+an IdleTimeoutNotification message to the controller for that entry,
+and the entry continues not to be matched after that, BMv2 will
+attempt to send another IdleTimeoutNotification for the same entry
+every 2 seconds afterwards, regardless of the `idle_timeout_ns`
+configured for the entry.
+
+
 ## Restrictions on recirculate, resubmit, and clone operations
 
 Note: This section is for historical reference purposes.  It applies
