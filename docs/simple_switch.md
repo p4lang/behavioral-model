@@ -1069,17 +1069,20 @@ of IdleTimeoutNotification messages sent from the switch to a
 P4Runtime controller when a table entry has not been matched for
 longer than its configured `idle_timeout_ns` duration.
 
+Note that the P4Runtime API server/switch side is only implemented by
+the simple_switch_grpc process, not by simple_switch.
+
 The BMv2 v1model implementation of this feature does a "background
 sweep" of all entries in all tables with `support_timeout = true`
-every 2 seconds, so effectively idle timeout configurations are
-rounded up to the next multiple of 2 seconds.
+every 1 second, so effectively idle timeout configurations are rounded
+up to the next multiple of 1 second.
 
 If a table entry has not been matched for long enough, and thus sends
 an IdleTimeoutNotification message to the controller for that entry,
 and the entry continues not to be matched after that, BMv2 will
 attempt to send another IdleTimeoutNotification for the same entry
-every 2 seconds afterwards, regardless of the `idle_timeout_ns`
-configured for the entry.
+every 2 seconds afterwards (every other sweep interval), regardless of
+the `idle_timeout_ns` configured for the entry.
 
 
 ## Restrictions on recirculate, resubmit, and clone operations
