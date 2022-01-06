@@ -25,6 +25,27 @@ separate executable program named `psa_switch`, separate from the
 This document aims at providing P4 programmers with important information
 regarding the simple_switch architecture.
 
+
+## Differences between simple_switch and simple_switch_grpc processes
+
+The simple_switch process was developed first, and supports a
+Thrift-based control API that was custom developed for BMv2, and to
+our knowledge is not supported by other switches, unless they are
+based on simple_switch.
+
+The simple_switch_grpc process was developed based on simple_switch,
+and supports the P4Runtime API, as a server/switch.
+simple_switch_grpc can optionally also support the simple_switch
+Thrift API (see
+[here](https://github.com/p4lang/behavioral-model/tree/main/targets/simple_switch_grpc#enabling-the-thrift-server)).
+Enabling this option might be useful to someone because it supports
+some configuration changes that the P4Runtime API does not, e.g. the
+`set_queue_rate` command (among others).
+
+Thus if you wish to use the P4Runtime API to control the configuration
+of the switch, you must use simple_switch_grpc.
+
+
 ## Standard metadata
 
 For a P4_16 program using the v1model architecture and including the
@@ -1029,6 +1050,57 @@ options:
   This is likely to be at least as much development effort as
   implementing PTP, but seems likely to be able to achieve tighter
   time synchronization.
+
+
+### BMv2 idle timeout implementation notes
+
+The BMv2 v1model implementation supports the table property
+`support_timeout`.  If not specified for a table, its value is false.
+If you assign this table property the value of true when defining a
+table, as shown in the table definition below, then BMv2 will maintain
+independent state for each entry of the table to detect when it has
+been longer than a configured time interval since the entry was last
+matched.
+
+```
+    // Definitions of actions have been omitted in this code snippet.
+    // Their definitions do not affect the behavior of the
+    // `support_timeout` table property.
+
+    table mac_da_fwd {
+        key = {
+            hdr.ethernet.dstAddr: exact;
+        }
+        actions = {
+            set_port;
+            my_drop;
+        }
+        support_timeout = true;
+        default_action = my_drop;
+    }
+```
+
+See Sections
+["Idle-timeout"](https://p4.org/p4-spec/p4runtime/v1.3.0/P4Runtime-Spec.html#sec-idle-timeout)
+and ["Table Idle Timeout
+Notification"](https://p4.org/p4-spec/p4runtime/v1.3.0/P4Runtime-Spec.html#sec-table-idle-timeout-notification)
+in the P4Runtime Specification for how a controller can configure the
+time interval for each entry it adds to such a table, and the contents
+of IdleTimeoutNotification messages sent from the switch to a
+P4Runtime controller when a table entry has not been matched for
+longer than its configured `idle_timeout_ns` duration.
+
+The BMv2 v1model implementation of this feature does a "background
+sweep" of all entries in all tables with `support_timeout = true`
+every 1 second, so effectively idle timeout configurations are rounded
+up to the next multiple of 1 second.
+
+If a table entry has not been matched for long enough, and thus BMv2
+has sent an IdleTimeoutNotification message to the controller for that
+entry, and the entry continues not to be matched after that, BMv2 will
+attempt to send another IdleTimeoutNotification for the same entry
+every 2 seconds afterwards (every other sweep interval), regardless of
+the `idle_timeout_ns` configured for the entry.
 
 
 ## Restrictions on recirculate, resubmit, and clone operations
