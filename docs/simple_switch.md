@@ -25,6 +25,24 @@ separate executable program named `psa_switch`, separate from the
 This document aims at providing P4 programmers with important information
 regarding the simple_switch architecture.
 
+
+## Differences between simple_switch and simple_switch_grpc processes
+
+The simple_switch process was developed first, and supports a
+Thrift-based control API that was custom developed for BMv2, and to
+our knowledge is not supported by other switches, unless they are
+based on simple_switch.
+
+The simple_switch_grpc process was developed based on simple_switch,
+and supports both the P4Runtime API, as a server/switch, and the
+simple_switch Thrift API.  The Thrift API is still supported because
+it supports some configuration changes that the P4Runtime API does
+not, e.g. the `set_queue_rate` command (among others).
+
+Thus if you wish to use the P4Runtime API to control the configuration
+of the switch, you must use simple_switch_grpc.
+
+
 ## Standard metadata
 
 For a P4_16 program using the v1model architecture and including the
@@ -1069,17 +1087,14 @@ of IdleTimeoutNotification messages sent from the switch to a
 P4Runtime controller when a table entry has not been matched for
 longer than its configured `idle_timeout_ns` duration.
 
-Note that the P4Runtime API server/switch side is only implemented by
-the simple_switch_grpc process, not by simple_switch.
-
 The BMv2 v1model implementation of this feature does a "background
 sweep" of all entries in all tables with `support_timeout = true`
 every 1 second, so effectively idle timeout configurations are rounded
 up to the next multiple of 1 second.
 
-If a table entry has not been matched for long enough, and thus sends
-an IdleTimeoutNotification message to the controller for that entry,
-and the entry continues not to be matched after that, BMv2 will
+If a table entry has not been matched for long enough, and thus BMv2
+has sent an IdleTimeoutNotification message to the controller for that
+entry, and the entry continues not to be matched after that, BMv2 will
 attempt to send another IdleTimeoutNotification for the same entry
 every 2 seconds afterwards (every other sweep interval), regardless of
 the `idle_timeout_ns` configured for the entry.
