@@ -34,10 +34,13 @@ our knowledge is not supported by other switches, unless they are
 based on simple_switch.
 
 The simple_switch_grpc process was developed based on simple_switch,
-and supports both the P4Runtime API, as a server/switch, and the
-simple_switch Thrift API.  The Thrift API is still supported because
-it supports some configuration changes that the P4Runtime API does
-not, e.g. the `set_queue_rate` command (among others).
+and supports the P4Runtime API, as a server/switch.
+simple_switch_grpc can optionally also support the simple_switch
+Thrift API (see
+[here](https://github.com/p4lang/behavioral-model/tree/main/targets/simple_switch_grpc#enabling-the-thrift-server)).
+Enabling this option might be useful to someone because it supports
+some configuration changes that the P4Runtime API does not, e.g. the
+`set_queue_rate` command (among others).
 
 Thus if you wish to use the P4Runtime API to control the configuration
 of the switch, you must use simple_switch_grpc.
