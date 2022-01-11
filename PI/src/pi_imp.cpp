@@ -19,6 +19,7 @@
  */
 
 #include <bm/bm_sim/_assert.h>
+#include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/switch.h>
 
 #include <PI/int/pi_int.h>
@@ -76,6 +77,10 @@ pi_status_t _pi_assign_device(pi_dev_id_t dev_id, const pi_p4info_t *p4info,
   // check that the device id is correct, i.e. matches the one used when
   // starting the bmv2 process (--device-id command-line parameter)
   if (pibmv2::switch_->get_device_id() != dev_id) {
+    bm::Logger::get()->error(
+        "Mismatch between device id configured for bmv2 (with \"--device-id\"),"
+        " which is {}, and device id provided through PI / P4Runtime,"
+        " which is {}", pibmv2::switch_->get_device_id(), dev_id);
     // TODO(antonin): define better error code
     return PI_STATUS_DEV_OUT_OF_RANGE;
   }
