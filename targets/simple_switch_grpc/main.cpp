@@ -104,7 +104,11 @@ main(int argc, char* argv[]) {
   }
 
   auto &runner = sswitch_grpc::SimpleSwitchGrpcRunner::get_instance(
-      !disable_swap_flag, grpc_server_addr, cpu_port, dp_grpc_server_addr);
+      !disable_swap_flag,
+      grpc_server_addr,
+      cpu_port,
+      dp_grpc_server_addr,
+      drop_port);
   int status = runner.init_and_start(parser);
   if (status != 0) std::exit(status);
 
