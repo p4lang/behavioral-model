@@ -325,6 +325,19 @@ TEST(HashTest, Identity) {
   ASSERT_EQ(expected, output);
 }
 
+TEST(HashTest, Xor16) {
+  const auto ptr = CalculationsMap::get_instance()->get_copy("xor16");
+  ASSERT_NE(nullptr, ptr);
+
+  const unsigned char input_buffer[] = {0x0b, 0xb8, 0x1f, 0x90};
+  const uint16_t expected = 0x1428;
+
+  const uint16_t output = ptr->output(
+      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
+
+  ASSERT_EQ(expected, output);
+}
+
 TEST(HashTest, Cksum16) {
   const auto ptr = CalculationsMap::get_instance()->get_copy("cksum16");
   ASSERT_NE(nullptr, ptr);

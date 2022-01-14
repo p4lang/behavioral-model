@@ -360,6 +360,22 @@ struct csum16 {
   }
 };
 
+struct xor16 {
+  uint16_t operator()(const char *buf, size_t len) const {
+    uint16_t mask = 0x00ff;
+    uint16_t final_xor_value = 0x0000;
+    /* Main loop - 2 bytes at a time */
+    for (unsigned int byte = 0; byte < len; byte += 2) {
+      uint16_t t1 = static_cast<uint16_t>(buf[byte]) << 8;
+      uint16_t t2 = 0x0000;
+      /* In case there is a 2nd byte */
+      if ((byte + 1) < len) t2 = static_cast<uint16_t>(buf[byte + 1]);
+      final_xor_value = final_xor_value ^ (t1 + (t2 & mask));
+    }
+    return final_xor_value;
+  }
+};
+
 struct identity {
   uint64_t operator()(const char *buf, size_t len) const {
     uint64_t res = 0ULL;
@@ -420,6 +436,7 @@ REGISTER_HASH(csum16);
 REGISTER_HASH(identity);
 REGISTER_HASH(round_robin);
 REGISTER_HASH(round_robin_consistent);
+REGISTER_HASH(xor16);
 
 using crc8_custom = crc_custom<uint8_t>;
 REGISTER_HASH(crc8_custom);
