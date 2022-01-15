@@ -1,18 +1,25 @@
 name: Build and push latest image
 
-# This job should ideally also execute when the base image (p4lang/pi) is updated
 on:
   push:
     branches:
       - main
       - stable
+  schedule:
+    # We run it every 4 hours, starting at 03:15.
+    # Note that this will only update the 'latest' tag (not the 'stable' tag).
+    # Ideally, we would update the image every time the base image (p4lang/pi)
+    # is updated, but we deem this good enough.
+    - cron: '15 3-23/4 * * *' # "At minute 15 past every 4th hour from 3 through 23."
 
 jobs:
   build:
-    if: ${{ github.repository == 'p4lang/behavioral-model' && github.event_name == 'push' }}
+    if: ${{ github.repository == 'p4lang/behavioral-model' }}
     runs-on: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: Determine Docker image tag
       id: get-tag
       shell: bash
@@ -28,11 +35,18 @@ jobs:
         fi
         echo "Tag is $TAG"
         echo "::set-output name=tag::$TAG"
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
     - name: Build and push Docker image to registry
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      run: |
-        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        docker build -t p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }} .
-        docker push p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }}
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
