@@ -368,7 +368,7 @@ struct xor16 {
     for (unsigned int byte = 0; byte < len; byte += 2) {
       uint16_t t1 = static_cast<uint16_t>(buf[byte]) << 8;
       uint16_t t2 = 0x0000;
-      /* In case there is a 2nd byte */
+      /* Condition returns false on the last byte of an odd-length sequence. */
       if ((byte + 1) < len) t2 = static_cast<uint16_t>(buf[byte + 1]);
       final_xor_value = final_xor_value ^ (t1 + (t2 & mask));
     }
