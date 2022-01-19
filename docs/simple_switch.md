@@ -17,7 +17,7 @@ fields.
 
 The P4_16 language also now has a Portable Switch Architecture (PSA)
 defined in [its own specification](https://p4.org/specs).  As of
-October 2019, a partial implementation of the PSA architecture has
+January 2022, a partial implementation of the PSA architecture has
 been done, but it is not yet complete.  It will be implemented in a
 separate executable program named `psa_switch`, separate from the
 `simple_switch` program described here.
@@ -100,7 +100,7 @@ Here are the fields:
   none of those, so a normal unicast packet from ingress (`NORMAL`).
   Until such time as similar constants are pre-defined for you, you
   may copy [this
-  list](https://github.com/p4lang/p4c/blob/main/testdata/p4_14_samples/switch_20160512/includes/intrinsic.p4#L62-L68)
+  list](https://github.com/p4lang/p4c/blob/main/testdata/p4_14_samples/switch_20160512/includes/intrinsic.p4#L60-L66)
   of constants into your code.
 - `parser_status` (sm14) or `parser_error` (v1m) - `parser_status` is
   the name in the P4_14 language specification.  It has been renamed
@@ -425,7 +425,7 @@ implementation.
 
 If a table has more than one `lpm` key field, it is rejected by the `p4c` BMv2
 back end. This could be generalized slightly, as described below, but that
-restriction is in place as of the January 2019 version of `p4c`.
+restriction is in place as of the January 2022 version of `p4c`.
 
 
 ### Range tables
@@ -447,7 +447,7 @@ determine whether a search key matches the entry, but the prefix length does
 _not_ determine the relative priority among multiple matching table
 entries. Only the numeric priority supplied by the control plane software
 determines that. Because of this, it would be reasonable for a `range` table to
-support multiple `lpm` key fields, but as of January 2020 this is not supported.
+support multiple `lpm` key fields, but as of January 2022 this is not supported.
 
 If a range table has entries defined via a `const entries` table property, then
 the relative priority of the entries are highest priority first, to lowest
@@ -798,7 +798,7 @@ This is supported:
     }
 ```
 
-but this is not, as of 2019-Jul-01:
+but this is not, as of 2022-Jan-18:
 
 ```
     action foo() {
@@ -917,7 +917,7 @@ for array elements for packet processing, the Thrift API (used by
 supports control plane read and write operations for array elements up
 to 64 bits wide (see the type `BmRegisterValue` in file
 [`standard.thrift`](https://github.com/p4lang/behavioral-model/blob/main/thrift_src/standard.thrift),
-which is a 64-bit integer as of October 2019).  The P4Runtime API does
+which is a 64-bit integer as of January 2022).  The P4Runtime API does
 not have this limitation, but there is no P4Runtime implementation of
 register read and write operations yet for simple_switch:
 [p4lang/PI#376](https://github.com/p4lang/PI/issues/376)
@@ -930,7 +930,7 @@ accesses some of the same register objects.  You need not use the
 `@atomic` annotation in your P4_16 program in order for this level of
 atomicity to be guaranteed for you.
 
-BMv2 v1model as of October 2019 _ignores_ `@atomic` annotations in
+BMv2 v1model as of January 2022 _ignores_ `@atomic` annotations in
 your P4_16 programs.  Thus even if you use such annotations, this does
 not cause BMv2 to treat any block of code larger than one action call
 as an atomic transaction.
@@ -995,7 +995,7 @@ result parameter where the result is written.
 
 ### BMv2 timestamp implementation notes
 
-All timestamps in BMv2 as of 2020-Jun-14 are in units of
+All timestamps in BMv2 as of 2022-Jan-18 are in units of
 microseconds, and they all begin at 0 when the process begins,
 e.g. when `simple_switch` or `simple_switch_grpc` begins.
 
