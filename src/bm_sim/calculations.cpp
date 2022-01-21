@@ -364,14 +364,22 @@ struct xor16 {
   uint16_t operator()(const char *buf, size_t len) const {
     uint16_t mask = 0x00ff;
     uint16_t final_xor_value = 0x0000;
+    unsigned int byte = 0;
+    uint16_t t1,t2;
     /* Main loop - 2 bytes at a time */
-    for (unsigned int byte = 0; byte < len; byte += 2) {
-      uint16_t t1 = static_cast<uint16_t>(buf[byte]) << 8;
-      uint16_t t2 = 0x0000;
-      /* Condition returns false on the last byte of an odd-length sequence. */
-      if ((byte + 1) < len) t2 = static_cast<uint16_t>(buf[byte + 1]);
+    while(len>=2) {
+      t1 = static_cast<uint16_t>(buf[byte]) << 8;
+      t2 = static_cast<uint16_t>(buf[byte + 1]);
       final_xor_value = final_xor_value ^ (t1 + (t2 & mask));
+
+      byte+=2;
+      len-=2;
     }
+    if(len>0) {
+      t1 = static_cast<uint16_t>(buf[byte]) << 8;
+      final_xor_value = final_xor_value ^ t1;
+    }
+
     return final_xor_value;
   }
 };
