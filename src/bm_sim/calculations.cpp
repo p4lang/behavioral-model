@@ -367,19 +367,18 @@ struct xor16 {
     unsigned int byte = 0;
     uint16_t t1,t2;
     /* Main loop - 2 bytes at a time */
-    while(len>=2) {
+    while (len >= 2) {
       t1 = static_cast<uint16_t>(buf[byte]) << 8;
       t2 = static_cast<uint16_t>(buf[byte + 1]);
       final_xor_value = final_xor_value ^ (t1 + (t2 & mask));
 
-      byte+=2;
-      len-=2;
+      byte += 2;
+      len -= 2;
     }
-    if(len>0) {
+    if (len > 0) {
       t1 = static_cast<uint16_t>(buf[byte]) << 8;
       final_xor_value = final_xor_value ^ t1;
     }
-
     return final_xor_value;
   }
 };
