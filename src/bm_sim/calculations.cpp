@@ -371,7 +371,6 @@ struct xor16 {
       t1 = static_cast<uint16_t>(buf[byte]) << 8;
       t2 = static_cast<uint16_t>(buf[byte + 1]);
       final_xor_value = final_xor_value ^ (t1 + (t2 & mask));
-
       byte += 2;
       len -= 2;
     }
