@@ -46,6 +46,7 @@ struct SSLOptions {
   std::string pem_root_certs;
   std::string pem_private_key;
   std::string pem_cert_chain;
+  bool with_client_auth;
 };
 
 class SimpleSwitchGrpcRunner {
