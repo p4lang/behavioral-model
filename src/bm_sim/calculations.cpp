@@ -365,7 +365,7 @@ struct xor16 {
     uint16_t mask = 0x00ff;
     uint16_t final_xor_value = 0x0000;
     unsigned int byte = 0;
-    uint16_t t1,t2;
+    uint16_t t1, t2;
     /* Main loop - 2 bytes at a time */
     while (len >= 2) {
       t1 = static_cast<uint16_t>(buf[byte]) << 8;
