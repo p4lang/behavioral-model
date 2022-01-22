@@ -631,6 +631,13 @@ SimpleSwitchGrpcRunner::init_and_start(const bm::OptionsParser &parser) {
     pi_ssl_options.pem_root_certs = ssl_options->pem_root_certs.c_str();
     pi_ssl_options.pem_private_key = ssl_options->pem_private_key.c_str();
     pi_ssl_options.pem_cert_chain = ssl_options->pem_cert_chain.c_str();
+    if (ssl_options->with_client_auth) {
+      pi_ssl_options.client_auth =
+          PI_GRPC_SSL_REQUEST_AND_REQUIRE_CLIENT_CERTIFICATE_AND_VERIFY;
+    } else {
+      pi_ssl_options.client_auth =
+          PI_GRPC_SSL_DONT_REQUEST_CLIENT_CERTIFICATE;
+    }
   }
   PIGrpcServerRunV2(grpc_server_addr.c_str(),
                     nullptr,

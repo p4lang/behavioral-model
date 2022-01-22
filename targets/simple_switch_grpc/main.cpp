@@ -87,6 +87,9 @@ main(int argc, char* argv[]) {
   simple_switch_parser.add_string_option(
       "grpc-server-key",
       "Path to pem file holding server key");
+  simple_switch_parser.add_flag_option(
+      "grpc-server-with-client-auth",
+      "Require client to have a valid certificate for mutual authentication");
   simple_switch_parser.add_uint_option(
       "cpu-port",
       "Choose a numerical value for the CPU port, it will be used for "
@@ -174,12 +177,24 @@ main(int argc, char* argv[]) {
       std::exit(1);
   }
 
+  bool grpc_server_with_client_auth = false;
+  {
+    auto rc = simple_switch_parser.get_flag_option(
+        "grpc-server-with-client-auth", &grpc_server_with_client_auth);
+    if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS) std::exit(1);
+  }
+
   if (!grpc_server_ssl &&
       (grpc_server_cacert != "" ||
        grpc_server_cert != "" ||
        grpc_server_key != "")) {
     std::cerr << "SSL/TLS is disabled for gRPC server, "
         << "so provided .pem files will be ignored\n";
+  }
+
+  if (!grpc_server_ssl && grpc_server_with_client_auth) {
+    std::cerr << "SSL/TLS is disabled for gRPC server, "
+        << "so cannot request client auth\n";
   }
 
   if (grpc_server_ssl && grpc_server_cert == "") {
@@ -223,6 +238,7 @@ main(int argc, char* argv[]) {
       if (grpc_server_key != "") {
         ssl_options->pem_private_key = read_pem_file(grpc_server_key);
       }
+      ssl_options->with_client_auth = grpc_server_with_client_auth;
     }
   } catch (const read_pem_exception &e) {
     std::cerr << e.msg();
