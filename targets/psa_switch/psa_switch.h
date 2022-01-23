@@ -75,12 +75,15 @@ class PsaSwitch : public Switch {
     bool mgid_valid;
   };
 
+  static constexpr port_t default_drop_port = 511;
+
  private:
   using clock = std::chrono::high_resolution_clock;
 
  public:
   // by default, swapping is off
-  explicit PsaSwitch(bool enable_swap = false);
+  explicit PsaSwitch(bool enable_swap = false,
+                     port_t drop_port = default_drop_port);
 
   ~PsaSwitch();
 
@@ -125,6 +128,14 @@ class PsaSwitch : public Switch {
   }
 
   void set_transmit_fn(TransmitFn fn);
+
+  port_t get_drop_port() const {
+    return drop_port;
+  }
+
+  void set_drop_port(port_t _drop_port) {
+    drop_port = _drop_port;
+  }
 
   // overriden interfaces
   Counter::CounterErrorCode
@@ -218,6 +229,7 @@ class PsaSwitch : public Switch {
   static constexpr size_t nb_egress_threads = 4u;
   static constexpr port_t PSA_PORT_RECIRCULATE = 0xfffffffa;
   static packet_id_t packet_id;
+  port_t drop_port;
 
   class MirroringSessions;
 
