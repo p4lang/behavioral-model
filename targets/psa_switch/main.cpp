@@ -50,6 +50,16 @@ main(int argc, char* argv[]) {
     "You will need to use this command-line option when you wish to use port "
     "511 as a valid dataplane port or as the CPU port."
   );
+  psa_switch_parser->add_uint_option(
+    "cpu-port",
+    "Choose a numerical value for the CPU port, it will be used for "
+    "packet-in / packet-out. Do not add an interface with this port number, "
+    "and 0 is not a valid value. "
+    "If you do not use this command-line option, "
+    "P4Runtime packet IO functionality will not be available: you will not "
+    "be able to receive / send packets using the P4Runtime StreamChannel "
+    "bi-directional stream."
+  );
 
   int status = psa_switch->init_from_command_line_options(
       argc, argv, psa_switch_parser);
@@ -69,6 +79,15 @@ main(int argc, char* argv[]) {
     else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
       std::exit(1);
     psa_switch->set_drop_port(drop_port);
+  }
+
+  uint32_t cpu_port = 0xffffffff;
+  {
+    auto rc = psa_switch_parser->get_uint_option("cpu-port", &cpu_port);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      cpu_port = 0;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS || cpu_port == 0)
+      std::exit(1);
   }
 
   int thrift_port = psa_switch->get_runtime_port();
