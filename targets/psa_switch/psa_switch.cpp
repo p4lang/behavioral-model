@@ -62,7 +62,7 @@ struct bmv2_hash {
 REGISTER_HASH(hash_ex);
 REGISTER_HASH(bmv2_hash);
 
-extern int import_primitives();
+extern int import_primitives(bm::psa::PsaSwitch*);
 extern int import_counters();
 extern int import_meters();
 extern int import_random();
@@ -117,8 +117,9 @@ class PsaSwitch::MirroringSessions {
   std::unordered_map<mirror_id_t, MirroringSessionConfig> sessions_map;
 };
 
-PsaSwitch::PsaSwitch(bool enable_swap)
+PsaSwitch::PsaSwitch(bool enable_swap, port_t drop_port)
   : Switch(enable_swap),
+    drop_port(drop_port),
     input_buffer(1024),
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
     egress_buffers(nb_egress_threads,
@@ -181,7 +182,7 @@ PsaSwitch::PsaSwitch(bool enable_swap)
   force_arith_header("psa_egress_output_metadata");
   force_arith_header("psa_egress_deparser_input_metadata");
 
-  import_primitives();
+  import_primitives(this);
   import_counters();
   import_meters();
   import_random();

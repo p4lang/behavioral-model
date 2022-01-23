@@ -27,8 +27,14 @@
 #include <bm/bm_sim/phv.h>
 #include <bm/bm_sim/logger.h>
 
+#include "psa_switch.h"
+
 #include <random>
 #include <thread>
+
+namespace {
+  bm::psa::PsaSwitch *psa_switch;
+} // namespace
 
 namespace bm {
 
@@ -134,7 +140,8 @@ REGISTER_PRIMITIVE(shift_right);
 
 class drop : public ActionPrimitive<> {
   void operator ()() {
-    get_field("standard_metadata.egress_spec").set(511);
+    get_field("standard_metadata.egress_spec").set(
+      psa_switch->get_drop_port());
     if (get_phv().has_field("intrinsic_metadata.mcast_grp")) {
       get_field("intrinsic_metadata.mcast_grp").set(0);
     }
@@ -391,6 +398,7 @@ REGISTER_PRIMITIVE_W_NAME("truncate", truncate_);
 // the previous alternative was to have all the primitives in a header file (the
 // primitives could also be placed in psa_switch.cpp directly), but I need
 // this dummy function if I want to keep the primitives in their own file
-int import_primitives() {
+int import_primitives(bm::psa::PsaSwitch *_psa_switch) {
+  psa_switch = _psa_switch;
   return 0;
 }

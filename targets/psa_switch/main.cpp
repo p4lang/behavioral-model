@@ -40,8 +40,17 @@ main(int argc, char* argv[]) {
   using bm::psa::PsaSwitch;
   psa_switch = new PsaSwitch();
   psa_switch_parser = new bm::TargetParserBasic();
-  psa_switch_parser->add_flag_option("enable-swap",
-                                        "enable JSON swapping at runtime");
+  psa_switch_parser->add_flag_option(
+    "enable-swap",
+    "enable JSON swapping at runtime"
+  );
+  psa_switch_parser->add_uint_option(
+    "drop-port",
+    "Choose a numerical value for the drop port (default is 511). "
+    "You will need to use this command-line option when you wish to use port "
+    "511 as a valid dataplane port or as the CPU port."
+  );
+
   int status = psa_switch->init_from_command_line_options(
       argc, argv, psa_switch_parser);
   if (status != 0) std::exit(status);
@@ -51,6 +60,16 @@ main(int argc, char* argv[]) {
       != bm::TargetParserBasic::ReturnCode::SUCCESS)
     std::exit(1);
   if (enable_swap_flag) psa_switch->enable_config_swap();
+
+  uint32_t drop_port = 0xffffffff;
+  {
+    auto rc = psa_switch_parser->get_uint_option("drop-port", &drop_port);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      drop_port = PsaSwitch::default_drop_port;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+    psa_switch->set_drop_port(drop_port);
+  }
 
   int thrift_port = psa_switch->get_runtime_port();
   bm_runtime::start_server(psa_switch, thrift_port);
