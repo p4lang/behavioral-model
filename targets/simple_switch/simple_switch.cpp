@@ -72,7 +72,7 @@ REGISTER_HASH(bmv2_hash);
 
 extern int import_primitives(SimpleSwitch *simple_switch);
 
-packet_id_t SimpleSwitch::packet_id = 0;
+packet_id_t bm::BaseSwitch::packet_id = 0;
 
 class SimpleSwitch::MirroringSessions {
  public:
@@ -199,7 +199,7 @@ class SimpleSwitch::InputBuffer {
 };
 
 SimpleSwitch::SimpleSwitch(bool enable_swap, port_t drop_port)
-  : Switch(enable_swap),
+  : BaseSwitch(enable_swap),
     drop_port(drop_port),
     input_buffer(new InputBuffer(
         1024 /* normal capacity */, 1024 /* resubmit/recirc capacity */)),
@@ -212,16 +212,18 @@ SimpleSwitch::SimpleSwitch(bool enable_swap, port_t drop_port)
                    64, EgressThreadMapper(nb_egress_threads)),
 #endif
     output_buffer(128),
-    // cannot use std::bind because of a clang bug
-    // https://stackoverflow.com/questions/32030141/is-this-incorrect-use-of-stdbind-or-a-compiler-bug
-    my_transmit_fn([this](port_t port_num, packet_id_t pkt_id,
-                          const char *buffer, int len) {
-        _BM_UNUSED(pkt_id);
-        this->transmit_fn(port_num, buffer, len);
-    }),
     pre(new McSimplePreLAG()),
     start(clock::now()),
     mirroring_sessions(new MirroringSessions()) {
+
+  // cannot use std::bind because of a clang bug
+  // https://stackoverflow.com/questions/32030141/is-this-incorrect-use-of-stdbind-or-a-compiler-bug
+  set_transmit_fn([this](port_t port_num, packet_id_t pkt_id,
+                        const char *buffer, int len) {
+      _BM_UNUSED(pkt_id);
+      this->transmit_fn(port_num, buffer, len);
+  });
+
   add_component<McSimplePreLAG>(pre);
 
   add_required_field("standard_metadata", "ingress_port");
@@ -367,11 +369,6 @@ uint64_t
 SimpleSwitch::get_time_since_epoch_us() const {
   auto tp = clock::now();
   return duration_cast<ts_res>(tp.time_since_epoch()).count();
-}
-
-void
-SimpleSwitch::set_transmit_fn(TransmitFn fn) {
-  my_transmit_fn = std::move(fn);
 }
 
 void

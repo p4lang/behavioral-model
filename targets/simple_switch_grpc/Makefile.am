@@ -34,7 +34,8 @@ lib_LTLIBRARIES = libbm_grpc_dataplane.la
 noinst_LTLIBRARIES = libsimple_switch_grpc.la
 
 libsimple_switch_grpc_la_SOURCES = \
-switch_runner.cpp switch_runner.h
+../../services/switch_runner/switch_runner.cpp \
+../../services/switch_runner/switch_runner.h
 if WITH_SYSREPO
 libsimple_switch_grpc_la_SOURCES += \
 switch_sysrepo.h switch_sysrepo.cpp
@@ -58,7 +59,9 @@ $(GRPC_LIBS) $(PROTOBUF_LIBS)
 
 # dataplane_interface.proto
 
-EXTRA_DIST = ../../services/p4/bm/dataplane_interface.proto
+EXTRA_DIST = ../../services/p4/bm/dataplane_interface.proto \
+../../services/switch_runner/switch_runner.cpp \
+../../services/switch_runner/switch_runner.h
 
 proto = $(abs_srcdir)/../../services/p4/bm/dataplane_interface.proto
 
@@ -129,7 +132,9 @@ $(BUILT_SOURCES): proto_files.ts
 	fi
 
 AM_CPPFLAGS += -Icpp_out -Igrpc_out \
--I$(builddir)/../../services/cpp_out -I$(builddir)/../../services/grpc_out
+-I$(builddir)/../../services/cpp_out \
+-I$(builddir)/../../services/grpc_out \
+-I$(builddir)/../../services/switch_runner
 
 nodist_libbm_grpc_dataplane_la_SOURCES = $(proto_cpp_files) $(proto_grpc_files)
 # no warnings or Werror for auto-generated sources

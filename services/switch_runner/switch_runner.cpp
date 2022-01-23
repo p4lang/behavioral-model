@@ -23,6 +23,7 @@
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/options_parse.h>
 #include <bm/bm_sim/transport.h>
+#include <bm/bm_sim/packet.h>
 
 #include <bm/PI/pi.h>
 
@@ -46,28 +47,15 @@
 #include <unordered_map>
 #include <utility>
 
-#include "simple_switch.h"
-
 #include "switch_runner.h"
 
-#ifdef WITH_SYSREPO
-#include "switch_sysrepo.h"
-#endif  // WITH_SYSREPO
-
-#ifdef WITH_THRIFT
-#include <bm/SimpleSwitch.h>
-#include <bm/bm_runtime/bm_runtime.h>
-
-namespace sswitch_runtime {
-    shared_ptr<SimpleSwitchIf> get_handler(SimpleSwitch *sw);
-}  // namespace sswitch_runtime
-#endif  // WITH_THRIFT
-
-namespace sswitch_grpc {
+namespace switch_runner {
 
 using grpc::ServerContext;
 using grpc::Status;
 using grpc::StatusCode;
+
+using bm::packet_id_t;
 
 using ServerReaderWriter = grpc::ServerReaderWriter<
   p4::bm::PacketStreamResponse, p4::bm::PacketStreamRequest>;
@@ -139,7 +127,7 @@ class DataplaneInterfaceServiceImpl
         if (request.id() != 0) {
           // grpc service has a single thread. get_packet_id() will return the
           // packet id of the newly received packet.
-          packet_id_translation[SimpleSwitch::get_packet_id()] = request.id();
+          packet_id_translation[bm::BaseSwitch::get_packet_id()] = request.id();
         }
         // PortStats is a POD struct; it will be value-initialized to 0s if the
         // port key is not found in the map.
@@ -148,7 +136,7 @@ class DataplaneInterfaceServiceImpl
         stats.in_octets += packet.size();
       }
     }
-    auto &runner = sswitch_grpc::SimpleSwitchGrpcRunner::get_instance();
+    auto &runner = switch_runner::SwitchGrpcRunner::get_instance();
     runner.block_until_all_packets_processed();
     Lock lock(mutex);
     active = false;
@@ -493,25 +481,24 @@ class NotificationsCapture : public bm::TransportIface {
   bm::SwitchWContexts *sw;
 };
 
-
-SimpleSwitchGrpcRunner::SimpleSwitchGrpcRunner(
-    bool enable_swap,
+SwitchGrpcRunner::SwitchGrpcRunner(
+    std::shared_ptr<bm::BaseSwitch> switch_target,
     std::string grpc_server_addr,
     bm::DevMgrIface::port_t cpu_port,
     std::string dp_grpc_server_addr,
-    bm::DevMgrIface::port_t drop_port,
     std::shared_ptr<SSLOptions> ssl_options)
-    : simple_switch(new SimpleSwitch(enable_swap, drop_port)),
+    : switch_target(switch_target),
       grpc_server_addr(grpc_server_addr), cpu_port(cpu_port),
       dp_grpc_server_addr(dp_grpc_server_addr),
       dp_service(nullptr),
       dp_grpc_server(nullptr),
-      ssl_options(ssl_options) {
+      ssl_options(ssl_options)
+{
   PIGrpcServerInit();
 }
 
 int
-SimpleSwitchGrpcRunner::init_and_start(const bm::OptionsParser &parser) {
+SwitchGrpcRunner::init_and_start(const bm::OptionsParser &parser) {
   std::unique_ptr<bm::DevMgrIface> my_dev_mgr = nullptr;
   if (!dp_grpc_server_addr.empty()) {
     dp_service = new DataplaneInterfaceServiceImpl(parser.device_id);
@@ -529,11 +516,6 @@ SimpleSwitchGrpcRunner::init_and_start(const bm::OptionsParser &parser) {
     dp_grpc_server = builder.BuildAndStart();
     my_dev_mgr.reset(dp_service);
   }
-
-#ifdef WITH_SYSREPO
-      sysrepo_driver = std::unique_ptr<SysrepoDriver>(new SysrepoDriver(
-          parser.device_id, simple_switch.get()));
-#endif  // WITH_SYSREPO
 
   // Even when using gNMI to manage ports, it is convenient to be able to use
   // the --interface / -i command-line option. However we have to "intercept"
@@ -555,8 +537,8 @@ SimpleSwitchGrpcRunner::init_and_start(const bm::OptionsParser &parser) {
 #endif  // WITH_SYSREPO
 
   auto my_transport = std::make_shared<NotificationsCapture>(
-      simple_switch.get());
-  int status = simple_switch->init_from_options_parser(
+      switch_target.get());
+  int status = switch_target->init_from_options_parser(
       *parser_ptr, std::move(my_transport), std::move(my_dev_mgr));
   if (status != 0) return status;
 
@@ -569,10 +551,10 @@ SimpleSwitchGrpcRunner::init_and_start(const bm::OptionsParser &parser) {
   // PortMonitor saves the CB by reference so we cannot use this code; it seems
   // that at this stage we do not need the CB any way.
   // using PortStatus = bm::DevMgrIface::PortStatus;
-  // auto port_cb = std::bind(&SimpleSwitchGrpcRunner::port_status_cb, this,
+  // auto port_cb = std::bind(&SwitchGrpcRunner::port_status_cb, this,
   //                          std::placeholders::_1, std::placeholders::_2);
-  // simple_switch->register_status_cb(PortStatus::PORT_ADDED, port_cb);
-  // simple_switch->register_status_cb(PortStatus::PORT_REMOVED, port_cb);
+  // switch_target->register_status_cb(PortStatus::PORT_ADDED, port_cb);
+  // switch_target->register_status_cb(PortStatus::PORT_REMOVED, port_cb);
 
   // check if CPU port number is also used by --interface
   // TODO(antonin): ports added dynamically?
@@ -587,7 +569,7 @@ SimpleSwitchGrpcRunner::init_and_start(const bm::OptionsParser &parser) {
                             packet_id_t pkt_id, const char *buf, int len) {
     if (cpu_port > 0 && port_num == cpu_port) {
       BMLOG_DEBUG("Transmitting packet-in");
-      auto status = pi_packetin_receive(simple_switch->get_device_id(),
+      auto status = pi_packetin_receive(switch_target->get_device_id(),
                                         buf, static_cast<size_t>(len));
       if (status != PI_STATUS_SUCCESS)
         bm::Logger::get()->error("Error when transmitting packet-in");
@@ -596,12 +578,12 @@ SimpleSwitchGrpcRunner::init_and_start(const bm::OptionsParser &parser) {
       // directly
       dp_service->my_transmit_fn(port_num, pkt_id, buf, len);
     } else {
-      simple_switch->transmit_fn(port_num, buf, len);
+      switch_target->transmit_fn(port_num, buf, len);
     }
   };
-  simple_switch->set_transmit_fn(transmit_fn);
+  switch_target->set_transmit_fn(transmit_fn);
 
-  bm::pi::register_switch(simple_switch.get(), cpu_port);
+  bm::pi::register_switch(switch_target.get(), cpu_port);
 
   {
     using pi::fe::proto::LogWriterIface;
@@ -643,66 +625,44 @@ SimpleSwitchGrpcRunner::init_and_start(const bm::OptionsParser &parser) {
                     nullptr,
                     (ssl_options != nullptr) ? &pi_ssl_options : nullptr);
 
-#ifdef WITH_SYSREPO
-  if (!sysrepo_driver->start()) return 1;
-  for (const auto &p : saved_interfaces)
-    sysrepo_driver->add_iface(p.first, p.second);
-#endif  // WITH_SYSREPO
-
-#ifdef WITH_THRIFT
-  int thrift_port = simple_switch->get_runtime_port();
-  bm_runtime::start_server(simple_switch.get(), thrift_port);
-  using ::sswitch_runtime::SimpleSwitchIf;
-  using ::sswitch_runtime::SimpleSwitchProcessor;
-  bm_runtime::add_service<SimpleSwitchIf, SimpleSwitchProcessor>(
-          "simple_switch", sswitch_runtime::get_handler(simple_switch.get()));
-#else
-  if (parser.option_was_provided("thrift-port")) {
-    bm::Logger::get()->warn(
-        "You used the '--thrift-port' command-line option, but this target was "
-        "compiled without Thrift support. You can enable Thrift support (not "
-        "recommended) by providing '--with-thrift' to configure.");
-  }
-#endif  // WITH_THRIFT
-
-  simple_switch->start_and_return();
+  switch_target->start_and_return();
 
   return 0;
 }
 
 void
-SimpleSwitchGrpcRunner::wait() {
+SwitchGrpcRunner::wait() {
   PIGrpcServerWait();
 }
 
 void
-SimpleSwitchGrpcRunner::shutdown() {
+SwitchGrpcRunner::shutdown() {
   if (!dp_grpc_server_addr.empty()) dp_grpc_server->Shutdown();
   PIGrpcServerShutdown();
 }
 
 void
-SimpleSwitchGrpcRunner::block_until_all_packets_processed() {
-  simple_switch->block_until_no_more_packets();
+SwitchGrpcRunner::block_until_all_packets_processed() {
+  switch_target->block_until_no_more_packets();
 }
 
 bool
-SimpleSwitchGrpcRunner::is_dp_service_active() {
+SwitchGrpcRunner::is_dp_service_active() {
   if (dp_service != nullptr) {
     return dp_service->get_packet_stream_status();
   }
   return false;
 }
 
-SimpleSwitchGrpcRunner::~SimpleSwitchGrpcRunner() {
+SwitchGrpcRunner::~SwitchGrpcRunner() {
   PIGrpcServerCleanup();
 }
 
 void
-SimpleSwitchGrpcRunner::port_status_cb(bm::DevMgrIface::port_t port,
+SwitchGrpcRunner::port_status_cb(bm::DevMgrIface::port_t port,
     const bm::DevMgrIface::PortStatus port_status) {
   _BM_UNUSED(port);
   _BM_UNUSED(port_status);
 }
 
-}  // namespace sswitch_grpc
+} // namespace switch_runner

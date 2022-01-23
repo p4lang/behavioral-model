@@ -71,10 +71,11 @@ extern int import_hash();
 
 namespace bm {
 
+packet_id_t BaseSwitch::packet_id = 0;
+
 namespace psa {
 
 static constexpr uint16_t MAX_MIRROR_SESSION_ID = (1u << 15) - 1;
-packet_id_t PsaSwitch::packet_id = 0;
 
 class PsaSwitch::MirroringSessions {
  public:
@@ -118,7 +119,7 @@ class PsaSwitch::MirroringSessions {
 };
 
 PsaSwitch::PsaSwitch(bool enable_swap, port_t drop_port)
-  : Switch(enable_swap),
+  : BaseSwitch(enable_swap),
     drop_port(drop_port),
     input_buffer(1024),
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
@@ -130,16 +131,18 @@ PsaSwitch::PsaSwitch(bool enable_swap, port_t drop_port)
                    64, EgressThreadMapper(nb_egress_threads)),
 #endif
     output_buffer(128),
-    // cannot use std::bind because of a clang bug
-    // https://stackoverflow.com/questions/32030141/is-this-incorrect-use-of-stdbind-or-a-compiler-bug
-    my_transmit_fn([this](port_t port_num, packet_id_t pkt_id,
-                          const char *buffer, int len) {
-        _BM_UNUSED(pkt_id);
-        this->transmit_fn(port_num, buffer, len);
-    }),
     pre(new McSimplePreLAG()),
     start(clock::now()),
     mirroring_sessions(new MirroringSessions()) {
+
+  // cannot use std::bind because of a clang bug
+  // https://stackoverflow.com/questions/32030141/is-this-incorrect-use-of-stdbind-or-a-compiler-bug
+  set_transmit_fn([this](port_t port_num, packet_id_t pkt_id,
+                        const char *buffer, int len) {
+      _BM_UNUSED(pkt_id);
+      this->transmit_fn(port_num, buffer, len);
+  });
+
   add_component<McSimplePreLAG>(pre);
 
   add_required_field("psa_ingress_parser_input_metadata", "ingress_port");
@@ -300,11 +303,6 @@ uint64_t
 PsaSwitch::get_time_since_epoch_us() const {
   auto tp = clock::now();
   return duration_cast<ts_res>(tp.time_since_epoch()).count();
-}
-
-void
-PsaSwitch::set_transmit_fn(TransmitFn fn) {
-  my_transmit_fn = std::move(fn);
 }
 
 void

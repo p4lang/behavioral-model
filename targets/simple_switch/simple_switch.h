@@ -51,7 +51,7 @@ using ts_res = std::chrono::microseconds;
 using std::chrono::duration_cast;
 using ticks = std::chrono::nanoseconds;
 
-using bm::Switch;
+using bm::BaseSwitch;
 using bm::Queue;
 using bm::Packet;
 using bm::PHV;
@@ -64,19 +64,9 @@ using bm::FieldList;
 using bm::packet_id_t;
 using bm::p4object_id_t;
 
-class SimpleSwitch : public Switch {
+class SimpleSwitch : public BaseSwitch {
  public:
   using mirror_id_t = int;
-
-  using TransmitFn = std::function<void(port_t, packet_id_t,
-                                        const char *, int)>;
-
-  struct MirroringSessionConfig {
-    port_t egress_port;
-    bool egress_port_valid;
-    unsigned int mgid;
-    bool mgid_valid;
-  };
 
   static constexpr port_t default_drop_port = 511;
 
@@ -118,13 +108,6 @@ class SimpleSwitch : public Switch {
   // returns the number of microseconds elasped since the clock's epoch
   uint64_t get_time_since_epoch_us() const;
 
-  // returns the packet id of most recently received packet. Not thread-safe.
-  static packet_id_t get_packet_id() {
-    return packet_id - 1;
-  }
-
-  void set_transmit_fn(TransmitFn fn);
-
   port_t get_drop_port() const {
     return drop_port;
   }
@@ -136,7 +119,6 @@ class SimpleSwitch : public Switch {
 
  private:
   static constexpr size_t nb_egress_threads = 4u;
-  static packet_id_t packet_id;
 
   class MirroringSessions;
 
@@ -195,7 +177,6 @@ class SimpleSwitch : public Switch {
 #endif
   egress_buffers;
   Queue<std::unique_ptr<Packet> > output_buffer;
-  TransmitFn my_transmit_fn;
   std::shared_ptr<McSimplePreLAG> pre;
   clock::time_point start;
   bool with_queueing_metadata{false};
