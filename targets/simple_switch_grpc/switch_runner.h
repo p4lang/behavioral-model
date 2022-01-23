@@ -22,6 +22,7 @@
 #define SIMPLE_SWITCH_GRPC_SWITCH_RUNNER_H_
 
 #include <bm/bm_sim/dev_mgr.h>
+#include <bm/grpc/ssl_options.h>
 
 #include <grpcpp/server.h>
 
@@ -41,13 +42,6 @@ namespace sswitch_grpc {
 class SysrepoDriver;
 
 class DataplaneInterfaceServiceImpl;
-
-struct SSLOptions {
-  std::string pem_root_certs;
-  std::string pem_private_key;
-  std::string pem_cert_chain;
-  bool with_client_auth;
-};
 
 class SimpleSwitchGrpcRunner {
  public:

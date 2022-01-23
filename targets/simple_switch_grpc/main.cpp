@@ -194,7 +194,7 @@ main(int argc, char* argv[]) {
       std::exit(1);
   }
 
-  auto ssl_options = std::make_shared<sswitch_grpc::SSLOptions>();
+  auto ssl_options = std::make_shared<SSLOptions>();
   try {
     if (grpc_server_ssl) {
       if (grpc_server_cacert != "") {
