@@ -325,6 +325,34 @@ TEST(HashTest, Identity) {
   ASSERT_EQ(expected, output);
 }
 
+// Testing the Xor16 hash with an even number of bytes.
+TEST(HashTest, Xor16WithEvenBytes) {
+  const auto ptr = CalculationsMap::get_instance()->get_copy("xor16");
+  ASSERT_NE(nullptr, ptr);
+
+  const unsigned char input_buffer[] = {0x0b, 0xb8, 0x1f, 0x90};
+  const uint16_t expected = 0x1428;
+
+  const uint16_t output = ptr->output(
+      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
+
+  ASSERT_EQ(expected, output);
+}
+
+// Testing the Xor16 hash with an odd number of bytes.
+TEST(HashTest, Xor16WithOddBytes) {
+  const auto ptr = CalculationsMap::get_instance()->get_copy("xor16");
+  ASSERT_NE(nullptr, ptr);
+
+  const unsigned char input_buffer[] = {0x0b, 0xb8, 0x1f, 0x90, 0x5a};
+  const uint16_t expected = 0x4e28;
+
+  const uint16_t output = ptr->output(
+      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
+
+  ASSERT_EQ(expected, output);
+}
+
 TEST(HashTest, Cksum16) {
   const auto ptr = CalculationsMap::get_instance()->get_copy("cksum16");
   ASSERT_NE(nullptr, ptr);
