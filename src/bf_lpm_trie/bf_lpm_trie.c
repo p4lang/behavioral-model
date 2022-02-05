@@ -334,7 +334,6 @@ bool bf_lpm_trie_lookup(const bf_lpm_trie_t *trie, const char *key,
   const node_t *current_node = trie->root;
   unsigned byte;
   size_t key_width = trie->key_width_bytes;
-  value_t *pdata = NULL;
   bool found = false;
   int16_t i;
   prefix_t *p;
@@ -371,8 +370,6 @@ bool bf_lpm_trie_delete(bf_lpm_trie_t *trie, const char *prefix,
 			int prefix_length) {
   node_t *current_node = trie->root;
   byte_t byte;
-  unsigned short prefix_key;
-  value_t *pdata = NULL;
 
   while(prefix_length >= 8) {
     byte = (byte_t) *prefix;
