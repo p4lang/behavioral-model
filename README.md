@@ -25,7 +25,7 @@ performance of bmv2, refer to this [document](docs/performance.md).
 
 The following packages are required:
 
-### Ubuntu 16.04
+### Ubuntu 20.04
 
 ```console
 sudo apt-get install -y automake cmake libgmp-dev \
@@ -56,9 +56,9 @@ To use the CLI, you will need to install the
 travis/install-nnpy.sh
 
 To make your life easier, we provide the *install_deps.sh* script, which will
-install all the dependencies needed on Ubuntu 14.04.
+install all the dependencies needed on Ubuntu 20.04.
 
-Our Travis regression tests now run on Ubuntu 14.04.
+Our Travis regression tests now run on Ubuntu 20.04.
 
 On MacOS you can use the tools/macos/bootstrap_mac.sh script to
 install all the above dependencies using homebrew. Note that in order

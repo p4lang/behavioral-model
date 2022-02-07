@@ -1,5 +1,5 @@
-FROM p4lang/third-party:stable
-LABEL maintainer="Antonin Bas <antonin.bas@gmail.com>"
+FROM p4lang/third-party:latest
+LABEL maintainer="P4 Developers <p4-dev@lists.p4.org>"
 LABEL description="This Docker image does not have any dependency on PI or P4 \
 Runtime, it only builds bmv2 simple_switch."
 
@@ -15,13 +15,15 @@ ENV BM_DEPS automake \
             libboost-filesystem-dev \
             libboost-thread-dev \
             libtool
-ENV BM_RUNTIME_DEPS libboost-program-options1.58.0 \
-                    libboost-system1.58.0 \
-                    libboost-filesystem1.58.0 \
-                    libboost-thread1.58.0 \
+ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
+                    libboost-system1.71.0 \
+                    libboost-filesystem1.71.0 \
+                    libboost-thread1.71.0 \
                     libgmp10 \
                     libpcap0.8 \
-                    python
+                    python3 \
+                    python-is-python3
+
 COPY . /behavioral-model/
 WORKDIR /behavioral-model/
 RUN apt-get update -qq && \
