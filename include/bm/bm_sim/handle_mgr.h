@@ -44,14 +44,13 @@ class HandleMgr {
   // code. Maybe it would be a good idea to condition the const'ness of the
   // iterator with a boolean template, to unify the 2 iterators.
 
-  class const_iterator;
-
   class iterator {
-    friend class const_iterator;
-
    public:
     iterator(HandleMgr *handle_mgr, handle_t index)
       : handle_mgr(handle_mgr), index(index) {}
+
+    // NOLINTNEXTLINE(runtime/explicit)
+    iterator(const iterator &other) = default;
 
     handle_t &operator*() {return index;}
     handle_t *operator->() {return &index;}
@@ -91,8 +90,8 @@ class HandleMgr {
     const_iterator(const HandleMgr *handle_mgr, handle_t index)
       : handle_mgr(handle_mgr), index(index) {}
 
-    const_iterator(const iterator &other)  // NOLINT(runtime/explicit)
-      : handle_mgr(other.handle_mgr), index(other.index) {}
+    // NOLINTNEXTLINE(runtime/explicit)
+    const_iterator(const const_iterator &other) = default;
 
     const handle_t &operator*() const {return index;}
     const handle_t *operator->() const {return &index;}
