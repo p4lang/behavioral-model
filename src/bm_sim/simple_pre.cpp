@@ -184,7 +184,7 @@ McSimplePre::mc_node_update(const l1_hdl_t l1_hdl,
 void
 McSimplePre::get_entries_common(Json::Value *root) const {
   Json::Value mgrps(Json::arrayValue);
-  for (const auto p : mgid_entries) {
+  for (const auto &p : mgid_entries) {
     Json::Value mgrp(Json::objectValue);
     mgrp["id"] = Json::Value(Json::UInt(p.first));
 
@@ -212,7 +212,7 @@ McSimplePre::get_entries_common(Json::Value *root) const {
   (*root)["l1_handles"] = l1_handles;
 
   Json::Value l2_handles(Json::arrayValue);
-  for (const auto p : l2_entries) {
+  for (const auto &p : l2_entries) {
     Json::Value handle(Json::objectValue);
     handle["handle"] = Json::Value(Json::UInt(p.first));
     const auto &entry = p.second;
