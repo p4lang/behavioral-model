@@ -653,7 +653,7 @@ P4Objects::init_header_types(const Json::Value &cfg_root) {
                                              header_type_id);
 
     const Json::Value &cfg_fields = cfg_header_type["fields"];
-    for (const auto cfg_field : cfg_fields) {
+    for (const auto &cfg_field : cfg_fields) {
       const string field_name = cfg_field[0].asString();
       bool is_signed = false;
       if (cfg_field.size() > 2)
