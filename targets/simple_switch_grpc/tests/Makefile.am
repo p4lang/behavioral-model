@@ -3,6 +3,9 @@ ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 # Ensures that gtest has been built
 SUBDIRS = ../../../third_party
 
+# for deprecated Protobuf fields
+AM_CXXFLAGS += -Wno-error=deprecated-declarations
+
 AM_CPPFLAGS += \
 -isystem $(top_srcdir)/../../third_party/gtest/include \
 -I$(top_srcdir) \
