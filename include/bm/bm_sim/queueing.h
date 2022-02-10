@@ -777,7 +777,7 @@ class QueueingLogicPriRL {
   Function for_each_q(size_t queue_id, Function fn) {
     auto &q_info = get_queue(queue_id);
     for (auto &q_info_pri : q_info) fn(q_info_pri);
-    return std::move(fn);
+    return fn;
   }
 
   template <typename Function>
@@ -785,7 +785,7 @@ class QueueingLogicPriRL {
     auto &q_info = get_queue(queue_id);
     auto &q_info_pri = q_info.at(priority);
     fn(q_info_pri);
-    return std::move(fn);
+    return fn;
   }
 
   struct SetCapacityFn {
