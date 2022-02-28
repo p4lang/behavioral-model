@@ -12,7 +12,7 @@ if WITH_SYSREPO
 AM_CPPFLAGS += -DWITH_SYSREPO
 endif
 
-if WITH_THRIFT
+if COND_THRIFT
 AM_CPPFLAGS += -DWITH_THRIFT \
 -I$(builddir)/../simple_switch/gen-cpp
 endif
@@ -46,7 +46,7 @@ $(builddir)/../simple_switch/libsimpleswitch.la \
 $(builddir)/../../PI/libbmpi.la \
 libbm_grpc_dataplane.la
 
-if WITH_THRIFT
+if COND_THRIFT
 libsimple_switch_grpc_la_LIBADD += \
 $(builddir)/../../src/bm_runtime/libbmruntime.la \
 $(builddir)/../../thrift_src/libruntimestubs.la \

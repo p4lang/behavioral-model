@@ -107,6 +107,16 @@ AC_ARG_WITH([pi],
 
 AM_CONDITIONAL([COND_PI], [test "$want_pi" = yes])
 
+AC_ARG_WITH([sysrepo],
+    AS_HELP_STRING([--with-sysrepo],
+                   [Use sysrepo gNMI service implementation @<:@default=no@:>@]),
+    [with_sysrepo="$withval"], [with_sysrepo=no])
+AM_CONDITIONAL([WITH_SYSREPO], [test "$with_sysrepo" = yes])
+AM_COND_IF([WITH_SYSREPO], [
+    AC_CHECK_LIB([sysrepo], [sr_connect], [],
+                 [AC_MSG_ERROR([Missing libsysrepo])])
+])
+
 AC_ARG_ENABLE([Werror],
     AS_HELP_STRING([--enable-Werror], [Make all compiler warnings fatal]),
     [enable_Werror="$enableval"], [enable_Werror=no])
@@ -173,6 +183,44 @@ AS_IF([test "$want_pi" = yes], [
     PI_url=https://github.com/p4lang/PI/
     AC_CHECK_HEADERS([PI/pi.h PI/target/pi_imp.h PI/p4info.h], [],
                      [AC_MSG_ERROR([Cannot find PI headers, did you install $PI_url])])
+
+    # check for pthreads
+    AX_PTHREAD([], [AC_MSG_ERROR([Missing pthread library])])
+
+    AC_SUBST([AM_CPPFLAGS], [])
+    AC_SUBST([AM_CFLAGS], ["$PTHREAD_CFLAGS"])
+    # Using ax_append_compile_flags requires copying 4 macro definitions from the
+    # autoconf archive to m4/
+    MY_CXXFLAGS="-Wall -Wextra"
+    AS_IF([test "$enable_Werror" = "yes"], [MY_CXXFLAGS="$MY_CXXFLAGS -Werror"])
+    AC_SUBST([AM_CXXFLAGS], ["$MY_CXXFLAGS $PTHREAD_CFLAGS"])
+
+    PKG_CHECK_MODULES([PROTOBUF], [protobuf >= 3.0.0])
+    AC_SUBST([PROTOBUF_CFLAGS])
+    AC_SUBST([PROTOBUF_LIBS])
+
+    PKG_CHECK_MODULES([GRPC], [grpc++ >= 1.3.0 grpc >= 3.0.0])
+    AC_SUBST([GRPC_CFLAGS])
+    AC_SUBST([GRPC_LIBS])
+
+    AC_CHECK_HEADER([boost/optional.hpp], [],
+                    [AC_MSG_ERROR([Boost optional header not found])])
+
+    AC_PATH_PROG([PROTOC], [protoc], [])
+    AS_IF([test "x$PROTOC" = x], [AC_MSG_ERROR([protoc not found])])
+
+    AC_PATH_PROG([GRPC_CPP_PLUGIN], [grpc_cpp_plugin])
+    AS_IF([test "x$GRPC_CPP_PLUGIN" = x], [
+        AC_MSG_ERROR([grpc_cpp_plugin not found])
+    ])
+    AS_IF([test "$PYTHON" != :], [
+        AC_PATH_PROG([GRPC_PY_PLUGIN], [grpc_python_plugin])
+        AS_IF([test "x$GRPC_PY_PLUGIN" = x], [
+            AC_MSG_WARN([grpc_python_plugin not found, Python code won't be generated])
+        ])
+    ])
+    AM_CONDITIONAL([HAVE_GRPC_PY_PLUGIN], [test "x$GRPC_PY_PLUGIN" != x])
+
 ])
 
 AC_CHECK_HEADERS([algorithm array cassert cmath queue \
@@ -270,8 +318,11 @@ AC_SUBST([AM_CXXFLAGS], ["$MY_CXXFLAGS $PTHREAD_CFLAGS"])
 # Checks for typedefs, structures, and compiler characteristics.
 # not supported by autoconf 2.68, add to m4/ ?
 # AC_CHECK_HEADER_STDBOOL
-AC_TYPE_SIZE_T
+AC_TYPE_UINT8_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
+AC_TYPE_SIZE_T
 AC_LANG_POP(C++)
 
 # Generate makefiles
@@ -296,6 +347,8 @@ AC_CONFIG_FILES([Makefile
 		targets/simple_switch/Makefile
 		targets/simple_switch/tests/Makefile
 		targets/simple_switch/tests/CLI_tests/Makefile
+		targets/simple_switch_grpc/Makefile
+		targets/simple_switch_grpc/tests/Makefile
 		targets/psa_switch/Makefile
 		targets/psa_switch/tests/Makefile
 		tests/Makefile
@@ -311,6 +364,8 @@ AC_CONFIG_FILES([tests/utils.cpp
                  mininet/stress_test_ipv4.py])
 AC_CONFIG_FILES([targets/simple_switch/tests/CLI_tests/run_one_test.py],
                 [chmod +x targets/simple_switch/tests/CLI_tests/run_one_test.py])
+AC_CONFIG_FILES([targets/simple_switch_grpc/tests/example.run],
+                [chmod +x targets/simple_switch_grpc/tests/example.run])
 
 AX_PREFIX_CONFIG_H([include/bm/config.h], [BM])
 
@@ -326,3 +381,4 @@ AS_ECHO("Debugger enabled .............. : $debugger_enabled")
 AS_ECHO("With Thrift ................... : $want_thrift")
 AS_ECHO("With pdfixed .................. : $want_pdfixed")
 AS_ECHO("With PI ....................... : $want_pi")
+AS_ECHO("With Sysrepo .................. : $with_sysrepo")
