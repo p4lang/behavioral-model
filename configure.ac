@@ -340,6 +340,7 @@ AC_CONFIG_FILES([Makefile
 		src/BMI/Makefile
 		src/bm_apps/Makefile
 		src/bm_apps/examples/Makefile
+		services/Makefile
 		targets/Makefile
 		targets/simple_router/Makefile
 		targets/l2_switch/Makefile

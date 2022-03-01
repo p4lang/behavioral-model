@@ -14,7 +14,7 @@ if COND_THRIFT
 endif
 
 if COND_PI
-    MAYBE_PI = PI
+    MAYBE_PI = PI services
 endif
 
 # simple_switch depends on libbmpi so PI needs to appear first
