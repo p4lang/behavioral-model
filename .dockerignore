@@ -1,5 +1,5 @@
 **/.git
 **/.gitmodules
-**/.travis.yml
+.github/
 **/Dockerfile
 **/*.md

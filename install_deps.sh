@@ -27,10 +27,10 @@ sudo apt-get install -y \
 tmpdir=`mktemp -d -p .`
 cd $tmpdir
 
-bash ../travis/install-thrift.sh
-bash ../travis/install-nanomsg.sh
+bash ../ci/install-thrift.sh
+bash ../ci/install-nanomsg.sh
 sudo ldconfig
-bash ../travis/install-nnpy.sh
+bash ../ci/install-nnpy.sh
 
 cd ..
 sudo rm -rf $tmpdir

@@ -1,6 +1,6 @@
 # BEHAVIORAL MODEL (bmv2)
 
-[![Build Status](https://app.travis-ci.com/p4lang/behavioral-model.svg?branch=main)](https://app.travis-ci.com/p4lang/behavioral-model)
+![Build Status](https://github.com/p4lang/behavioral-model/workflows/Test/badge.svg?branch=main)
 
 This is the second version of the reference P4 software switch, nicknamed bmv2
 (for behavioral model version 2). The software switch is written in C++11. It
@@ -35,7 +35,7 @@ sudo apt-get install -y automake cmake libgmp-dev \
 ```
 
 You also need to install the following from source. Feel free to use the
-install scripts under travis/.
+install scripts under `ci/`.
 
 - [thrift 0.11.0](https://github.com/apache/thrift/releases/tag/0.11.0) or later
   (tested up to 0.13)
@@ -53,12 +53,12 @@ sudo dnf install -y automake cmake gmp-devel libpcap-devel \
 
 To use the CLI, you will need to install the
 [nnpy](https://github.com/nanomsg/nnpy) Python package. Feel free to use
-travis/install-nnpy.sh
+`ci/install-nnpy.sh`.
 
 To make your life easier, we provide the *install_deps.sh* script, which will
 install all the dependencies needed on Ubuntu 20.04.
 
-Our Travis regression tests now run on Ubuntu 20.04.
+Our CI tests now run on Ubuntu 20.04.
 
 On MacOS you can use the tools/macos/bootstrap_mac.sh script to
 install all the above dependencies using homebrew. Note that in order

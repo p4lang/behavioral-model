@@ -32,13 +32,13 @@ README.md \
 install_deps.sh \
 autogen.sh
 
-# 'travis' files, used by install_deps.sh to install some dependencies
+# 'ci' files, used by install_deps.sh to install some dependencies
 EXTRA_DIST += \
-travis/check-nnpy.py \
-travis/common.sh \
-travis/install-nanomsg.sh \
-travis/install-nnpy.sh \
-travis/install-thrift.sh
+ci/check-nnpy.py \
+ci/common.sh \
+ci/install-nanomsg.sh \
+ci/install-nnpy.sh \
+ci/install-thrift.sh
 
 # mininet directory
 EXTRA_DIST += \
