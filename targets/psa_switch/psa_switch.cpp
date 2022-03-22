@@ -75,49 +75,6 @@ packet_id_t BaseSwitch::packet_id = 0;
 
 namespace psa {
 
-static constexpr uint16_t MAX_MIRROR_SESSION_ID = (1u << 15) - 1;
-
-class PsaSwitch::MirroringSessions {
- public:
-  bool add_session(mirror_id_t mirror_id,
-                   const MirroringSessionConfig &config) {
-    Lock lock(mutex);
-    if (0 <= mirror_id && mirror_id <= MAX_MIRROR_SESSION_ID) {
-      sessions_map[mirror_id] = config;
-      return true;
-    } else {
-      bm::Logger::get()->error("mirror_id out of range. No session added.");
-      return false;
-    }
-  }
-
-  bool delete_session(mirror_id_t mirror_id) {
-    Lock lock(mutex);
-    if (0 <= mirror_id && mirror_id <= MAX_MIRROR_SESSION_ID) {
-      return sessions_map.erase(mirror_id) == 1;
-    } else {
-      bm::Logger::get()->error("mirror_id out of range. No session deleted.");
-      return false;
-    }
-  }
-
-  bool get_session(mirror_id_t mirror_id,
-                   MirroringSessionConfig *config) const {
-    Lock lock(mutex);
-    auto it = sessions_map.find(mirror_id);
-    if (it == sessions_map.end()) return false;
-    *config = it->second;
-    return true;
-  }
-
- private:
-  using Mutex = std::mutex;
-  using Lock = std::lock_guard<Mutex>;
-
-  mutable std::mutex mutex;
-  std::unordered_map<mirror_id_t, MirroringSessionConfig> sessions_map;
-};
-
 PsaSwitch::PsaSwitch(bool enable_swap, port_t drop_port)
   : BaseSwitch(enable_swap),
     drop_port(drop_port),
@@ -132,8 +89,7 @@ PsaSwitch::PsaSwitch(bool enable_swap, port_t drop_port)
 #endif
     output_buffer(128),
     pre(new McSimplePreLAG()),
-    start(clock::now()),
-    mirroring_sessions(new MirroringSessions()) {
+    start(clock::now()) {
 
   // cannot use std::bind because of a clang bug
   // https://stackoverflow.com/questions/32030141/is-this-incorrect-use-of-stdbind-or-a-compiler-bug
@@ -142,6 +98,8 @@ PsaSwitch::PsaSwitch(bool enable_swap, port_t drop_port)
       _BM_UNUSED(pkt_id);
       this->transmit_fn(port_num, buffer, len);
   });
+
+  mirroring_sessions = std::unique_ptr<MirroringSessions>(new MirroringSessions());
 
   add_component<McSimplePreLAG>(pre);
 
@@ -251,23 +209,6 @@ void
 PsaSwitch::reset_target_state_() {
   bm::Logger::get()->debug("Resetting psa_switch target-specific state");
   get_component<McSimplePreLAG>()->reset_state();
-}
-
-bool
-PsaSwitch::mirroring_add_session(mirror_id_t mirror_id,
-                                    const MirroringSessionConfig &config) {
-  return mirroring_sessions->add_session(mirror_id, config);
-}
-
-bool
-PsaSwitch::mirroring_delete_session(mirror_id_t mirror_id) {
-  return mirroring_sessions->delete_session(mirror_id);
-}
-
-bool
-PsaSwitch::mirroring_get_session(mirror_id_t mirror_id,
-                                    MirroringSessionConfig *config) const {
-  return mirroring_sessions->get_session(mirror_id, config);
 }
 
 int

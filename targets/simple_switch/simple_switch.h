@@ -66,7 +66,6 @@ using bm::p4object_id_t;
 
 class SimpleSwitch : public BaseSwitch {
  public:
-  using mirror_id_t = int;
 
   static constexpr port_t default_drop_port = 511;
 
@@ -87,14 +86,6 @@ class SimpleSwitch : public BaseSwitch {
   void reset_target_state_() override;
 
   void swap_notify_() override;
-
-  bool mirroring_add_session(mirror_id_t mirror_id,
-                             const MirroringSessionConfig &config);
-
-  bool mirroring_delete_session(mirror_id_t mirror_id);
-
-  bool mirroring_get_session(mirror_id_t mirror_id,
-                             MirroringSessionConfig *config) const;
 
   int set_egress_queue_depth(size_t port, const size_t depth_pkts);
   int set_all_egress_queue_depths(const size_t depth_pkts);
@@ -119,8 +110,6 @@ class SimpleSwitch : public BaseSwitch {
 
  private:
   static constexpr size_t nb_egress_threads = 4u;
-
-  class MirroringSessions;
 
   class InputBuffer;
 
@@ -180,7 +169,6 @@ class SimpleSwitch : public BaseSwitch {
   std::shared_ptr<McSimplePreLAG> pre;
   clock::time_point start;
   bool with_queueing_metadata{false};
-  std::unique_ptr<MirroringSessions> mirroring_sessions;
 };
 
 #endif  // SIMPLE_SWITCH_SIMPLE_SWITCH_H_
