@@ -104,6 +104,14 @@ class SimpleSwitchHandler : virtual public SimpleSwitchIf {
     }
   }
 
+  int32_t set_egress_priority_queue_depth(const int32_t port_num,
+                                          const int32_t priority,
+                                          const int32_t depth_pkts) {
+    bm::Logger::get()->trace("set_egress_priority_queue_depth");
+    return switch_->set_egress_priority_queue_depth(
+        port_num, priority, static_cast<uint32_t>(depth_pkts));
+  }
+
   int32_t set_egress_queue_depth(const int32_t port_num,
                                  const int32_t depth_pkts) {
     bm::Logger::get()->trace("set_egress_queue_depth");
@@ -115,6 +123,14 @@ class SimpleSwitchHandler : virtual public SimpleSwitchIf {
     bm::Logger::get()->trace("set_all_egress_queue_depths");
     return switch_->set_all_egress_queue_depths(
         static_cast<uint32_t>(depth_pkts));
+  }
+
+  int32_t set_egress_priority_queue_rate(const int32_t port_num,
+                                         const int32_t priority,
+                                         const int64_t rate_pps) {
+    bm::Logger::get()->trace("set_egress_priority_queue_rate");
+    return switch_->set_egress_priority_queue_rate(
+        port_num, priority, static_cast<uint64_t>(rate_pps));
   }
 
   int32_t set_egress_queue_rate(const int32_t port_num,

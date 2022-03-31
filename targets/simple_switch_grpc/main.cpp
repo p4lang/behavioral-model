@@ -110,6 +110,9 @@ main(int argc, char* argv[]) {
       "dp-grpc-server-addr",
       "Use a gRPC channel to inject and receive dataplane packets; "
       "bind this gRPC server to given address, e.g. 0.0.0.0:50052");
+  simple_switch_parser.add_uint_option(
+    "priority-queues",
+    "Number of priority queues (default is 1)");
 
   bm::OptionsParser parser;
   parser.parse(argc, argv, &simple_switch_parser);
@@ -245,13 +248,23 @@ main(int argc, char* argv[]) {
     std::exit(1);
   }
 
+  uint32_t priority_queues = 0xffffffff;
+  {
+    auto rc = simple_switch_parser.get_uint_option("priority-queues", &priority_queues);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      priority_queues = sswitch_grpc::SimpleSwitchGrpcRunner::default_nb_queues_per_port;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+  }
+
   auto &runner = sswitch_grpc::SimpleSwitchGrpcRunner::get_instance(
       !disable_swap_flag,
       grpc_server_addr,
       cpu_port,
       dp_grpc_server_addr,
       drop_port,
-      grpc_server_ssl ? ssl_options : nullptr);
+      grpc_server_ssl ? ssl_options : nullptr,
+      priority_queues);
   int status = runner.init_and_start(parser);
   if (status != 0) std::exit(status);
 

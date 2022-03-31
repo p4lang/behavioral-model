@@ -46,6 +46,9 @@ main(int argc, char* argv[]) {
   simple_switch_parser.add_uint_option(
       "drop-port",
       "Choose drop port number (default is 511)");
+  simple_switch_parser.add_uint_option(
+      "priority-queues",
+      "Number of priority queues (default is 1)");
 
   bm::OptionsParser parser;
   parser.parse(argc, argv, &simple_switch_parser);
@@ -65,7 +68,18 @@ main(int argc, char* argv[]) {
       std::exit(1);
   }
 
-  simple_switch = new SimpleSwitch(enable_swap_flag, drop_port);
+  uint32_t priority_queues = 0xffffffff;
+  {
+    auto rc = simple_switch_parser.get_uint_option(
+        "priority-queues", &priority_queues);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      priority_queues = SimpleSwitch::default_nb_queues_per_port;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+  }
+
+  simple_switch = new SimpleSwitch(enable_swap_flag, drop_port,
+                                   priority_queues);
 
   int status = simple_switch->init_from_options_parser(parser);
   if (status != 0) std::exit(status);

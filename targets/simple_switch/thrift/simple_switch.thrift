@@ -48,8 +48,10 @@ service SimpleSwitch {
   MirroringSessionConfig mirroring_session_get(1:i32 mirror_id)
   throws (1:InvalidMirroringOperation ouch);
 
+  i32 set_egress_priority_queue_depth(1:i32 port_num, 2:i32 priority, 3:i32 depth_pkts);
   i32 set_egress_queue_depth(1:i32 port_num, 2:i32 depth_pkts);
   i32 set_all_egress_queue_depths(1:i32 depth_pkts);
+  i32 set_egress_priority_queue_rate(1:i32 port_num, 2:i32 priority, 3:i64 rate_pps);
   i32 set_egress_queue_rate(1:i32 port_num, 2:i64 rate_pps);
   i32 set_all_egress_queue_rates(1:i64 rate_pps);
 
