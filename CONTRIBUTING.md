@@ -13,9 +13,12 @@ Any contribution to the C++ core code (in particular the [bm_sim](src/bm_sim)
 module) must respect the coding guidelines. We rely heavily on the [Google C++
 Style Guide](https://google.github.io/styleguide/cppguide.html), with some
 differences listed in this repository's
-[wiki](https://github.com/p4lang/behavioral-model/wiki/Coding-guidelines). Every
-submitted pull request will go through our Travis tests, which include running
-`cpplint.py` to ensure correct style and formatting.
+[wiki](https://github.com/p4lang/behavioral-model/wiki/Coding-guidelines).
+Every submitted pull request will go through our CI tests, which include
+running `cpplint.py` to ensure correct style and formatting.
+You can run the following helper script to check code-style locally:
+
+	./tools/check_style.sh
 
 ### Building locally
 
