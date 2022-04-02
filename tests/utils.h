@@ -29,6 +29,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <cassert>
 
 class MemoryAccessor : public bm::TransportIface {
  public:
