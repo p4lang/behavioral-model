@@ -86,7 +86,8 @@ class SimpleSwitchGrpcRunner {
                          std::string dp_grpc_server_addr = "",
                          bm::DevMgrIface::port_t drop_port = default_drop_port,
                          std::shared_ptr<SSLOptions> ssl_options = nullptr,
-                         size_t nb_queues_per_port = default_nb_queues_per_port);
+                         size_t nb_queues_per_port =
+                             default_nb_queues_per_port);
   ~SimpleSwitchGrpcRunner();
 
   void port_status_cb(bm::DevMgrIface::port_t port,

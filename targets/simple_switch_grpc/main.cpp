@@ -250,9 +250,11 @@ main(int argc, char* argv[]) {
 
   uint32_t priority_queues = 0xffffffff;
   {
-    auto rc = simple_switch_parser.get_uint_option("priority-queues", &priority_queues);
+    auto rc = simple_switch_parser.get_uint_option("priority-queues",
+                                                   &priority_queues);
     if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
-      priority_queues = sswitch_grpc::SimpleSwitchGrpcRunner::default_nb_queues_per_port;
+      priority_queues =
+          sswitch_grpc::SimpleSwitchGrpcRunner::default_nb_queues_per_port;
     else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
       std::exit(1);
   }
