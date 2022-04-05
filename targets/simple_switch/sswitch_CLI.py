@@ -52,11 +52,15 @@ class SimpleSwitchAPI(runtime_CLI.RuntimeAPI):
 
     @handle_bad_input
     def do_set_queue_depth(self, line):
-        "Set depth of one / all egress queue(s): set_queue_depth <nb_pkts> [<egress_port>]"
+        "Set depth of one / all egress queue(s): set_queue_depth <nb_pkts> [<egress_port> [<priority>]]"
         args = line.split()
         self.at_least_n_args(args, 1)
         depth = self.parse_int(args[0], "nb_pkts")
-        if len(args) > 1:
+        if len(args) > 2:
+            port = self.parse_int(args[1], "egress_port")
+            priority = self.parse_int(args[2], "priority")
+            self.sswitch_client.set_egress_priority_queue_depth(port, priority, depth)
+        elif len(args) == 2:
             port = self.parse_int(args[1], "egress_port")
             self.sswitch_client.set_egress_queue_depth(port, depth)
         else:
@@ -64,11 +68,15 @@ class SimpleSwitchAPI(runtime_CLI.RuntimeAPI):
 
     @handle_bad_input
     def do_set_queue_rate(self, line):
-        "Set rate of one / all egress queue(s): set_queue_rate <rate_pps> [<egress_port>]"
+        "Set rate of one / all egress queue(s): set_queue_rate <rate_pps> [<egress_port> [<priority>]]"
         args = line.split()
         self.at_least_n_args(args, 1)
         rate = self.parse_int(args[0], "rate_pps")
-        if len(args) > 1:
+        if len(args) > 2:
+            port = self.parse_int(args[1], "egress_port")
+            priority = self.parse_int(args[2], "priority")
+            self.sswitch_client.set_egress_priority_queue_rate(port, priority, rate)
+        elif len(args) == 2:
             port = self.parse_int(args[1], "egress_port")
             self.sswitch_client.set_egress_queue_rate(port, rate)
         else:

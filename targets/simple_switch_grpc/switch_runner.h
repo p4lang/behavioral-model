@@ -52,6 +52,7 @@ struct SSLOptions {
 class SimpleSwitchGrpcRunner {
  public:
   static constexpr bm::DevMgrIface::port_t default_drop_port = 511;
+  static constexpr size_t default_nb_queues_per_port = 1;
 
   // there is no real need for a singleton here, except for the fact that we use
   // PIGrpcServerRunAddr, ... which uses static state
@@ -61,10 +62,11 @@ class SimpleSwitchGrpcRunner {
       bm::DevMgrIface::port_t cpu_port = 0,
       std::string dp_grpc_server_addr = "",
       bm::DevMgrIface::port_t drop_port = default_drop_port,
-      std::shared_ptr<SSLOptions> ssl_options = nullptr) {
+      std::shared_ptr<SSLOptions> ssl_options = nullptr,
+      size_t nb_queues_per_port = default_nb_queues_per_port) {
     static SimpleSwitchGrpcRunner instance(
         enable_swap, grpc_server_addr, cpu_port, dp_grpc_server_addr,
-        drop_port, ssl_options);
+        drop_port, ssl_options, nb_queues_per_port);
     return instance;
   }
 
@@ -83,7 +85,9 @@ class SimpleSwitchGrpcRunner {
                          bm::DevMgrIface::port_t cpu_port = 0,
                          std::string dp_grpc_server_addr = "",
                          bm::DevMgrIface::port_t drop_port = default_drop_port,
-                         std::shared_ptr<SSLOptions> ssl_options = nullptr);
+                         std::shared_ptr<SSLOptions> ssl_options = nullptr,
+                         size_t nb_queues_per_port =
+                             default_nb_queues_per_port);
   ~SimpleSwitchGrpcRunner();
 
   void port_status_cb(bm::DevMgrIface::port_t port,

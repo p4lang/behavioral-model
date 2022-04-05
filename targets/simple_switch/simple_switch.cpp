@@ -198,19 +198,16 @@ class SimpleSwitch::InputBuffer {
   QueueImpl queue_lo;
 };
 
-SimpleSwitch::SimpleSwitch(bool enable_swap, port_t drop_port)
+SimpleSwitch::SimpleSwitch(bool enable_swap, port_t drop_port,
+                           size_t nb_queues_per_port)
   : Switch(enable_swap),
     drop_port(drop_port),
     input_buffer(new InputBuffer(
         1024 /* normal capacity */, 1024 /* resubmit/recirc capacity */)),
-#ifdef SSWITCH_PRIORITY_QUEUEING_ON
+    nb_queues_per_port(nb_queues_per_port),
     egress_buffers(nb_egress_threads,
                    64, EgressThreadMapper(nb_egress_threads),
-                   SSWITCH_PRIORITY_QUEUEING_NB_QUEUES),
-#else
-    egress_buffers(nb_egress_threads,
-                   64, EgressThreadMapper(nb_egress_threads)),
-#endif
+                   nb_queues_per_port),
     output_buffer(128),
     // cannot use std::bind because of a clang bug
     // https://stackoverflow.com/questions/32030141/is-this-incorrect-use-of-stdbind-or-a-compiler-bug
@@ -299,11 +296,7 @@ SimpleSwitch::~SimpleSwitch() {
     // guarantee that the sentinel was enqueued otherwise. It should not be an
     // issue because at this stage the ingress thread has been sent a signal to
     // stop, and only egress clones can be sent to the buffer.
-#ifdef SSWITCH_PRIORITY_QUEUEING_ON
     while (egress_buffers.push_front(i, 0, nullptr) == 0) continue;
-#else
-    while (egress_buffers.push_front(i, nullptr) == 0) continue;
-#endif
   }
   output_buffer.push_front(nullptr);
   for (auto& thread_ : threads_) {
@@ -335,6 +328,13 @@ SimpleSwitch::mirroring_get_session(mirror_id_t mirror_id,
 }
 
 int
+SimpleSwitch::set_egress_priority_queue_depth(size_t port, size_t priority,
+                                              const size_t depth_pkts) {
+  egress_buffers.set_capacity(port, priority, depth_pkts);
+  return 0;
+}
+
+int
 SimpleSwitch::set_egress_queue_depth(size_t port, const size_t depth_pkts) {
   egress_buffers.set_capacity(port, depth_pkts);
   return 0;
@@ -343,6 +343,13 @@ SimpleSwitch::set_egress_queue_depth(size_t port, const size_t depth_pkts) {
 int
 SimpleSwitch::set_all_egress_queue_depths(const size_t depth_pkts) {
   egress_buffers.set_capacity_for_all(depth_pkts);
+  return 0;
+}
+
+int
+SimpleSwitch::set_egress_priority_queue_rate(size_t port, size_t priority,
+                                             const uint64_t rate_pps) {
+  egress_buffers.set_rate(port, priority, rate_pps);
   return 0;
 }
 
@@ -405,19 +412,15 @@ SimpleSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
           .set(egress_buffers.size(egress_port));
     }
 
-#ifdef SSWITCH_PRIORITY_QUEUEING_ON
     size_t priority = phv->has_field(SSWITCH_PRIORITY_QUEUEING_SRC) ?
         phv->get_field(SSWITCH_PRIORITY_QUEUEING_SRC).get<size_t>() : 0u;
-    if (priority >= SSWITCH_PRIORITY_QUEUEING_NB_QUEUES) {
+    if (priority >= nb_queues_per_port) {
       bm::Logger::get()->error("Priority out of range, dropping packet");
       return;
     }
     egress_buffers.push_front(
-        egress_port, SSWITCH_PRIORITY_QUEUEING_NB_QUEUES - 1 - priority,
+        egress_port, nb_queues_per_port - 1 - priority,
         std::move(packet));
-#else
-    egress_buffers.push_front(egress_port, std::move(packet));
-#endif
 }
 
 // used for ingress cloning, resubmit
@@ -637,12 +640,8 @@ SimpleSwitch::egress_thread(size_t worker_id) {
   while (1) {
     std::unique_ptr<Packet> packet;
     size_t port;
-#ifdef SSWITCH_PRIORITY_QUEUEING_ON
     size_t priority;
     egress_buffers.pop_back(worker_id, &port, &priority, &packet);
-#else
-    egress_buffers.pop_back(worker_id, &port, &packet);
-#endif
     if (packet == nullptr) break;
 
     Deparser *deparser = this->get_deparser("deparser");
@@ -664,11 +663,7 @@ SimpleSwitch::egress_thread(size_t worker_id) {
           egress_buffers.size(port));
       if (phv->has_field("queueing_metadata.qid")) {
         auto &qid_f = phv->get_field("queueing_metadata.qid");
-#ifdef SSWITCH_PRIORITY_QUEUEING_ON
-        qid_f.set(SSWITCH_PRIORITY_QUEUEING_NB_QUEUES - 1 - priority);
-#else
-        qid_f.set(0);
-#endif
+        qid_f.set(nb_queues_per_port - 1 - priority);
       }
     }
 

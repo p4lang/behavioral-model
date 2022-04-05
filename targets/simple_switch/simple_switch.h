@@ -40,12 +40,7 @@
 // you can also choose the field from which the priority value will be read, as
 // well as the number of priority queues per port
 // PRIORITY 0 IS THE LOWEST PRIORITY
-// #define SSWITCH_PRIORITY_QUEUEING_ON
-
-#ifdef SSWITCH_PRIORITY_QUEUEING_ON
-#define SSWITCH_PRIORITY_QUEUEING_NB_QUEUES 8
 #define SSWITCH_PRIORITY_QUEUEING_SRC "intrinsic_metadata.priority"
-#endif
 
 using ts_res = std::chrono::microseconds;
 using std::chrono::duration_cast;
@@ -79,6 +74,7 @@ class SimpleSwitch : public Switch {
   };
 
   static constexpr port_t default_drop_port = 511;
+  static constexpr size_t default_nb_queues_per_port = 1;
 
  private:
   using clock = std::chrono::high_resolution_clock;
@@ -86,7 +82,8 @@ class SimpleSwitch : public Switch {
  public:
   // by default, swapping is off
   explicit SimpleSwitch(bool enable_swap = false,
-                        port_t drop_port = default_drop_port);
+                        port_t drop_port = default_drop_port,
+                        size_t nb_queues_per_port = default_nb_queues_per_port);
 
   ~SimpleSwitch();
 
@@ -106,9 +103,13 @@ class SimpleSwitch : public Switch {
   bool mirroring_get_session(mirror_id_t mirror_id,
                              MirroringSessionConfig *config) const;
 
+  int set_egress_priority_queue_depth(size_t port, size_t priority,
+                                      const size_t depth_pkts);
   int set_egress_queue_depth(size_t port, const size_t depth_pkts);
   int set_all_egress_queue_depths(const size_t depth_pkts);
 
+  int set_egress_priority_queue_rate(size_t port, size_t priority,
+                                     const uint64_t rate_pps);
   int set_egress_queue_rate(size_t port, const uint64_t rate_pps);
   int set_all_egress_queue_rates(const uint64_t rate_pps);
 
@@ -188,11 +189,8 @@ class SimpleSwitch : public Switch {
   std::unique_ptr<InputBuffer> input_buffer;
   // for these queues, the write operation is non-blocking and we drop the
   // packet if the queue is full
-#ifdef SSWITCH_PRIORITY_QUEUEING_ON
+  size_t nb_queues_per_port;
   bm::QueueingLogicPriRL<std::unique_ptr<Packet>, EgressThreadMapper>
-#else
-  bm::QueueingLogicRL<std::unique_ptr<Packet>, EgressThreadMapper>
-#endif
   egress_buffers;
   Queue<std::unique_ptr<Packet> > output_buffer;
   TransmitFn my_transmit_fn;
