@@ -96,3 +96,6 @@ bm/bm_sim/header_unions.h
 
 nobase_include_HEADERS += \
 bm/bm_sim/core/primitives.h
+
+nobase_include_HEADERS += \
+bm/bm_grpc/pem.h
