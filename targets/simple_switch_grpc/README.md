@@ -14,24 +14,17 @@ Github or the p4-dev mailing list.
     README](https://github.com/p4lang/PI#dependencies) to install required
     dependencies for the `--with-profo` configure flag - as well as for the
     `--with-sysrepo` configure flag if desired.
- 1. Configure, build and install PI:
+ 2. Configure, build and install PI:
     ```
     ./autogen.sh
     ./configure --with-proto --without-internal-rpc --without-cli --without-bmv2 [--with-sysrepo]
     make
     [sudo] make install
     ```
- 1. Configure and build the bmv2 code; from the root of the repository:
+ 3. Configure and build the bmv2 code from the root of the repository with `--with-pi`:
     ```
     ./autogen.sh
     ./configure --with-pi [--without-thrift] [--without-nanomsg]
-    make
-    [sudo] make install  # if desired
-    ```
- 1. Configure and build the simple_switch_grpc code; from this directory:
-    ```
-    ./autogen.sh
-    ./configure [--with-sysrepo]
     make
     [sudo] make install  # if desired
     ```

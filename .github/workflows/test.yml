@@ -30,13 +30,10 @@ jobs:
         include:
         - cxx: g++
           cc: gcc
-          sswitch_grpc: yes
         - cxx: clang++-8
           cc: clang-8
-          sswitch_grpc: no
         - cxx: clang++-10
           cc: clang-10
-          sswitch_grpc: no
     steps:
     - uses: actions/checkout@v3
       with:
@@ -46,7 +43,7 @@ jobs:
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
       run: |
-        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV --build-arg sswitch_grpc=${{ matrix.sswitch_grpc }} .
+        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV .
     - name: Run tests
       run: |
         ci_env=`bash <(curl -s https://codecov.io/env)`

@@ -47,14 +47,6 @@ RUN apt-get update -qq && \
     if [ "$GCOV" = "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror; fi && \
     make -j$(nproc) && \
     make install-strip && \
-    (test "$sswitch_grpc" = "yes" && \
-      cd targets/simple_switch_grpc/ && \
-      ./autogen.sh && \
-      ./configure --enable-Werror && \
-      make -j$(nproc) && \
-      make install-strip && \
-      cd -) || \
-    (test "$sswitch_grpc" = "no") && \
     ldconfig && \
     (test "$IMAGE_TYPE" = "build" && \
       apt-get purge -qq $BM_DEPS && \

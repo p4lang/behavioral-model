@@ -305,6 +305,10 @@ AC_CONFIG_FILES([Makefile
                 pdfixed/include/Makefile
                 PI/Makefile])
 
+AS_IF([test "$want_pi" = yes], [
+  AC_CONFIG_SUBDIRS([targets/simple_switch_grpc])
+])
+
 # Generate other files
 AC_CONFIG_FILES([tests/utils.cpp
                  src/bm_sim/version.cpp
