@@ -51,21 +51,6 @@ AC_SUBST([GRPC_LIBS])
 AC_CHECK_HEADER([boost/optional.hpp], [],
                 [AC_MSG_ERROR([Boost optional header not found])])
 
-AC_PATH_PROG([PROTOC], [protoc], [])
-AS_IF([test "x$PROTOC" = x], [AC_MSG_ERROR([protoc not found])])
-
-AC_PATH_PROG([GRPC_CPP_PLUGIN], [grpc_cpp_plugin])
-AS_IF([test "x$GRPC_CPP_PLUGIN" = x], [
-    AC_MSG_ERROR([grpc_cpp_plugin not found])
-])
-AS_IF([test "$PYTHON" != :], [
-    AC_PATH_PROG([GRPC_PY_PLUGIN], [grpc_python_plugin])
-    AS_IF([test "x$GRPC_PY_PLUGIN" = x], [
-        AC_MSG_WARN([grpc_python_plugin not found, Python code won't be generated])
-    ])
-])
-AM_CONDITIONAL([HAVE_GRPC_PY_PLUGIN], [test "x$GRPC_PY_PLUGIN" != x])
-
 AC_ARG_WITH([sysrepo],
     AS_HELP_STRING([--with-sysrepo],
                    [Use sysrepo gNMI service implementation @<:@default=no@:>@]),

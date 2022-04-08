@@ -274,6 +274,45 @@ AC_TYPE_SIZE_T
 AC_TYPE_UINT64_T
 AC_LANG_POP(C++)
 
+AS_IF([test "$want_pi" = yes], [
+	AC_PATH_PROG([PROTOC], [protoc], [])
+	AS_IF([test "x$PROTOC" = x], [AC_MSG_ERROR([protoc not found])])
+
+	PKG_CHECK_MODULES([PROTOBUF], [protobuf >= 3.0.0])
+	AC_SUBST([PROTOBUF_CFLAGS])
+	AC_SUBST([PROTOBUF_LIBS])
+
+	PKG_CHECK_MODULES([GRPC], [grpc++ >= 1.3.0 grpc >= 3.0.0])
+	AC_SUBST([GRPC_CFLAGS])
+	AC_SUBST([GRPC_LIBS])
+
+	AC_PATH_PROG([GRPC_CPP_PLUGIN], [grpc_cpp_plugin])
+	AS_IF([test "x$GRPC_CPP_PLUGIN" = x], [
+		AC_MSG_ERROR([grpc_cpp_plugin not found])
+	])
+
+	AS_IF([test "$PYTHON" != :], [
+		AC_PATH_PROG([GRPC_PY_PLUGIN], [grpc_python_plugin])
+		AS_IF([test "x$GRPC_PY_PLUGIN" = x], [
+			AC_MSG_WARN([grpc_python_plugin not found, Python code won't be generated])
+		])
+	])
+	AM_CONDITIONAL([HAVE_GRPC_PY_PLUGIN], [test "x$GRPC_PY_PLUGIN" != x])
+
+	AC_PATH_PROG([GRPC_CPP_PLUGIN], [grpc_cpp_plugin])
+	AS_IF([test "x$GRPC_CPP_PLUGIN" = x], [
+		AC_MSG_ERROR([grpc_cpp_plugin not found])
+	])
+
+	AS_IF([test "$PYTHON" != :], [
+		AC_PATH_PROG([GRPC_PY_PLUGIN], [grpc_python_plugin])
+		AS_IF([test "x$GRPC_PY_PLUGIN" = x], [
+			AC_MSG_WARN([grpc_python_plugin not found, Python code won't be generated])
+		])
+	])
+	AM_CONDITIONAL([HAVE_GRPC_PY_PLUGIN], [test "x$GRPC_PY_PLUGIN" != x])
+])
+
 # Generate makefiles
 AC_CONFIG_FILES([Makefile
 		thrift_src/Makefile
@@ -281,14 +320,15 @@ AC_CONFIG_FILES([Makefile
 		third_party/gtest/Makefile
 		third_party/jsoncpp/Makefile
 		third_party/spdlog/Makefile
-                include/Makefile
-                src/Makefile
-                src/bf_lpm_trie/Makefile
+		include/Makefile
+		src/Makefile
+		src/bf_lpm_trie/Makefile
 		src/bm_sim/Makefile
 		src/bm_runtime/Makefile
 		src/BMI/Makefile
 		src/bm_apps/Makefile
 		src/bm_apps/examples/Makefile
+		services/Makefile
 		targets/Makefile
 		targets/simple_router/Makefile
 		targets/l2_switch/Makefile
@@ -300,13 +340,13 @@ AC_CONFIG_FILES([Makefile
 		targets/psa_switch/tests/Makefile
 		tests/Makefile
 		tests/stress_tests/Makefile
-                tools/Makefile
-                pdfixed/Makefile
-                pdfixed/include/Makefile
-                PI/Makefile])
+		tools/Makefile
+		pdfixed/Makefile
+		pdfixed/include/Makefile
+		PI/Makefile])
 
 AS_IF([test "$want_pi" = yes], [
-  AC_CONFIG_SUBDIRS([targets/simple_switch_grpc])
+	AC_CONFIG_SUBDIRS([targets/simple_switch_grpc])
 ])
 
 # Generate other files
