@@ -48,7 +48,7 @@ class SingleSwitchTopo(Topo):
                                 thrift_port = thrift_port,
                                 pcap_dump = False)
 
-        for h in xrange(2):
+        for h in range(2):
             host = self.addHost('h%d' % (h + 1),
                                 ip = "10.0.%d.10/24" % h,
                                 mac = '00:04:00:00:00:%02x' %h)
@@ -56,7 +56,7 @@ class SingleSwitchTopo(Topo):
 
 def start_iperf(net, client_name, server_name):
     h2 = net.getNodeByName(server_name)
-    # print "Starting iperf server..."
+    # print("Starting iperf server...")
     server = h2.popen("iperf -s")
     h1 = net.getNodeByName(client_name)
     # -f m: report in Mbits
@@ -67,7 +67,7 @@ def configure_dp(commands_path, thrift_port):
     cmd = ["@abs_top_srcdir@/tools/runtime_CLI.py",
            "--thrift-port", str(thrift_port)]
     with open(commands_path, "r") as f:
-        print " ".join(cmd)
+        print(" ".join(cmd))
         sub_env = os.environ.copy()
         pythonpath = ""
         if "PYTHONPATH" in sub_env:
@@ -79,7 +79,7 @@ def configure_dp(commands_path, thrift_port):
 def run_measurement(net, client_name, server_name):
     iperf_proc = start_iperf(net, client_name, server_name)
     out, _ = iperf_proc.communicate()
-    res = re.findall(r"(\d+) Mbits/sec", out)
+    res = re.findall(r"(\d+) Mbits/sec", out.decode('utf-8'))
     return res[-1]
 
 def check_deps():
@@ -87,10 +87,9 @@ def check_deps():
         _ = subprocess.check_output(["/sbin/ethtool", "--version"],
                                     stderr=subprocess.STDOUT)
     except:
-        print "ethtool not available"
-        print
-        print "On Debian systems you can install it with:"
-        print "sudo apt install ethtool"
+        print("ethtool not available")
+        print("On Debian systems you can install it with:")
+        print("sudo apt install ethtool")
         sys.exit(1)
 
 def main():
@@ -106,16 +105,16 @@ def main():
                   controller = None)
     net.start()
 
-    sw_mac = ["00:aa:bb:00:00:%02x" % n for n in xrange(num_hosts)]
+    sw_mac = ["00:aa:bb:00:00:%02x" % n for n in range(num_hosts)]
 
-    sw_addr = ["10.0.%d.1" % n for n in xrange(num_hosts)]
+    sw_addr = ["10.0.%d.1" % n for n in range(num_hosts)]
 
-    for n in xrange(num_hosts):
+    for n in range(num_hosts):
         h = net.get('h%d' % (n + 1))
         h.setARP(sw_addr[n], sw_mac[n])
         h.setDefaultRoute("dev eth0 via %s" % sw_addr[n])
 
-    for n in xrange(num_hosts):
+    for n in range(num_hosts):
         h = net.get('h%d' % (n + 1))
         h.describe()
 
@@ -125,19 +124,19 @@ def main():
 
     sleep(1)
 
-    print "Ready !"
+    print("Ready !")
 
     net.pingAll()
 
     throughputs = []
-    for i in xrange(args.repeat):
+    for i in range(args.repeat):
         sleep(1)
-        print "Running iperf measurement {} of {}".format(i + 1, args.repeat)
+        print("Running iperf measurement {} of {}".format(i + 1, args.repeat))
         t = run_measurement(net, "h1", "h2")
-        print t, "Mbps"
+        print(t, "Mbps")
         throughputs.append(t)
     throughputs.sort()
-    print "Median throughput is", throughputs[args.repeat / 2], "Mbps"
+    print("Median throughput is", throughputs[int(args.repeat / 2)], "Mbps")
 
     net.stop()
     # just in case...
