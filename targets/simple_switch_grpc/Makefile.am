@@ -30,7 +30,6 @@ simple_switch_grpc_LDFLAGS = \
 -Wl,--no-as-needed,-lgrpc++_reflection,--as-needed \
 -rdynamic
 
-lib_LTLIBRARIES = libbm_grpc_dataplane.la
 noinst_LTLIBRARIES = libsimple_switch_grpc.la
 
 libsimple_switch_grpc_la_SOURCES = \
@@ -43,7 +42,7 @@ endif
 libsimple_switch_grpc_la_LIBADD = \
 $(builddir)/../simple_switch/libsimpleswitch.la \
 $(builddir)/../../PI/libbmpi.la \
-libbm_grpc_dataplane.la
+$(builddir)/../../services/libbm_grpc_dataplane.la
 
 if WITH_THRIFT
 libsimple_switch_grpc_la_LIBADD += \
@@ -56,83 +55,6 @@ libsimple_switch_grpc_la_LIBADD += \
 -lpifeproto -lpigrpcserver -lpi -lpip4info \
 $(GRPC_LIBS) $(PROTOBUF_LIBS)
 
-# dataplane_interface.proto
-
-EXTRA_DIST = ../../services/p4/bm/dataplane_interface.proto
-
-proto = $(abs_srcdir)/../../services/p4/bm/dataplane_interface.proto
-
-PROTOFLAGS = -I$(abs_srcdir)/../../services
-
-proto_cpp_files = \
-../../services/cpp_out/p4/bm/dataplane_interface.pb.cc \
-../../services/cpp_out/p4/bm/dataplane_interface.pb.h
-
-proto_grpc_files = \
-../../services/grpc_out/p4/bm/dataplane_interface.grpc.pb.cc \
-../../services/grpc_out/p4/bm/dataplane_interface.grpc.pb.h
-
-includep4bmdir = $(includedir)/p4/bm/
-nodist_includep4bm_HEADERS = \
-../../services/cpp_out/p4/bm/dataplane_interface.pb.h \
-../../services/grpc_out/p4/bm/dataplane_interface.grpc.pb.h
-
-BUILT_SOURCES = $(proto_cpp_files) $(proto_grpc_files)
-
-if HAVE_GRPC_PY_PLUGIN
-p4bmpydir = $(pythondir)/p4/bm
-nodist_p4bmpy_PYTHON = \
-../../services/py_out/p4/bm/dataplane_interface_pb2.py \
-../../services/py_out/p4/bm/__init__.py
-
-BUILT_SOURCES += \
-$(nodist_p4bmpy_PYTHON)
-endif
-
-# See http://www.gnu.org/software/automake/manual/html_node/Multiple-Outputs.html
-
-proto_files.ts: $(proto)
-	@rm -f proto_files.tmp
-	@touch proto_files.tmp
-	@mkdir -p $(builddir)/../../services/cpp_out
-	@mkdir -p $(builddir)/../../services/grpc_out
-	$(PROTOC) $^ --cpp_out $(builddir)/../../services/cpp_out $(PROTOFLAGS)
-	$(PROTOC) $^ --grpc_out $(builddir)/../../services/grpc_out --plugin=protoc-gen-grpc=$(GRPC_CPP_PLUGIN) $(PROTOFLAGS)
-if HAVE_GRPC_PY_PLUGIN
-	@mkdir -p $(builddir)/../../services/py_out
-# With the Python plugin, it seems that I need to use a single command for proto
-# + grpc and that the output directory needs to be the same (because the grpc
-# plugin inserts code into the proto-generated files). But maybe I am just using
-# an old version of the Python plugin.
-	$(PROTOC) $^ --python_out $(builddir)/../../services/py_out $(PROTOFLAGS) --grpc_out $(builddir)/../../services/py_out --plugin=protoc-gen-grpc=$(GRPC_PY_PLUGIN)
-	@touch $(builddir)/../../services/py_out/p4/bm/__init__.py
-endif
-	@mv -f proto_files.tmp $@
-
-$(BUILT_SOURCES): proto_files.ts
-## Recover from the removal of $@
-	@if test -f $@; then :; else \
-	  trap 'rm -rf proto_files.lock proto_files.ts' 1 2 13 15; \
-## mkdir is a portable test-and-set
-	if mkdir proto_files.lock 2>/dev/null; then \
-## This code is being executed by the first process.
-	  rm -f proto_files.ts; \
-	  $(MAKE) $(AM_MAKEFLAGS) proto_files.ts; \
-	  result=$$?; rm -rf proto_files.lock; exit $$result; \
-	else \
-## This code is being executed by the follower processes.
-## Wait until the first process is done.
-	  while test -d proto_files.lock; do sleep 1; done; \
-## Succeed if and only if the first process succeeded.
-	    test -f proto_files.ts; \
-	  fi; \
-	fi
-
-AM_CPPFLAGS += -Icpp_out -Igrpc_out \
--I$(builddir)/../../services/cpp_out -I$(builddir)/../../services/grpc_out
-
-nodist_libbm_grpc_dataplane_la_SOURCES = $(proto_cpp_files) $(proto_grpc_files)
-# no warnings or Werror for auto-generated sources
-libbm_grpc_dataplane_la_CXXFLAGS =
-
-CLEANFILES = $(BUILT_SOURCES) proto_files.ts
+AM_CPPFLAGS += \
+ -I$(builddir)/../../services/cpp_out \
+ -I$(builddir)/../../services/grpc_out
