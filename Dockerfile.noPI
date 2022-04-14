@@ -5,6 +5,7 @@ Runtime, it only builds bmv2 simple_switch."
 
 ENV BM_DEPS automake \
             build-essential \
+            pkg-config \
             curl \
             git \
             libgmp-dev \
