@@ -3,8 +3,15 @@ LABEL maintainer="P4 Developers <p4-dev@lists.p4.org>"
 LABEL description="This Docker image does not have any dependency on PI or P4 \
 Runtime, it only builds bmv2 simple_switch."
 
+# Select the type of image we're building. Use `build` for a normal build, which
+# is optimized for image size. Use `test` if this image will be used for
+# testing; in this case, the source code and build-only dependencies will not be
+# removed from the image.
+ARG IMAGE_TYPE=build
+
 ENV BM_DEPS automake \
             build-essential \
+            pkg-config \
             curl \
             git \
             libgmp-dev \
@@ -33,7 +40,10 @@ RUN apt-get update -qq && \
     make -j$(nproc) && \
     make install-strip && \
     ldconfig && \
-    apt-get purge -qq $BM_DEPS && \
-    apt-get autoremove --purge -qq && \
-    rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/* && \
-    echo 'Build image ready'
+    (test "$IMAGE_TYPE" = "build" && \
+        apt-get purge -qq $BM_DEPS && \
+        apt-get autoremove --purge -qq && \
+        rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/* && \
+        echo 'Build image ready') || \
+    (test "$IMAGE_TYPE" = "test" && \
+      echo 'Test image ready')

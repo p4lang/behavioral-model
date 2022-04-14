@@ -11,7 +11,7 @@ on:
 jobs:
   check-changes:
     name: Check whether tests need to be run based on diff
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - uses: antrea-io/has-changes@v1
@@ -24,7 +24,7 @@ jobs:
   test:
     needs: check-changes
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
@@ -51,3 +51,16 @@ jobs:
     - name: Check style
       run: |
         ./tools/check_style.sh
+
+  test-no-pi:
+    needs: check-changes
+    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+    - name: Build Dockerfile.noPI image
+      run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
+    - name: Run tests
+      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make check -j$(nproc)"
