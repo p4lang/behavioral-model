@@ -7,8 +7,9 @@ on:
 
 jobs:
   upload-doc:
+    if: ${{ github.repository == 'p4lang/behavioral-model' && github.ref == 'refs/heads/main' }}
     name: Upload bmv2.org Doxygen documentation to S3
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Run Doxygen
