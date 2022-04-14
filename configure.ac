@@ -297,21 +297,9 @@ AS_IF([test "$want_pi" = yes], [
 			AC_MSG_WARN([grpc_python_plugin not found, Python code won't be generated])
 		])
 	])
-	AM_CONDITIONAL([HAVE_GRPC_PY_PLUGIN], [test "x$GRPC_PY_PLUGIN" != x])
-
-	AC_PATH_PROG([GRPC_CPP_PLUGIN], [grpc_cpp_plugin])
-	AS_IF([test "x$GRPC_CPP_PLUGIN" = x], [
-		AC_MSG_ERROR([grpc_cpp_plugin not found])
-	])
-
-	AS_IF([test "$PYTHON" != :], [
-		AC_PATH_PROG([GRPC_PY_PLUGIN], [grpc_python_plugin])
-		AS_IF([test "x$GRPC_PY_PLUGIN" = x], [
-			AC_MSG_WARN([grpc_python_plugin not found, Python code won't be generated])
-		])
-	])
-	AM_CONDITIONAL([HAVE_GRPC_PY_PLUGIN], [test "x$GRPC_PY_PLUGIN" != x])
 ])
+
+AM_CONDITIONAL([HAVE_GRPC_PY_PLUGIN], [test "x$GRPC_PY_PLUGIN" != x])
 
 # Generate makefiles
 AC_CONFIG_FILES([Makefile
