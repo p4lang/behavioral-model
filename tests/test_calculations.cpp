@@ -353,6 +353,69 @@ TEST(HashTest, Xor16WithOddBytes) {
   ASSERT_EQ(expected, output);
 }
 
+// Testing the Xor32 hash with 8 bytes.
+TEST(HashTest, Xor32With8Bytes) {
+  const auto ptr = CalculationsMap::get_instance()->get_copy("xor32");
+  ASSERT_NE(nullptr, ptr);
+
+  const unsigned char input_buffer[] = {0x0b, 0x0b, 0xb8, 0xb8,
+                                        0x1f, 0x1f, 0x90, 0x90};
+  const uint32_t expected = 0x14142828;
+
+  const uint32_t output = ptr->output(
+      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
+
+  ASSERT_EQ(expected, output);
+}
+
+// Testing the Xor32 hash with 9 bytes.
+TEST(HashTest, Xor32With9Bytes) {
+  const auto ptr = CalculationsMap::get_instance()->get_copy("xor32");
+  ASSERT_NE(nullptr, ptr);
+
+  const unsigned char input_buffer[] = {0x0b, 0x0b, 0xb8, 0xb8,
+                                        0x1f, 0x1f, 0x90, 0x90,
+                                        0x5a};
+  const uint32_t expected = 0x4e142828;
+
+  const uint32_t output = ptr->output(
+      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
+
+  ASSERT_EQ(expected, output);
+}
+
+// Testing the Xor32 hash with 10 bytes.
+TEST(HashTest, Xor32With10Bytes) {
+  const auto ptr = CalculationsMap::get_instance()->get_copy("xor32");
+  ASSERT_NE(nullptr, ptr);
+
+  const unsigned char input_buffer[] = {0x0b, 0x0b, 0xb8, 0xb8,
+                                        0x1f, 0x1f, 0x90, 0x90,
+                                        0x5a, 0x5a};
+  const uint32_t expected = 0x4e4e2828;
+
+  const uint32_t output = ptr->output(
+      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
+
+  ASSERT_EQ(expected, output);
+}
+
+// Testing the Xor32 hash with 11 bytes.
+TEST(HashTest, Xor32With11Bytes) {
+  const auto ptr = CalculationsMap::get_instance()->get_copy("xor32");
+  ASSERT_NE(nullptr, ptr);
+
+  const unsigned char input_buffer[] = {0x0b, 0x0b, 0xb8, 0xb8,
+                                        0x1f, 0x1f, 0x90, 0x90,
+                                        0x5a, 0x5a, 0xbd};
+  const uint32_t expected = 0x4e4e9528;
+
+  const uint32_t output = ptr->output(
+      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
+
+  ASSERT_EQ(expected, output);
+}
+
 TEST(HashTest, Cksum16) {
   const auto ptr = CalculationsMap::get_instance()->get_copy("cksum16");
   ASSERT_NE(nullptr, ptr);

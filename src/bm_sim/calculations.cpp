@@ -360,24 +360,34 @@ struct csum16 {
   }
 };
 
-struct xor16 {
-  uint16_t operator()(const char *buf, size_t len) const {
-    uint16_t mask = 0x00ff;
-    uint16_t final_xor_value = 0x0000;
-    unsigned int byte = 0;
-    uint16_t t1, t2;
-    /* Main loop - 2 bytes at a time */
-    while (len >= 2) {
-      t1 = static_cast<uint16_t>(buf[byte]) << 8;
-      t2 = static_cast<uint16_t>(buf[byte + 1]);
-      final_xor_value = final_xor_value ^ (t1 + (t2 & mask));
-      byte += 2;
-      len -= 2;
+template <typename T>
+struct xor_hash {
+  T operator()(const char *buf, size_t len) const {
+    static constexpr size_t n = sizeof(T);
+    T final_xor_value = 0;
+    T mask = 0xff;
+    size_t byte = 0;
+    T t;
+
+    /* Main loop - n bytes at a time */
+    while (len >= n) {
+      t = 0;
+      for (size_t offset = 0; offset < n; offset++) {
+        t = (t << 8) + (static_cast<T>(buf[byte + offset]) & mask);
+      }
+      final_xor_value ^= t;
+      byte += n;
+      len -= n;
     }
-    if (len > 0) {
-      t1 = static_cast<uint16_t>(buf[byte]) << 8;
-      final_xor_value = final_xor_value ^ t1;
+
+    /* Handle tail less than n bytes long */
+    t = 0;
+    for (size_t offset = 0; offset < len; offset++) {
+      t = (t << 8) + (static_cast<T>(buf[byte + offset]) & mask);
     }
+    t <<= ((n - len) * 8);
+    final_xor_value ^= t;
+
     return final_xor_value;
   }
 };
@@ -442,7 +452,11 @@ REGISTER_HASH(csum16);
 REGISTER_HASH(identity);
 REGISTER_HASH(round_robin);
 REGISTER_HASH(round_robin_consistent);
+
+using xor16 = xor_hash<uint16_t>;
 REGISTER_HASH(xor16);
+using xor32 = xor_hash<uint32_t>;
+REGISTER_HASH(xor32);
 
 using crc8_custom = crc_custom<uint8_t>;
 REGISTER_HASH(crc8_custom);
