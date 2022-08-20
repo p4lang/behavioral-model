@@ -21,40 +21,35 @@
 #ifndef BM_BM_SIM_BIGNUM_H_
 #define BM_BM_SIM_BIGNUM_H_
 
-#include <gmp.h>
+#include <boost/multiprecision/cpp_int.hpp>
 
-// will need to implement this ourselves if we do not use Boost
-#include <boost/multiprecision/gmp.hpp>
+#include "bytecontainer.h"
 
 namespace bm {
 
 namespace bignum {
 
-  using boost::multiprecision::gmp_int;
-  using boost::multiprecision::number;
+  using Bignum = boost::multiprecision::cpp_int;
 
-  using Bignum = number<gmp_int>;
-
-  inline size_t export_bytes(char *dst, size_t size, const Bignum &src) {
-    size_t count;
-    mpz_export(dst, &count, 1, size, 1, 0, src.backend().data());
-    return count;
+  inline size_t export_bytes(char *dst, const Bignum &src) {
+    boost::multiprecision::export_bits(src, dst, 8);
+    return src.backend().size();
   }
 
   inline size_t export_size_in_bytes(const Bignum &src) {
-    return (mpz_sizeinbase(src.backend().data(), 2) + 7) / 8;
+    return (boost::multiprecision::msb(src) + 7) / 8;
   }
 
   inline void import_bytes(Bignum *dst, const char *src, size_t size) {
-    mpz_import(dst->backend().data(), 1, 1, size, 1, 0, src);
+    boost::multiprecision::import_bits(*dst, src, src + size, 8);
   }
 
   inline int test_bit(const Bignum &v, size_t index) {
-    return mpz_tstbit(v.backend().data(), index);
+    return boost::multiprecision::bit_test(v, index) ? 1 : 0;
   }
 
   inline void clear_bit(Bignum *v, size_t index) {
-    return mpz_clrbit(v->backend().data(), index);
+    boost::multiprecision::bit_unset(*v, index);
   }
 
 }  // namespace bignum

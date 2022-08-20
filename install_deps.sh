@@ -4,7 +4,6 @@ ubuntu_release=`lsb_release -s -r`
 sudo apt-get install -y \
     automake \
     cmake \
-    libgmp-dev \
     libpcap-dev \
     libboost-dev \
     libboost-test-dev \

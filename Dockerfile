@@ -20,7 +20,6 @@ ENV BM_DEPS automake \
             curl \
             git \
             lcov \
-            libgmp-dev \
             libpcap-dev \
             libboost-dev \
             libboost-program-options-dev \
@@ -33,7 +32,6 @@ ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
                     libboost-system1.71.0 \
                     libboost-filesystem1.71.0 \
                     libboost-thread1.71.0 \
-                    libgmp10 \
                     libpcap0.8 \
                     python3 \
                     python-is-python3

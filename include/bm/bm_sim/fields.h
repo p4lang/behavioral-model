@@ -111,19 +111,19 @@ class Field : public Data {
     if (!is_signed) {
       // is this efficient enough?
       value &= mask;
-      bignum::export_bytes(bytes.data(), nbytes, value);
+      bignum::export_bytes(bytes.data(), value);
     } else {
       if (value < min || value > mask) {
         value &= mask;
         if (value > max) value -= (mask + 1);
       }
       if (value >= 0) {
-        bignum::export_bytes(bytes.data(), nbytes, value);
+        bignum::export_bytes(bytes.data(), value);
       } else {
         // e.g. if width is 8 and value is -127 (1000 0001), subtracting min
         // (-128) one time gives us 1, a second time gives us 129, 129 has a
         // bignum representation of 1000 0001, which is what we wanted
-        bignum::export_bytes(bytes.data(), nbytes, value - min - min);
+        bignum::export_bytes(bytes.data(), value - min - min);
       }
     }
     written_to = true;

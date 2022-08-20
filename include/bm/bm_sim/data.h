@@ -213,7 +213,7 @@ class Data {
     const size_t export_size = bignum::export_size_in_bytes(value);
     std::string s(export_size, '\x00');
     // this is not technically correct, but works for all compilers
-    bignum::export_bytes(&s[0], export_size, value);
+    bignum::export_bytes(&s[0], value);
     return s;
   }
 

@@ -35,7 +35,7 @@ brew update
 
 # install basic tools
 brew install automake autoconf bison boost clang-format cmake coreutils \
-     doxygen gcc@5 gmp libevent openssl pkg-config wget
+     doxygen gcc@5 libevent openssl pkg-config wget
 # bison needs a bit more nudging
 brew link --overwrite --force bison
 
