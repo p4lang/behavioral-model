@@ -32,7 +32,7 @@ namespace bignum {
   using Bignum = boost::multiprecision::cpp_int;
 
   inline size_t export_bytes(char *dst, const Bignum &src) {
-    boost::multiprecision::export_bits(src, dst, 8);
+    boost::multiprecision::export_bits(src, dst, 8, false);
     return src.backend().size();
   }
 
@@ -41,7 +41,7 @@ namespace bignum {
   }
 
   inline void import_bytes(Bignum *dst, const char *src, size_t size) {
-    boost::multiprecision::import_bits(*dst, src, src + size, 8);
+    boost::multiprecision::import_bits(*dst, src, src + size, 8, false);
   }
 
   inline int test_bit(const Bignum &v, size_t index) {
