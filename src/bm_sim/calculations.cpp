@@ -392,6 +392,40 @@ struct xor_hash {
   }
 };
 
+struct toeplitz {
+  uint32_t operator()(const char *buf, size_t len) const {
+    uint32_t final_xor_value = 0;
+    const uint32_t *input = reinterpret_cast<const uint32_t *>(buf);
+    const size_t n_word = len / 4;
+
+    for (size_t j = 0; j < n_word / 4; j++) {
+      for (uint32_t input_word = input[j]; input_word; input_word &= (input_word - 1)) {
+        int i = ffs(input_word);
+        uint32_t key_word_l = rss_key[j % rss_key_len] << (31 - i);
+        uint32_t key_word_r = rss_key[(j + 1) % rss_key_len] >> (i + 1);
+        final_xor_value ^= (key_word_l | key_word_r);
+      }
+    }
+
+    // TODO: Decide whether to require len % 4 == 0,
+    // or to handle remaining bytes in some way.
+
+    return final_xor_value;
+  }
+
+  // TODO: I'm not sure what would be the best API to configure the RSS key.
+  void update_rss_key(const uint32_t *new_rss_key, size_t new_rss_key_len) {
+    rss_key_len = new_rss_key_len;
+    rss_key = new uint32_t(rss_key_len);
+    std::memcpy(rss_key, new_rss_key, rss_key_len * sizeof(uint32_t));
+  }
+
+ private:
+  // TODO: Decide whether to use uint32_t* or unint8_t* for rss_key.
+  uint32_t *rss_key;
+  size_t rss_key_len;
+};
+
 struct identity {
   uint64_t operator()(const char *buf, size_t len) const {
     uint64_t res = 0ULL;
@@ -449,6 +483,7 @@ REGISTER_HASH(crc32);
 REGISTER_HASH(crcCCITT);
 REGISTER_HASH(cksum16);
 REGISTER_HASH(csum16);
+REGISTER_HASH(toeplitz);
 REGISTER_HASH(identity);
 REGISTER_HASH(round_robin);
 REGISTER_HASH(round_robin_consistent);
