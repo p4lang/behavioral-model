@@ -429,7 +429,7 @@ struct toeplitz {
       const auto& base_key_r = host_rss_key[(i_word + 1) % key_len];
       for (uint32_t input_word = input_words[i_word]; input_word;
            input_word &= (input_word - 1)) {
-        int i_bit = 31 - __builtin_ctz(input_word); // range from 0 to 31
+        int i_bit = 31 - __builtin_ctz(input_word);  // range from 0 to 31
         uint32_t key_l = base_key_l << i_bit;
         // Explicitly cast to longer type to avoid undefined behavior of shift.
         uint32_t key_r = static_cast<uint64_t>(base_key_r) >> (32 - i_bit);
