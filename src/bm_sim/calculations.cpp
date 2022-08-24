@@ -365,12 +365,15 @@ struct csum16 {
 // For example, concat<uint32_t>(&{0xab, 0xcd}, 2) == 0xabcd0000.
 template <typename T>
 T concat(const char *buf, size_t n) {
-  assert(n <= sizeof(T));
+  static constexpr size_t type_size = sizeof(T);
+  assert(n <= type_size);
   T res = 0;
-  for (size_t offset = 0; offset < n; offset++) {
-    res = (res << 8) | (static_cast<T>(buf[offset]) & 0xff);
+  if (n > 0) {
+    for (size_t offset = 0; offset < n; offset++) {
+      res = (res << 8) | (static_cast<T>(buf[offset]) & 0xff);
+    }
+    res <<= ((type_size - n) * 8);
   }
-  res <<= ((sizeof(T) - n) * 8);
   return res;
 }
 
@@ -379,28 +382,17 @@ struct xor_hash {
   T operator()(const char *buf, size_t len) const {
     static constexpr size_t n = sizeof(T);
     T final_xor_value = 0;
-    T mask = 0xff;
     size_t byte = 0;
-    T t;
 
     /* Main loop - n bytes at a time */
     while (len >= n) {
-      t = 0;
-      for (size_t offset = 0; offset < n; offset++) {
-        t = (t << 8) + (static_cast<T>(buf[byte + offset]) & mask);
-      }
-      final_xor_value ^= t;
+      final_xor_value ^= concat<T>(buf + byte, n);
       byte += n;
       len -= n;
     }
 
     /* Handle tail less than n bytes long */
-    t = 0;
-    for (size_t offset = 0; offset < len; offset++) {
-      t = (t << 8) + (static_cast<T>(buf[byte + offset]) & mask);
-    }
-    t <<= ((n - len) * 8);
-    final_xor_value ^= t;
+    final_xor_value ^= concat<T>(buf + byte, len);
 
     return final_xor_value;
   }
