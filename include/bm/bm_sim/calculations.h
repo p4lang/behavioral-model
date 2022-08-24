@@ -387,6 +387,18 @@ class CustomCrcMgr {
                                           const crc_config_t &config);
 };
 
+enum class RssErrorCode {
+  SUCCESS = 0,
+  WRONG_TYPE_CALCULATION,
+  INVALID_KEY,
+};
+
+class RssMgr {
+ public:
+  static RssErrorCode update_key(RawCalculationIface<uint64_t> *c,
+                                 const std::vector<uint8_t> &key);
+};
+
 }  // namespace bm
 
 #endif  // BM_BM_SIM_CALCULATIONS_H_

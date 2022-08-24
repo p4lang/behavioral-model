@@ -360,6 +360,20 @@ struct csum16 {
   }
 };
 
+// Concatenate the next n bytes into the specified type.
+// Pad zeros at tail when given bytes are shorter than the type.
+// For example, concat<uint32_t>(&{0xab, 0xcd}, 2) == 0xabcd0000.
+template <typename T>
+T concat(const char *buf, size_t n) {
+  assert(n <= sizeof(T));
+  T res = 0;
+  for (size_t offset = 0; offset < n; offset++) {
+    res = (res << 8) | (static_cast<T>(buf[offset]) & 0xff);
+  }
+  res <<= ((sizeof(T) - n) * 8);
+  return res;
+}
+
 template <typename T>
 struct xor_hash {
   T operator()(const char *buf, size_t len) const {
@@ -393,37 +407,69 @@ struct xor_hash {
 };
 
 struct toeplitz {
-  uint32_t operator()(const char *buf, size_t len) const {
-    uint32_t final_xor_value = 0;
-    const uint32_t *input = reinterpret_cast<const uint32_t *>(buf);
-    const size_t n_word = len / 4;
+  toeplitz() {
+    update_key({0x00, 0x00, 0x00, 0x00});
+  }
 
-    for (size_t j = 0; j < n_word / 4; j++) {
-      for (uint32_t input_word = input[j]; input_word; input_word &= (input_word - 1)) {
-        int i = ffs(input_word);
-        uint32_t key_word_l = rss_key[j % rss_key_len] << (31 - i);
-        uint32_t key_word_r = rss_key[(j + 1) % rss_key_len] >> (i + 1);
-        final_xor_value ^= (key_word_l | key_word_r);
-      }
+  uint32_t operator()(const char *buf, size_t len) const {
+    std::unique_lock<std::mutex> lock(m);
+
+    // Convert input bytes (in network byte order) to host words.
+    // Pad the last one with zeros if it's shorter than a word.
+    std::vector<uint32_t> input_words;
+    auto raw_input_words = reinterpret_cast<const uint32_t *>(buf);
+    const size_t n_words = len / 4;
+    const size_t n_bytes_remain = len % 4;
+    for (size_t i_word = 0; i_word < n_words; i_word++) {
+      input_words.push_back(ntohl(raw_input_words[i_word]));
+    }
+    if (n_bytes_remain) {
+      input_words.push_back(
+        concat<uint32_t>(buf + (len - n_bytes_remain), n_bytes_remain));
     }
 
-    // TODO: Decide whether to require len % 4 == 0,
-    // or to handle remaining bytes in some way.
+    // Compute hash.
+    uint32_t final_xor_value = 0;
+    const auto key_len = host_rss_key.size();
+    for (size_t i_word = 0; i_word < input_words.size(); i_word++) {
+      // Mod key_len so we could handle longer inputs.
+      const auto& base_key_l = host_rss_key[i_word % key_len];
+      const auto& base_key_r = host_rss_key[(i_word + 1) % key_len];
+      for (uint32_t input_word = input_words[i_word]; input_word;
+           input_word &= (input_word - 1)) {
+        int i_bit = 31 - __builtin_ctz(input_word); // range from 0 to 31
+        uint32_t key_l = base_key_l << i_bit;
+        // Explicitly cast to longer type to avoid undefined behavior of shift.
+        uint32_t key_r = static_cast<uint64_t>(base_key_r) >> (32 - i_bit);
+        final_xor_value ^= (key_l | key_r);
+      }
+    }
 
     return final_xor_value;
   }
 
-  // TODO: I'm not sure what would be the best API to configure the RSS key.
-  void update_rss_key(const uint32_t *new_rss_key, size_t new_rss_key_len) {
-    rss_key_len = new_rss_key_len;
-    rss_key = new uint32_t(rss_key_len);
-    std::memcpy(rss_key, new_rss_key, rss_key_len * sizeof(uint32_t));
+  RssErrorCode update_key(const std::vector<uint8_t> &rss_key) {
+    std::unique_lock<std::mutex> lock(m);
+
+    // Only accept non-empty RSS keys that could be grouped into 4-byte chunks.
+    if (rss_key.size() < 4 || rss_key.size() % 4) {
+      return RssErrorCode::INVALID_KEY;
+    }
+
+    // Convert to words in host byte order for the convenience of computation.
+    auto words = reinterpret_cast<const uint32_t *>(rss_key.data());
+    size_t n_words = rss_key.size() / 4;
+    host_rss_key.clear();
+    for (size_t i = 0; i < n_words; i++) {
+      host_rss_key.push_back(ntohl(words[i]));
+    }
+
+    return RssErrorCode::SUCCESS;
   }
 
  private:
-  // TODO: Decide whether to use uint32_t* or unint8_t* for rss_key.
-  uint32_t *rss_key;
-  size_t rss_key_len;
+  std::vector<uint32_t> host_rss_key;
+  mutable std::mutex m{};
 };
 
 struct identity {
@@ -541,6 +587,15 @@ template class CustomCrcMgr<uint8_t>;
 template class CustomCrcMgr<uint16_t>;
 template class CustomCrcMgr<uint32_t>;
 template class CustomCrcMgr<uint64_t>;
+
+RssErrorCode
+RssMgr::update_key(RawCalculationIface<uint64_t> *c,
+                   const std::vector<uint8_t> &key) {
+  using ExpectedCType = RawCalculation<uint64_t, toeplitz>;
+  auto raw_c = dynamic_cast<ExpectedCType *>(c);
+  if (!raw_c) return RssErrorCode::WRONG_TYPE_CALCULATION;
+  return raw_c->get_hash_fn().update_key(key);
+}
 
 CalculationsMap * CalculationsMap::get_instance() {
   static CalculationsMap map;
