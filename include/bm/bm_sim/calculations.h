@@ -387,7 +387,7 @@ class CustomCrcMgr {
                                           const crc_config_t &config);
 };
 
-enum class RssErrorCode {
+enum class ToeplitzErrorCode {
   SUCCESS = 0,
   INVALID_CALCULATION_NAME,
   WRONG_TYPE_CALCULATION,
@@ -396,21 +396,21 @@ enum class RssErrorCode {
 
 namespace detail {
 
-using rss_key_t = std::vector<uint8_t>;
+using toeplitz_key_t = std::vector<uint8_t>;
 
-std::ostream &operator<<(std::ostream &out, const rss_key_t &rss_key);
+std::ostream &operator<<(std::ostream &out, const toeplitz_key_t &key);
 
 }  // namespace detail
 
-class RssMgr {
+class ToeplitzMgr {
  public:
-  using rss_key_t = detail::rss_key_t;
+  using key_t = detail::toeplitz_key_t;
 
-  static RssErrorCode update_key(NamedCalculation *calculation,
-                                 const rss_key_t &key);
+  static ToeplitzErrorCode update_key(NamedCalculation *calculation,
+                                      const key_t &key);
 
-  static RssErrorCode update_key(RawCalculationIface<uint64_t> *c,
-                                 const rss_key_t &key);
+  static ToeplitzErrorCode update_key(RawCalculationIface<uint64_t> *c,
+                                      const key_t &key);
 };
 
 }  // namespace bm

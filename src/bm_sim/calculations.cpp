@@ -360,11 +360,11 @@ struct csum16 {
   }
 };
 
-// Concatenate the next n bytes into the specified type.
-// Pad zeros at tail when given bytes are shorter than the type.
-// For example, concat<uint32_t>(&{0xab, 0xcd}, 2) == 0xabcd0000.
+// Emit the next n bytes as the specified integer type.
+// Pad zeros at tail when given bytes are shorter than the integer type.
+// For example, emitAsInteger<uint32_t>(&{0xab, 0xcd}, 2) == 0xabcd0000.
 template <typename T>
-T concat(const char *buf, size_t n) {
+T emitAsInteger(const char *buf, size_t n) {
   static constexpr size_t type_size = sizeof(T);
   assert(n <= type_size);
   T res = 0;
@@ -386,28 +386,26 @@ struct xor_hash {
 
     /* Main loop - n bytes at a time */
     while (len >= n) {
-      final_xor_value ^= concat<T>(buf + byte, n);
+      final_xor_value ^= emitAsInteger<T>(buf + byte, n);
       byte += n;
       len -= n;
     }
 
     /* Handle tail less than n bytes long */
-    final_xor_value ^= concat<T>(buf + byte, len);
+    final_xor_value ^= emitAsInteger<T>(buf + byte, len);
 
     return final_xor_value;
   }
 };
 
 struct toeplitz {
-  using rss_key_t = RssMgr::rss_key_t;
+  using key_t = ToeplitzMgr::key_t;
 
   toeplitz() {
     update_key({0x00, 0x00, 0x00, 0x00});
   }
 
   uint32_t operator()(const char *buf, size_t len) const {
-    std::unique_lock<std::mutex> lock(m);
-
     // Convert input bytes (in network byte order) to host words.
     // Pad the last one with zeros if it's shorter than a word.
     std::vector<uint32_t> input_words;
@@ -419,16 +417,18 @@ struct toeplitz {
     }
     if (n_bytes_remain) {
       input_words.push_back(
-        concat<uint32_t>(buf + (len - n_bytes_remain), n_bytes_remain));
+        emitAsInteger<uint32_t>(buf + (len - n_bytes_remain), n_bytes_remain));
     }
+
+    std::unique_lock<std::mutex> lock(m);
 
     // Compute hash.
     uint32_t final_xor_value = 0;
-    const auto key_len = host_rss_key.size();
+    const auto key_len = host_key.size();
     for (size_t i_word = 0; i_word < input_words.size(); i_word++) {
       // Mod key_len so we could handle longer inputs.
-      const auto& base_key_l = host_rss_key[i_word % key_len];
-      const auto& base_key_r = host_rss_key[(i_word + 1) % key_len];
+      uint32_t base_key_l = host_key[i_word % key_len];
+      uint32_t base_key_r = host_key[(i_word + 1) % key_len];
       for (uint32_t input_word = input_words[i_word]; input_word;
            input_word &= (input_word - 1)) {
         int i_bit = 31 - __builtin_ctz(input_word);  // range from 0 to 31
@@ -442,27 +442,27 @@ struct toeplitz {
     return final_xor_value;
   }
 
-  RssErrorCode update_key(const rss_key_t &rss_key) {
+  ToeplitzErrorCode update_key(const key_t &key) {
     std::unique_lock<std::mutex> lock(m);
 
-    // Only accept non-empty RSS keys that could be grouped into 4-byte chunks.
-    if (rss_key.size() < 4 || rss_key.size() % 4) {
-      return RssErrorCode::INVALID_KEY;
+    // Only accept non-empty keys that could be grouped into 4-byte chunks.
+    if (key.size() < 4 || key.size() % 4) {
+      return ToeplitzErrorCode::INVALID_KEY;
     }
 
     // Convert to words in host byte order for the convenience of computation.
-    auto words = reinterpret_cast<const uint32_t *>(rss_key.data());
-    size_t n_words = rss_key.size() / 4;
-    host_rss_key.clear();
+    auto words = reinterpret_cast<const uint32_t *>(key.data());
+    size_t n_words = key.size() / 4;
+    host_key.clear();
     for (size_t i = 0; i < n_words; i++) {
-      host_rss_key.push_back(ntohl(words[i]));
+      host_key.push_back(ntohl(words[i]));
     }
 
-    return RssErrorCode::SUCCESS;
+    return ToeplitzErrorCode::SUCCESS;
   }
 
  private:
-  std::vector<uint32_t> host_rss_key;
+  std::vector<uint32_t> host_key;
   mutable std::mutex m{};
 };
 
@@ -584,9 +584,9 @@ template class CustomCrcMgr<uint64_t>;
 
 namespace detail {
 
-std::ostream &operator<<(std::ostream &out, const rss_key_t &rss_key) {
+std::ostream &operator<<(std::ostream &out, const toeplitz_key_t &key) {
   out << "0x";
-  for (const auto& byte : rss_key) {
+  for (const auto& byte : key) {
     out << std::setfill('0') << std::setw(2) << std::hex << byte;
   }
   return out;
@@ -594,22 +594,22 @@ std::ostream &operator<<(std::ostream &out, const rss_key_t &rss_key) {
 
 }  // namespace detail
 
-RssErrorCode
-RssMgr::update_key(NamedCalculation *calculation,
-                   const rss_key_t &key) {
+ToeplitzErrorCode
+ToeplitzMgr::update_key(NamedCalculation *calculation,
+                        const key_t &key) {
   // TODO(qobilidop): Make the logger work.
-  // Logger::get()->info("Updating RSS key of {} to: {}",
+  // Logger::get()->info("Updating key of {} to: {}",
   //                     calculation->get_name(), key);
   auto raw_c_iface = calculation->get_raw_calculation();
   return update_key(raw_c_iface, key);
 }
 
-RssErrorCode
-RssMgr::update_key(RawCalculationIface<uint64_t> *c,
-                   const rss_key_t &key) {
+ToeplitzErrorCode
+ToeplitzMgr::update_key(RawCalculationIface<uint64_t> *c,
+                        const key_t &key) {
   using ExpectedCType = RawCalculation<uint64_t, toeplitz>;
   auto raw_c = dynamic_cast<ExpectedCType *>(c);
-  if (!raw_c) return RssErrorCode::WRONG_TYPE_CALCULATION;
+  if (!raw_c) return ToeplitzErrorCode::WRONG_TYPE_CALCULATION;
   return raw_c->get_hash_fn().update_key(key);
 }
 

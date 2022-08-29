@@ -762,9 +762,9 @@ def handle_bad_input(f):
         except InvalidCrcOperation as e:
             error = CrcErrorCode._VALUES_TO_NAMES[e.code]
             print("Invalid crc operation ({})".format(error))
-        except InvalidRssOperation as e:
-            error = RssErrorCode._VALUES_TO_NAMES[e.code]
-            print("Invalid rss operation ({})".format(error))
+        except InvalidToeplitzHashOperation as e:
+            error = ToeplitzHashErrorCode._VALUES_TO_NAMES[e.code]
+            print("Invalid Toeplitz hash operation ({})".format(error))
         except InvalidParseVSetOperation as e:
             error = ParseVSetOperationErrorCode._VALUES_TO_NAMES[e.code]
             print("Invalid parser value set operation ({})".format(error))
@@ -2605,11 +2605,18 @@ class RuntimeAPI(cmd.Cmd):
     def complete_set_crc32_parameters(self, text, line, start_index, end_index):
         return self._complete_crc(text, 32)
 
-    def do_set_rss_key(self, line):
-        "Change the RSS key for the Toeplitz hash: set_rss_key <name> <rss key in hex string>"
-        name, rss_key = line.split()
-        rss_key = bytearray.fromhex(rss_key)
-        self.client.bm_set_rss_key(0, name, rss_key)
+    def do_set_toeplitz_hash_key(self, line):
+        "Set Toeplitz hash key: set_toeplitz_hash_key <name> <key in hex string>"
+        args = line.split()
+        self.exactly_n_args(args, 2)
+        name = args[0]
+        try:
+            key = bytearray.fromhex(args[1])
+        except:
+            raise UIn_BadParamError("Toeplitz hash key must be a hex string")
+        if len(key) % 4 != 0:
+            raise UIn_BadParamError("Toeplitz hash key must be a multiple of 4 bytes in length")
+        self.client.bm_set_toeplitz_hash_key(0, name, key)
 
 def load_json_config(standard_client=None, json_path=None, architecture_spec=None):
     load_json_str(utils.get_json_config(

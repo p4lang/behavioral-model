@@ -231,17 +231,16 @@ exception InvalidCrcOperation {
  1:CrcErrorCode code
 }
 
-typedef list<i8> BmRssKey
+typedef list<i8> BmToeplitzHashKey
 
-// Need to avoid name collision with RssErrorCode.
-enum RssErrCode {
+enum ToeplitzHashErrorCode {
   INVALID_CALCULATION_NAME = 1,
   WRONG_TYPE_CALCULATION = 2,
   INVALID_KEY = 3
 }
 
-exception InvalidRssOperation {
-  1:RssErrCode code
+exception InvalidToeplitzHashOperation {
+  1:ToeplitzHashErrorCode code
 }
 
 enum BmActionEntryType {
@@ -725,11 +724,11 @@ service Standard {
     3:BmCrc32Config crc32_config
   ) throws (1:InvalidCrcOperation ouch)
 
-  void bm_set_rss_key(
+  void bm_set_toeplitz_hash_key(
     1:i32 cxt_id,
     2:string calc_name,
-    3:BmRssKey rss_key
-  ) throws (1:InvalidRssOperation ouch)
+    3:BmToeplitzHashKey key
+  ) throws (1:InvalidToeplitzHashOperation ouch)
 
   void bm_reset_state()
 

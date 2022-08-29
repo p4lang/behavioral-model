@@ -557,16 +557,16 @@ TEST(HashTest, Toeplitz) {
   const auto ptr = CalculationsMap::get_instance()->get_copy("toeplitz");
   ASSERT_NE(nullptr, ptr);
 
-  // Set RSS key.
-  const RssMgr::rss_key_t default_rss_key =  {
+  // Set hash key.
+  const ToeplitzMgr::key_t default_key =  {
     0x6d, 0x5a, 0x56, 0xda, 0x25, 0x5b, 0x0e, 0xc2,
     0x41, 0x67, 0x25, 0x3d, 0x43, 0xa3, 0x8f, 0xb0,
     0xd0, 0xca, 0x2b, 0xcb, 0xae, 0x7b, 0x30, 0xb4,
     0x77, 0xcb, 0x2d, 0xa3, 0x80, 0x30, 0xf2, 0x0c,
     0x6a, 0x42, 0xb7, 0x3b, 0xbe, 0xac, 0x01, 0xfa,
   };
-  ASSERT_EQ(RssErrorCode::SUCCESS,
-            RssMgr::update_key(ptr.get(), default_rss_key));
+  ASSERT_EQ(ToeplitzErrorCode::SUCCESS,
+            ToeplitzMgr::update_key(ptr.get(), default_key));
 
   // src_ip = 66.9.149.187
   // dst_ip = 161.142.100.80

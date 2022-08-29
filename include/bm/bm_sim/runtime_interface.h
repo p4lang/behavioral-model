@@ -406,10 +406,10 @@ class RuntimeInterface {
       cxt_id_t cxt_id, const std::string &calc_name,
       const CustomCrcMgr<uint32_t>::crc_config_t &crc32_config) = 0;
 
-  virtual RssErrorCode
-  set_rss_key(
+  virtual ToeplitzErrorCode
+  set_toeplitz_key(
       cxt_id_t cxt_id, const std::string &calc_name,
-      const RssMgr::rss_key_t &rss_key) = 0;
+      const ToeplitzMgr::key_t &key) = 0;
 
   virtual ErrorCode
   reset_state() = 0;

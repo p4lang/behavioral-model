@@ -1173,13 +1173,14 @@ public:
     }
   }
 
-  void bm_set_rss_key(const int32_t cxt_id, const std::string& calc_name, const BmRssKey& rss_key) {
-    Logger::get()->trace("bm_set_rss_key");
-    auto rc = switch_->set_rss_key(cxt_id, calc_name, RssMgr::rss_key_t(rss_key.begin(), rss_key.end()));
-    if (rc != RssErrorCode::SUCCESS) {
-      InvalidRssOperation iro;
-      iro.code = static_cast<RssErrCode::type>(rc); // TODO
-      throw iro;
+  void bm_set_toeplitz_hash_key(const int32_t cxt_id, const std::string& calc_name, const BmToeplitzHashKey& raw_key) {
+    Logger::get()->trace("bm_set_toeplitz_hash_key");
+    auto key = ToeplitzMgr::key_t(raw_key.begin(), raw_key.end());
+    auto rc = switch_->set_toeplitz_key(cxt_id, calc_name, key);
+    if (rc != ToeplitzErrorCode::SUCCESS) {
+      InvalidToeplitzHashOperation error;
+      error.code = static_cast<ToeplitzHashErrorCode::type>(rc); // TODO
+      throw error;
     }
   }
 
