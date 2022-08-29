@@ -527,6 +527,13 @@ SwitchWContexts::set_crc32_custom_parameters(
       calc_name, crc32_config);
 }
 
+RssErrorCode
+SwitchWContexts::set_rss_key(
+    cxt_id_t cxt_id, const std::string &calc_name,
+    const RssMgr::rss_key_t &rss_key) {
+  return contexts.at(cxt_id).set_rss_key(calc_name, rss_key);
+}
+
 std::unique_ptr<Packet>
 SwitchWContexts::new_packet_ptr(cxt_id_t cxt_id, port_t ingress_port,
                                 packet_id_t id, int ingress_length,

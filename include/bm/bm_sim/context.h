@@ -418,6 +418,11 @@ class Context final {
       const std::string &calc_name,
       const typename CustomCrcMgr<T>::crc_config_t &crc_config);
 
+  RssErrorCode
+  set_rss_key(
+      const std::string &calc_name,
+      const RssMgr::rss_key_t &rss_key);
+
   bool set_group_selector(
       const std::string &act_prof_name,
       std::shared_ptr<ActionProfile::GroupSelectionIface> selector);

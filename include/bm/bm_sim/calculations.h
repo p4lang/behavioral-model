@@ -389,14 +389,28 @@ class CustomCrcMgr {
 
 enum class RssErrorCode {
   SUCCESS = 0,
+  INVALID_CALCULATION_NAME,
   WRONG_TYPE_CALCULATION,
   INVALID_KEY,
 };
 
+namespace detail {
+
+using rss_key_t = std::vector<uint8_t>;
+
+std::ostream &operator<<(std::ostream &out, const rss_key_t &rss_key);
+
+}  // namespace detail
+
 class RssMgr {
  public:
+  using rss_key_t = detail::rss_key_t;
+
+  static RssErrorCode update_key(NamedCalculation *calculation,
+                                 const rss_key_t &key);
+
   static RssErrorCode update_key(RawCalculationIface<uint64_t> *c,
-                                 const std::vector<uint8_t> &key);
+                                 const rss_key_t &key);
 };
 
 }  // namespace bm

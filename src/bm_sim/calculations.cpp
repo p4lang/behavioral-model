@@ -399,6 +399,8 @@ struct xor_hash {
 };
 
 struct toeplitz {
+  using rss_key_t = RssMgr::rss_key_t;
+
   toeplitz() {
     update_key({0x00, 0x00, 0x00, 0x00});
   }
@@ -440,7 +442,7 @@ struct toeplitz {
     return final_xor_value;
   }
 
-  RssErrorCode update_key(const std::vector<uint8_t> &rss_key) {
+  RssErrorCode update_key(const rss_key_t &rss_key) {
     std::unique_lock<std::mutex> lock(m);
 
     // Only accept non-empty RSS keys that could be grouped into 4-byte chunks.
@@ -580,9 +582,31 @@ template class CustomCrcMgr<uint16_t>;
 template class CustomCrcMgr<uint32_t>;
 template class CustomCrcMgr<uint64_t>;
 
+namespace detail {
+
+std::ostream &operator<<(std::ostream &out, const rss_key_t &rss_key) {
+  out << "0x";
+  for (const auto& byte : rss_key) {
+    out << std::setfill('0') << std::setw(2) << std::hex << byte;
+  }
+  return out;
+}
+
+}  // namespace detail
+
+RssErrorCode
+RssMgr::update_key(NamedCalculation *calculation,
+                   const rss_key_t &key) {
+  // TODO(qobilidop): Make the logger work.
+  // Logger::get()->info("Updating RSS key of {} to: {}",
+  //                     calculation->get_name(), key);
+  auto raw_c_iface = calculation->get_raw_calculation();
+  return update_key(raw_c_iface, key);
+}
+
 RssErrorCode
 RssMgr::update_key(RawCalculationIface<uint64_t> *c,
-                   const std::vector<uint8_t> &key) {
+                   const rss_key_t &key) {
   using ExpectedCType = RawCalculation<uint64_t, toeplitz>;
   auto raw_c = dynamic_cast<ExpectedCType *>(c);
   if (!raw_c) return RssErrorCode::WRONG_TYPE_CALCULATION;

@@ -839,6 +839,11 @@ class SwitchWContexts : public DevMgr, public RuntimeInterface {
       cxt_id_t cxt_id, const std::string &calc_name,
       const CustomCrcMgr<uint32_t>::crc_config_t &crc32_config) override;
 
+  RssErrorCode
+  set_rss_key(
+      cxt_id_t cxt_id, const std::string &calc_name,
+      const RssMgr::rss_key_t &rss_key) override;
+
   // ---------- End RuntimeInterface ----------
 
  protected:

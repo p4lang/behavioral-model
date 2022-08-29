@@ -762,6 +762,9 @@ def handle_bad_input(f):
         except InvalidCrcOperation as e:
             error = CrcErrorCode._VALUES_TO_NAMES[e.code]
             print("Invalid crc operation ({})".format(error))
+        except InvalidRssOperation as e:
+            error = RssErrorCode._VALUES_TO_NAMES[e.code]
+            print("Invalid rss operation ({})".format(error))
         except InvalidParseVSetOperation as e:
             error = ParseVSetOperationErrorCode._VALUES_TO_NAMES[e.code]
             print("Invalid parser value set operation ({})".format(error))
@@ -2602,6 +2605,11 @@ class RuntimeAPI(cmd.Cmd):
     def complete_set_crc32_parameters(self, text, line, start_index, end_index):
         return self._complete_crc(text, 32)
 
+    def do_set_rss_key(self, line):
+        "Change the RSS key for the Toeplitz hash: set_rss_key <name> <rss key in hex string>"
+        name, rss_key = line.split()
+        rss_key = bytearray.fromhex(rss_key)
+        self.client.bm_set_rss_key(0, name, rss_key)
 
 def load_json_config(standard_client=None, json_path=None, architecture_spec=None):
     load_json_str(utils.get_json_config(

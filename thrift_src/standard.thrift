@@ -231,6 +231,19 @@ exception InvalidCrcOperation {
  1:CrcErrorCode code
 }
 
+typedef list<i8> BmRssKey
+
+// Need to avoid name collision with RssErrorCode.
+enum RssErrCode {
+  INVALID_CALCULATION_NAME = 1,
+  WRONG_TYPE_CALCULATION = 2,
+  INVALID_KEY = 3
+}
+
+exception InvalidRssOperation {
+  1:RssErrCode code
+}
+
 enum BmActionEntryType {
   NONE = 0,  // used when querying default entry, if none configured
   ACTION_DATA = 1,
@@ -711,6 +724,12 @@ service Standard {
     2:string calc_name,
     3:BmCrc32Config crc32_config
   ) throws (1:InvalidCrcOperation ouch)
+
+  void bm_set_rss_key(
+    1:i32 cxt_id,
+    2:string calc_name,
+    3:BmRssKey rss_key
+  ) throws (1:InvalidRssOperation ouch)
 
   void bm_reset_state()
 

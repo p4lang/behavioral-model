@@ -1173,6 +1173,16 @@ public:
     }
   }
 
+  void bm_set_rss_key(const int32_t cxt_id, const std::string& calc_name, const BmRssKey& rss_key) {
+    Logger::get()->trace("bm_set_rss_key");
+    auto rc = switch_->set_rss_key(cxt_id, calc_name, RssMgr::rss_key_t(rss_key.begin(), rss_key.end()));
+    if (rc != RssErrorCode::SUCCESS) {
+      InvalidRssOperation iro;
+      iro.code = static_cast<RssErrCode::type>(rc); // TODO
+      throw iro;
+    }
+  }
+
   void bm_reset_state() {
     Logger::get()->trace("bm_reset_state");
     switch_->reset_state();
