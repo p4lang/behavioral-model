@@ -527,6 +527,13 @@ SwitchWContexts::set_crc32_custom_parameters(
       calc_name, crc32_config);
 }
 
+ToeplitzErrorCode
+SwitchWContexts::set_toeplitz_key(
+    cxt_id_t cxt_id, const std::string &calc_name,
+    const ToeplitzMgr::key_t &key) {
+  return contexts.at(cxt_id).set_toeplitz_key(calc_name, key);
+}
+
 std::unique_ptr<Packet>
 SwitchWContexts::new_packet_ptr(cxt_id_t cxt_id, port_t ingress_port,
                                 packet_id_t id, int ingress_length,

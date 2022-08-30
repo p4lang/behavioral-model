@@ -728,6 +728,16 @@ template CustomCrcErrorCode Context::set_crc_custom_parameters<uint32_t>(
     const std::string &calc_name,
     const CustomCrcMgr<uint32_t>::crc_config_t &crc_config);
 
+ToeplitzErrorCode
+Context::set_toeplitz_key(
+    const std::string &calc_name,
+    const ToeplitzMgr::key_t &key) {
+  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  auto *named_calculation = p4objects_rt->get_named_calculation(calc_name);
+  if (!named_calculation) return ToeplitzErrorCode::INVALID_CALCULATION_NAME;
+  return ToeplitzMgr::update_key(named_calculation, key);
+}
+
 bool
 Context::set_group_selector(
     const std::string &act_prof_name,

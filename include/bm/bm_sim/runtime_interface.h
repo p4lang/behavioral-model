@@ -406,6 +406,11 @@ class RuntimeInterface {
       cxt_id_t cxt_id, const std::string &calc_name,
       const CustomCrcMgr<uint32_t>::crc_config_t &crc32_config) = 0;
 
+  virtual ToeplitzErrorCode
+  set_toeplitz_key(
+      cxt_id_t cxt_id, const std::string &calc_name,
+      const ToeplitzMgr::key_t &key) = 0;
+
   virtual ErrorCode
   reset_state() = 0;
 

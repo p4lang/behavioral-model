@@ -231,6 +231,18 @@ exception InvalidCrcOperation {
  1:CrcErrorCode code
 }
 
+typedef binary BmToeplitzHashKey
+
+enum ToeplitzHashErrorCode {
+  INVALID_CALCULATION_NAME = 1,
+  WRONG_TYPE_CALCULATION = 2,
+  INVALID_KEY = 3
+}
+
+exception InvalidToeplitzHashOperation {
+  1:ToeplitzHashErrorCode code
+}
+
 enum BmActionEntryType {
   NONE = 0,  // used when querying default entry, if none configured
   ACTION_DATA = 1,
@@ -711,6 +723,12 @@ service Standard {
     2:string calc_name,
     3:BmCrc32Config crc32_config
   ) throws (1:InvalidCrcOperation ouch)
+
+  void bm_set_toeplitz_hash_key(
+    1:i32 cxt_id,
+    2:string calc_name,
+    3:BmToeplitzHashKey key
+  ) throws (1:InvalidToeplitzHashOperation ouch)
 
   void bm_reset_state()
 

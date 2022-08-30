@@ -1173,6 +1173,17 @@ public:
     }
   }
 
+  void bm_set_toeplitz_hash_key(const int32_t cxt_id, const std::string& calc_name, const BmToeplitzHashKey& raw_key) {
+    Logger::get()->trace("bm_set_toeplitz_hash_key");
+    auto key = ToeplitzMgr::key_t(raw_key.data(), raw_key.size());
+    auto rc = switch_->set_toeplitz_key(cxt_id, calc_name, key);
+    if (rc != ToeplitzErrorCode::SUCCESS) {
+      InvalidToeplitzHashOperation error;
+      error.code = static_cast<ToeplitzHashErrorCode::type>(rc); // TODO
+      throw error;
+    }
+  }
+
   void bm_reset_state() {
     Logger::get()->trace("bm_reset_state");
     switch_->reset_state();

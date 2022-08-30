@@ -387,6 +387,24 @@ class CustomCrcMgr {
                                           const crc_config_t &config);
 };
 
+enum class ToeplitzErrorCode {
+  SUCCESS = 0,
+  INVALID_CALCULATION_NAME,
+  WRONG_TYPE_CALCULATION,
+  INVALID_KEY,
+};
+
+class ToeplitzMgr {
+ public:
+  using key_t = ByteContainer;
+
+  static ToeplitzErrorCode update_key(NamedCalculation *calculation,
+                                      const key_t &key);
+
+  static ToeplitzErrorCode update_key(RawCalculationIface<uint64_t> *c,
+                                      const key_t &key);
+};
+
 }  // namespace bm
 
 #endif  // BM_BM_SIM_CALCULATIONS_H_

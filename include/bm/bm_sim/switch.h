@@ -839,6 +839,11 @@ class SwitchWContexts : public DevMgr, public RuntimeInterface {
       cxt_id_t cxt_id, const std::string &calc_name,
       const CustomCrcMgr<uint32_t>::crc_config_t &crc32_config) override;
 
+  ToeplitzErrorCode
+  set_toeplitz_key(
+      cxt_id_t cxt_id, const std::string &calc_name,
+      const ToeplitzMgr::key_t &key) override;
+
   // ---------- End RuntimeInterface ----------
 
  protected:

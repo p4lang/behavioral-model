@@ -360,36 +360,110 @@ struct csum16 {
   }
 };
 
+// Emit the next n bytes as the specified integer type.
+// Pad zeros at tail when given bytes are shorter than the integer type.
+// For example, emitAsInteger<uint32_t>(&{0xab, 0xcd}, 2) == 0xabcd0000.
+template <typename T>
+T emitAsInteger(const char *buf, size_t n) {
+  static constexpr size_t type_size = sizeof(T);
+  assert(n <= type_size);
+  T res = 0;
+  if (n > 0) {
+    for (size_t offset = 0; offset < n; offset++) {
+      res = (res << 8) | (static_cast<T>(buf[offset]) & 0xff);
+    }
+    res <<= ((type_size - n) * 8);
+  }
+  return res;
+}
+
 template <typename T>
 struct xor_hash {
   T operator()(const char *buf, size_t len) const {
     static constexpr size_t n = sizeof(T);
     T final_xor_value = 0;
-    T mask = 0xff;
     size_t byte = 0;
-    T t;
 
     /* Main loop - n bytes at a time */
     while (len >= n) {
-      t = 0;
-      for (size_t offset = 0; offset < n; offset++) {
-        t = (t << 8) + (static_cast<T>(buf[byte + offset]) & mask);
-      }
-      final_xor_value ^= t;
+      final_xor_value ^= emitAsInteger<T>(buf + byte, n);
       byte += n;
       len -= n;
     }
 
     /* Handle tail less than n bytes long */
-    t = 0;
-    for (size_t offset = 0; offset < len; offset++) {
-      t = (t << 8) + (static_cast<T>(buf[byte + offset]) & mask);
-    }
-    t <<= ((n - len) * 8);
-    final_xor_value ^= t;
+    final_xor_value ^= emitAsInteger<T>(buf + byte, len);
 
     return final_xor_value;
   }
+};
+
+struct toeplitz {
+  using key_t = ToeplitzMgr::key_t;
+
+  toeplitz() {
+    update_key(key_t(4, '\x00'));
+  }
+
+  uint32_t operator()(const char *buf, size_t len) const {
+    // Convert input bytes (in network byte order) to host words.
+    // Pad the last one with zeros if it's shorter than a word.
+    std::vector<uint32_t> input_words;
+    auto raw_input_words = reinterpret_cast<const uint32_t *>(buf);
+    const size_t n_words = len / 4;
+    const size_t n_bytes_remain = len % 4;
+    for (size_t i_word = 0; i_word < n_words; i_word++) {
+      input_words.push_back(ntohl(raw_input_words[i_word]));
+    }
+    if (n_bytes_remain) {
+      input_words.push_back(
+        emitAsInteger<uint32_t>(buf + (len - n_bytes_remain), n_bytes_remain));
+    }
+
+    std::unique_lock<std::mutex> lock(m);
+
+    // Compute hash.
+    uint32_t final_xor_value = 0;
+    const auto key_len = host_key.size();
+    for (size_t i_word = 0; i_word < input_words.size(); i_word++) {
+      // Mod key_len so we could handle longer inputs.
+      uint32_t base_key_l = host_key[i_word % key_len];
+      uint32_t base_key_r = host_key[(i_word + 1) % key_len];
+      for (uint32_t input_word = input_words[i_word]; input_word;
+           input_word &= (input_word - 1)) {
+        int i_bit = 31 - __builtin_ctz(input_word);  // range from 0 to 31
+        uint32_t key_l = base_key_l << i_bit;
+        // Explicitly cast to longer type to avoid undefined behavior of shift.
+        uint32_t key_r = static_cast<uint64_t>(base_key_r) >> (32 - i_bit);
+        final_xor_value ^= (key_l | key_r);
+      }
+    }
+
+    return final_xor_value;
+  }
+
+  ToeplitzErrorCode update_key(const key_t &key) {
+    std::unique_lock<std::mutex> lock(m);
+
+    // Only accept non-empty keys that could be grouped into 4-byte chunks.
+    if (key.size() < 4 || key.size() % 4) {
+      return ToeplitzErrorCode::INVALID_KEY;
+    }
+
+    // Convert to words in host byte order for the convenience of computation.
+    auto words = reinterpret_cast<const uint32_t *>(key.data());
+    size_t n_words = key.size() / 4;
+    host_key.clear();
+    for (size_t i = 0; i < n_words; i++) {
+      host_key.push_back(ntohl(words[i]));
+    }
+
+    return ToeplitzErrorCode::SUCCESS;
+  }
+
+ private:
+  std::vector<uint32_t> host_key;
+  mutable std::mutex m{};
 };
 
 struct identity {
@@ -449,6 +523,7 @@ REGISTER_HASH(crc32);
 REGISTER_HASH(crcCCITT);
 REGISTER_HASH(cksum16);
 REGISTER_HASH(csum16);
+REGISTER_HASH(toeplitz);
 REGISTER_HASH(identity);
 REGISTER_HASH(round_robin);
 REGISTER_HASH(round_robin_consistent);
@@ -506,6 +581,24 @@ template class CustomCrcMgr<uint8_t>;
 template class CustomCrcMgr<uint16_t>;
 template class CustomCrcMgr<uint32_t>;
 template class CustomCrcMgr<uint64_t>;
+
+ToeplitzErrorCode
+ToeplitzMgr::update_key(NamedCalculation *calculation,
+                        const key_t &key) {
+  Logger::get()->info("Updating key of {} to: {}",
+                      calculation->get_name(), key.to_hex());
+  auto raw_c_iface = calculation->get_raw_calculation();
+  return update_key(raw_c_iface, key);
+}
+
+ToeplitzErrorCode
+ToeplitzMgr::update_key(RawCalculationIface<uint64_t> *c,
+                        const key_t &key) {
+  using ExpectedCType = RawCalculation<uint64_t, toeplitz>;
+  auto raw_c = dynamic_cast<ExpectedCType *>(c);
+  if (!raw_c) return ToeplitzErrorCode::WRONG_TYPE_CALCULATION;
+  return raw_c->get_hash_fn().update_key(key);
+}
 
 CalculationsMap * CalculationsMap::get_instance() {
   static CalculationsMap map;

@@ -551,6 +551,44 @@ TEST(HashTest, Crc32Custom) {
                 ptr.get(), {0, 0, 0, true, true}));
 }
 
+// This test case is adapted from DPDK:
+//   https://github.com/DPDK/dpdk/blob/7be78d027918dbc846e502780faf94d5acdf5f75/app/test/test_thash.c#L38-L39
+TEST(HashTest, Toeplitz) {
+  const auto ptr = CalculationsMap::get_instance()->get_copy("toeplitz");
+  ASSERT_NE(nullptr, ptr);
+
+  // Set hash key.
+  const unsigned char raw_key[] = {
+    0x6d, 0x5a, 0x56, 0xda, 0x25, 0x5b, 0x0e, 0xc2,
+    0x41, 0x67, 0x25, 0x3d, 0x43, 0xa3, 0x8f, 0xb0,
+    0xd0, 0xca, 0x2b, 0xcb, 0xae, 0x7b, 0x30, 0xb4,
+    0x77, 0xcb, 0x2d, 0xa3, 0x80, 0x30, 0xf2, 0x0c,
+    0x6a, 0x42, 0xb7, 0x3b, 0xbe, 0xac, 0x01, 0xfa,
+  };
+  const ToeplitzMgr::key_t default_key(
+      reinterpret_cast<const char *>(raw_key), sizeof(raw_key));
+  ASSERT_EQ(ToeplitzErrorCode::SUCCESS,
+            ToeplitzMgr::update_key(ptr.get(), default_key));
+
+  // src_ip = 66.9.149.187
+  // dst_ip = 161.142.100.80
+  // src_port = 2794 = {0x0a, 0xea}
+  // dst_port = 1766 = {0x06, 0xe6}
+  const unsigned char input_buffer[] = {
+      66,    9,  149,  187,
+     161,  142,  100,   80,
+    0x0a, 0xea, 0x06, 0xe6,
+  };
+
+  // hash_l3   = 0x323e8fc2
+  // hash_l3l4 = 0x51ccc178
+  const uint32_t expected = 0x51ccc178;
+
+  const uint32_t output = ptr->output(
+      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
+  ASSERT_EQ(expected, output);
+}
+
 TEST(HashTest, RoundRobin) {
   const auto ptr1 = CalculationsMap::get_instance()->get_copy("round_robin");
   ASSERT_NE(nullptr, ptr1);
