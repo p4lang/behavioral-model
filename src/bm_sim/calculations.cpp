@@ -402,7 +402,7 @@ struct toeplitz {
   using key_t = ToeplitzMgr::key_t;
 
   toeplitz() {
-    update_key({0x00, 0x00, 0x00, 0x00});
+    update_key(key_t(4, '\x00'));
   }
 
   uint32_t operator()(const char *buf, size_t len) const {
@@ -582,24 +582,11 @@ template class CustomCrcMgr<uint16_t>;
 template class CustomCrcMgr<uint32_t>;
 template class CustomCrcMgr<uint64_t>;
 
-namespace detail {
-
-std::ostream &operator<<(std::ostream &out, const toeplitz_key_t &key) {
-  out << "0x";
-  for (const auto& byte : key) {
-    out << std::setfill('0') << std::setw(2) << std::hex << byte;
-  }
-  return out;
-}
-
-}  // namespace detail
-
 ToeplitzErrorCode
 ToeplitzMgr::update_key(NamedCalculation *calculation,
                         const key_t &key) {
-  // TODO(qobilidop): Make the logger work.
-  // Logger::get()->info("Updating key of {} to: {}",
-  //                     calculation->get_name(), key);
+  Logger::get()->info("Updating key of {} to: {}",
+                      calculation->get_name(), key.to_hex());
   auto raw_c_iface = calculation->get_raw_calculation();
   return update_key(raw_c_iface, key);
 }

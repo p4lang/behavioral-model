@@ -394,17 +394,9 @@ enum class ToeplitzErrorCode {
   INVALID_KEY,
 };
 
-namespace detail {
-
-using toeplitz_key_t = std::vector<uint8_t>;
-
-std::ostream &operator<<(std::ostream &out, const toeplitz_key_t &key);
-
-}  // namespace detail
-
 class ToeplitzMgr {
  public:
-  using key_t = detail::toeplitz_key_t;
+  using key_t = ByteContainer;
 
   static ToeplitzErrorCode update_key(NamedCalculation *calculation,
                                       const key_t &key);

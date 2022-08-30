@@ -1175,7 +1175,7 @@ public:
 
   void bm_set_toeplitz_hash_key(const int32_t cxt_id, const std::string& calc_name, const BmToeplitzHashKey& raw_key) {
     Logger::get()->trace("bm_set_toeplitz_hash_key");
-    auto key = ToeplitzMgr::key_t(raw_key.begin(), raw_key.end());
+    auto key = ToeplitzMgr::key_t(raw_key.data(), raw_key.size());
     auto rc = switch_->set_toeplitz_key(cxt_id, calc_name, key);
     if (rc != ToeplitzErrorCode::SUCCESS) {
       InvalidToeplitzHashOperation error;

@@ -231,7 +231,7 @@ exception InvalidCrcOperation {
  1:CrcErrorCode code
 }
 
-typedef list<i8> BmToeplitzHashKey
+typedef binary BmToeplitzHashKey
 
 enum ToeplitzHashErrorCode {
   INVALID_CALCULATION_NAME = 1,
