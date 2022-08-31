@@ -98,4 +98,5 @@ nobase_include_HEADERS += \
 bm/bm_sim/core/primitives.h
 
 nobase_include_HEADERS += \
-bm/bm_grpc/pem.h
+bm/bm_grpc/pem.h \
+bm/grpc/ssl_options.h
