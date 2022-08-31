@@ -971,6 +971,8 @@ class SwitchWContexts : public DevMgr, public RuntimeInterface {
 //! Context. This is the base class for the standard simple switch target
 //! implementation.
 class Switch : public SwitchWContexts {
+  friend class BaseSwitch;
+
  public:
   //! See SwitchWContexts::SwitchWContexts()
   explicit Switch(bool enable_swap = false);
@@ -1086,6 +1088,37 @@ class Switch : public SwitchWContexts {
   std::shared_ptr<T> get_component() {
     return get_cxt_component<T>(0);
   }
+};
+
+//! This is the base class for the Simple Switch and PSA Switch
+//! target implementations.
+class BaseSwitch : public Switch {
+ public:
+  using TransmitFn = std::function<void(port_t, packet_id_t,
+                                        const char *, int)>;
+
+  void set_transmit_fn(TransmitFn fn) {
+    my_transmit_fn = std::move(fn);
+  }
+
+  // returns the packet id of most recently received packet. Not thread-safe.
+  static packet_id_t get_packet_id() {
+    return packet_id - 1;
+  }
+
+  struct MirroringSessionConfig {
+    port_t egress_port;
+    bool egress_port_valid;
+    unsigned int mgid;
+    bool mgid_valid;
+  };
+
+  BaseSwitch(bool enable_swap = false) : Switch(enable_swap)
+    { }
+
+ protected:
+    TransmitFn my_transmit_fn;
+    static packet_id_t packet_id;
 };
 
 }  // namespace bm

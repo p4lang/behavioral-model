@@ -2,7 +2,10 @@ ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 
 lib_LTLIBRARIES = libbm_grpc_dataplane.la
 
-EXTRA_DIST = p4/bm/dataplane_interface.proto
+EXTRA_DIST = \
+p4/bm/dataplane_interface.proto \
+switch_runner/switch_runner.cpp \
+switch_runner/switch_runner.h
 
 proto = $(abs_srcdir)/p4/bm/dataplane_interface.proto
 

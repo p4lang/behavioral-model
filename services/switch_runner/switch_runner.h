@@ -1,4 +1,5 @@
 /* Copyright 2013-present Barefoot Networks, Inc.
+ * Copyright 2022 University of Oxford
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +19,11 @@
  *
  */
 
-#ifndef SIMPLE_SWITCH_GRPC_SWITCH_RUNNER_H_
-#define SIMPLE_SWITCH_GRPC_SWITCH_RUNNER_H_
+#ifndef SERVICES_SWITCH_RUNNER_H_
+#define SERVICES_SWITCH_RUNNER_H_
 
 #include <bm/bm_sim/dev_mgr.h>
+#include <bm/bm_sim/switch.h>
 #include <bm/grpc/ssl_options.h>
 
 #include <grpcpp/server.h>
@@ -29,38 +31,36 @@
 #include <memory>
 #include <string>
 
-class SimpleSwitch;
-
 namespace bm {
 
 class OptionsParser;
 
 }  // namespace bm
 
-namespace sswitch_grpc {
+namespace switch_runner {
 
 class SysrepoDriver;
 
 class DataplaneInterfaceServiceImpl;
 
-class SimpleSwitchGrpcRunner {
+class SwitchGrpcRunner {
  public:
   static constexpr bm::DevMgrIface::port_t default_drop_port = 511;
   static constexpr size_t default_nb_queues_per_port = 1;
 
   // there is no real need for a singleton here, except for the fact that we use
   // PIGrpcServerRunAddr, ... which uses static state
-  static SimpleSwitchGrpcRunner &get_instance(
-      bool enable_swap = false,
+  static SwitchGrpcRunner &get_instance(
+      std::shared_ptr<bm::BaseSwitch> switch_target = nullptr,
       std::string grpc_server_addr = "0.0.0.0:9559",
       bm::DevMgrIface::port_t cpu_port = 0,
       std::string dp_grpc_server_addr = "",
-      bm::DevMgrIface::port_t drop_port = default_drop_port,
       std::shared_ptr<SSLOptions> ssl_options = nullptr,
-      size_t nb_queues_per_port = default_nb_queues_per_port) {
-    static SimpleSwitchGrpcRunner instance(
-        enable_swap, grpc_server_addr, cpu_port, dp_grpc_server_addr,
-        drop_port, ssl_options, nb_queues_per_port);
+      size_t nb_queues_per_port = default_nb_queues_per_port)
+  {
+    static SwitchGrpcRunner instance(
+        switch_target, grpc_server_addr, cpu_port, dp_grpc_server_addr,
+        ssl_options, nb_queues_per_port);
     return instance;
   }
 
@@ -74,20 +74,18 @@ class SimpleSwitchGrpcRunner {
   bool is_dp_service_active();
 
  private:
-  SimpleSwitchGrpcRunner(bool enable_swap = false,
-                         std::string grpc_server_addr = "0.0.0.0:9559",
-                         bm::DevMgrIface::port_t cpu_port = 0,
-                         std::string dp_grpc_server_addr = "",
-                         bm::DevMgrIface::port_t drop_port = default_drop_port,
-                         std::shared_ptr<SSLOptions> ssl_options = nullptr,
-                         size_t nb_queues_per_port =
-                             default_nb_queues_per_port);
-  ~SimpleSwitchGrpcRunner();
+  SwitchGrpcRunner(std::shared_ptr<bm::BaseSwitch> switch_target,
+                  std::string grpc_server_addr = "0.0.0.0:9559",
+                  bm::DevMgrIface::port_t cpu_port = 0,
+                  std::string dp_grpc_server_addr = "",
+                  std::shared_ptr<SSLOptions> ssl_options = nullptr,
+                  size_t nb_queues_per_port = default_nb_queues_per_port);
+  ~SwitchGrpcRunner();
 
   void port_status_cb(bm::DevMgrIface::port_t port,
                       const bm::DevMgrIface::PortStatus port_status);
 
-  std::unique_ptr<SimpleSwitch> simple_switch;
+  std::shared_ptr<bm::BaseSwitch> switch_target;
   std::string grpc_server_addr;
   bm::DevMgrIface::port_t cpu_port;
   std::string dp_grpc_server_addr;
@@ -96,10 +94,11 @@ class SimpleSwitchGrpcRunner {
   std::unique_ptr<grpc::Server> dp_grpc_server;
 #ifdef WITH_SYSREPO
   std::unique_ptr<SysrepoDriver> sysrepo_driver;
-#endif  // WITH_SYSREPO
+#endif // WITH_SYSREPO
   std::shared_ptr<SSLOptions> ssl_options;
+  size_t nb_queues_per_port;
 };
 
-}  // namespace sswitch_grpc
+} // namespace switch_runner
 
-#endif  // SIMPLE_SWITCH_GRPC_SWITCH_RUNNER_H_
+#endif // SERVICES_SWITCH_RUNNER_H_

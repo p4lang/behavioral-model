@@ -33,7 +33,8 @@ simple_switch_grpc_LDFLAGS = \
 noinst_LTLIBRARIES = libsimple_switch_grpc.la
 
 libsimple_switch_grpc_la_SOURCES = \
-switch_runner.cpp switch_runner.h
+../../services/switch_runner/switch_runner.cpp \
+../../services/switch_runner/switch_runner.h
 if WITH_SYSREPO
 libsimple_switch_grpc_la_SOURCES += \
 switch_sysrepo.h switch_sysrepo.cpp
@@ -57,4 +58,5 @@ $(GRPC_LIBS) $(PROTOBUF_LIBS)
 
 AM_CPPFLAGS += \
  -I$(builddir)/../../services/cpp_out \
- -I$(builddir)/../../services/grpc_out
+ -I$(builddir)/../../services/grpc_out \
+ -I$(builddir)/../../services/switch_runner

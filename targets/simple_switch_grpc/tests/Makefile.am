@@ -10,6 +10,8 @@ AM_CPPFLAGS += \
 -isystem $(top_srcdir)/../../third_party/gtest/include \
 -I$(top_srcdir) \
 -I$(top_srcdir)/../../include \
+-I$(top_srcdir)/../simple_switch \
+-I$(top_srcdir)/../../services/switch_runner \
 -isystem$(top_srcdir)/../../third_party/spdlog \
 -I$(top_builddir)/../../services/cpp_out -I$(top_builddir)/../../services/grpc_out \
 -DTESTDATADIR=\"$(abs_srcdir)/testdata\"

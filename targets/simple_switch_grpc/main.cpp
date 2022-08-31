@@ -31,7 +31,24 @@
 #include <streambuf>
 #include <string>
 
+#include "simple_switch.h"
 #include "switch_runner.h"
+
+
+#ifdef WITH_SYSREPO
+#include "switch_sysrepo.h"
+#endif // WITH_SYSREPO
+
+
+#ifdef WITH_THRIFT
+#include <bm/SimpleSwitch.h>
+#include <bm/bm_runtime/bm_runtime.h>
+
+namespace sswitch_runtime {
+    shared_ptr<SimpleSwitchIf> get_handler(SimpleSwitch *sw);
+}  // namespace sswitch_runtime
+#endif  // WITH_THRIFT
+
 
 int
 main(int argc, char* argv[]) {
@@ -192,7 +209,7 @@ main(int argc, char* argv[]) {
   {
     auto rc = simple_switch_parser.get_uint_option("drop-port", &drop_port);
     if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
-      drop_port = sswitch_grpc::SimpleSwitchGrpcRunner::default_drop_port;
+      drop_port = switch_runner::SwitchGrpcRunner::default_drop_port;
     else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
       std::exit(1);
   }
@@ -222,17 +239,43 @@ main(int argc, char* argv[]) {
                                                    &priority_queues);
     if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
       priority_queues =
-          sswitch_grpc::SimpleSwitchGrpcRunner::default_nb_queues_per_port;
+          switch_runner::SwitchGrpcRunner::default_nb_queues_per_port;
     else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
       std::exit(1);
   }
 
-  auto &runner = sswitch_grpc::SimpleSwitchGrpcRunner::get_instance(
-      !disable_swap_flag,
+  std::shared_ptr<SimpleSwitch> simple_switch = std::make_shared<SimpleSwitch>(!disable_swap_flag, drop_port);
+
+#ifdef WITH_THRIFT
+  int thrift_port = simple_switch->get_runtime_port();
+  bm_runtime::start_server(simple_switch.get(), thrift_port);
+  using ::sswitch_runtime::SimpleSwitchIf;
+  using ::sswitch_runtime::SimpleSwitchProcessor;
+  bm_runtime::add_service<SimpleSwitchIf, SimpleSwitchProcessor>(
+          "simple_switch", sswitch_runtime::get_handler(simple_switch.get()));
+#else
+  if (parser.option_was_provided("thrift-port")) {
+    bm::Logger::get()->warn(
+        "You used the '--thrift-port' command-line option, but this target was "
+        "compiled without Thrift support. You can enable Thrift support (not "
+        "recommended) by providing '--with-thrift' to configure.");
+  }
+#endif  // WITH_THRIFT
+
+#ifdef WITH_SYSREPO
+  sysrepo_driver = std::unique_ptr<SysrepoDriver>(new SysrepoDriver(
+      parser.device_id, switch_target.get()));
+
+  if (!sysrepo_driver->start()) return 1;
+  for (const auto &p : saved_interfaces)
+    sysrepo_driver->add_iface(p.first, p.second);
+#endif  // WITH_SYSREPO
+
+  auto &runner = switch_runner::SwitchGrpcRunner::get_instance(
+      simple_switch,
       grpc_server_addr,
       cpu_port,
       dp_grpc_server_addr,
-      drop_port,
       grpc_server_ssl ? ssl_options : nullptr,
       priority_queues);
   int status = runner.init_and_start(parser);

@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "base_test.h"
+#include "simple_switch.h"
 #include "switch_runner.h"
 
 namespace sswitch_grpc {
@@ -42,8 +43,13 @@ class SimpleSwitchGrpcEnv : public ::testing::Environment {
   // TODO(antonin): the issue with this is that tests may affect each other; in
   // particular tests which modify port operational status.
   void SetUp() override {
-    auto &runner = SimpleSwitchGrpcRunner::get_instance(
-        true, SimpleSwitchGrpcBaseTest::grpc_server_addr,
+    std::shared_ptr<SimpleSwitch> simple_switch = std::make_shared<SimpleSwitch>(
+        true, // enable_swap
+        switch_runner::SwitchGrpcRunner::default_drop_port
+      );
+
+    auto &runner = switch_runner::SwitchGrpcRunner::get_instance(
+        simple_switch, SimpleSwitchGrpcBaseTest::grpc_server_addr,
         SimpleSwitchGrpcBaseTest::cpu_port,
         SimpleSwitchGrpcBaseTest::dp_grpc_server_addr);
     bm::OptionsParser parser;
@@ -61,7 +67,7 @@ class SimpleSwitchGrpcEnv : public ::testing::Environment {
   }
 
   void TearDown() override {
-    SimpleSwitchGrpcRunner::get_instance().shutdown();
+    switch_runner::SwitchGrpcRunner::get_instance().shutdown();
   }
 };
 
