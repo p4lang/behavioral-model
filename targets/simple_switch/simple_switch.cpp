@@ -74,46 +74,6 @@ extern int import_primitives(SimpleSwitch *simple_switch);
 
 packet_id_t bm::BaseSwitch::packet_id = 0;
 
-class SimpleSwitch::MirroringSessions {
- public:
-  bool add_session(mirror_id_t mirror_id,
-                   const MirroringSessionConfig &config) {
-    Lock lock(mutex);
-    if (0 <= mirror_id && mirror_id <= RegisterAccess::MAX_MIRROR_SESSION_ID) {
-      sessions_map[mirror_id] = config;
-      return true;
-    } else {
-      bm::Logger::get()->error("mirror_id out of range. No session added.");
-      return false;
-    }
-  }
-
-  bool delete_session(mirror_id_t mirror_id) {
-    Lock lock(mutex);
-    if (0 <= mirror_id && mirror_id <= RegisterAccess::MAX_MIRROR_SESSION_ID) {
-      return sessions_map.erase(mirror_id) == 1;
-    } else {
-      bm::Logger::get()->error("mirror_id out of range. No session deleted.");
-      return false;
-    }
-  }
-
-  bool get_session(mirror_id_t mirror_id,
-                   MirroringSessionConfig *config) const {
-    Lock lock(mutex);
-    auto it = sessions_map.find(mirror_id);
-    if (it == sessions_map.end()) return false;
-    *config = it->second;
-    return true;
-  }
-
- private:
-  using Mutex = std::mutex;
-  using Lock = std::lock_guard<Mutex>;
-
-  mutable std::mutex mutex;
-  std::unordered_map<mirror_id_t, MirroringSessionConfig> sessions_map;
-};
 
 // Arbitrates which packets are processed by the ingress thread. Resubmit and
 // recirculate packets go to a high priority queue, while normal packets go to a
@@ -210,8 +170,7 @@ SimpleSwitch::SimpleSwitch(bool enable_swap, port_t drop_port,
                    nb_queues_per_port),
     output_buffer(128),
     pre(new McSimplePreLAG()),
-    start(clock::now()),
-    mirroring_sessions(new MirroringSessions()) {
+    start(clock::now()) {
 
   // cannot use std::bind because of a clang bug
   // https://stackoverflow.com/questions/32030141/is-this-incorrect-use-of-stdbind-or-a-compiler-bug
@@ -220,6 +179,8 @@ SimpleSwitch::SimpleSwitch(bool enable_swap, port_t drop_port,
       _BM_UNUSED(pkt_id);
       this->transmit_fn(port_num, buffer, len);
   });
+
+  mirroring_sessions = std::unique_ptr<MirroringSessions>(new MirroringSessions());
 
   add_component<McSimplePreLAG>(pre);
 
@@ -310,23 +271,6 @@ void
 SimpleSwitch::reset_target_state_() {
   bm::Logger::get()->debug("Resetting simple_switch target-specific state");
   get_component<McSimplePreLAG>()->reset_state();
-}
-
-bool
-SimpleSwitch::mirroring_add_session(mirror_id_t mirror_id,
-                                    const MirroringSessionConfig &config) {
-  return mirroring_sessions->add_session(mirror_id, config);
-}
-
-bool
-SimpleSwitch::mirroring_delete_session(mirror_id_t mirror_id) {
-  return mirroring_sessions->delete_session(mirror_id);
-}
-
-bool
-SimpleSwitch::mirroring_get_session(mirror_id_t mirror_id,
-                                    MirroringSessionConfig *config) const {
-  return mirroring_sessions->get_session(mirror_id, config);
 }
 
 int

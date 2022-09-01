@@ -86,12 +86,6 @@ class PsaSwitch : public BaseSwitch {
 
   void reset_target_state_() override;
 
-  bool mirroring_add_session(mirror_id_t mirror_id,
-                             const MirroringSessionConfig &config);
-  bool mirroring_delete_session(mirror_id_t mirror_id);
-  bool mirroring_get_session(mirror_id_t mirror_id,
-                             MirroringSessionConfig *config) const;
-
   int mirroring_mapping_add(mirror_id_t mirror_id, port_t egress_port) {
     mirroring_map[mirror_id] = egress_port;
     return 0;
@@ -216,8 +210,6 @@ class PsaSwitch : public BaseSwitch {
   static constexpr port_t PSA_PORT_RECIRCULATE = 0xfffffffa;
   port_t drop_port;
 
-  class MirroringSessions;
-
   enum PktInstanceType {
     PACKET_PATH_NORMAL,
     PACKET_PATH_NORMAL_UNICAST,
@@ -275,7 +267,6 @@ class PsaSwitch : public BaseSwitch {
   std::shared_ptr<McSimplePreLAG> pre;
   clock::time_point start;
   std::unordered_map<mirror_id_t, port_t> mirroring_map;
-  std::unique_ptr<MirroringSessions> mirroring_sessions;
   bool with_queueing_metadata{false};
 };
 

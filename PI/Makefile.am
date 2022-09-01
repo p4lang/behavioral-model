@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 
 if COND_TARGETS
-AM_CPPFLAGS += -I$(top_srcdir)/targets/simple_switch -DWITH_SIMPLE_SWITCH
+AM_CPPFLAGS += -DWITH_BASE_SWITCH
 endif
 
 libbmpi_la_SOURCES = \

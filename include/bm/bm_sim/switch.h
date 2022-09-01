@@ -79,6 +79,7 @@
 #include "dev_mgr.h"
 #include "device_id.h"
 #include "learning.h"
+#include "logger.h"
 #include "lookup_structures.h"
 #include "phv_source.h"
 #include "queue.h"
@@ -1090,10 +1091,13 @@ class Switch : public SwitchWContexts {
   }
 };
 
-//! This is the base class for the Simple Switch and PSA Switch
+static constexpr uint16_t MAX_MIRROR_SESSION_ID = (1u << 15) - 1;
+
+//! This is the base class for Simple Switch and PSA Switch
 //! target implementations.
 class BaseSwitch : public Switch {
  public:
+  using mirror_id_t = int;
   using TransmitFn = std::function<void(port_t, packet_id_t,
                                         const char *, int)>;
 
@@ -1106,6 +1110,9 @@ class BaseSwitch : public Switch {
     return packet_id - 1;
   }
 
+  explicit BaseSwitch(bool enable_swap = false) : Switch(enable_swap)
+  { }
+
   struct MirroringSessionConfig {
     port_t egress_port;
     bool egress_port_valid;
@@ -1113,12 +1120,64 @@ class BaseSwitch : public Switch {
     bool mgid_valid;
   };
 
-  BaseSwitch(bool enable_swap = false) : Switch(enable_swap)
-    { }
+  class MirroringSessions {
+   public:
+    bool add_session(mirror_id_t mirror_id, const MirroringSessionConfig &config) {
+      Lock lock(mutex);
+      if (0 <= mirror_id && mirror_id <= MAX_MIRROR_SESSION_ID) {
+        sessions_map[mirror_id] = config;
+        return true;
+      } else {
+        bm::Logger::get()->error("mirror_id out of range. No session added.");
+        return false;
+      }
+    }
+
+    bool delete_session(mirror_id_t mirror_id) {
+      Lock lock(mutex);
+      if (0 <= mirror_id && mirror_id <= MAX_MIRROR_SESSION_ID) {
+        return sessions_map.erase(mirror_id) == 1;
+      } else {
+        bm::Logger::get()->error("mirror_id out of range. No session deleted.");
+        return false;
+      }
+    }
+
+    bool get_session(mirror_id_t mirror_id,
+                    MirroringSessionConfig *config) const {
+      Lock lock(mutex);
+      auto it = sessions_map.find(mirror_id);
+      if (it == sessions_map.end()) return false;
+      *config = it->second;
+      return true;
+    }
+
+   protected:
+    using Mutex = std::mutex;
+    using Lock = std::lock_guard<Mutex>;
+    mutable std::mutex mutex;
+    std::unordered_map<mirror_id_t, MirroringSessionConfig> sessions_map;
+  };
+
+  bool mirroring_add_session(mirror_id_t mirror_id,
+                             const MirroringSessionConfig &config) {
+    return mirroring_sessions->add_session(mirror_id, config);
+  }
+
+  bool mirroring_delete_session(mirror_id_t mirror_id) {
+    return mirroring_sessions->delete_session(mirror_id);
+  }
+
+  bool mirroring_get_session(mirror_id_t mirror_id,
+                             MirroringSessionConfig *config) const {
+    return mirroring_sessions->get_session(mirror_id, config);
+  }
+
+  std::unique_ptr<MirroringSessions> mirroring_sessions;
 
  protected:
-    TransmitFn my_transmit_fn;
-    static packet_id_t packet_id;
+  TransmitFn my_transmit_fn;
+  static packet_id_t packet_id;
 };
 
 }  // namespace bm

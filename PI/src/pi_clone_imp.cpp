@@ -26,8 +26,8 @@
 
 // TODO(antonin): it would probably make more sense to move this code to
 // targets/simple_switch, but for now it will have to do.
-#if WITH_SIMPLE_SWITCH
-#include "simple_switch.h"
+#if WITH_BASE_SWITCH
+#include "bm/bm_sim/switch.h"
 
 #include "common.h"
 
@@ -40,9 +40,9 @@ pi_status_t _pi_clone_session_set(
     const pi_clone_session_config_t *clone_session_config) {
   _BM_UNUSED(session_handle);
   _BM_UNUSED(dev_tgt);
-  auto *sswitch = dynamic_cast<SimpleSwitch *>(pibmv2::switch_);
+  auto *sswitch = dynamic_cast<bm::BaseSwitch *>(pibmv2::switch_);
   if (sswitch == nullptr) return PI_STATUS_NOT_IMPLEMENTED_BY_TARGET;
-  SimpleSwitch::MirroringSessionConfig config = {};
+  bm::BaseSwitch::MirroringSessionConfig config = {};
   if (clone_session_config->direction != PI_CLONE_DIRECTION_BOTH)
     return PI_STATUS_NOT_IMPLEMENTED_BY_TARGET;
   config.egress_port = clone_session_config->eg_port;
@@ -63,7 +63,7 @@ pi_status_t _pi_clone_session_reset(
     pi_clone_session_id_t clone_session_id) {
   _BM_UNUSED(session_handle);
   _BM_UNUSED(dev_tgt);
-  auto *sswitch = dynamic_cast<SimpleSwitch *>(pibmv2::switch_);
+  auto *sswitch = dynamic_cast<bm::BaseSwitch *>(pibmv2::switch_);
   if (sswitch == nullptr) return PI_STATUS_NOT_IMPLEMENTED_BY_TARGET;
   auto success = sswitch->mirroring_delete_session(clone_session_id);
   return success ? PI_STATUS_SUCCESS : PI_STATUS_TARGET_ERROR;
@@ -71,7 +71,7 @@ pi_status_t _pi_clone_session_reset(
 
 }
 
-#else  // WITH_SIMPLE_SWITCH
+#else  // WITH_BASE_SWITCH
 
 extern "C" {
 
@@ -99,4 +99,4 @@ pi_status_t _pi_clone_session_reset(
 
 }
 
-#endif  // WITH_SIMPLE_SWITCH
+#endif  // WITH_BASE_SWITCH
