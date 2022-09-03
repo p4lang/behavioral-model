@@ -2,6 +2,15 @@ if COND_NANOMSG
 MAYBE_TESTS = tests
 endif
 
+if COND_PI
+AM_CPPFLAGS += \
+-DWITH_PI \
+-I$(top_srcdir)/PI
+PI_LIB = $(top_builddir)/PI/libbmpi.la
+else
+PI_LIB =
+endif  # COND_PI
+
 SUBDIRS = . $(MAYBE_TESTS)
 
 THRIFT_IDL = $(srcdir)/thrift/psa_switch.thrift
@@ -23,6 +32,28 @@ $(top_builddir)/src/bf_lpm_trie/libbflpmtrie.la \
 $(top_builddir)/src/BMI/libbmi.la \
 $(top_builddir)/third_party/jsoncpp/libjson.la \
 -lboost_system $(THRIFT_LIB) -lboost_program_options -lboost_filesystem
+
+if COND_PI
+
+AM_CPPFLAGS += \
+-I$(builddir)/../../services/cpp_out \
+-I$(builddir)/../../services/grpc_out \
+-I$(builddir)/../../services/switch_runner
+
+libpsaswitch_la_SOURCES += \
+../../services/switch_runner/switch_runner.cpp \
+../../services/switch_runner/switch_runner.h
+
+libpsaswitch_la_LIBADD += \
+$(builddir)/../../PI/libbmpi.la \
+$(builddir)/../../services/libbm_grpc_dataplane.la
+
+libpsaswitch_la_LIBADD += \
+-lpifeproto -lpigrpcserver -lpi -lpip4info \
+$(GRPC_LIBS) $(PROTOBUF_LIBS)
+
+endif  # COND_PI
+
 
 if COND_THRIFT
 
