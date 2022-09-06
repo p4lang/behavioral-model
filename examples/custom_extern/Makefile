@@ -6,7 +6,7 @@ P4C_ARGS = --emit-externs
 EXTERN_DIR = extern_lib
 EXTERN_LIB = $(EXTERN_DIR)/definition.so
 
-.PHONY: build run clean
+.PHONY: build start test stop clean
 
 build: $(P4_PROGRAM) $(EXTERN_LIB)
 
@@ -19,7 +19,7 @@ $(EXTERN_LIB):
 start: build
 	sudo tools/veth_setup.sh
 	sudo simple_switch -i 0@veth0 -i 1@veth2 $(P4_PROGRAM) \
-	-- --load-modules=$(EXTERN_LIB)
+		-- --load-modules=$(EXTERN_LIB)
 
 test:
 	sudo python3 test.py
