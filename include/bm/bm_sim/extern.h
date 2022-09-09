@@ -63,7 +63,7 @@ class ExternFactoryMap {
   int _extern_##extern_name##_create_ =                                 \
       ::bm::ExternFactoryMap::get_instance()->register_extern_type(     \
            #extern_name,                                                \
-           [](){ return std::unique_ptr<ExternType>(new extern__()); });
+           [](){ return std::unique_ptr<::bm::ExternType>(new extern__()); });
 
 #define BM_REGISTER_EXTERN(extern_name) \
   BM_REGISTER_EXTERN_W_NAME(extern_name, extern_name)
