@@ -25,7 +25,7 @@ Adding interface veth0 as port 0
 Adding interface veth2 as port 1
 ```
 
-In another terminal, we can do the testing by sending a test packet to `simple_switch`, and check the packet received:
+In another terminal, we can verify behavior by sending a test packet and checking the packet after it has been processed by `simple_switch`.
 ```console
 $ make test
 ```
