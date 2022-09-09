@@ -54,7 +54,7 @@ Packet received:
      load      = '\\xbd\x11\x01\x00'
 ```
 
-When you are done with testing:
+When you are done with testing, tun the following after killing the `simple_switch` process:
 ```console
 $ make stop
 $ make clean
