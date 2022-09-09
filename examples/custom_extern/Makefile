@@ -1,4 +1,5 @@
-P4_PROGRAM = example.json
+P4_PROGRAM := example
+P4_JSON = $(P4_PROGRAM).json
 
 P4C = p4c-bm2-ss
 P4C_ARGS = --emit-externs
@@ -8,7 +9,7 @@ EXTERN_LIB = $(EXTERN_DIR)/definition.so
 
 .PHONY: build start test stop clean
 
-build: $(P4_PROGRAM) $(EXTERN_LIB)
+build: $(P4_JSON) $(EXTERN_LIB)
 
 %.json: %.p4
 	$(P4C) $(P4C_ARGS) -o $@ $<
@@ -18,7 +19,7 @@ $(EXTERN_LIB):
 
 start: build
 	sudo tools/veth_setup.sh
-	sudo simple_switch -i 0@veth0 -i 1@veth2 $(P4_PROGRAM) \
+	sudo simple_switch -i 0@veth0 -i 1@veth2 $(P4_JSON) \
 		-- --load-modules=$(EXTERN_LIB)
 
 test:

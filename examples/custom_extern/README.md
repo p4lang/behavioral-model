@@ -30,7 +30,7 @@ In another terminal, we can verify behavior by sending a test packet and checkin
 $ make test
 ```
 
-If everything works as expected, you shall see:
+If everything works as expected, you should see:
 ```console
 WARNING: Mac address to reach destination not found. Using broadcast.
 .
@@ -62,7 +62,7 @@ $ make clean
 
 ## Reference
 
-- Previous discussion: https://github.com/p4lang/behavioral-model/issues/697
-- Relevant section in the P4 Language Specification: https://p4.org/p4-spec/docs/P4-16-v1.2.3.html#sec-external-units
-- Relevant testing code in bmv2: https://github.com/p4lang/behavioral-model/blob/main/tests/test_extern.cpp
-- Another example: https://github.com/engjefersonsantiago/p4-programs/tree/master/examples/div_by_n
+- [Previous discussion](https://github.com/p4lang/behavioral-model/issues/697)
+- [Relevant section in the P4 Language Specification](https://p4.org/p4-spec/docs/P4-16-v1.2.3.html#sec-external-units)
+- [Relevant testing code in bmv2](https://github.com/p4lang/behavioral-model/blob/main/tests/test_extern.cpp)
+- [Another example](https://github.com/engjefersonsantiago/p4-programs/tree/master/examples/div_by_n)
