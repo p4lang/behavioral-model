@@ -65,7 +65,7 @@ def get_json_config(standard_client=None, json_path=None, out=sys.stdout):
     if json_path:
         if standard_client is not None:
             check_JSON_md5(standard_client, json_path)
-        with open(json_path, 'r') as f:
+        with open(json_path, 'rb') as f:
             return f.read()
     else:
         assert(standard_client is not None)
