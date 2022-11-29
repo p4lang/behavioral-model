@@ -670,7 +670,9 @@ SimpleSwitch::egress_thread(size_t worker_id) {
     phv->get_field("standard_metadata.egress_port").set(port);
 
     Field &f_egress_spec = phv->get_field("standard_metadata.egress_spec");
-    f_egress_spec.set(0);
+    // When egress_spec == drop_port the packet will be dropped, thus
+    // here we initialize egress_spec to a value different from drop_port.
+    f_egress_spec.set(drop_port + 1);
 
     phv->get_field("standard_metadata.packet_length").set(
         packet->get_register(RegisterAccess::PACKET_LENGTH_REG_IDX));
