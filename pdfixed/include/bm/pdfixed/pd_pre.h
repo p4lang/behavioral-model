@@ -28,8 +28,8 @@
 extern "C" {
 #endif
 
-#define PRE_PORTS_MAX 256
-#define PRE_LAG_MAX 256
+#define PRE_PORTS_MAX 512
+#define PRE_LAG_MAX 512
 
 typedef uint16_t mgrp_id_t;
 typedef uint16_t mgrp_rid_t;

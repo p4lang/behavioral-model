@@ -111,7 +111,7 @@ McSimplePreLAG::mc_get_entries() const {
     get_entries_common(&root);
 
     Json::Value lags(Json::arrayValue);
-    for (const auto p : lag_entries) {
+    for (const auto &p : lag_entries) {
       Json::Value lag(Json::objectValue);
       lag["id"] = Json::Value(Json::UInt(p.first));
 
@@ -157,7 +157,7 @@ McSimplePreLAG::replicate(const McSimplePre::McIn ingress_info) const {
     return {};
   }
   const auto &mgid_entry = mgid_it->second;
-  for (const l1_hdl_t l1_hdl : mgid_entry.l1_list) {
+  for (const l1_hdl_t &l1_hdl : mgid_entry.l1_list) {
     const auto &l1_entry = l1_entries.at(l1_hdl);
     egress_info.rid = l1_entry.rid;
     // Port replication
