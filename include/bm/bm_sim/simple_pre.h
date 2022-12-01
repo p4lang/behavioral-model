@@ -82,10 +82,10 @@ class McSimplePre {
   };
 
  public:
-  static constexpr size_t PORT_MAP_SIZE = 256;
+  static constexpr size_t PORT_MAP_SIZE = 512;
   using PortMap = McPre::Set<PORT_MAP_SIZE>;
 
-  static constexpr size_t LAG_MAP_SIZE = 256;
+  static constexpr size_t LAG_MAP_SIZE = 512;
   using LagMap = McPre::Set<LAG_MAP_SIZE>;
 
   McSimplePre() {}
