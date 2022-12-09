@@ -276,7 +276,7 @@ SimpleSwitchRunner::SimpleSwitchRunner(uint32_t cpu_port, uint32_t drop_port)
 SimpleSwitchRunner::~SimpleSwitchRunner() = default;
 
 int SimpleSwitchRunner::init_and_start(const bm::OptionsParser &parser) {
-  std::shared_ptr<NotificationsCapture> my_transport;
+  std::shared_ptr<bm::TransportIface> my_transport;
 #ifdef WITH_PI
   my_transport = std::make_shared<NotificationsCapture>(
       simple_switch.get());
