@@ -21,70 +21,120 @@ production-grade software switch like [Open
 vSwitch](https://www.openvswitch.org/). For more information about the
 performance of bmv2, refer to this [document](docs/performance.md).
 
-## Dependencies
+## Installing bmv2
 
-The following packages are required:
+### Installing packaged versions of bmv2
 
-### Ubuntu 20.04
+bmv2 has package support for several [Ubuntu](#ubuntu) and [Debian](#debian) distributions.
 
-```console
-sudo apt-get install -y automake cmake libgmp-dev \
-    libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
-    libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
-    libevent-dev libtool flex bison pkg-config g++ libssl-dev
+#### Ubuntu
+
+A bmv2 package is available in the following repositories for Ubuntu 20.04 and newer.
+
+```bash
+. /etc/os-release
+echo "deb http://download.opensuse.org/repositories/home:/p4lang/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/home:p4lang.list
+curl -fsSL "https://download.opensuse.org/repositories/home:p4lang/xUbuntu_${VERSION_ID}/Release.key" | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_p4lang.gpg > /dev/null
+sudo apt update
+sudo apt install p4lang-bmv2
 ```
 
-You also need to install the following from source. Feel free to use the
-install scripts under `ci/`.
+#### Debian
 
-- [thrift 0.11.0](https://github.com/apache/thrift/releases/tag/0.11.0) or later
-  (tested up to 0.13)
-- [nanomsg 1.0.0](https://github.com/nanomsg/nanomsg/releases/tag/1.0.0) or
-  later
+For Debian 11 (Bullseye) it can be installed as follows:
 
-### Fedora
-
-```console
-sudo dnf install -y automake cmake gmp-devel libpcap-devel \
-    boost-devel boost-system boost-thread boost-filesystem boost-test \
-    libevent-devel libtool flex bison pkg-config g++ openssl-devel \
-    thrift-devel nanomsg-devel
+```bash
+echo 'deb http://download.opensuse.org/repositories/home:/p4lang/Debian_11/ /' | sudo tee /etc/apt/sources.list.d/home:p4lang.list
+curl -fsSL https://download.opensuse.org/repositories/home:p4lang/Debian_11/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_p4lang.gpg > /dev/null
+sudo apt update
+sudo apt install p4lang-bmv2
 ```
 
-To use the CLI, you will need to install the
-[nnpy](https://github.com/nanomsg/nnpy) Python package. Feel free to use
-`ci/install-nnpy.sh`.
+If you cannot use a repository to install bmv2, you can download the `.deb` file
+for your release and install it manually. You need to download a new file each
+time you want to upgrade bmv2.
 
-To make your life easier, we provide the *install_deps.sh* script, which will
-install all the dependencies needed on Ubuntu 20.04.
+1. Go to https://build.opensuse.org/package/show/home:p4lang/p4lang-bmv2, click on
+"Download package" and choose your operating system version.
 
-Our CI tests now run on Ubuntu 20.04.
+2. Install bmv2 by running the command below with the corresponding path where the package was downloaded.
 
-On MacOS you can use the tools/macos/bootstrap_mac.sh script to
-install all the above dependencies using homebrew. Note that in order
-to compile the code you need [XCode 8](https://itunes.apple.com/us/app/xcode/id497799835?mt=12)
-or later.
+```bash
+sudo dpkg -i /path/to/package.deb
+```
 
-## Building the code
+### Installing bmv2 from source
 
-    1. ./autogen.sh
-    2. ./configure
-    3. make
-    4. [sudo] make install  # if you need to install bmv2
+1.  Clone the git repository.
 
-In addition, on Linux, you may have to run `sudo ldconfig` after installing
-bmv2, to refresh the shared library cache.
+    ```bash
+    git clone https://github.com/p4lang/behavioral-model.git
+    ```
 
-Debug logging is enabled by default. If you want to disable it for performance
-reasons, you can pass `--disable-logging-macros` to the `configure` script.
+2. Install build dependencies. You can find specific instructions for
+[Ubuntu 20.04](#ubuntu-2004) and [Fedora](#fedora) below.
 
-In 'debug mode', you probably want to disable compiler optimization and enable
-symbols in the binary:
+    #### Ubuntu 20.04
 
-    ./configure 'CXXFLAGS=-O0 -g'
+    ```console
+    sudo apt-get install -y automake cmake libgmp-dev \
+        libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
+        libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
+        libevent-dev libtool flex bison pkg-config g++ libssl-dev
+    ```
 
-The new bmv2 debugger can be enabled by passing `--enable-debugger` to
-`configure`.
+    You also need to install the following from source. Feel free to use the
+    install scripts under `ci/`.
+
+    - [thrift 0.11.0](https://github.com/apache/thrift/releases/tag/0.11.0) or later
+      (tested up to 0.13)
+    - [nanomsg 1.0.0](https://github.com/nanomsg/nanomsg/releases/tag/1.0.0) or
+      later
+
+    #### Fedora
+
+    ```console
+    sudo dnf install -y automake cmake gmp-devel libpcap-devel \
+        boost-devel boost-system boost-thread boost-filesystem boost-test \
+        libevent-devel libtool flex bison pkg-config g++ openssl-devel \
+        thrift-devel nanomsg-devel
+    ```
+
+    To use the CLI, you will need to install the
+    [nnpy](https://github.com/nanomsg/nnpy) Python package. Feel free to use
+    `ci/install-nnpy.sh`.
+
+    To make your life easier, we provide the *install_deps.sh* script, which will
+    install all the dependencies needed on Ubuntu 20.04.
+
+    Our CI tests now run on Ubuntu 20.04.
+
+    On MacOS you can use the tools/macos/bootstrap_mac.sh script to
+    install all the above dependencies using homebrew. Note that in order
+    to compile the code you need [XCode 8](https://itunes.apple.com/us/app/xcode/id497799835?mt=12)
+    or later.
+
+3. Building the code
+    ```bash
+    ./autogen.sh
+    ./configure
+    make
+    sudo make install  # if you need to install bmv2
+    ```
+
+    In addition, on Linux, you may have to run `sudo ldconfig` after installing
+    bmv2, to refresh the shared library cache.
+
+    Debug logging is enabled by default. If you want to disable it for performance
+    reasons, you can pass `--disable-logging-macros` to the `configure` script.
+
+    In 'debug mode', you probably want to disable compiler optimization and enable
+    symbols in the binary:
+
+        ./configure 'CXXFLAGS=-O0 -g'
+
+    The new bmv2 debugger can be enabled by passing `--enable-debugger` to
+    `configure`.
 
 ## Running the tests
 
