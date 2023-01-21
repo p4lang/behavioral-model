@@ -558,9 +558,16 @@ SimpleSwitch::ingress_thread() {
         RegisterAccess::clear_all(packet_copy.get());
         packet_copy->set_register(RegisterAccess::PACKET_LENGTH_REG_IDX,
                                   ingress_packet_size);
-        // we need to parse again
-        // the alternative would be to pay the (huge) price of PHV copy for
-        // every ingress packet
+        // We need to parse again.
+        // The alternative would be to pay the (huge) price of PHV copy for
+        // every ingress packet.
+        // Since parsers can branch on the ingress port, we need to preserve it
+        // to ensure re-parsing gives the same result as the original parse.
+        // TODO(https://github.com/p4lang/behavioral-model/issues/795): other
+        // standard metadata should be preserved as well.
+        packet_copy->get_phv()
+            ->get_field("standard_metadata.ingress_port")
+            .set(ingress_port);
         parser->parse(packet_copy.get());
         copy_field_list_and_set_type(packet, packet_copy,
                                      PKT_INSTANCE_TYPE_INGRESS_CLONE,
