@@ -149,7 +149,7 @@ static inline int delete_branch(node_t *current_node, byte_t byte) {
   branches_vec_t *branches = &current_node->branches;
   int a = 0;
   int b = branches->size;
-  int idx;
+  int idx = 0;
   while (a < b) {
     idx = a + (b - a) / 2;
     byte_t v = branches->branches[idx].v;
