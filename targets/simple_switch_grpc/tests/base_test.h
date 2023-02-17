@@ -30,11 +30,15 @@
 
 #include "utils.h"
 
+#ifndef GRPCPP_CHANNEL_IMPL_H
+// A typedef `Channel` has been was introduced in <grpcpp/channel.h>
+// with https://github.com/grpc/grpc/pull/19067
 namespace grpc {
 
 class Channel;
 
 }  // namespace grpc
+#endif  // GRPCPP_CHANNEL_IMPL_H
 
 namespace sswitch_grpc {
 
