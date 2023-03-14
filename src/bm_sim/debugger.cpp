@@ -20,6 +20,7 @@
 
 #include <bm/config.h>
 #include <bm/bm_sim/debugger.h>
+#include <type_traits>
 
 #ifdef BM_DEBUG_ON
 #include <bm/bm_sim/nn.h>
