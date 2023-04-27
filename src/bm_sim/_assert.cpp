@@ -25,7 +25,7 @@
 
 namespace bm {
 
-void _assert(const char* expr, const char* file, int line) {
+void _bm_assert(const char* expr, const char* file, int line) {
   std::cerr << "Assertion '" << expr << "' failed, file '" << file
             << "' line '" << line << "'.\n";
   std::abort();
