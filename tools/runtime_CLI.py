@@ -498,7 +498,7 @@ def macAddr_to_bytes(addr):
 
 
 def ipv6Addr_to_bytes(addr):
-    from ipaddr import IPv6Address
+    from ipaddress import IPv6Address
     if not ':' in addr:
         raise CLI_FormatExploreError()
     try:

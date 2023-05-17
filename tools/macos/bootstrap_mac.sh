@@ -46,7 +46,6 @@ brews_dir=`realpath $tools_dir`/brews
 brew install --HEAD ${brews_dir}/thrift.rb --with-python --with-libevent
 
 brew install python
-/usr/local/bin/pip install ipaddr
 /usr/local/bin/pip install pcapy
 
 # nanomsg
