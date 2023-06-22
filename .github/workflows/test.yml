@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: antrea-io/has-changes@v1
+    - uses: antrea-io/has-changes@v2
       id: check_diff
       with:
         args: docs/* *.md
