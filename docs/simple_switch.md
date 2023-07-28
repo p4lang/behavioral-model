@@ -300,6 +300,11 @@ if (resubmit was called) {
     determined by the field list given as an argument to the last
     resubmit operation called.  The resubmitted packet will have
     instance_type equal to PKT_INSTANCE_TYPE_RESUBMIT.
+} else if (egress_spec == DROP_PORT) {
+    // This condition will be true if your code called the
+    // mark_to_drop (P4_16) or drop (P4_14) primitive action during
+    // ingress processing.
+    Drop packet.
 } else if (mcast_grp != 0) {
     // This condition will be true if your code made an assignment to
     // standard_metadata.mcast_grp during ingress processing.  There
@@ -311,11 +316,6 @@ if (resubmit was called) {
     for the mcast_grp value.  Enqueue each one in the appropriate
     packet buffer queue.  The instance_type of each will be
     PKT_INSTANCE_TYPE_REPLICATION.
-} else if (egress_spec == DROP_PORT) {
-    // This condition will be true if your code called the
-    // mark_to_drop (P4_16) or drop (P4_14) primitive action during
-    // ingress processing.
-    Drop packet.
 } else {
     Enqueue one copy of the packet destined for egress_port equal to
     egress_spec.
