@@ -121,6 +121,9 @@ class MatchKeyBuilder {
 
   size_t get_nbytes_key() const { return nbytes_key; }
 
+  // get_size_key returns the number of "fields" in the key.
+  size_t get_size_key() const { return key_input.size(); }
+
   const std::string &get_name(size_t idx) const { return name_map.get(idx); }
 
   size_t max_name_size() const { return name_map.max_size(); }
@@ -274,6 +277,8 @@ class MatchUnitAbstract_ {
 
   size_t get_nbytes_key() const { return nbytes_key; }
 
+  size_t get_size_key() const { return size_key; }
+
   bool valid_handle(entry_handle_t handle) const;
 
   MatchUnit::EntryMeta &get_entry_meta(entry_handle_t handle);
@@ -327,6 +332,7 @@ class MatchUnitAbstract_ {
   size_t size{0};
   size_t num_entries{0};
   size_t nbytes_key;
+  size_t size_key;
   HandleMgr handles{};
   MatchKeyBuilder match_key_builder;
   std::vector<MatchUnit::EntryMeta> entry_meta{};

@@ -79,6 +79,8 @@ const char *match_error_code_to_string(MatchErrorCode code) {
       return "IMMUTABLE_TABLE_ENTRIES";
     case MatchErrorCode::BAD_ACTION_DATA:
       return "BAD_ACTION_DATA";
+    case MatchErrorCode::NO_TABLE_KEY:
+      return "NO_TABLE_KEY";
     case MatchErrorCode::ERROR:
       return "UNKNOWN_ERROR";
   }

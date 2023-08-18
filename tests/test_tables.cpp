@@ -3593,3 +3593,42 @@ TYPED_TEST(TableDefaultDefaultEntryTest, DefaultEntryReset) {
   EXPECT_EQ(this->table->reset_default_entry(), MatchErrorCode::SUCCESS);
   EXPECT_EQ(&this->node_1, this->table->apply_action(&pkt));
 }
+
+// See https://github.com/p4lang/behavioral-model/issues/1208
+// According to the P4_16 v1.2.4 spec:
+//   If a table has no key property, or if the value of its key property is the
+//   empty tuple, i.e. key = {}, then it contains no look-up table, just a
+//   default action.
+class TableWithNoKey : public ::testing::Test {
+ protected:
+  static constexpr size_t t_size = 128u;
+
+  // an empty MatchKeyBuilder
+  MatchKeyBuilder key_builder;
+  std::unique_ptr<MatchTable> table;
+
+  p4object_id_t action_id{0};
+  ActionFn action_fn;
+
+  TableWithNoKey()
+      : action_fn("action", action_id, 0  /* no param */) {
+    std::unique_ptr<MUExact> match_unit;
+    match_unit = std::unique_ptr<MUExact>(
+        new MUExact(t_size, key_builder, &lookup_factory));
+    table = std::unique_ptr<MatchTable>(
+        new MatchTable("test_table", 0, std::move(match_unit), false));
+    table->set_next_node(0, nullptr);
+  }
+};
+
+TEST_F(TableWithNoKey, AddEntry) {
+  std::vector<MatchKeyParam> match_key;
+  entry_handle_t handle;
+  auto rc = table->add_entry(match_key, &action_fn, ActionData(), &handle);
+  EXPECT_EQ(MatchErrorCode::NO_TABLE_KEY, rc);
+}
+
+TEST_F(TableWithNoKey, SetDefaultAction) {
+  auto rc = table->set_default_action(&action_fn, ActionData());
+  EXPECT_EQ(MatchErrorCode::SUCCESS, rc);
+}
