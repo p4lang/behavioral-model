@@ -159,7 +159,7 @@ starts egress processing. The clock is the same as for
 pipeline, but should not be written to.
 - `mcast_grp`: needed for the multicast feature. This field needs to be written
 in the ingress pipeline when you wish the packet to be multicast. A value of 0
-means no multicast, and alling `mark_to_drop` will set the value to 0.
+means no multicast, and calling `mark_to_drop` will set the value to 0.
 A nonzero value should be that of a valid multicast group configured
 through bmv2 runtime interfaces. See the "after-ingress pseudocode" for
 relative priority of this vs. other possible packet operations at
