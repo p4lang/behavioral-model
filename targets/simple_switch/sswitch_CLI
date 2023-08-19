@@ -23,4 +23,4 @@ fi
 CLI=$THIS_DIR/sswitch_CLI.py
 TOOLS_DIR=$THIS_DIR/../../tools/
 
-PYTHONPATH=$PYTHONPATH:$TOOLS_DIR python $CLI $json $port
+PYTHONPATH=$PYTHONPATH:$TOOLS_DIR python3 $CLI $json $port
