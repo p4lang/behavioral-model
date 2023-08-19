@@ -63,7 +63,7 @@ installed on your machine. Then run the following commands:
 
 ```bash
 cd mininet
-python stress_test_ipv4.py
+python3 stress_test_ipv4.py
 ```
 
 The Python script creates a Mininet topology with 2 hosts connected by one
@@ -111,7 +111,7 @@ cd bmv2
 ./configure 'CXXFLAGS=-g -O3' 'CFLAGS=-g -O3' --disable-logging-macros --disable-elogger
 make -j8
 cd mininet
-python stress_test_ipv4.py
+python3 stress_test_ipv4.py
 ```
 
 You should get similar results as above: around 1Gbps, or 80,000pps.

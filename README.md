@@ -257,7 +257,7 @@ the Mininet integration right away using our *simple_router* target.
 In a first terminal, type the following:
 
     - cd mininet
-    - sudo python 1sw_demo.py --behavioral-exe ../targets/simple_router/simple_router --json ../targets/simple_router/simple_router.json
+    - sudo python3 1sw_demo.py --behavioral-exe ../targets/simple_router/simple_router --json ../targets/simple_router/simple_router.json
 
 Then in a second terminal:
 
