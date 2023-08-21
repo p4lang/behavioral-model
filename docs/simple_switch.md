@@ -302,13 +302,13 @@ if (resubmit was called) {
     determined by the field list given as an argument to the last
     resubmit operation called.  The resubmitted packet will have
     instance_type equal to PKT_INSTANCE_TYPE_RESUBMIT.
-}  else if (mcast_grp != 0) {
+} else if (mcast_grp != 0) {
     // This condition will be true if your code made an assignment to
-    // `standard_metadata.mcast_grp`` during ingress processing AND did
+    // `standard_metadata.mcast_grp` during ingress processing AND did
     // did not call `mark_to_drop` afterwards. 
     // There are no special primitive actions built in to simple_switch 
     // for you to call to do this -- use a normal P4_16 assignment
-    // statement, or P4_14 `modify_field()`` primitive action.
+    // statement, or P4_14 `modify_field()` primitive action.
     Make 0 or more copies of the packet based upon the list of
     (egress_port, egress_rid) values configured by the control plane
     for the mcast_grp value.  Enqueue each one in the appropriate
