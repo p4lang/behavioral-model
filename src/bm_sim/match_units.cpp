@@ -641,6 +641,7 @@ MatchUnitAbstract_::handles_end() const {
 MatchUnitAbstract_::MatchUnitAbstract_(size_t size,
                                        const MatchKeyBuilder &key_builder)
     : size(size), nbytes_key(key_builder.get_nbytes_key()),
+      size_key(key_builder.get_size_key()),
       match_key_builder(key_builder), entry_meta(size) {
   if (size > MAX_TABLE_SIZE) {
     Logger::get()->error("Table size is limited to {} but size requested is "
@@ -804,6 +805,7 @@ template<typename V>
 MatchErrorCode
 MatchUnitAbstract<V>::add_entry(const std::vector<MatchKeyParam> &match_key,
                                 V value, entry_handle_t *handle, int priority) {
+  if (this->get_size_key() == 0) return MatchErrorCode::NO_TABLE_KEY;
   MatchErrorCode rc = add_entry_(match_key, std::move(value), handle, priority);
   if (rc != MatchErrorCode::SUCCESS) return rc;
   EntryMeta &meta = entry_meta[HANDLE_INTERNAL(*handle)];

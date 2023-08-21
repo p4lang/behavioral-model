@@ -93,6 +93,8 @@ public:
         return TableOperationErrorCode::IMMUTABLE_TABLE_ENTRIES;
       case MatchErrorCode::BAD_ACTION_DATA:
         return TableOperationErrorCode::BAD_ACTION_DATA;
+      case MatchErrorCode::NO_TABLE_KEY:
+        return TableOperationErrorCode::NO_TABLE_KEY;
       case MatchErrorCode::ERROR:
         return TableOperationErrorCode::ERROR;
       default:
