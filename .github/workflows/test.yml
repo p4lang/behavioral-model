@@ -13,7 +13,7 @@ jobs:
     name: Check whether tests need to be run based on diff
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: antrea-io/has-changes@v2
       id: check_diff
       with:
@@ -35,7 +35,7 @@ jobs:
         - cxx: clang++-10
           cc: clang-10
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: Build test Docker image
@@ -57,7 +57,7 @@ jobs:
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: Build Dockerfile.noPI image
@@ -70,7 +70,7 @@ jobs:
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: Install dependencies
