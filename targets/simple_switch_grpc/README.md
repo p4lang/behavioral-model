@@ -12,10 +12,13 @@ Github or the p4-dev mailing list.
 
  1. Follow instructions in the [PI
     README](https://github.com/p4lang/PI#dependencies) to install required
-    dependencies for the `--with-profo` configure flag - as well as for the
+    dependencies for the `--with-proto` configure flag - as well as for the
     `--with-sysrepo` configure flag if desired.
  2. Configure, build and install PI:
     ```
+    git clone https://github.com/p4lang/PI.git
+    git submodule update --init --recursive
+    cd PI
     ./autogen.sh
     ./configure --with-proto --without-internal-rpc --without-cli --without-bmv2 [--with-sysrepo]
     make
@@ -23,10 +26,20 @@ Github or the p4-dev mailing list.
     ```
  3. Configure and build the bmv2 code from the root of the repository with `--with-pi`:
     ```
+    git clone https://github.com/p4lang/behavioral-model.git
+    cd behavioral-model
     ./autogen.sh
     ./configure --with-pi [--without-thrift] [--without-nanomsg]
     make
     [sudo] make install  # if desired
+    ```
+ 4. Build the simple_switch_grpc in `behavioral_model/targets/simple_switch_grpc`
+    ```
+    cd ./targets/simple_switch_grpc
+    ./autogen.sh
+    ./configure [--with-thrift] [--with-sysrepo]
+    make
+    make install
     ```
 
 ## Running simple_switch_grpc
