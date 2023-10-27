@@ -33,14 +33,6 @@ Github or the p4-dev mailing list.
     make
     [sudo] make install  # if desired
     ```
- 4. Build the simple_switch_grpc in `behavioral_model/targets/simple_switch_grpc`
-    ```
-    cd ./targets/simple_switch_grpc
-    ./autogen.sh
-    ./configure [--with-thrift] [--with-sysrepo]
-    make
-    make install
-    ```
 
 ## Running simple_switch_grpc
 
