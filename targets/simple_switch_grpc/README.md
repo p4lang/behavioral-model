@@ -17,8 +17,8 @@ Github or the p4-dev mailing list.
  2. Configure, build and install PI:
     ```
     git clone https://github.com/p4lang/PI.git
-    git submodule update --init --recursive
     cd PI
+    git submodule update --init --recursive
     ./autogen.sh
     ./configure --with-proto --without-internal-rpc --without-cli --without-bmv2 [--with-sysrepo]
     make
