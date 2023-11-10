@@ -14,20 +14,22 @@
  */
 
 /*
- * Antonin Bas (antonin@barefootnetworks.com)
+ * Antonin Bas
  *
  */
 
 #ifndef BM_BM_SIM_MATCH_UNITS_H_
 #define BM_BM_SIM_MATCH_UNITS_H_
 
+#include <atomic>
+#include <cstddef>  // for ptrdiff_t
+#include <iosfwd>
+#include <iterator>
+#include <memory>
 #include <string>
 #include <unordered_map>
-#include <vector>
-#include <atomic>
 #include <utility>  // for pair<>
-#include <memory>
-#include <iosfwd>
+#include <vector>
 
 #include "match_key_types.h"
 #include "match_error_codes.h"
@@ -230,9 +232,14 @@ class MatchUnitAbstract_ {
   // Iterator for entry handles
   // having a const / non-const flavor would not make sense here: handles cannot
   // be modified
-  class handle_iterator
-      : public std::iterator<std::forward_iterator_tag, handle_t> {
+  class handle_iterator {
    public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = handle_t;
+    using difference_type = std::ptrdiff_t;  // default for std::iterator
+    using pointer = handle_t*;
+    using reference = handle_t&;
+
     handle_iterator(const MatchUnitAbstract_ *mu, HandleMgr::const_iterator it);
 
     const entry_handle_t &operator*() const {
