@@ -14,14 +14,16 @@
  */
 
 /*
- * Antonin Bas (antonin@barefootnetworks.com)
+ * Antonin Bas
  *
  */
 
 #ifndef BM_BM_SIM_MATCH_TABLES_H_
 #define BM_BM_SIM_MATCH_TABLES_H_
 
+#include <cstddef>  // for ptrdiff_t
 #include <iosfwd>
+#include <iterator>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -61,9 +63,14 @@ class MatchTableAbstract : public NamedP4Object {
     int priority;
   };
 
-  class handle_iterator
-      : public std::iterator<std::forward_iterator_tag, handle_t> {
+  class handle_iterator {
    public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = handle_t;
+    using difference_type = std::ptrdiff_t;  // default for std::iterator
+    using pointer = handle_t*;
+    using reference = handle_t&;
+
     handle_iterator(const MatchTableAbstract *mt,
                     const MatchUnitAbstract_::handle_iterator &it)
         : mt(mt), it(it) { }
