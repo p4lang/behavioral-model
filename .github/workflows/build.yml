@@ -34,7 +34,7 @@ jobs:
             exit 1
         fi
         echo "Tag is $TAG"
-        echo "::set-output name=tag::$TAG"
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
     - name: Login to DockerHub
