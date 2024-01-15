@@ -5,6 +5,7 @@
 
 #include <bm/config.h>
 #include <bm/bm_sim/switch.h>
+#include <bm/bm_sim/nic.h>
 #include <bm/thrift/stdcxx.h>
 
 using namespace thrift_provider;
@@ -26,6 +27,7 @@ int add_service(const std::string &service_name,
 }
 
 int start_server(bm::SwitchWContexts *sw, int port);
+int start_server(bm::NicWContexts *sw, int port);
 
 }
 

@@ -21,6 +21,7 @@
 #include <bm/SimplePreLAG.h>
 
 #include <bm/bm_sim/switch.h>
+#include <bm/bm_sim/nic.h>
 #include <bm/bm_sim/simple_pre_lag.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/thrift/stdcxx.h>
@@ -32,6 +33,14 @@ using namespace bm;
 class SimplePreLAGHandler : virtual public SimplePreLAGIf {
 public:
   SimplePreLAGHandler(SwitchWContexts *sw) {
+    for (cxt_id_t cxt_id = 0; cxt_id < sw->get_nb_cxts(); cxt_id++) {
+      auto pre = sw->get_cxt_component<McSimplePreLAG>(cxt_id);
+      assert(pre != nullptr);
+      pres.push_back(pre);
+    }
+  }
+
+  SimplePreLAGHandler(NicWContexts *sw) {
     for (cxt_id_t cxt_id = 0; cxt_id < sw->get_nb_cxts(); cxt_id++) {
       auto pre = sw->get_cxt_component<McSimplePreLAG>(cxt_id);
       assert(pre != nullptr);
@@ -146,6 +155,11 @@ private:
 ::stdcxx::shared_ptr<SimplePreLAGIf> get_handler(SwitchWContexts *switch_) {
   return ::stdcxx::shared_ptr<SimplePreLAGHandler>(
       new SimplePreLAGHandler(switch_));
+}
+
+::stdcxx::shared_ptr<SimplePreLAGIf> get_handler(NicWContexts *nic_) {
+  return ::stdcxx::shared_ptr<SimplePreLAGHandler>(
+      new SimplePreLAGHandler(nic_));
 }
 
 }  // namespace simple_pre_lag

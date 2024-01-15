@@ -51,6 +51,7 @@ match_tables.cpp \
 md5.c \
 md5.h \
 meters.cpp \
+nic.cpp \
 options_parse.cpp \
 P4Objects.cpp \
 packet.cpp \

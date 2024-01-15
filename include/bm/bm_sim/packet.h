@@ -98,6 +98,8 @@ class CopyIdGenerator {
 class Packet final {
   friend class SwitchWContexts;
   friend class Switch;
+  friend class NicWContexts;
+  friend class Nic;
 
  public:
   using clock = std::chrono::system_clock;

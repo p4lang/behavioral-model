@@ -32,9 +32,11 @@ namespace thrift_provider = apache::thrift;
 #include <iostream>
 #include <mutex>
 #include <thread>
+#include <typeinfo>
 
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/switch.h>
+#include <bm/bm_sim/nic.h>
 #include <bm/bm_sim/simple_pre.h>
 #include <bm/bm_sim/simple_pre_lag.h>
 #include <bm/thrift/stdcxx.h>
@@ -57,17 +59,21 @@ namespace bm_runtime {
 
 namespace standard {
 shared_ptr<StandardIf> get_handler(bm::SwitchWContexts *switch_);
+shared_ptr<StandardIf> get_handler(bm::NicWContexts *nic_);
 }  // namespace standard
 
 namespace simple_pre {
 shared_ptr<SimplePreIf> get_handler(bm::SwitchWContexts *switch_);
+shared_ptr<SimplePreIf> get_handler(bm::NicWContexts *nic_);
 }  // namespace simple_pre
 
 namespace simple_pre_lag {
 shared_ptr<SimplePreLAGIf> get_handler(bm::SwitchWContexts *switch_);
+shared_ptr<SimplePreLAGIf> get_handler(bm::NicWContexts *nic_);
 }  // namespace simple_pre_lag
 
 bm::SwitchWContexts *switch_;
+bm::NicWContexts *nic_;
 TMultiplexedProcessor *processor_;
 
 namespace {
@@ -82,7 +88,13 @@ bool switch_has_component() {
   return (switch_->get_cxt_component<T>(0) != nullptr);
 }
 
-int serve(int port) {
+template<typename T>
+bool nic_has_component() {
+  // TODO(antonin): do something more resilient (i.e. per context)
+  return (nic_->get_cxt_component<T>(0) != nullptr);
+}
+
+int serve_switch(int port) {
   shared_ptr<TMultiplexedProcessor> processor(new TMultiplexedProcessor());
   processor_ = processor.get();
 
@@ -133,12 +145,74 @@ int serve(int port) {
   return 0;  
 }
 
+int serve_nic(int port) {
+  shared_ptr<TMultiplexedProcessor> processor(new TMultiplexedProcessor());
+  processor_ = processor.get();
+
+  processor->registerProcessor(
+      "standard",
+      shared_ptr<TProcessor>(new StandardProcessor(
+          standard::get_handler(nic_)))
+  );
+
+  if(nic_has_component<bm::McSimplePre>()) {
+    processor->registerProcessor(
+        "simple_pre",
+        shared_ptr<TProcessor>(new SimplePreProcessor(
+            simple_pre::get_handler(nic_)))
+    );
+  }
+
+  if(nic_has_component<bm::McSimplePreLAG>()) {
+    processor->registerProcessor(
+        "simple_pre_lag",
+        shared_ptr<TProcessor>(new SimplePreLAGProcessor(
+            simple_pre_lag::get_handler(nic_)))
+    );
+  }
+
+  shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+  shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+  shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+
+  {
+    std::unique_lock<std::mutex> lock(m_ready);
+    ready = true;
+    cv_ready.notify_one();
+  }
+
+  TThreadedServer server(processor, serverTransport, transportFactory,
+                         protocolFactory);
+  try {
+    server.serve();
+  } catch (const transport::TTransportException &e) {
+    std::cerr << "Thrift returned an exception when trying to bind to port "
+              << port << "\n"
+              << "The exception is: " << e.what() << "\n"
+              << "You may have another process already using this port, maybe "
+              << "another instance of bmv2.\n";
+    std::exit(1);
+  }
+  return 0;  
+}
+
 }  // namespace
 
 int start_server(bm::SwitchWContexts *sw, int port) {
   switch_ = sw;
   bm::Logger::get()->info("Starting Thrift server on port {}", port);
-  std::thread server_thread(serve, port);
+  std::thread server_thread(serve_switch, port);
+  std::unique_lock<std::mutex> lock(m_ready);
+  while(!ready) cv_ready.wait(lock);
+  server_thread.detach();
+  bm::Logger::get()->info("Thrift server was started");
+  return 0;
+}
+
+int start_server(bm::NicWContexts *sw, int port) {
+  nic_ = sw;
+  bm::Logger::get()->info("Starting Thrift server on port {}", port);
+  std::thread server_thread(serve_nic, port);
   std::unique_lock<std::mutex> lock(m_ready);
   while(!ready) cv_ready.wait(lock);
   server_thread.detach();

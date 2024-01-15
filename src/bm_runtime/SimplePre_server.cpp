@@ -21,6 +21,7 @@
 #include <bm/SimplePre.h>
 
 #include <bm/bm_sim/switch.h>
+#include <bm/bm_sim/nic.h>
 #include <bm/bm_sim/simple_pre.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/thrift/stdcxx.h>
@@ -32,6 +33,14 @@ using namespace bm;
 class SimplePreHandler : virtual public SimplePreIf {
 public:
   SimplePreHandler(SwitchWContexts *sw) {
+    for (size_t cxt_id = 0; cxt_id < sw->get_nb_cxts(); cxt_id++) {
+      auto pre = sw->get_cxt_component<McSimplePre>(cxt_id);
+      assert(pre != nullptr);
+      pres.push_back(pre);
+    }
+  }
+
+  SimplePreHandler(NicWContexts *sw) {
     for (size_t cxt_id = 0; cxt_id < sw->get_nb_cxts(); cxt_id++) {
       auto pre = sw->get_cxt_component<McSimplePre>(cxt_id);
       assert(pre != nullptr);
@@ -131,6 +140,10 @@ private:
 
 ::stdcxx::shared_ptr<SimplePreIf> get_handler(SwitchWContexts *switch_) {
   return ::stdcxx::shared_ptr<SimplePreHandler>(new SimplePreHandler(switch_));
+}
+
+::stdcxx::shared_ptr<SimplePreIf> get_handler(NicWContexts *nic_) {
+  return ::stdcxx::shared_ptr<SimplePreHandler>(new SimplePreHandler(nic_));
 }
 
 }  // namespace simple_pre

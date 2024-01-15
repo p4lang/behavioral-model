@@ -89,6 +89,7 @@ class ExternSafeAccess {
 //! See context.h description for more information.
 class Context final {
   friend class SwitchWContexts;
+  friend class NicWContexts;
 
  public:
   using mbr_hdl_t = RuntimeInterface::mbr_hdl_t;
