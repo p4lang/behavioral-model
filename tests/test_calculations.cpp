@@ -31,6 +31,7 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <initializer_list>
 
 #include "crc_map.h"
 
@@ -434,43 +435,24 @@ TEST(HashTest, Cksum16) {
   ASSERT_EQ(expected, output);
 }
 
+uint32_t calcCrc(const char *kind, std::initializer_list<char> data) {
+  const auto ptr = CalculationsMap::get_instance()->get_copy(kind);
+  EXPECT_NE(nullptr, ptr);
+  if (!ptr) return -1;
+
+  return ptr->output(&data[0]), data.size());
+}
+
 TEST(HashTest, Crc16) {
-  const auto ptr = CalculationsMap::get_instance()->get_copy("crc16");
-  ASSERT_NE(nullptr, ptr);
-
-  const unsigned char input_buffer[] = {0x0b, 0xb8, 0x1f, 0x90};
-  const uint16_t expected = 0x5d8a;
-
-  const uint16_t output = ptr->output(
-      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
-
-  ASSERT_EQ(expected, output);
+  ASSERT_EQ(calcCrc("crc16", {0x0b, 0xb8, 0x1f, 0x90}), uint32_t(0x5d8a));
 }
 
 TEST(HashTest, CrcCCITT) {
-  const auto ptr = CalculationsMap::get_instance()->get_copy("crcCCITT");
-  ASSERT_NE(nullptr, ptr);
-
-  const unsigned char input_buffer[] = {0x0b, 0xb8, 0x1f, 0x90};
-  const uint16_t expected = 0x5d75;
-
-  const uint16_t output = ptr->output(
-      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
-
-  ASSERT_EQ(expected, output);
+  ASSERT_EQ(calcCrc("crcCCITT", {0x0b, 0xb8, 0x1f, 0x90}), uint32_t(0x5d75));
 }
 
 TEST(HashTest, Crc32) {
-  const auto ptr = CalculationsMap::get_instance()->get_copy("crc32");
-  ASSERT_NE(nullptr, ptr);
-
-  const unsigned char input_buffer[] = {0x0b, 0xb8, 0x1f, 0x90};
-  const uint32_t expected = 0x005d6a6f;
-
-  const uint32_t output = ptr->output(
-      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
-
-  ASSERT_EQ(expected, output);
+  ASSERT_EQ(calcCrc("crc32", {0x0b, 0xb8, 0x1f, 0x90}), uint32_t(0x005d6a6f));
 }
 
 TEST(HashTest, Crc16Custom) {
