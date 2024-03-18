@@ -444,15 +444,39 @@ uint32_t calcCrc(const char *kind, std::initializer_list<char> data) {
 }
 
 TEST(HashTest, Crc16) {
-  ASSERT_EQ(calcCrc("crc16", {0x0b, 0xb8, 0x1f, 0x90}), uint32_t(0x5d8a));
+  EXPECT_EQ(calcCrc("crc16", {0x0b, 0xb8, 0x1f, 0x90}), uint32_t(0x5d8a));
+  EXPECT_EQ(calcCrc("crc16", {}), uint16_t(0x0000));
+  EXPECT_EQ(calcCrc("crc16", {0}), uint16_t(0x0000));
+  EXPECT_EQ(calcCrc("crc16", {0, 0, 0, 0, 0}), uint16_t(0x0000));
+  EXPECT_EQ(calcCrc("crc16", {'f', 'o', 'o', 'o'}), uint16_t(0x4943));
+  EXPECT_EQ(calcCrc("crc16", {'a'}), uint16_t(0xE8C1));
+  EXPECT_EQ(calcCrc("crc16", {'f', 'o', 'o', 'b', 'a', 'r'}), uint16_t(0xB0C8));
+  EXPECT_EQ(calcCrc("crc16", {'f', 'o', 'o', 'b', 'a', 'r', '%', '1', '4', '2', 'q', 'r', 's'}),
+            uint16_t(0x3DA9));
 }
 
 TEST(HashTest, CrcCCITT) {
-  ASSERT_EQ(calcCrc("crcCCITT", {0x0b, 0xb8, 0x1f, 0x90}), uint32_t(0x5d75));
+  EXPECT_EQ(calcCrc("crcCCITT", {0x0b, 0xb8, 0x1f, 0x90}), uint32_t(0x5d75));
+  EXPECT_EQ(calcCrc("crcCCITT", {}), uint16_t(0xFFFF));
+  EXPECT_EQ(calcCrc("crcCCITT", {0}), uint16_t(0xE1F0));
+  EXPECT_EQ(calcCrc("crcCCITT", {0, 0, 0, 0, 0}), uint16_t(0x110C));
+  EXPECT_EQ(calcCrc("crcCCITT", {'f', 'o', 'o', '0'}), uint16_t(0xCB8C));
+  EXPECT_EQ(calcCrc("crcCCITT", {'a'}), uint16_t(0x9D77));
+  EXPECT_EQ(calcCrc("crcCCITT", {'f', 'o', 'o', 'b', 'a', 'r'}), uint16_t(0xBE35));
+  EXPECT_EQ(calcCrc("crcCCITT", {'f', 'o', 'o', 'b', 'a', 'r', '%', '1', '4', '2', 'q', 'r', 's'}),
+            uint16_t(0x5A92));
 }
 
 TEST(HashTest, Crc32) {
-  ASSERT_EQ(calcCrc("crc32", {0x0b, 0xb8, 0x1f, 0x90}), uint32_t(0x005d6a6f));
+  EXPECT_EQ(calcCrc("crc32", {0x0b, 0xb8, 0x1f, 0x90}), uint32_t(0x005d6a6f));
+  EXPECT_EQ(calcCrc("crc32", {}), uint32_t(0x00000000));
+  EXPECT_EQ(calcCrc("crc32", {0}), uint32_t(0xD202EF8D));
+  EXPECT_EQ(calcCrc("crc32", {0, 0, 0, 0, 0}), uint32_t(0xC622F71D));
+  EXPECT_EQ(calcCrc("crc32", {'f', 'o', 'o', 'o'}), uint32_t(0x43EAF07F));
+  EXPECT_EQ(calcCrc("crc32", {'a'}), uint32_t(0xE8B7BE43));
+  EXPECT_EQ(calcCrc("crc32", {'f', 'o', 'o', 'b', 'a', 'r'}), uint32_t(0x9EF61F95));
+  EXPECT_EQ(calcCrc("crc32", {'f', 'o', 'o', 'b', 'a', 'r', '%', '1', '4', '2', 'q', 'r', 's'}),
+            uint32_t(0x95E1D00B));
 }
 
 TEST(HashTest, Crc16Custom) {
