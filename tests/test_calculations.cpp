@@ -435,12 +435,12 @@ TEST(HashTest, Cksum16) {
   ASSERT_EQ(expected, output);
 }
 
-uint32_t calcCrc(const char *kind, std::initializer_list<char> data) {
+uint32_t calcCrc(const char *kind, std::initializer_list<unsigned char> data) {
   const auto ptr = CalculationsMap::get_instance()->get_copy(kind);
   EXPECT_NE(nullptr, ptr);
   if (!ptr) return -1;
 
-  return ptr->output(&data[0]), data.size());
+  return ptr->output(reinterpret_cast<const char *>(&*data.begin()), data.size());
 }
 
 TEST(HashTest, Crc16) {
