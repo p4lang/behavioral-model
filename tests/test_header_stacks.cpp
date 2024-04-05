@@ -126,7 +126,7 @@ class HeaderStackTest : public ::testing::Test {
 using HeaderStackTypes =
     ::testing::Types<HeaderStackLegacy, HeaderStackP4_16<true> >;
 
-TYPED_TEST_CASE(HeaderStackTest, HeaderStackTypes);
+TYPED_TEST_SUITE(HeaderStackTest, HeaderStackTypes);
 
 TYPED_TEST(HeaderStackTest, Basic) {
   auto &stack = this->stack;

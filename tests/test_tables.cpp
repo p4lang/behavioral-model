@@ -281,7 +281,7 @@ using MUTypes = Types<MUExact,
                       MUTernary,
                       MURange>;
 
-TYPED_TEST_CASE(TableSizeTwo, MUTypes);
+TYPED_TEST_SUITE(TableSizeTwo, MUTypes);
 
 TYPED_TEST(TableSizeTwo, AddEntry) {
   std::string key_1 = "\xaa\xaa";
@@ -2163,7 +2163,7 @@ TableBigMask<MURange>::make_key_builder() {
                               MatchKeyParam::Type::EXACT);
 }
 
-TYPED_TEST_CASE(TableBigMask, MUTypes);
+TYPED_TEST_SUITE(TableBigMask, MUTypes);
 
 TYPED_TEST(TableBigMask, HitMiss) {
   const std::string key_1 = "\x11\x22";
@@ -2797,7 +2797,7 @@ std::string TableEntryDebug<MURange>::gen_entry_string() const {
       "Action entry: actionA - aba,\n");
 }
 
-TYPED_TEST_CASE(TableEntryDebug, MUTypes);
+TYPED_TEST_SUITE(TableEntryDebug, MUTypes);
 
 namespace {
 
@@ -3151,7 +3151,7 @@ TableBadInputKey<MURange>::gen_match_key() const {
   return match_key;
 }
 
-TYPED_TEST_CASE(TableBadInputKey, MUTypes);
+TYPED_TEST_SUITE(TableBadInputKey, MUTypes);
 
 TYPED_TEST(TableBadInputKey, NonByteAligned) {
   entry_handle_t handle, lookup_handle;
@@ -3560,7 +3560,7 @@ TableDefaultDefaultEntryTest<MatchTableIndirect>::set_default_entry(
 }
 
 using MTTypes = Types<MatchTable, MatchTableIndirect>;
-TYPED_TEST_CASE(TableDefaultDefaultEntryTest, MTTypes);
+TYPED_TEST_SUITE(TableDefaultDefaultEntryTest, MTTypes);
 
 TYPED_TEST(TableDefaultDefaultEntryTest, DefaultEntryLookup) {
   auto pkt = this->get_pkt();
