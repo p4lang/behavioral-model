@@ -37,7 +37,7 @@ src/gtest-death-test.cc \
 src/gtest.cc \
 src/gtest-printers.cc \
 src/gtest-assertion-result.cc \
-src/gtest-matchers \
+src/gtest-matchers.cc \
 src/gtest-internal-inl.h
 
 libgtest_la_SOURCES = \
