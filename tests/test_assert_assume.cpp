@@ -88,9 +88,9 @@ TEST_P(AssertAssumeDeathTest, ConditionFalse) {
   EXPECT_DEATH(testActionFnEntry(pkt.get()), "");
 }
 
-INSTANTIATE_TEST_CASE_P(AssertAssumeTest,
-                        AssertAssumeTest,
-                        ::testing::Values("assert", "assume"));
-INSTANTIATE_TEST_CASE_P(AssertAssumeDeathTest,
-                        AssertAssumeDeathTest,
-                        ::testing::Values("assert", "assume"));
+INSTANTIATE_TEST_SUITE_P(AssertAssumeTest,
+                         AssertAssumeTest,
+                         ::testing::Values("assert", "assume"));
+INSTANTIATE_TEST_SUITE_P(AssertAssumeDeathTest,
+                         AssertAssumeDeathTest,
+                         ::testing::Values("assert", "assume"));

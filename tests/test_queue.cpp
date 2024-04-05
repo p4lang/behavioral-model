@@ -86,7 +86,7 @@ TEST_P(QueueTest, ProducerConsumer) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(TestParameters,
-                        QueueTest,
-                        Combine(Values(16, 1024, 20000),
-                                Values(1000, 200000)));
+INSTANTIATE_TEST_SUITE_P(TestParameters,
+                         QueueTest,
+                         Combine(Values(16, 1024, 20000),
+                                 Values(1000, 200000)));

@@ -397,7 +397,7 @@ TEST_P(ExternTestTestRegister, TestRegister) {
   ASSERT_EQ(expected, dst.get<int>());
 }
 
-INSTANTIATE_TEST_CASE_P(RegisterExternFunction, ExternTestTestRegister,
+INSTANTIATE_TEST_SUITE_P(RegisterExternFunction, ExternTestTestRegister,
   ::testing::Values(
     std::make_pair("set_field1", 1),
     std::make_pair("set_field2_test", 2),
