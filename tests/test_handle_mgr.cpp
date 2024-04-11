@@ -41,7 +41,7 @@ class HandleMgrIteratorTest : public ::testing::Test {
 
 using IteratorTypes = Types<HandleMgr::iterator, HandleMgr::const_iterator>;
 
-TYPED_TEST_CASE(HandleMgrIteratorTest, IteratorTypes);
+TYPED_TEST_SUITE(HandleMgrIteratorTest, IteratorTypes);
 
 TYPED_TEST(HandleMgrIteratorTest, Iterate) {
   HandleMgr handle_mgr;

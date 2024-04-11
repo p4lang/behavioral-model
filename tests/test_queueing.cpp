@@ -124,7 +124,7 @@ using QueueingTypes = Types<QueueingLogic<QEm, WorkerMapper>,
                             QueueingLogicRL<QEm, WorkerMapper>,
                             QueueingLogicPriRL<QEm, WorkerMapper> >;
 
-TYPED_TEST_CASE(QueueingTest, QueueingTypes);
+TYPED_TEST_SUITE(QueueingTest, QueueingTypes);
 
 TYPED_TEST(QueueingTest, ProducerConsummer) {
   thread producer_thread(&QueueingTest<TypeParam>::produce, this);

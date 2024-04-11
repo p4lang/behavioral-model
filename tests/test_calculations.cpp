@@ -682,7 +682,7 @@ TEST_P(CrcMapTest, Check) {
   EXPECT_EQ(expected_output, output);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CrcMapList, CrcMapTest,
     ::testing::ValuesIn(CrcCheckMap::get_instance()->names()));
 

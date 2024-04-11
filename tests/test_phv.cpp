@@ -253,7 +253,7 @@ class PHVHeaderNameIteratorTest : public PHVTest {
 using NameIteratorTypes = Types<PHV::header_name_iterator,
                                 PHV::const_header_name_iterator>;
 
-TYPED_TEST_CASE(PHVHeaderNameIteratorTest, NameIteratorTypes);
+TYPED_TEST_SUITE(PHVHeaderNameIteratorTest, NameIteratorTypes);
 
 TYPED_TEST(PHVHeaderNameIteratorTest, Iterate) {
   typename PHVRef<TypeParam>::type phv_ref = *(this->phv).get();
@@ -285,7 +285,7 @@ class PHVHeaderIteratorTest : public PHVTest {
 
 using IteratorTypes = Types<PHV::header_iterator, PHV::const_header_iterator>;
 
-TYPED_TEST_CASE(PHVHeaderIteratorTest, IteratorTypes);
+TYPED_TEST_SUITE(PHVHeaderIteratorTest, IteratorTypes);
 
 template <typename IteratorType>
 struct HeaderRef { };
