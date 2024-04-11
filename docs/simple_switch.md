@@ -45,6 +45,13 @@ some configuration changes that the P4Runtime API does not, e.g. the
 Thus if you wish to use the P4Runtime API to control the configuration
 of the switch, you must use simple_switch_grpc.
 
+See the following presentation for more details on how the P4Runtime
+API is implemented in simple_switch_grpc:
+
++ ["P4 Runtime Implementation in P4.org
+  projects"](https://www.youtube.com/watch?v=YGdcZ6PYiUo) by Antonin
+  Bas on April 7, 2021
+
 
 ## Standard metadata
 
