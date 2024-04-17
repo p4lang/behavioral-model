@@ -80,8 +80,8 @@ SwitchWContexts::start_and_return() {
     Logger::get()->error(
         "The switch was started with no P4 and config swap is disabled");
   }
-  // The lock is held until the config is loaded to avoid race conditions with   
-  // starting the PIGrpcServerRunV2 (P4RT server).
+  // We keep holding the lock as the start_and_return_ callback, which is implemented
+  // by targets, may access the P4 config for some validations.
   config_loaded_cv.wait(config_lock, [this]() { return config_loaded; });
   start();  // DevMgr::start
   start_and_return_();
