@@ -175,14 +175,14 @@ TEST_P(FieldSerializeTest, DeparseWSentinel) {
   run_deparse_test(1);
 }
 
-INSTANTIATE_TEST_CASE_P(TestParameters,
-                        FieldSerializeTest,
-                        Combine(Range(1, 17), Range(0, 8)));
+INSTANTIATE_TEST_SUITE_P(TestParameters,
+                         FieldSerializeTest,
+                         Combine(Range(1, 17), Range(0, 8)));
 
 // one bug only appeared for fields > 2 bytes, thus this addition
-INSTANTIATE_TEST_CASE_P(TestParameters2,
-                        FieldSerializeTest,
-                        Combine(Values(18), Range(0, 8)));
+INSTANTIATE_TEST_SUITE_P(TestParameters2,
+                         FieldSerializeTest,
+                         Combine(Values(18), Range(0, 8)));
 
 
 namespace {
@@ -250,9 +250,9 @@ TEST_P(SignedFieldTest, ExportBytes) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(TestParameters,
-                        SignedFieldTest,
-                        Range(2, 17));
+INSTANTIATE_TEST_SUITE_P(TestParameters,
+                         SignedFieldTest,
+                         Range(2, 17));
 
 
 class SaturatingFieldTest : public ::testing::Test {

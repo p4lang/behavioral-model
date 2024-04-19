@@ -719,7 +719,7 @@ class ActionsStringParamTest : public ActionsTest {
 };
 
 using SaveStringTypes = ::testing::Types<SaveString, SaveCString>;
-TYPED_TEST_CASE(ActionsStringParamTest, SaveStringTypes);
+TYPED_TEST_SUITE(ActionsStringParamTest, SaveStringTypes);
 
 TYPED_TEST(ActionsStringParamTest, Basic) {
   const std::string testString("testString");

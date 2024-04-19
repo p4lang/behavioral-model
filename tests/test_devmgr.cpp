@@ -548,7 +548,7 @@ PortMonitorTest<PMActive>::set_port_status(port_t port, PortStatus status) {
 
 using PMTypes = Types<PMPassive, PMActive>;
 
-TYPED_TEST_CASE(PortMonitorTest, PMTypes);
+TYPED_TEST_SUITE(PortMonitorTest, PMTypes);
 
 using std::chrono::milliseconds;
 using std::this_thread::sleep_for;

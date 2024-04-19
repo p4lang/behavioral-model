@@ -1254,8 +1254,8 @@ TEST_P(IPv4VLParsingTest, ParseAndDeparse) {
   ASSERT_EQ(0, memcmp(buf_save.data(), packet.data(), buf_save.size()));
 }
 
-INSTANTIATE_TEST_CASE_P(IPv4VLOptionWords, IPv4VLParsingTest,
-                        Range(0, 10));
+INSTANTIATE_TEST_SUITE_P(IPv4VLOptionWords, IPv4VLParsingTest,
+                         Range(0, 10));
 
 
 class ParseVSetTest : public ::testing::Test {
