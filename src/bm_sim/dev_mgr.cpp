@@ -81,7 +81,6 @@ class FilesDevMgrImp : public DevMgrIface {
   }
 
   void start_() override {
-    std::cout << "started packet processing inside start_" << "\n\n\n\n";
     reader_thread = std::thread(&PcapFilesReader::start, &reader);
     reader_thread.detach();
   }
@@ -93,9 +92,7 @@ class FilesDevMgrImp : public DevMgrIface {
   }
 
   bool port_is_up_(port_t port) const override {
-    std::cout << "port_is_up_" << "\n\n\n\n";
     Lock lock(mutex);
-    std::cout << "port_is_up_ after lock" << "\n\n\n\n";
     return port_info.find(port) != port_info.end();
   }
 
@@ -138,7 +135,6 @@ DevMgrIface::port_remove(port_t port_num) {
 
 void
 DevMgrIface::start() {
-  std::cout << "started packet processing" << "\n\n\n\n";
   assert(p_monitor);
   p_monitor->start(
       std::bind(&DevMgrIface::port_is_up, this, std::placeholders::_1));
@@ -152,7 +148,6 @@ DevMgrIface::set_packet_handler(const PacketHandler &handler, void *cookie) {
 
 bool
 DevMgrIface::port_is_up(port_t port_num) const {
-  // std::cout << "port_is_up" << "\n\n\n\n";
   return port_is_up_(port_num);
 }
 

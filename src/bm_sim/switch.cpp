@@ -70,9 +70,6 @@ SwitchWContexts::receive(port_t port_num, const char *buffer, int len) {
     Logger::get()->info("Received packet of length {} on port {}: {}",
                         len, port_num, sample_packet_data(buffer, len));
   }
-  // std::cout << "Received packet of length " << len << " on port " << port_num
-  //         << " : " << sample_packet_data(buffer, len) << "\n\n\n\n";
-  
   return receive_(port_num, buffer, len);
 }
 

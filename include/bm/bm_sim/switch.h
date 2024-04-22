@@ -110,7 +110,6 @@ class SwitchWContexts : public DevMgr, public RuntimeInterface {
   //! Access a Context by context id, throws a std::out_of_range exception if
   //! \p cxt_id is invalid.
   Context *get_context(cxt_id_t cxt_id = 0u) {
-    std::cout << "Get context: " << cxt_id << " : " << nb_cxts << "\n\n";
     return &contexts.at(cxt_id);
   }
 

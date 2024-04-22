@@ -46,7 +46,6 @@ class PortMonitorDummy : public PortMonitorIface {
   }
 
   void start_(const PortStatusFn &fn) override {
-    std::cout << "port_is_up dummy" << "\n\n\n\n";
     (void) fn;
   }
 
@@ -135,7 +134,6 @@ class PortMonitorPassive : public PortMonitorIface {
   }
 
   void start_(const PortStatusFn &fn) override {
-    std::cout << "port_is_up passive" << "\n\n\n\n";
     // fn ignored for passive monitor
     (void) fn;
   }
@@ -155,12 +153,9 @@ class PortMonitorActive : public PortMonitorPassive {
   }
 
   void start_(const PortStatusFn &fn) override {
-    std::cout << "port_is_up active" << "\n\n\n\n";
     p_status_fn = fn;
     run_monitor = true;
-    std::cout << "port_is_up before thread" << "\n\n\n\n";
     p_monitor = std::thread(&PortMonitorActive::monitor, this);
-    std::cout << "port_is_up after thread" << "\n\n\n\n";
   }
 
   void stop_() override {
@@ -173,12 +168,9 @@ class PortMonitorActive : public PortMonitorPassive {
   }
 
   void monitor() {
-    std::cout << "monitor " << "\n\n\n\n";
     std::map<port_t, PortStatus> cbs_todo;
-    std::cout << "monitor before while: " << run_monitor << "\n\n\n\n";
     while (run_monitor) {
       std::this_thread::sleep_for(std::chrono::milliseconds(ms_sleep));
-      // std::cout << "monitor in while" << "\n\n\n\n";
       {
         std::lock_guard<std::mutex> lock(port_mutex);
         for (auto &port_e : curr_ports) {
@@ -193,12 +185,12 @@ class PortMonitorActive : public PortMonitorPassive {
           port_e.second = is_up;
         }
       }
-      // std::cout << "monitor in while after 1 block" << "\n\n\n\n";
+      
       // callbacks, without the port lock
       for (const auto &cb_todo : cbs_todo) {
         event_handler(cb_todo.first, cb_todo.second);
       }
-      // std::cout << "monitor in while before for" << "\n\n\n\n";
+      
       if (notifications_writer) {
         std::vector<one_status_t> v;
         for (const auto &cb_todo : cbs_todo) {
@@ -209,10 +201,9 @@ class PortMonitorActive : public PortMonitorPassive {
         }
         send_notifications(&v);
       }
-      // std::cout << "monitor in while after for" << "\n\n\n\n";
+      
       cbs_todo.clear();
     }
-    std::cout << "monitor after while" << "\n\n\n\n";
   }
 
   uint32_t ms_sleep{200};

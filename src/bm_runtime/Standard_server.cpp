@@ -38,7 +38,7 @@ class StandardHandler : virtual public StandardIf {
 public:
   StandardHandler(SwitchWContexts *sw)
     : switch_(sw) { }
-  
+
   static TableOperationErrorCode::type get_exception_code(MatchErrorCode bm_code) {
     switch(bm_code) {
       case MatchErrorCode::TABLE_FULL:
