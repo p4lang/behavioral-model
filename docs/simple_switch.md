@@ -104,7 +104,7 @@ Here are the fields:
   easier to port to other programmable switches, do not ever assign it
   a value.  See [Appendix D.2 "No output port change during egress" of
   the PNA
-  specification](https://staging.p4.org/p4-spec/docs/psa-working-draft-html-version.html?_ga=2.102809280.1935655389.1713969884-617322402.1667493145&_gl=1*1sm2i71*_ga*NjE3MzIyNDAyLjE2Njc0OTMxNDU.*_ga_FW0Q4274RH*MTcxMzk2OTg4My45OC4xLjE3MTM5Njk4ODYuMC4wLjA.*_ga_VXXZD2250K*MTcxMzk2OTg4My4xMzEuMS4xNzEzOTY5ODg2LjAuMC4w#appendix-rationale-egress-cannot-change-output-port)
+  specification](https://staging.p4.org/p4-spec/docs/psa-working-draft-html-version.html#appendix-rationale-egress-cannot-change-output-port)
   for some explanation of why.
 - `egress_instance` (sm14) - Renamed `egress_rid` in simple_switch.
   See `egress_rid` below.
