@@ -181,7 +181,7 @@ pipeline, but should not be written to.
 in the ingress pipeline when you wish the packet to be multicast. A value of 0
 means no multicast, and calling `mark_to_drop` will set the value to 0.
 A nonzero value should be that of a valid multicast group configured
-through bmv2 runtime interfaces. See the "after-ingress pseudocode" for
+through BMv2 runtime interfaces. See the "after-ingress pseudocode" for
 relative priority of this vs. other possible packet operations at
 end of ingress.
 - `egress_rid`: needed for the multicast feature. This field is only valid in
@@ -329,7 +329,7 @@ if (resubmit was called) {
     // There are no special primitive actions built in to simple_switch 
     // for you to call to do this -- use a normal P4_16 assignment
     // statement, or P4_14 `modify_field()` primitive action.
-    Make 0 or more copies of the packet based upon the list of
+    Make 0 or more copies of the packet (including all metadata) based upon the list of
     (egress_port, egress_rid) values configured by the control plane
     for the mcast_grp value.  Enqueue each one in the appropriate
     packet buffer queue.  The instance_type of each will be
