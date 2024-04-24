@@ -90,9 +90,22 @@ Here are the fields:
   ingress.  If your P4 program assigns a value of DROP_PORT to `egress_spec`, it
   will still behave according to the "after-ingress pseudocode", even if you
   never call `mark_to_drop` (P4_16) or `drop` (P4_14).
+  Note that if you never assign a value to this field, nor drop the
+  packet, during ingress processing, its default initial value is 0,
+  and the packet will be unicast to output port 0.
 - `egress_port` (sm14, v1m) - Only intended to be accessed during
-  egress processing, read only.  The output port this packet is
-  destined to.
+  egress processing, read only.  While you can read its value during
+  ingress processing, you should think of its value as uninitialized
+  garbage during ingress.  This field is assigned a predictable value
+  just before the packet begins egress processing, equal to the output
+  port that this packet is destined to (if it is not dropped during
+  egress processing).  There is no compile-time error or warning if
+  you do assign to this field, but if you wish your P4 code to be
+  easier to port to other programmable switches, do not ever assign it
+  a value.  See [Appendix D.2 "No output port change during egress" of
+  the PNA
+  specification](https://staging.p4.org/p4-spec/docs/psa-working-draft-html-version.html?_ga=2.102809280.1935655389.1713969884-617322402.1667493145&_gl=1*1sm2i71*_ga*NjE3MzIyNDAyLjE2Njc0OTMxNDU.*_ga_FW0Q4274RH*MTcxMzk2OTg4My45OC4xLjE3MTM5Njk4ODYuMC4wLjA.*_ga_VXXZD2250K*MTcxMzk2OTg4My4xMzEuMS4xNzEzOTY5ODg2LjAuMC4w#appendix-rationale-egress-cannot-change-output-port)
+  for some explanation of why.
 - `egress_instance` (sm14) - Renamed `egress_rid` in simple_switch.
   See `egress_rid` below.
 - `instance_type` (sm14, v1m) - Contains a value that can be read by
