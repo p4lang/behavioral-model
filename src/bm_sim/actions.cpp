@@ -20,13 +20,29 @@
  */
 
 #include <bm/bm_sim/actions.h>
+#include <bm/bm_sim/data.h>
 #include <bm/bm_sim/debugger.h>
+#include <bm/bm_sim/expressions.h>
 #include <bm/bm_sim/event_logger.h>
+#include <bm/bm_sim/header_unions.h>
+#include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/named_p4object.h>
 #include <bm/bm_sim/P4Objects.h>
 #include <bm/bm_sim/packet.h>
-#include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/phv.h>
+#include <bm/bm_sim/phv_forward.h>
+#include <bm/bm_sim/stateful.h>
+#include <bm/bm_sim/source_info.h>
 
+#include <cassert>
+#include <cstddef>
+#include <ios>
+#include <iostream>
+#include <istream>
+#include <memory>
+#include <ostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "utils.h"
@@ -480,6 +496,7 @@ ActionFnEntry::deserialize(std::istream *in, const P4Objects &objs) {
 
 thread_local Packet *ActionPrimitive_::pkt = nullptr;
 thread_local PHV *ActionPrimitive_::phv = nullptr;
+thread_local SourceInfo *ActionPrimitive_::call_source_info = nullptr;
 
 // TODO(antonin): should this be moved to core/ ?
 namespace core {
