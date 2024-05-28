@@ -126,8 +126,8 @@ LT_INIT
 
 AC_CONFIG_MACRO_DIR([m4])
 
-# enforce -std=c++11
-AX_CXX_COMPILE_STDCXX_11([noext],[mandatory])
+# enforce -std=c++17
+AX_CXX_COMPILE_STDCXX_17([noext],[mandatory])
 
 # Checks for header files.
 AC_LANG_PUSH(C)
