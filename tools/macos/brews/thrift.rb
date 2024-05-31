@@ -52,7 +52,7 @@ class Thrift < Formula
     exclusions << "--without-python" if build.without? "python"
     exclusions << "--without-perl" if build.without? "perl"
 
-    ENV.cxx11 if MacOS.version >= :mavericks && ENV.compiler == :clang
+    ENV.cxx17 if MacOS.version >= :mavericks && ENV.compiler == :clang
 
     # Don't install extensions to /usr:
     ENV["PY_PREFIX"] = prefix
