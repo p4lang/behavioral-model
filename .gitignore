@@ -30,7 +30,7 @@
 # Python byte code
 *.pyc
 
-build/*
+build/
 lib*
 
 # Vim
