@@ -26,18 +26,6 @@ import sys
 import os
 
 from pnic_runtime import PnaNic
-from pnic_runtime.ttypes import MirroringSessionConfig
-
-def handle_bad_input(f):
-    @wraps(f)
-    @runtime_CLI.handle_bad_input
-    def handle(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except InvalidMirroringOperation as e:
-            error = MirroringOperationErrorCode._VALUES_TO_NAMES[e.code]
-            print("Invalid mirroring operation (%s)" % error)
-    return handle
 
 class PnaNicAPI(runtime_CLI.RuntimeAPI):
     @staticmethod
@@ -49,47 +37,12 @@ class PnaNicAPI(runtime_CLI.RuntimeAPI):
                                         standard_client, mc_client)
         self.pnic_client = pnic_client
 
-    @handle_bad_input
-    def do_mirroring_add(self, line):
-        "Add mirroring mapping: mirroring_add <mirror_id> <egress_port>"
-        args = line.split()
-        mirror_id = self.parse_int(args[0], "mirror_id")
-        egress_port = self.parse_int(args[1], "egress_port")
-        config = MirroringSessionConfig(port=egress_port)
-        self.pnic_client.mirroring_session_add(mirror_id, config)
-
-    @handle_bad_input
-    def do_mirroring_add_mc(self, line):
-        "Add mirroring session to multicast group: mirroring_add_mc <mirror_id> <mgrp>"
-        args = line.split()
-        self.exactly_n_args(args, 2)
-        mirror_id = self.parse_int(args[0], "mirror_id")
-        mgrp = self.parse_int(args[1], "mgrp")
-        config = MirroringSessionConfig(mgid=mgrp)
-        self.pnic_client.mirroring_session_add(mirror_id, config)
-        print("Associating multicast group", mgrp, "to mirroring session", mirror_id)
-
-    @handle_bad_input
-    def do_mirroring_delete(self, line):
-        "Delete mirroring mapping: mirroring_delete <mirror_id>"
-        mirror_id = self.parse_int(line, "mirror_id")
-        self.pnic_client.mirroring_mapping_delete(mirror_id)
-
-    @handle_bad_input
-    def do_mirroring_get(self, line):
-        "Display mirroring session: mirroring_get <mirror_id>"
-        args = line.split()
-        self.exactly_n_args(args, 1)
-        mirror_id = self.parse_int(args[0], "mirror_id")
-        config = self.pnic_client.mirroring_session_get(mirror_id)
-        print(config)
-
-    @handle_bad_input
+    @runtime_CLI.handle_bad_input
     def do_get_time_elapsed(self, line):
         "Get time elapsed (in microseconds) since the nic started: get_time_elapsed"
         print(self.pnic_client.get_time_elapsed_us())
 
-    @handle_bad_input
+    @runtime_CLI.handle_bad_input
     def do_get_time_since_epoch(self, line):
         "Get time elapsed (in microseconds) since the nic clock's epoch: get_time_since_epoch"
         print(self.pnic_client.get_time_since_epoch_us())

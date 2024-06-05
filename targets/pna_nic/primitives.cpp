@@ -134,7 +134,6 @@ REGISTER_PRIMITIVE(shift_right);
 
 class drop : public ActionPrimitive<> {
   void operator ()() {
-    // nothing
   }
 };
 
@@ -142,16 +141,14 @@ REGISTER_PRIMITIVE(drop);
 
 class drop_packet : public ActionPrimitive<> {
   void operator ()() {
-    // nothing
   }
 };
-
 
 REGISTER_PRIMITIVE(drop_packet);
 
 class send_to_port : public ActionPrimitive<const Data &> {
   void operator ()(const Data &dest_port) {
-    // check if its within main control
+    // check if its within main control - how?
     std::cout << "dest_port: " << dest_port << std::endl;
   }
 };

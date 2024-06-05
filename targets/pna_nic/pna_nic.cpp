@@ -62,53 +62,14 @@ struct bmv2_hash {
 REGISTER_HASH(hash_ex);
 REGISTER_HASH(bmv2_hash);
 
+extern int import_primitives();
+
 namespace bm {
 
 namespace pna {
 
-static constexpr uint16_t MAX_MIRROR_SESSION_ID = (1u << 15) - 1;
 packet_id_t PnaNic::packet_id = 0;
 
-class PnaNic::MirroringSessions {
- public:
-  bool add_session(mirror_id_t mirror_id,
-                   const MirroringSessionConfig &config) {
-    Lock lock(mutex);
-    if (0 <= mirror_id && mirror_id <= MAX_MIRROR_SESSION_ID) {
-      sessions_map[mirror_id] = config;
-      return true;
-    } else {
-      bm::Logger::get()->error("mirror_id out of range. No session added.");
-      return false;
-    }
-  }
-
-  bool delete_session(mirror_id_t mirror_id) {
-    Lock lock(mutex);
-    if (0 <= mirror_id && mirror_id <= MAX_MIRROR_SESSION_ID) {
-      return sessions_map.erase(mirror_id) == 1;
-    } else {
-      bm::Logger::get()->error("mirror_id out of range. No session deleted.");
-      return false;
-    }
-  }
-
-  bool get_session(mirror_id_t mirror_id,
-                   MirroringSessionConfig *config) const {
-    Lock lock(mutex);
-    auto it = sessions_map.find(mirror_id);
-    if (it == sessions_map.end()) return false;
-    *config = it->second;
-    return true;
-  }
-
- private:
-  using Mutex = std::mutex;
-  using Lock = std::lock_guard<Mutex>;
-
-  mutable std::mutex mutex;
-  std::unordered_map<mirror_id_t, MirroringSessionConfig> sessions_map;
-};
 
 PnaNic::PnaNic(bool enable_swap)
   : Switch(enable_swap),
@@ -122,8 +83,8 @@ PnaNic::PnaNic(bool enable_swap)
         this->transmit_fn(port_num, buffer, len);
     }),
     pre(new McSimplePreLAG()),
-    start(clock::now()),
-    mirroring_sessions(new MirroringSessions()) {
+    start(clock::now())
+    {
   add_component<McSimplePreLAG>(pre);
 
   add_required_field("pna_main_parser_input_metadata", "recirculated");
@@ -140,6 +101,8 @@ PnaNic::PnaNic(bool enable_swap)
   force_arith_header("pna_main_parser_input_metadata");
   force_arith_header("pna_main_input_metadata");
   force_arith_header("pna_main_output_metadata");
+
+  import_primitives();
 }
 
 #define PACKET_LENGTH_REG_IDX 0
@@ -187,23 +150,6 @@ void
 PnaNic::reset_target_state_() {
   bm::Logger::get()->debug("Resetting pna_nic target-specific state");
   get_component<McSimplePreLAG>()->reset_state();
-}
-
-bool
-PnaNic::mirroring_add_session(mirror_id_t mirror_id,
-                                    const MirroringSessionConfig &config) {
-  return mirroring_sessions->add_session(mirror_id, config);
-}
-
-bool
-PnaNic::mirroring_delete_session(mirror_id_t mirror_id) {
-  return mirroring_sessions->delete_session(mirror_id);
-}
-
-bool
-PnaNic::mirroring_get_session(mirror_id_t mirror_id,
-                                    MirroringSessionConfig *config) const {
-  return mirroring_sessions->get_session(mirror_id, config);
 }
 
 uint64_t

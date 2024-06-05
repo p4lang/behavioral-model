@@ -1,7 +1,4 @@
-/build
 /pna_nic
-/*.pcap
 pnic_runtime
 pna_nic_CLI
 externs
-tests

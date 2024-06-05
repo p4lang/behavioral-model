@@ -1,4 +1,4 @@
-/* Copyright 2024 Marvell Technology, Inc.
+/* Copyright 2013-present Barefoot Networks, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,19 @@
  */
 
 /*
- * Rupesh Chiluka (rchiluka@marvell.com)
+ * Antonin Bas (antonin@barefootnetworks.com)
  *
  */
 
-namespace cpp pnic_runtime
-namespace py pnic_runtime
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-service PnaNic {
+#include <gtest/gtest.h>
 
-  // these methods are here as an experiment, prefer get_time_elapsed_us() when
-  // possible
-  i64 get_time_elapsed_us();
-  i64 get_time_since_epoch_us();
+bool WITH_VALGRIND = false;
 
+int main(int argc, char* argv[]) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
