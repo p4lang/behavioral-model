@@ -30,38 +30,6 @@
 
 #include "pna_nic.h"
 
-namespace {
-
-struct hash_ex {
-  uint32_t operator()(const char *buf, size_t s) const {
-    const uint32_t p = 16777619;
-    uint32_t hash = 2166136261;
-
-    for (size_t i = 0; i < s; i++)
-      hash = (hash ^ buf[i]) * p;
-
-    hash += hash << 13;
-    hash ^= hash >> 7;
-    hash += hash << 3;
-    hash ^= hash >> 17;
-    hash += hash << 5;
-    return static_cast<uint32_t>(hash);
-  }
-};
-
-struct bmv2_hash {
-  uint64_t operator()(const char *buf, size_t s) const {
-    return bm::hash::xxh64(buf, s);
-  }
-};
-
-}  // namespace
-
-// if REGISTER_HASH calls placed in the anonymous namespace, some compiler can
-// give an unused variable warning
-REGISTER_HASH(hash_ex);
-REGISTER_HASH(bmv2_hash);
-
 extern int import_primitives();
 
 namespace bm {
@@ -82,7 +50,6 @@ PnaNic::PnaNic(bool enable_swap)
         _BM_UNUSED(pkt_id);
         this->transmit_fn(port_num, buffer, len);
     }),
-    pre(new McSimplePreLAG()),
     start(clock::now())
     {
   add_component<McSimplePreLAG>(pre);
