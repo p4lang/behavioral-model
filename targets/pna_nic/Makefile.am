@@ -1,9 +1,3 @@
-if COND_NANOMSG
-MAYBE_TESTS = tests
-endif
-
-SUBDIRS = . $(MAYBE_TESTS)
-
 THRIFT_IDL = $(srcdir)/thrift/pna_nic.thrift
 
 noinst_LTLIBRARIES = libpnanic.la

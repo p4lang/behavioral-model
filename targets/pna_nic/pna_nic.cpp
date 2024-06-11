@@ -52,8 +52,6 @@ PnaNic::PnaNic(bool enable_swap)
     }),
     start(clock::now())
     {
-  add_component<McSimplePreLAG>(pre);
-
   add_required_field("pna_main_parser_input_metadata", "recirculated");
   add_required_field("pna_main_parser_input_metadata", "input_port");
 

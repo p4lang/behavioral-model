@@ -70,19 +70,6 @@ class remove_header : public ActionPrimitive<Header &> {
 
 REGISTER_PRIMITIVE(remove_header);
 
-class modify_field_with_hash_based_offset
-  : public ActionPrimitive<Data &, const Data &,
-                           const NamedCalculation &, const Data &> {
-  void operator ()(Data &dst, const Data &base,
-                   const NamedCalculation &hash, const Data &size) {
-    uint64_t v =
-      (hash.output(get_packet()) % size.get<uint64_t>()) + base.get<uint64_t>();
-    dst.set(v);
-  }
-};
-
-REGISTER_PRIMITIVE(modify_field_with_hash_based_offset);
-
 }  // namespace bm::pna
 
 }  // namespace pna

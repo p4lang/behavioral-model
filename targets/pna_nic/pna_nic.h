@@ -105,7 +105,6 @@ class PnaNic : public Switch {
   Queue<std::unique_ptr<Packet> > input_buffer;
   Queue<std::unique_ptr<Packet> > output_buffer;
   TransmitFn my_transmit_fn;
-  std::shared_ptr<McSimplePreLAG> pre;
   clock::time_point start;
   bool with_queueing_metadata{false};
 };
