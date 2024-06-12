@@ -106,7 +106,6 @@ class PnaNic : public Switch {
   Queue<std::unique_ptr<Packet> > output_buffer;
   TransmitFn my_transmit_fn;
   clock::time_point start;
-  bool with_queueing_metadata{false};
 };
 
 }  // namespace bm::pna

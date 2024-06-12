@@ -40,9 +40,8 @@ namespace pnic_runtime {
 
 class PnaNicHandler : virtual public PnaNicIf {
  public:
-  explicit PnaNicHandler(PnaNic *sw)
-    : nic_(sw) { }
-  // }
+  explicit PnaNicHandler(PnaNic *nic)
+    : nic_(nic) { }
 
   int64_t get_time_elapsed_us() {
     bm::Logger::get()->trace("get_time_elapsed_us");
@@ -60,8 +59,8 @@ class PnaNicHandler : virtual public PnaNicIf {
   PnaNic *nic_;
 };
 
-stdcxx::shared_ptr<PnaNicIf> get_handler(PnaNic *sw) {
-  return stdcxx::shared_ptr<PnaNicHandler>(new PnaNicHandler(sw));
+stdcxx::shared_ptr<PnaNicIf> get_handler(PnaNic *nic) {
+  return stdcxx::shared_ptr<PnaNicHandler>(new PnaNicHandler(nic));
 }
 
 }  // namespace pnic_runtime

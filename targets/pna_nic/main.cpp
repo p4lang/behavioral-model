@@ -32,7 +32,7 @@ bm::TargetParserBasic *pna_nic_parser;
 }  // namespace
 
 namespace pnic_runtime {
-shared_ptr<PnaNicIf> get_handler(bm::pna::PnaNic *sw);
+shared_ptr<PnaNicIf> get_handler(bm::pna::PnaNic *nic);
 }  // namespace pnic_runtime
 
 int
