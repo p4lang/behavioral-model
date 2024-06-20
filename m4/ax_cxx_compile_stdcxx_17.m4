@@ -1,26 +1,26 @@
 # ============================================================================
-#  http://www.gnu.org/software/autoconf-archive/ax_cxx_compile_stdcxx_11.html
+#  http://www.gnu.org/software/autoconf-archive/ax_cxx_compile_stdcxx_17.html
 # ============================================================================
 #
 # SYNOPSIS
 #
-#   AX_CXX_COMPILE_STDCXX_11([ext|noext],[mandatory|optional])
+#   AX_CXX_COMPILE_STDCXX_17([ext|noext],[mandatory|optional])
 #
 # DESCRIPTION
 #
-#   Check for baseline language coverage in the compiler for the C++11
+#   Check for baseline language coverage in the compiler for the C++17
 #   standard; if necessary, add switches to CXXFLAGS to enable support.
 #
 #   The first argument, if specified, indicates whether you insist on an
-#   extended mode (e.g. -std=gnu++11) or a strict conformance mode (e.g.
-#   -std=c++11).  If neither is specified, you get whatever works, with
+#   extended mode (e.g. -std=gnu++17) or a strict conformance mode (e.g.
+#   -std=c++17).  If neither is specified, you get whatever works, with
 #   preference for an extended mode.
 #
 #   The second argument, if specified 'mandatory' or if left unspecified,
-#   indicates that baseline C++11 support is required and that the macro
+#   indicates that baseline C++17 support is required and that the macro
 #   should error out if no mode with that support is found.  If specified
 #   'optional', then configuration proceeds regardless, after defining
-#   HAVE_CXX11 if and only if a supporting mode is found.
+#   HAVE_CXX17 if and only if a supporting mode is found.
 #
 # LICENSE
 #
@@ -35,7 +35,7 @@
 
 #serial 3
 
-m4_define([_AX_CXX_COMPILE_STDCXX_11_testbody], [
+m4_define([_AX_CXX_COMPILE_STDCXX_17_testbody], [
   template <typename T>
     struct check
     {
@@ -54,35 +54,35 @@ m4_define([_AX_CXX_COMPILE_STDCXX_11_testbody], [
     auto d = a;
 ])
 
-AC_DEFUN([AX_CXX_COMPILE_STDCXX_11], [dnl
+AC_DEFUN([AX_CXX_COMPILE_STDCXX_17], [dnl
   m4_if([$1], [], [],
         [$1], [ext], [],
         [$1], [noext], [],
-        [m4_fatal([invalid argument `$1' to AX_CXX_COMPILE_STDCXX_11])])dnl
-  m4_if([$2], [], [ax_cxx_compile_cxx11_required=true],
-        [$2], [mandatory], [ax_cxx_compile_cxx11_required=true],
-        [$2], [optional], [ax_cxx_compile_cxx11_required=false],
-        [m4_fatal([invalid second argument `$2' to AX_CXX_COMPILE_STDCXX_11])])dnl
+        [m4_fatal([invalid argument `$1' to AX_CXX_COMPILE_STDCXX_17])])dnl
+  m4_if([$2], [], [ax_cxx_compile_cxx17_required=true],
+        [$2], [mandatory], [ax_cxx_compile_cxx17_required=true],
+        [$2], [optional], [ax_cxx_compile_cxx17_required=false],
+        [m4_fatal([invalid second argument `$2' to AX_CXX_COMPILE_STDCXX_17])])dnl
   AC_LANG_PUSH([C++])dnl
   ac_success=no
-  AC_CACHE_CHECK(whether $CXX supports C++11 features by default,
-  ax_cv_cxx_compile_cxx11,
-  [AC_COMPILE_IFELSE([AC_LANG_SOURCE([_AX_CXX_COMPILE_STDCXX_11_testbody])],
-    [ax_cv_cxx_compile_cxx11=yes],
-    [ax_cv_cxx_compile_cxx11=no])])
-  if test x$ax_cv_cxx_compile_cxx11 = xyes; then
+  AC_CACHE_CHECK(whether $CXX supports C++17 features by default,
+  ax_cv_cxx_compile_cxx17,
+  [AC_COMPILE_IFELSE([AC_LANG_SOURCE([_AX_CXX_COMPILE_STDCXX_17_testbody])],
+    [ax_cv_cxx_compile_cxx17=yes],
+    [ax_cv_cxx_compile_cxx17=no])])
+  if test x$ax_cv_cxx_compile_cxx17 = xyes; then
     ac_success=yes
   fi
 
   m4_if([$1], [noext], [], [dnl
   if test x$ac_success = xno; then
-    for switch in -std=gnu++11 -std=gnu++0x; do
-      cachevar=AS_TR_SH([ax_cv_cxx_compile_cxx11_$switch])
-      AC_CACHE_CHECK(whether $CXX supports C++11 features with $switch,
+    for switch in -std=gnu++17 -std=gnu++0x; do
+      cachevar=AS_TR_SH([ax_cv_cxx_compile_cxx17_$switch])
+      AC_CACHE_CHECK(whether $CXX supports C++17 features with $switch,
                      $cachevar,
         [ac_save_CXXFLAGS="$CXXFLAGS"
          CXXFLAGS="$CXXFLAGS $switch"
-         AC_COMPILE_IFELSE([AC_LANG_SOURCE([_AX_CXX_COMPILE_STDCXX_11_testbody])],
+         AC_COMPILE_IFELSE([AC_LANG_SOURCE([_AX_CXX_COMPILE_STDCXX_17_testbody])],
           [eval $cachevar=yes],
           [eval $cachevar=no])
          CXXFLAGS="$ac_save_CXXFLAGS"])
@@ -96,13 +96,13 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX_11], [dnl
 
   m4_if([$1], [ext], [], [dnl
   if test x$ac_success = xno; then
-    for switch in -std=c++11 -std=c++0x; do
-      cachevar=AS_TR_SH([ax_cv_cxx_compile_cxx11_$switch])
-      AC_CACHE_CHECK(whether $CXX supports C++11 features with $switch,
+    for switch in -std=c++17 -std=c++0x; do
+      cachevar=AS_TR_SH([ax_cv_cxx_compile_cxx17_$switch])
+      AC_CACHE_CHECK(whether $CXX supports C++17 features with $switch,
                      $cachevar,
         [ac_save_CXXFLAGS="$CXXFLAGS"
          CXXFLAGS="$CXXFLAGS $switch"
-         AC_COMPILE_IFELSE([AC_LANG_SOURCE([_AX_CXX_COMPILE_STDCXX_11_testbody])],
+         AC_COMPILE_IFELSE([AC_LANG_SOURCE([_AX_CXX_COMPILE_STDCXX_17_testbody])],
           [eval $cachevar=yes],
           [eval $cachevar=no])
          CXXFLAGS="$ac_save_CXXFLAGS"])
@@ -114,20 +114,20 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX_11], [dnl
     done
   fi])
   AC_LANG_POP([C++])
-  if test x$ax_cxx_compile_cxx11_required = xtrue; then
+  if test x$ax_cxx_compile_cxx17_required = xtrue; then
     if test x$ac_success = xno; then
-      AC_MSG_ERROR([*** A compiler with support for C++11 language features is required.])
+      AC_MSG_ERROR([*** A compiler with support for C++17 language features is required.])
     fi
   else
     if test x$ac_success = xno; then
-      HAVE_CXX11=0
-      AC_MSG_NOTICE([No compiler with C++11 support was found])
+      HAVE_CXX17=0
+      AC_MSG_NOTICE([No compiler with C++17 support was found])
     else
-      HAVE_CXX11=1
-      AC_DEFINE(HAVE_CXX11,1,
-                [define if the compiler supports basic C++11 syntax])
+      HAVE_CXX17=1
+      AC_DEFINE(HAVE_CXX17,1,
+                [define if the compiler supports basic C++17 syntax])
     fi
 
-    AC_SUBST(HAVE_CXX11)
+    AC_SUBST(HAVE_CXX17)
   fi
 ])
