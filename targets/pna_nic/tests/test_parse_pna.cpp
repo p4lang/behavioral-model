@@ -22,7 +22,7 @@
 #include <bm/bm_apps/packet_pipe.h>
 #include <boost/filesystem.hpp>
 #include "pna_nic.h"
-#include "utils.h"
+#include "../../test_utils.h"
 
 namespace fs = boost::filesystem;
 

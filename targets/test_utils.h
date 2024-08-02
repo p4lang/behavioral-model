@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef SIMPLE_SWITCH_TESTS_UTILS_H_
-#define SIMPLE_SWITCH_TESTS_UTILS_H_
+#ifndef TESTS_UTILS_H_
+#define TESTS_UTILS_H_
 
 #include <bm/bm_sim/nn.h>
 
@@ -92,4 +92,4 @@ class PacketInReceiver {
   mutable std::condition_variable can_read{};
 };
 
-#endif  // SIMPLE_SWITCH_TESTS_UTILS_H_
+#endif  // TESTS_UTILS_H_

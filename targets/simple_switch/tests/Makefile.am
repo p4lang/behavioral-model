@@ -15,7 +15,7 @@ $(top_builddir)/src/bm_apps/libbmapps.la \
 -lboost_filesystem
 
 # Define unit tests
-common_source = main.cpp utils.cpp utils.h
+common_source = main.cpp ../../test_utils.cpp ../../test_utils.h
 TESTS = test_packet_redirect \
 test_truncate \
 test_swap \
