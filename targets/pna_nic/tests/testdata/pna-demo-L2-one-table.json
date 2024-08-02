@@ -1,0 +1,178 @@
+{
+    "header_types" : [
+      {
+        "name" : "ethernet_t",
+        "id" : 0,
+        "fields" : [
+          ["dstAddr", 48, false],
+          ["srcAddr", 48, false],
+          ["etherType", 16, false]
+        ]
+      },
+      {
+        "name" : "pna_main_parser_input_metadata_t",
+        "id" : 1,
+        "fields" : [
+          ["recirculated", 1, false],
+          ["input_port", 32, false],
+          ["_padding", 7, false]
+        ]
+      },
+      {
+        "name" : "pna_main_input_metadata_t",
+        "id" : 2,
+        "fields" : [
+          ["recirculated", 1, false],
+          ["timestamp", 64, false],
+          ["parser_error", 32, false],
+          ["class_of_service", 8, false],
+          ["input_port", 32, false],
+          ["_padding_0", 7, false]
+        ]
+      },
+      {
+        "name" : "pna_main_output_metadata_t",
+        "id" : 3,
+        "fields" : [
+          ["class_of_service", 8, false]
+        ]
+      },
+      {
+        "name" : "scalars_t",
+        "id" : 4,
+        "fields" : []
+      }
+    ],
+    "headers" : [
+      {
+        "name" : "eth",
+        "id" : 0,
+        "header_type" : "ethernet_t",
+        "metadata" : false,
+        "pi_omit" : true
+      },
+      {
+        "name" : "pna_main_parser_input_metadata",
+        "id" : 1,
+        "header_type" : "pna_main_parser_input_metadata_t",
+        "metadata" : true,
+        "pi_omit" : true
+      },
+      {
+        "name" : "pna_main_input_metadata",
+        "id" : 2,
+        "header_type" : "pna_main_input_metadata_t",
+        "metadata" : true,
+        "pi_omit" : true
+      },
+      {
+        "name" : "pna_main_output_metadata",
+        "id" : 3,
+        "header_type" : "pna_main_output_metadata_t",
+        "metadata" : true,
+        "pi_omit" : true
+      },
+      {
+        "name" : "<null>",
+        "id" : 4,
+        "header_type" : "scalars_t",
+        "metadata" : false,
+        "pi_omit" : true
+      }
+    ],
+    "header_stacks" : [],
+    "header_union_types" : [],
+    "header_unions" : [],
+    "header_union_stacks" : [],
+    "field_lists" : [],
+    "errors" : [],
+    "enums" : [
+      {
+        "name" : "PNA_MeterColor_t",
+        "entries" : [
+          ["GREEN", 1],
+          ["RED", 0],
+          ["YELLOW", 2]
+        ]
+      }
+    ],
+    "parsers" : [
+      {
+        "name" : "main_parser",
+        "id" : 0,
+        "init_state" : "start",
+        "parse_states" : [
+          {
+            "name" : "start",
+            "id" : 0,
+            "parser_ops" : [
+              {
+                "parameters" : [
+                  {
+                    "type" : "regular",
+                    "value" : "eth"
+                  }
+                ],
+                "op" : "extract"
+              }
+            ],
+            "transitions" : [
+              {
+                "type" : "default",
+                "value" : null,
+                "mask" : null,
+                "next_state" : null
+              }
+            ],
+            "transition_key" : []
+          }
+        ]
+      }
+    ],
+    "parse_vsets" : [],
+    "deparsers" : [
+      {
+        "name" : "main_deparser",
+        "id" : 0,
+        "source_info" : {
+          "filename" : "pna-demo-L2-one-table.p4",
+          "line" : 98,
+          "column" : 8,
+          "source_fragment" : "MainDeparserImpl"
+        },
+        "order" : ["eth"],
+        "primitives" : []
+      }
+    ],
+    "meter_arrays" : [],
+    "counter_arrays" : [],
+    "register_arrays" : [],
+    "calculations" : [],
+    "learn_lists" : [],
+    "actions" : [],
+    "pipelines" : [
+      {
+        "name" : "main_control",
+        "id" : 0,
+        "source_info" : {
+          "filename" : "pna-demo-L2-one-table.p4",
+          "line" : 58,
+          "column" : 8,
+          "source_fragment" : "MainControlImpl"
+        },
+        "init_table" : null,
+        "tables" : [],
+        "action_profiles" : [],
+        "conditionals" : []
+      }
+    ],
+    "checksums" : [],
+    "force_arith" : [],
+    "extern_instances" : [],
+    "field_aliases" : [],
+    "program" : "pna-demo-L2-one-table.p4",
+    "__meta__" : {
+      "version" : [2, 23],
+      "compiler" : "https://github.com/p4lang/p4c"
+    }
+  }
