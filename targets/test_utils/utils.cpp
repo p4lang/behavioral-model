@@ -23,7 +23,7 @@
 #include <vector>
 #include <algorithm>  // for std::copy, std::min
 
-#include "test_utils.h"
+#include "utils.h"
 
 NNEventListener::NNEventListener(const std::string &addr)
     : addr(addr), s(AF_SP, NN_SUB) {

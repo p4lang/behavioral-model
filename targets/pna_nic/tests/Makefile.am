@@ -11,7 +11,7 @@ $(top_builddir)/src/bm_apps/libbmapps.la \
 -lboost_filesystem
 
 # Define unit tests
-common_source = main.cpp ../../test_utils.cpp ../../test_utils.h
+common_source = main.cpp ../../test_utils/utils.cpp ../../test_utils/utils.h
 TESTS = test_parse_pna
 
 check_PROGRAMS = $(TESTS) test_all

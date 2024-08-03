@@ -28,7 +28,7 @@
 
 #include "simple_switch.h"
 
-#include "../../test_utils.h"
+#include "../../test_utils/utils.h"
 
 namespace fs = boost::filesystem;
 
