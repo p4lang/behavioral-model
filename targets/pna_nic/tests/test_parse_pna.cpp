@@ -21,8 +21,8 @@
 #include <gtest/gtest.h>
 #include <bm/bm_apps/packet_pipe.h>
 #include <boost/filesystem.hpp>
+#include <utils.h>
 #include "pna_nic.h"
-#include "../../test_utils/utils.h"
 
 namespace fs = boost::filesystem;
 
