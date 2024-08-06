@@ -318,6 +318,7 @@ AC_CONFIG_FILES([Makefile
 		src/bm_apps/examples/Makefile
 		services/Makefile
 		targets/Makefile
+		targets/test_utils/Makefile
 		targets/simple_router/Makefile
 		targets/l2_switch/Makefile
 		targets/l2_switch/learn_client/Makefile
@@ -327,6 +328,7 @@ AC_CONFIG_FILES([Makefile
 		targets/psa_switch/Makefile
 		targets/psa_switch/tests/Makefile
 		targets/pna_nic/Makefile
+		targets/pna_nic/tests/Makefile
 		tests/Makefile
 		tests/stress_tests/Makefile
 		tools/Makefile

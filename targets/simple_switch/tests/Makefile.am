@@ -8,14 +8,17 @@ AM_CPPFLAGS += \
 -isystem $(top_srcdir)/third_party/gtest/include \
 -I$(srcdir)/.. \
 -I$(srcdir)/ \
+-I$(top_srcdir)/targets/test_utils \
 -DTESTDATADIR=\"$(srcdir)/testdata\"
+
 LDADD = $(builddir)/../libsimpleswitch.la \
 $(top_builddir)/third_party/gtest/libgtest.la \
+$(top_builddir)/targets/test_utils/libtargetstestutils.la \
 $(top_builddir)/src/bm_apps/libbmapps.la \
 -lboost_filesystem
 
 # Define unit tests
-common_source = main.cpp utils.cpp utils.h
+common_source = main.cpp ../../test_utils/utils.cpp ../../test_utils/utils.h
 TESTS = test_packet_redirect \
 test_truncate \
 test_swap \
