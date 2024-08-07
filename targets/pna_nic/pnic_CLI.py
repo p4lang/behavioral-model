@@ -48,28 +48,7 @@ class PnaNicAPI(runtime_CLI.RuntimeAPI):
         print(self.pnic_client.get_time_since_epoch_us())
 
 def load_json_pna(json):
-    def get_json_key(key):
-        return json.get(key, [])
-
-    for j_meter in get_json_key("extern_instances"):
-        if j_meter["type"] != "Meter":
-            continue
-        meter_array = runtime_CLI.MeterArray(j_meter["name"], j_meter["id"])
-        attribute_values = j_meter.get("attribute_values", [])
-        for attr in attribute_values:
-            name = attr.get("name", [])
-            val_type = attr.get("type", [])
-            value = attr.get("value", [])
-            if name == "is_direct":
-                meter_array.is_direct = value == True
-            # TODO set meter_array.binding for direct_meter
-            # direct_meter not supported on pna_nic yet
-            elif name == "n_meters":
-                meter_array.size = value
-            elif name == "type":
-                meter_array.type_ = value
-            elif name == "rate_count":
-                meter_array.rate_count = value
+    pass
 
 def main():
     args = runtime_CLI.get_parser().parse_args()
