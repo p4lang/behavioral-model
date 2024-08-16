@@ -31,6 +31,11 @@
 #include "pna_nic.h"
 
 extern int import_primitives();
+extern int import_counters();
+extern int import_meters();
+extern int import_random();
+extern int import_internet_checksum();
+extern int import_hash();
 
 namespace bm {
 
@@ -68,6 +73,11 @@ PnaNic::PnaNic(bool enable_swap)
   force_arith_header("pna_main_output_metadata");
 
   import_primitives();
+  import_counters();
+  import_meters();
+  import_random();
+  import_internet_checksum();
+  import_hash();
 }
 
 #define PACKET_LENGTH_REG_IDX 0

@@ -117,7 +117,6 @@ PNA_InternetChecksum::subtract(const std::vector<Field> &fields) {
     }
 }
 
-
 BM_REGISTER_EXTERN_W_NAME(InternetChecksum, PNA_InternetChecksum);
 BM_REGISTER_EXTERN_W_NAME_METHOD(InternetChecksum, PNA_InternetChecksum, add, const std::vector<Field>);
 BM_REGISTER_EXTERN_W_NAME_METHOD(InternetChecksum, PNA_InternetChecksum, subtract, const std::vector<Field>);
