@@ -3,7 +3,7 @@
 ![Build Status](https://github.com/p4lang/behavioral-model/workflows/Test/badge.svg?branch=main)
 
 This is the second version of the reference P4 software switch, nicknamed bmv2
-(for behavioral model version 2). The software switch is written in C++11. It
+(for behavioral model version 2). The software switch is written in C++17. It
 takes as input a JSON file generated from your P4 program by a [P4
 compiler](https://github.com/p4lang/p4c) and interprets it to implement the
 packet-processing behavior specified by that P4 program.
