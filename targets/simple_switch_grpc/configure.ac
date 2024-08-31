@@ -17,7 +17,7 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_LANG_PUSH(C++)
 
-AX_CXX_COMPILE_STDCXX_11([noext],[mandatory])
+AX_CXX_COMPILE_STDCXX_17([noext],[mandatory])
 
 # check for pthreads
 AX_PTHREAD([], [AC_MSG_ERROR([Missing pthread library])])
