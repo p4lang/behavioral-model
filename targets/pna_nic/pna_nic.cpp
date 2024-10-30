@@ -36,6 +36,7 @@ extern int import_meters();
 extern int import_random();
 extern int import_internet_checksum();
 extern int import_hash();
+extern int import_ipsec_accelerator();
 
 namespace bm {
 
@@ -78,6 +79,7 @@ PnaNic::PnaNic(bool enable_swap)
   import_random();
   import_internet_checksum();
   import_hash();
+  import_ipsec_accelerator();
 }
 
 #define PACKET_LENGTH_REG_IDX 0

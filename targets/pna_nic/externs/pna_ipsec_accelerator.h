@@ -23,32 +23,35 @@
 #define PNA_NIC_PNA_IPSECACCELERATOR_H_
 
 #include <bm/bm_sim/extern.h>
+#include <bm/bm_sim/packet.h>
+#include <openssl/evp.h>
+#include <openssl/err.h>
 
 namespace bm {
 
 namespace pna {
 
 class PNA_IpsecAccelerator : public bm::ExternType {
- public:
+  public:
 
-    BM_EXTERN_ATTRIBUTES {
-    }
+   BM_EXTERN_ATTRIBUTES {
+   }
 
-    void init() override;
-        
-    void set_sa_index(const Data &sa_index);
+   void init() override;
+       
+   void set_sa_index(const Data &sa_index);
 
-    void enable();
+   void enable();
 
-    void disable();
+   void disable();
 
-    void decrypt();
+   void decrypt();
 
-    void encrypt();
+   void encrypt();
 
- private:
-    uint32_t _sa_index;
-        bool _is_enabled = false;
+  private:
+   uint32_t _sa_index;
+   bool _is_enabled = false;
 };
 
 }  // namespace bm::pna
