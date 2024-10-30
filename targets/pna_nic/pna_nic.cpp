@@ -99,6 +99,9 @@ PnaNic::receive_(port_t port_num, const char *buffer, int len) {
   // metadata to known values as given as input to the parser
   phv->reset_metadata();
   
+  phv->get_field("pna_main_parser_input_metadata.recirculated").set(0);
+  phv->get_field("pna_main_parser_input_metadata.input_port").set(port_num);
+
   // using packet register 0 to store length, this register will be updated for
   // each add_header / remove_header primitive call
   packet->set_register(PACKET_LENGTH_REG_IDX, len);
@@ -154,7 +157,7 @@ PnaNic::transmit_thread() {
     BMLOG_DEBUG_PKT(*packet, "Transmitting packet of size {} out of port {}",
                     packet->get_data_size(), packet->get_egress_port());
 
-    my_transmit_fn(1, packet->get_packet_id(),
+    my_transmit_fn(packet->get_egress_port(), packet->get_packet_id(),
                    packet->data(), packet->get_data_size());
   }
 }

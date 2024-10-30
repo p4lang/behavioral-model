@@ -70,6 +70,15 @@ class remove_header : public ActionPrimitive<Header &> {
 
 REGISTER_PRIMITIVE(remove_header);
 
+// extern function: send_to_port
+class send_to_port : public ActionPrimitive<const Data &> {
+  void operator ()(const Data &dest_port) {
+    get_packet().set_egress_port(dest_port.get<uint32_t>());
+  }
+};
+
+REGISTER_PRIMITIVE(send_to_port);
+
 }  // namespace bm::pna
 
 }  // namespace pna
