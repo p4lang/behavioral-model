@@ -469,10 +469,24 @@ TODO: reset_state
 TODO: serialize_state
 TODO: set_crc16_parameters
 TODO: set_crc32_parameters
-TODO: set_queue_depth [simple_switch_CLI only]
-TODO: set_queue_rate [simple_switch_CLI only]
 TODO: shell
 ```
+
+### set_queue_depth [simple_switch_CLI only]
+```
+RuntimeCmd: help set_queue_depth
+Set depth of one / all egress queue(s): set_queue_depth <nb_pkts> [<egress_port> [<priority>]]
+```
+
+This command will set queue's maximum depth for a priority queue that is identified by egress_port and priority. If priority is not given, this command will set queue's maximum depth for all queues in the given egress_port. If both priority and egress_port are not given, this command will set queue's maximum depth for all queues. The priority mentioned here is the same as qid in the queueing_metadata.
+
+### set_queue_rate [simple_switch_CLI only]
+```
+RuntimeCmd: help set_queue_rate
+Set rate of one / all egress queue(s): set_queue_rate <rate_pps> [<egress_port> [<priority>]]
+```
+
+This command will set how many packets are processed for each second in every queues that are identified by egress_port and priority. If priority is not given, this command will set queue's rate for all queues in the given egress_port. If both priority and egress_port are not given, this command will set queue's rate for all queues. The priority mentioned here is the same as qid in the queueing_metadata.
 
 ### show_actions
 
