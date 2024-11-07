@@ -478,7 +478,7 @@ RuntimeCmd: help set_queue_depth
 Set depth of one / all egress queue(s): set_queue_depth <nb_pkts> [<egress_port> [<priority>]]
 ```
 
-This command will set queue's maximum depth for a priority queue that is identified by egress_port and priority. If priority is not given, this command will set queue's maximum depth for all queues in the given egress_port. If both priority and egress_port are not given, this command will set queue's maximum depth for all queues. The priority mentioned here is the same as qid in the queueing_metadata.
+This command sets queue's maximum depth to `nb_pkts` in units of number of packets. The affected priority queue is identified by `egress_port` and `priority`. If `priority` is not given, this command sets queue's maximum depth for all queues in the given `egress_port`. If both `priority` and `egress_port` are not given, this command sets queue's maximum depth for all queues. The `priority` mentioned here is the same as qid in the queueing_metadata.
 
 ### set_queue_rate [simple_switch_CLI only]
 ```
@@ -486,7 +486,7 @@ RuntimeCmd: help set_queue_rate
 Set rate of one / all egress queue(s): set_queue_rate <rate_pps> [<egress_port> [<priority>]]
 ```
 
-This command will set how many packets are processed for each second in every queues that are identified by egress_port and priority. If priority is not given, this command will set queue's rate for all queues in the given egress_port. If both priority and egress_port are not given, this command will set queue's rate for all queues. The priority mentioned here is the same as qid in the queueing_metadata.
+This command sets the rate at which a queue is consumed to `rate_pps`, in units of packet per second. The affected priority queue is identified by `egress_port` and `priority`. If `priority` is not given, this command sets queue's rate for all queues in the given `egress_port`. If both `priority` and `egress_port` are not given, this command sets queue's rate for all queues. The `priority` mentioned here is the same as qid in the queueing_metadata.
 
 ### show_actions
 
