@@ -473,13 +473,13 @@ class QueueingLogicRL {
 //! This class is slightly more advanced than QueueingLogicRL. The difference
 //! between the 2 is that this one offers the ability to set several priority
 //! queues for each logical queue. Priority queues are numbered from `0` to
-//! `nb_priorities` (see QueueingLogicPriRL::QueueingLogicPriRL()). Priority `0`
-//! is the highest priority queue. Each priority queue can have its own rate and
-//! its own capacity. Queues will be served in order of priority, until their
-//! respective maximum rate is reached. If no maximum rate is set, queues with a
-//! high priority can starve lower-priority queues. For example, if the queue
-//! with priority `0` always contains at least one element, the other queues
-//! will never be served.
+//! `nb_priorities-1` (see QueueingLogicPriRL::QueueingLogicPriRL()). Priority
+//! `0` is the lowest priority queue. Each priority queue can have its own rate
+//! and its own capacity. Queues will be served in order of priority, until
+//! their respective maximum rate is reached. If no maximum rate is set, queues
+//! with a high priority can starve lower-priority queues. For example, if
+//! the queue with priority `nb_priorities - 1` always contains at least one
+//! element, the other queues will never be served.
 //! As for QueueingLogicRL, the write behavior (push_front()) is not blocking:
 //! once a logical queue is full, subsequent incoming elements will be dropped
 //! until the queue starts draining again.
@@ -562,7 +562,7 @@ class QueueingLogicPriRL {
   //! element is copied to \p queue_id and the priority value of the served
   //! queue is copied to \p priority.
   //! Elements are retrieved according to the priority queue they are in
-  //! (highest priorities, i.e. lowest priority values, are served first). Once
+  //! (highest priority values are served first). Once
   //! a given priority queue reaches its maximum rate, the next queue is served.
   //! If no elements are available (either the queues are empty or they have
   //! exceeded their rate already), the function will block.
@@ -578,7 +578,7 @@ class QueueingLogicPriRL {
       } else {
         auto now = clock::now();
         auto next = clock::time_point::max();
-        for (pri = 0; pri < nb_priorities; pri++) {
+        for (pri = nb_priorities - 1; 0 <= pri; pri--) {
           auto &q = w_info.queues[pri];
           if (q.size() == 0) continue;
           if (q.top().send <= now) {
