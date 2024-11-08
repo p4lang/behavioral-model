@@ -645,7 +645,7 @@ class ActionPrimitive_ {
   // (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60056).
   static thread_local Packet *pkt;
   static thread_local PHV *phv;
-  SourceInfo *call_source_info{nullptr};
+  static thread_local SourceInfo *call_source_info;
 
   P4Objects *get_p4objects() {
     return p4objects;

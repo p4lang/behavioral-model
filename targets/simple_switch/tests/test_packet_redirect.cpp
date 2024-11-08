@@ -20,6 +20,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <utils.h>
 
 #include <bm/config.h>
 #include <bm/bm_apps/packet_pipe.h>
@@ -34,8 +35,6 @@
 #include <boost/filesystem.hpp>
 
 #include "simple_switch.h"
-
-#include "utils.h"
 
 namespace fs = boost::filesystem;
 
