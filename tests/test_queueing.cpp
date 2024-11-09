@@ -292,14 +292,14 @@ TEST_F(QueueingPriRLTest, Pri) {
   // if removed, g++ complains that capacity was not defined
   const size_t c = capacity;
 
-  // we have to receive at least capacity P1 elements (they are buffered and
+  // we have to receive at least capacity P0 elements (they are buffered and
   // dequeued at the end...)
-  ASSERT_LT(c, priority_1);
+  ASSERT_LT(c, priority_0);
 
-  // most elements should be P0
+  // most elements should be P1
   // was originally 10%, but replaced it with 20% as the test would fail from
   // time to time
-  ASSERT_GT(0.2, (priority_1 - c) / static_cast<double>(priority_0));
+  ASSERT_GT(0.2, (priority_0 - c) / static_cast<double>(priority_1));
 }
 
 TEST_F(QueueingPriRLTest, PriRateLimiter) {

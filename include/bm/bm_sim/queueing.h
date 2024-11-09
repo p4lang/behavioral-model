@@ -578,7 +578,8 @@ class QueueingLogicPriRL {
       } else {
         auto now = clock::now();
         auto next = clock::time_point::max();
-        for (pri = nb_priorities - 1; 0 <= pri; pri--) {
+        // This will iterate from nb_priorities-1 to 0
+        for (pri = nb_priorities ; pri-- > 0;) {
           auto &q = w_info.queues[pri];
           if (q.size() == 0) continue;
           if (q.top().send <= now) {
