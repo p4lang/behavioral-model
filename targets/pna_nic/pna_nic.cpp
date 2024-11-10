@@ -200,7 +200,6 @@ PnaNic::main_thread() {
     
     Pipeline *main_mau = this->get_pipeline("main_control");
     main_mau->apply(packet.get());
-    packet->reset_exit();
 
     Deparser *deparser = this->get_deparser("main_deparser");
     deparser->deparse(packet.get());

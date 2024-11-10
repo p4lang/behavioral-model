@@ -520,8 +520,6 @@ SimpleSwitch::ingress_thread() {
 
     ingress_mau->apply(packet.get());
 
-    packet->reset_exit();
-
     Field &f_egress_spec = phv->get_field("standard_metadata.egress_spec");
     port_t egress_spec = f_egress_spec.get_uint();
 
