@@ -420,7 +420,7 @@ SimpleSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
     }
 
     egress_buffers.push_front(
-        egress_port, nb_queues_per_port - 1 - priority,
+        egress_port, priority,
         std::move(packet));
 }
 
@@ -671,7 +671,7 @@ SimpleSwitch::egress_thread(size_t worker_id) {
           egress_buffers.size(port, priority));
       if (phv->has_field("queueing_metadata.qid")) {
         auto &qid_f = phv->get_field("queueing_metadata.qid");
-        qid_f.set(nb_queues_per_port - 1 - priority);
+        qid_f.set(priority);
       }
     }
 

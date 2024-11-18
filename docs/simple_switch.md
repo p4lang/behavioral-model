@@ -223,7 +223,13 @@ queue.
 - `deq_qdepth`: the depth of queue when the packet was dequeued, in units of number of packets (not the total size of packets).
 - `qid`: when there are multiple queues servicing each egress port (e.g. when
 priority queueing is enabled), each queue is assigned a fixed unique id, which
-is written to this field. Otherwise, this field is set to 0.
+is written to this field. Otherwise, this field is set to 0. If 
+priority queueing is enabled, the qid also describes the priority level 
+of each queue. Starting with 0 that has the lowest priority until 
+`number_of_priority_queues - 1` that has the highest priority. The 
+number of priority queues for each port can be defined by adding 
+`--priority-queues` when running `simple_switch`.
+
 TBD: `qid` is not currently part of type `standard_metadata_t` in v1model.
 Perhaps it should be added?
 
