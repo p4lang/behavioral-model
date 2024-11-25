@@ -36,6 +36,7 @@ extern int import_meters();
 extern int import_random();
 extern int import_internet_checksum();
 extern int import_hash();
+extern int import_ipsec_accelerator();
 
 namespace bm {
 
@@ -78,6 +79,7 @@ PnaNic::PnaNic(bool enable_swap)
   import_random();
   import_internet_checksum();
   import_hash();
+  import_ipsec_accelerator();
 }
 
 #define PACKET_LENGTH_REG_IDX 0
@@ -204,6 +206,21 @@ PnaNic::main_thread() {
 
     Deparser *deparser = this->get_deparser("main_deparser");
     deparser->deparse(packet.get());
+
+    // recirculation
+    if ((port_t) packet->get_egress_port() == PNA_PORT_RECIRCULATE) {
+      BMLOG_DEBUG_PKT(*packet, "Recirculating packet");
+
+      phv->reset();
+      phv->reset_header_stacks();
+      phv->reset_metadata();
+
+      phv->get_field("pna_main_parser_input_metadata.recirculated")
+        .set(1);
+      input_buffer.push_front(std::move(packet));
+      continue;
+    }
+    
     output_buffer.push_front(std::move(packet));
   }
 }

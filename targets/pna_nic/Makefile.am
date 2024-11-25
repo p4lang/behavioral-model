@@ -15,14 +15,15 @@ externs/pna_counter.h externs/pna_counter.cpp \
 externs/pna_meter.h externs/pna_meter.cpp \
 externs/pna_random.h externs/pna_random.cpp \
 externs/pna_internet_checksum.h externs/pna_internet_checksum.cpp \
-externs/pna_hash.h externs/pna_hash.cpp
+externs/pna_hash.h externs/pna_hash.cpp \
+externs/pna_ipsec_accelerator.h externs/pna_ipsec_accelerator.cpp
 
 libpnanic_la_LIBADD = \
 $(top_builddir)/src/bm_sim/libbmsim.la \
 $(top_builddir)/src/bf_lpm_trie/libbflpmtrie.la \
 $(top_builddir)/src/BMI/libbmi.la \
 $(top_builddir)/third_party/jsoncpp/libjson.la \
--lboost_system $(THRIFT_LIB) -lboost_program_options -lboost_filesystem
+-lboost_system $(THRIFT_LIB) -lboost_program_options -lboost_filesystem -lcrypto
 
 if COND_THRIFT
 
