@@ -20,19 +20,19 @@
  */
 
 #include <bm/bm_sim/_assert.h>
-#include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/simple_pre.h>
+#include <bm/bm_sim/logger.h>
 
-#include <sstream>
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include "jsoncpp/json.h"
 
 namespace bm {
 
-McSimplePre::McReturnCode McSimplePre::mc_mgrp_create(const mgrp_t mgid,
-                                                      mgrp_hdl_t *mgrp_hdl) {
+McSimplePre::McReturnCode
+McSimplePre::mc_mgrp_create(const mgrp_t mgid, mgrp_hdl_t *mgrp_hdl) {
   boost::unique_lock<boost::shared_mutex> lock(mutex);
   size_t num_entries = mgid_entries.size();
   if (num_entries >= MGID_TABLE_SIZE) {
@@ -46,16 +46,18 @@ McSimplePre::McReturnCode McSimplePre::mc_mgrp_create(const mgrp_t mgid,
   return SUCCESS;
 }
 
-McSimplePre::McReturnCode McSimplePre::mc_mgrp_destroy(mgrp_hdl_t mgrp_hdl) {
+McSimplePre::McReturnCode
+McSimplePre::mc_mgrp_destroy(mgrp_hdl_t mgrp_hdl) {
   boost::unique_lock<boost::shared_mutex> lock(mutex);
   mgid_entries.erase(mgrp_hdl);
   Logger::get()->debug("mgrp node deleted for mgid {}", mgrp_hdl);
   return SUCCESS;
 }
 
-McSimplePre::McReturnCode McSimplePre::mc_node_create(const rid_t rid,
-                                                      const PortMap &portmap,
-                                                      l1_hdl_t *l1_hdl) {
+McSimplePre::McReturnCode
+McSimplePre::mc_node_create(const rid_t rid,
+                            const PortMap &portmap,
+                            l1_hdl_t *l1_hdl) {
   boost::unique_lock<boost::shared_mutex> lock(mutex);
   l2_hdl_t l2_hdl;
   size_t num_l1_entries = l1_entries.size();
@@ -84,8 +86,9 @@ McSimplePre::McReturnCode McSimplePre::mc_node_create(const rid_t rid,
   return SUCCESS;
 }
 
-McSimplePre::McReturnCode McSimplePre::mc_node_associate(
-    const mgrp_hdl_t mgrp_hdl, const l1_hdl_t l1_hdl) {
+McSimplePre::McReturnCode
+McSimplePre::mc_node_associate(const mgrp_hdl_t mgrp_hdl,
+                               const l1_hdl_t l1_hdl) {
   boost::unique_lock<boost::shared_mutex> lock(mutex);
   if (!l1_handles.valid_handle(l1_hdl)) {
     Logger::get()->error("node associate failed, invalid l1 handle");
@@ -109,8 +112,9 @@ McSimplePre::McReturnCode McSimplePre::mc_node_associate(
   return SUCCESS;
 }
 
-McSimplePre::McReturnCode McSimplePre::mc_node_dissociate(
-    const mgrp_hdl_t mgrp_hdl, const l1_hdl_t l1_hdl) {
+McSimplePre::McReturnCode
+McSimplePre::mc_node_dissociate(const mgrp_hdl_t mgrp_hdl,
+                                const l1_hdl_t l1_hdl) {
   boost::unique_lock<boost::shared_mutex> lock(mutex);
   if (!l1_handles.valid_handle(l1_hdl)) {
     Logger::get()->error("node dissociate failed, invalid l1 handle");
@@ -134,7 +138,8 @@ McSimplePre::McReturnCode McSimplePre::mc_node_dissociate(
   return SUCCESS;
 }
 
-McSimplePre::McReturnCode McSimplePre::mc_node_destroy(const l1_hdl_t l1_hdl) {
+McSimplePre::McReturnCode
+McSimplePre::mc_node_destroy(const l1_hdl_t l1_hdl) {
   boost::unique_lock<boost::shared_mutex> lock(mutex);
   rid_t rid;
   if (!l1_handles.valid_handle(l1_hdl)) {
@@ -160,8 +165,9 @@ McSimplePre::McReturnCode McSimplePre::mc_node_destroy(const l1_hdl_t l1_hdl) {
   return SUCCESS;
 }
 
-McSimplePre::McReturnCode McSimplePre::mc_node_update(const l1_hdl_t l1_hdl,
-                                                      const PortMap &port_map) {
+McSimplePre::McReturnCode
+McSimplePre::mc_node_update(const l1_hdl_t l1_hdl,
+                            const PortMap &port_map) {
   boost::unique_lock<boost::shared_mutex> lock(mutex);
   if (!l1_handles.valid_handle(l1_hdl)) {
     Logger::get()->error("node update failed, invalid l1 handle");
@@ -175,7 +181,8 @@ McSimplePre::McReturnCode McSimplePre::mc_node_update(const l1_hdl_t l1_hdl,
   return SUCCESS;
 }
 
-void McSimplePre::get_entries_common(Json::Value *root) const {
+void
+McSimplePre::get_entries_common(Json::Value *root) const {
   Json::Value mgrps(Json::arrayValue);
   for (const auto &p : mgid_entries) {
     Json::Value mgrp(Json::objectValue);
@@ -228,7 +235,8 @@ void McSimplePre::get_entries_common(Json::Value *root) const {
   (*root)["l2_handles"] = l2_handles;
 }
 
-std::string McSimplePre::mc_get_entries() const {
+std::string
+McSimplePre::mc_get_entries() const {
   Json::Value root(Json::objectValue);
 
   {
@@ -241,7 +249,8 @@ std::string McSimplePre::mc_get_entries() const {
   return ss.str();
 }
 
-void McSimplePre::reset_state_() {
+void
+McSimplePre::reset_state_() {
   mgid_entries.clear();
   l1_entries.clear();
   l2_entries.clear();
@@ -249,24 +258,23 @@ void McSimplePre::reset_state_() {
   l2_handles.clear();
 }
 
-void McSimplePre::reset_state() {
+void
+McSimplePre::reset_state() {
   Logger::get()->debug("resetting PRE state");
   boost::unique_lock<boost::shared_mutex> lock(mutex);
   reset_state_();
 }
 
-std::vector<McSimplePre::McOut> McSimplePre::replicate(
-    const McSimplePre::McIn ingress_info) const {
+std::vector<McSimplePre::McOut>
+McSimplePre::replicate(const McSimplePre::McIn ingress_info) const {
   std::vector<McSimplePre::McOut> egress_info_list;
   egress_port_t port_id;
   McSimplePre::McOut egress_info;
   boost::shared_lock<boost::shared_mutex> lock(mutex);
   auto mgid_it = mgid_entries.find(ingress_info.mgid);
   if (mgid_it == mgid_entries.end()) {
-    Logger::get()->warn(
-        "Replication requested for mgid {}, which is not known "
-        "to the PRE",
-        ingress_info.mgid);
+    Logger::get()->warn("Replication requested for mgid {}, which is not known "
+                        "to the PRE", ingress_info.mgid);
     return {};
   }
   const auto &mgid_entry = mgid_it->second;
@@ -287,7 +295,8 @@ std::vector<McSimplePre::McOut> McSimplePre::replicate(
   return egress_info_list;
 }
 
-void McSimplePre::node_dissociate(MgidEntry *mgid_entry, l1_hdl_t l1_hdl) {
+void
+McSimplePre::node_dissociate(MgidEntry *mgid_entry, l1_hdl_t l1_hdl) {
   auto &l1_list = mgid_entry->l1_list;
   l1_list.erase(std::remove(l1_list.begin(), l1_list.end(), l1_hdl),
                 l1_list.end());
