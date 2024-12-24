@@ -36,6 +36,7 @@ extern int import_meters();
 extern int import_random();
 extern int import_internet_checksum();
 extern int import_hash();
+extern int import_ipsec_accelerator();
 
 namespace bm {
 

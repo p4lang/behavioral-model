@@ -15,7 +15,8 @@ externs/pna_counter.h externs/pna_counter.cpp \
 externs/pna_meter.h externs/pna_meter.cpp \
 externs/pna_random.h externs/pna_random.cpp \
 externs/pna_internet_checksum.h externs/pna_internet_checksum.cpp \
-externs/pna_hash.h externs/pna_hash.cpp
+externs/pna_hash.h externs/pna_hash.cpp \
+externs/pna_ipsec_accelerator.h externs/pna_ipsec_accelerator.cpp
 
 libpnanic_la_LIBADD = \
 $(top_builddir)/src/bm_sim/libbmsim.la \
