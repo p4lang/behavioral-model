@@ -424,7 +424,6 @@ PsaSwitch::ingress_thread() {
 
     Pipeline *ingress_mau = this->get_pipeline("ingress");
     ingress_mau->apply(packet.get());
-    packet->reset_exit();
 
     const auto &f_ig_cos = phv->get_field("psa_ingress_output_metadata.class_of_service");
     const auto ig_cos = f_ig_cos.get_uint();
@@ -561,7 +560,6 @@ PsaSwitch::egress_thread(size_t worker_id) {
 
     Pipeline *egress_mau = this->get_pipeline("egress");
     egress_mau->apply(packet.get());
-    packet->reset_exit();
     // TODO(peter): add stf test where exit is invoked but packet still gets recirc'd
     phv->get_field("psa_egress_deparser_input_metadata.egress_port").set(
         phv->get_field("psa_egress_parser_input_metadata.egress_port"));
