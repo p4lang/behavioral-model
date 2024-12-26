@@ -21,7 +21,17 @@
 #ifndef PNA_NIC_PNA_IPSECACCELERATOR_H_
 #define PNA_NIC_PNA_IPSECACCELERATOR_H_
 
+#define ETH_HEADER_LENGTH     14
+#define IP_HEADER_LENGTH      20
+#define ESP_SPI_LENGTH        4
+#define ESP_SEQ_LENGTH        4
+#define NEXT_HEADER_LENGTH    2
+
 #include <bm/bm_sim/extern.h>
+#include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/packet.h>
+#include <openssl/evp.h>
+#include <openssl/err.h>
 
 namespace bm {
 
@@ -40,6 +50,11 @@ class PNA_IpsecAccelerator : public bm::ExternType {
    void enable();
 
    void disable();
+
+   void cipher(std::vector<unsigned char> input, std::vector<unsigned char> &output,
+                unsigned char key[16], unsigned char iv[16], int encrypt);
+
+   void decrypt(std::string string_key);
 
   private:
    uint32_t _sa_index;
