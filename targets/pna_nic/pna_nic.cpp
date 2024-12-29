@@ -56,7 +56,8 @@ PnaNic::PnaNic(bool enable_swap)
         _BM_UNUSED(pkt_id);
         this->transmit_fn(port_num, buffer, len);
     }),
-    start(clock::now())
+    start(clock::now()),
+    accelerators(this->get_context(0))
     {
   add_required_field("pna_main_parser_input_metadata", "recirculated");
   add_required_field("pna_main_parser_input_metadata", "input_port");
@@ -205,6 +206,10 @@ PnaNic::main_thread() {
 
     Deparser *deparser = this->get_deparser("main_deparser");
     deparser->deparse(packet.get());
+
+    // accelerators - externs
+    this->accelerators.apply();
+
     output_buffer.push_front(std::move(packet));
   }
 }

@@ -11,6 +11,7 @@ noinst_LTLIBRARIES = libpnanic.la
 libpnanic_la_SOURCES = \
 pna_nic.cpp pna_nic.h \
 primitives.cpp \
+accelerators.h accelerators.cpp \
 externs/pna_counter.h externs/pna_counter.cpp \
 externs/pna_meter.h externs/pna_meter.cpp \
 externs/pna_random.h externs/pna_random.cpp \

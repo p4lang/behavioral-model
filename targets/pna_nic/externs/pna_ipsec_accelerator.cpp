@@ -87,6 +87,33 @@ void PNA_IpsecAccelerator::disable() {
     _is_enabled = false;
 }
 
+void PNA_IpsecAccelerator::apply() {
+
+    if (!_is_enabled) {
+        return;
+    }
+
+    MatchTable::Entry entry;
+    MatchErrorCode rc = sad_table->get_entry(_sa_index, &entry);
+    if (rc != MatchErrorCode::SUCCESS) {
+        BMLOG_DEBUG("Entry in SAD Table NOT Found");
+        return;
+    }
+
+    // action_data variable
+    bool is_encrypt = entry.action_data.action_data[0].get<bool>();
+    std::string key = entry.action_data.action_data[1].get_string();
+    std::string iv = entry.action_data.action_data[2].get_string();
+    
+    if (is_encrypt) {
+        this->encrypt(key, iv);
+    } else {
+        this->decrypt(key);
+    }
+
+    this->reset(); // needed ???
+}
+
 void PNA_IpsecAccelerator::cipher(std::vector<unsigned char> input, std::vector<unsigned char> &output,
                                 unsigned char key[16], unsigned char iv[16], int encrypt) {
     EVP_CIPHER_CTX *ctx;
@@ -138,7 +165,14 @@ void PNA_IpsecAccelerator::decrypt(std::string string_key) {
     // check the ICV
     // compute HMAC
     // drop the packet if ICV and the computed hmac are not the same
-    unsigned char iv[block_size + 1] = {0};
+
+    unsigned char *iv = (unsigned char*) malloc(block_size + 1);
+    if (iv == NULL) {
+        BMLOG_DEBUG("IV: Memory allocation failed\n");
+        return;
+    }
+    memset(iv, 0, block_size + 1);
+
     unsigned char key[string_key.length()];
     std::copy(string_key.begin(), string_key.end(), key);
 
@@ -176,6 +210,8 @@ void PNA_IpsecAccelerator::decrypt(std::string string_key) {
     std::copy(decrypted.begin(), 
                 decrypted.end() - NEXT_HEADER_LENGTH - padding_length,
                 payload_start + ETH_HEADER_LENGTH);
+    
+    free(iv);
 }
 
 void PNA_IpsecAccelerator::encrypt(std::string string_key, std::string string_iv) {
@@ -189,8 +225,21 @@ void PNA_IpsecAccelerator::encrypt(std::string string_key, std::string string_iv
 
     unsigned int block_size = EVP_CIPHER_block_size(EVP_aes_128_cbc());
 
-    unsigned char iv[block_size + 1] = {0};
-    unsigned char key[block_size + 1] = {0};
+    unsigned char *iv = (unsigned char*) malloc(block_size + 1);
+    if (iv == NULL) {
+        BMLOG_DEBUG("IV: Memory allocation failed\n");
+        return;
+    }
+    memset(iv, 0, block_size + 1);
+    
+    unsigned char *key = (unsigned char*) malloc(block_size + 1);
+
+    if (key == NULL) {
+        BMLOG_DEBUG("Key: Memory allocation failed\n");
+        return;
+    }
+    memset(key, 0, block_size + 1);
+
     std::copy(string_iv.begin(), string_iv.end(), iv);
     std::copy(string_key.begin(), string_key.end(), key);
 
@@ -263,6 +312,9 @@ void PNA_IpsecAccelerator::encrypt(std::string string_key, std::string string_iv
 
     std::copy(esp.begin(), esp.end(), payload_start
                 + ETH_HEADER_LENGTH + IP_HEADER_LENGTH);
+    
+    free(iv);
+    free(key);
 }
 
 BM_REGISTER_EXTERN_W_NAME(ipsec_accelerator, PNA_IpsecAccelerator);
