@@ -61,6 +61,8 @@ class PNA_IpsecAccelerator : public bm::ExternType {
 
    void encrypt(std::string key, std::string iv);
 
+   void apply();
+
   private:
    uint32_t _sa_index;
    bool _is_enabled;

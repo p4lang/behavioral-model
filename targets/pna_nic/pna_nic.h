@@ -34,6 +34,8 @@
 #include <vector>
 #include <functional>
 
+#include "accelerators.h"
+
 using ts_res = std::chrono::microseconds;
 using std::chrono::duration_cast;
 using ticks = std::chrono::nanoseconds;
@@ -106,6 +108,7 @@ class PnaNic : public Switch {
   Queue<std::unique_ptr<Packet> > output_buffer;
   TransmitFn my_transmit_fn;
   clock::time_point start;
+  Accelerators accelerators;
 };
 
 }  // namespace bm::pna
