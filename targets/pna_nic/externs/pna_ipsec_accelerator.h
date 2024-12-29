@@ -30,6 +30,7 @@
 #include <bm/bm_sim/extern.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/context.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
 
@@ -42,6 +43,8 @@ class PNA_IpsecAccelerator : public bm::ExternType {
 
    BM_EXTERN_ATTRIBUTES {
    }
+
+   void reset();
 
    void init() override;
 
@@ -61,7 +64,7 @@ class PNA_IpsecAccelerator : public bm::ExternType {
   private:
    uint32_t _sa_index;
    bool _is_enabled;
-
+   MatchTable *sad_table;
 };
 
 }  // namespace bm::pna

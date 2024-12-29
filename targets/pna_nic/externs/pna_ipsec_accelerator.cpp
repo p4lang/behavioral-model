@@ -24,11 +24,59 @@ namespace bm {
 
 namespace pna {
 
+void PNA_IpsecAccelerator::reset() {
+    _is_enabled = false;
+    _sa_index = -1;
+}
+
 void PNA_IpsecAccelerator::init() {
+    this->reset();
+
+    try {
+        std::string table_name = std::getenv("SAD_TABLE_NAME") ? 
+                std::getenv("SAD_TABLE_NAME") : "MainControlImpl.SAD";
+    
+        MatchTableAbstract *table = get_p4objects().get_abstract_match_table(table_name);
+        sad_table = dynamic_cast<MatchTable*>(table);
+    }
+    catch (std::exception &e) {
+        BMLOG_DEBUG("SAD Table NOT Found");
+        exit(1);
+    }
+}
+
+std::string stringToHex(const std::string& input) {
+    std::ostringstream hexStream;
+    for (char c : input) {
+        hexStream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(static_cast<unsigned char>(c));
+    }
+    return hexStream.str();
+}
+
+std::string remove_leading_zeroes(std::string str) {
+    int pos = str.find_first_not_of('0');
+
+    if (pos >= 0) {
+        return str.substr(pos);
+    }
+
+    return "0";
 }
 
 void PNA_IpsecAccelerator::set_sa_index(const Data &sa_index) {
-    _sa_index = sa_index.get<uint32_t>();
+    this->reset();
+    
+    // Retrieve the matching entry from the SAD table.
+    // TODO: This is O(n) as of now. Need to optimize this ( O(1) ).
+    std::string tmp_string = remove_leading_zeroes( stringToHex( sa_index.get_string() ) );
+
+    for (MatchTable::Entry entry : sad_table->get_entries()) {
+        std::string match_key = remove_leading_zeroes( stringToHex( entry.match_key[0].key ) );
+        if (match_key == tmp_string) {
+            _sa_index = entry.handle;
+            _is_enabled = true;
+        }
+    }
 }
 
 void PNA_IpsecAccelerator::enable() {
