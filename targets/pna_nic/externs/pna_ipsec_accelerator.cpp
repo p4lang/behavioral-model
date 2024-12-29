@@ -130,6 +130,93 @@ void PNA_IpsecAccelerator::decrypt(std::string string_key) {
                 payload_start + ETH_HEADER_LENGTH);
 }
 
+void PNA_IpsecAccelerator::encrypt(std::string string_key, std::string string_iv) {
+    BMLOG_DEBUG("[IPSEC] In Encrypt");
+
+    std::vector<unsigned char> raw_packet_data;
+    raw_packet_data.resize(get_packet().get_data_size(), '\0');
+    std::copy(get_packet().data(),
+            get_packet().data() + get_packet().get_data_size(),
+            raw_packet_data.begin());
+
+    unsigned int block_size = EVP_CIPHER_block_size(EVP_aes_128_cbc());
+
+    unsigned char iv[block_size + 1] = {0};
+    unsigned char key[block_size + 1] = {0};
+    std::copy(string_iv.begin(), string_iv.end(), iv);
+    std::copy(string_key.begin(), string_key.end(), key);
+
+    std::vector<unsigned char> decrypted;
+    
+    decrypted.resize(raw_packet_data.size() - ETH_HEADER_LENGTH, '\0');
+    std::copy(raw_packet_data.begin() + ETH_HEADER_LENGTH, raw_packet_data.end(), decrypted.begin());
+
+    // add ESP padding
+    unsigned int padding_length = block_size - ((decrypted.size() + NEXT_HEADER_LENGTH) % block_size);
+    if (padding_length == block_size) {
+        padding_length = 0;
+    }
+    for (unsigned int i = 1; i <= padding_length; ++i) {
+        decrypted.push_back(static_cast<unsigned char>(i));
+    }
+    decrypted.push_back(padding_length);
+    decrypted.push_back(0x00); // next header
+    
+    std::vector <unsigned char> encrypted;
+    encrypted.resize(decrypted.size() + block_size, '\0');
+
+    this->cipher(decrypted, encrypted, key, iv, 1);
+
+    // create esp header and place the encrypted data in it.
+    // prepare decrypted ipv4 header for transformation into p4 header fields
+    std::vector<unsigned char> esp;
+    esp.resize(ESP_SPI_LENGTH + ESP_SEQ_LENGTH + block_size + encrypted.size(), '\0');
+    
+    // TODO: Take these from the table entry
+    size_t spi = static_cast<unsigned int>(std::time(0));
+
+    esp[0] = (spi >> 24) & 0xFF;
+    esp[1] = (spi >> 16) & 0xFF;
+    esp[2] = (spi >> 8) & 0xFF;
+    esp[3] = spi & 0xFF;
+
+    size_t seq = static_cast<unsigned int>(std::time(0));
+
+    esp[4] = (seq >> 24) & 0xFF;
+    esp[5] = (seq >> 16) & 0xFF;
+    esp[6] = (seq >> 8) & 0xFF;
+    esp[7] = seq & 0xFF;
+
+    std::copy(iv, iv + block_size, esp.begin() + ESP_SPI_LENGTH + ESP_SEQ_LENGTH);
+
+    std::copy(encrypted.begin(), encrypted.end(), esp.begin() + block_size
+                + ESP_SPI_LENGTH + ESP_SEQ_LENGTH);
+
+    // TODO:
+    // calculate ICV
+
+    // replace payload
+
+    // first, remove all the data
+    get_packet().remove(get_packet().get_data_size());
+    // make room for the ciphertext and write the ciphertext in it
+    char *payload_start = get_packet().prepend( (size_t) (esp.size()
+                            + ETH_HEADER_LENGTH + IP_HEADER_LENGTH) );
+    
+    std::copy(raw_packet_data.begin(), raw_packet_data.begin() + ETH_HEADER_LENGTH
+                + IP_HEADER_LENGTH, payload_start);
+    
+    payload_start[ETH_HEADER_LENGTH + 9] = 0x32; // protocol value - ESP
+
+    // Total length - IP
+    size_t ip_total_length = IP_HEADER_LENGTH + esp.size();
+    payload_start[ETH_HEADER_LENGTH + 2] = (ip_total_length >> 8) & 0xFF;
+    payload_start[ETH_HEADER_LENGTH + 3] = ip_total_length & 0xFF;
+
+    std::copy(esp.begin(), esp.end(), payload_start
+                + ETH_HEADER_LENGTH + IP_HEADER_LENGTH);
+}
+
 BM_REGISTER_EXTERN_W_NAME(ipsec_accelerator, PNA_IpsecAccelerator);
 BM_REGISTER_EXTERN_W_NAME_METHOD(ipsec_accelerator, PNA_IpsecAccelerator, set_sa_index, const Data &);
 BM_REGISTER_EXTERN_W_NAME_METHOD(ipsec_accelerator, PNA_IpsecAccelerator, enable);
