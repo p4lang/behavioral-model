@@ -663,8 +663,8 @@ attributes for these objects are:
   - `false_next`: the name of the next control flow to execute if the condition
   evaluates to false, or null if this is the end of the pipeline
 - `action_calls`: a JSON array of JSON objects. It is used for direct action
-calls from a control flow which are not wrapped into a table. The attributes for
-these objects are:
+calls from a control flow which are not wrapped into a table. See Note 1 below.
+The attributes for these objects are:
   - `name`
   - `id`: a unique integer; note that it has to be unique with respect to *all*
   action calls in the JSON file, not just the ones included in this pipeline
@@ -674,6 +674,16 @@ these objects are:
   - `next_node`: the name of the next control flow node to execute (can be a
   table, a conditional or another action call like this one), or null if this is
   the last node in the pipeline
+
+Note 1: p4c has never created JSON files with `action_calls` in them.
+Instead, for any call to action `a` within the body of a control, the
+compiler converts that call into applying a "dummy table" that has the
+same effect.  A dummy table is one synthesized by the compiler.  A
+dummy table is not visible to the control plane, has no key fields,
+and thus can never have table entries added to it, and will always get
+a miss every time it is applied, and execute its default action.  A
+dummy table has a const default action that is equal to the action `a`
+in the original source code that it is replacing.
 
 The `match_type` for the table needs to follow the following rules:
 - If one match field is `range`, the table `match_type` has to be `range`
