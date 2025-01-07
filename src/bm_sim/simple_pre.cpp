@@ -290,8 +290,8 @@ McSimplePre::replicate(const McSimplePre::McIn ingress_info) const {
       }
     }
   }
-  BMLOG_DEBUG("number of packets replicated : {} for multicast group id: {}",
-              egress_info_list.size(), ingress_info.mgid);
+  BMLOG_DEBUG("number of packets replicated : {} for MGID: {}",
+             egress_info_list.size(), ingress_info.mgid);
   return egress_info_list;
 }
 

@@ -199,7 +199,8 @@ McSimplePreLAG::replicate(const McSimplePre::McIn ingress_info) const {
       }
     }
   }
-  BMLOG_DEBUG("number of packets replicated : {}", egress_info_list.size());
+  BMLOG_DEBUG("number of packets replicated : {} for MGID: {}",
+             egress_info_list.size(), ingress_info.mgid);
   return egress_info_list;
 }
 
