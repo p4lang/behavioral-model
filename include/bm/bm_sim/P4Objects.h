@@ -59,6 +59,8 @@ class Value;
 
 namespace bm {
 
+using std::string;
+
 using ConfigOptionMap = std::unordered_map<std::string, std::string>;
 
 class P4Objects {
@@ -378,6 +380,10 @@ class P4Objects {
   void init_meter_arrays(const Json::Value &root, InitState *);
   void init_register_arrays(const Json::Value &root);
   void init_actions(const Json::Value &root);
+  void check_next_nodes(const Json::Value &cfg_next_nodes,
+                        const Json::Value &cfg_actions,
+                        const string table_name,
+                        bool *next_is_hit_miss);
   void init_pipelines(const Json::Value &root, LookupStructureFactory *,
                       InitState *);
   void init_checksums(const Json::Value &root);
