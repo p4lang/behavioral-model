@@ -2018,7 +2018,8 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
       auto conditional_name = cfg_conditional["name"].asString();
       auto conditional = get_conditional(conditional_name);
 
-      if (!cfg_conditional.isMember("true_next") && !cfg_conditional.isMember("false_next")) {
+      if (!cfg_conditional.isMember("true_next") &&
+          !cfg_conditional.isMember("false_next")) {
         throw json_exception("conditional must have either or both of the"
                              " keys 'true_next' and 'false_next'.",
                              cfg_conditional);
