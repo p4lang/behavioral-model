@@ -625,7 +625,7 @@ attributes for these objects are:
   - `actions`: the list of actions (order does not matter) supported by this
   table
   - `next_tables`: maps each action to a next table name. Alternatively, maps
-  special string `__HIT__` and `__MISS__` to a next table name.
+  special string `__HIT__` and `__MISS__` to a next table name. See Note 3 below.
   - `direct_meters`: the name of the associated direct meter array, or null if
   the match table has no associated meter array
   - `default_entry`: an optional JSON item which can force the default entry for
@@ -634,14 +634,14 @@ attributes for these objects are:
     - `action_id`: the id of the default action
     - `action_const`: an optional boolean value which is `true` iff the control
     plane is not allowed to change the default action function. Default value is
-    `false`. It can only be set to `true` for `simple` tables.
+    `false`. It can only be set to `true` for `simple` tables.  See Note 2 below.
     - `action_data`: an optional JSON array where each entry is the hexstring
     value for an action argument. The size of the array needs to match the
     number of parameters expected by the action function with id `action_id`.
     - `action_entry_const`: an optional boolean value which is `true` iff the
     control plane is not allowed to modify the action entry (action function +
     action data). Default value is `false`. This attribute is ignored if the
-    `action_data` attribute it missing.
+    `action_data` attribute it missing.  See Note 2 below.
   - `entries`: enables you to optionally specify match-action entries for this
   table. Specifying entries in the JSON makes the table immutable, which means
   the added entries cannot be modified / deleted and that new entries cannot be
@@ -684,6 +684,28 @@ and thus can never have table entries added to it, and will always get
 a miss every time it is applied, and execute its default action.  A
 dummy table has a const default action that is equal to the action `a`
 in the original source code that it is replacing.
+
+Note 2: Since May 2017 when [PR
+#653](https://github.com/p4lang/p4c/pull/653) was merged into p4c, p4c
+has always created tables with the value of `action_entry_const` equal
+to `action_const`.  They are both true if the `default_action` in the
+P4 source code for the table is declared `const`, and both false if
+the `default_action` is not declared `const`.
+
+Note 3: p4c always creates the value of the `next_tables` key in one
+of these ways:
++ If you use the P4 constructs `t1.apply().hit` or `t1.apply().miss`,
+  and use that Boolean value to choose between two execution paths,
+  e.g. in an `if` statement, then the table's `next_tables` value will
+  contain the keys `__HIT__` and/or `__MISS__` to specify these two
+  paths, and no other keys will be present.
++ If you do not use those P4 constructs, then the `next_tables` value
+  will contain keys equal to the action names of the table.  If the P4
+  program invokes the table using `switch (t1.apply().action_run)`,
+  then in general the different action names can specify different
+  next nodes to execute next, after the table is applied.  If you do
+  not use that construct, then the next node to be executed will be
+  the same for all actions.
 
 The `match_type` for the table needs to follow the following rules:
 - If one match field is `range`, the table `match_type` has to be `range`
