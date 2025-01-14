@@ -1578,7 +1578,7 @@ std::vector<MatchKeyParam> parse_match_key(
 void
 P4Objects::check_next_nodes(const Json::Value &cfg_next_nodes,
                             const Json::Value &cfg_actions,
-                            const string table_name,
+                            const std::string &table_name,
                             bool *next_is_hit_miss) {
   // For each table, the value of its key "next_tables" must be an
   // object with one of the following sets of keys:
@@ -1596,11 +1596,7 @@ P4Objects::check_next_nodes(const Json::Value &cfg_next_nodes,
   //     of hit, miss, or which action the table executed.  In that
   //     case, every action will have the same next node to execute
   //     regardless of the action.
-  int num_next_nodes = 0;
-  for (const auto &node : cfg_next_nodes) {
-    (void) node;
-    num_next_nodes++;
-  }
+  int num_next_nodes = cfg_next_nodes.size();
   bool next_has_hit = cfg_next_nodes.isMember("__HIT__");
   bool next_has_miss = cfg_next_nodes.isMember("__MISS__");
   if (next_has_hit || next_has_miss) {
@@ -1616,14 +1612,10 @@ P4Objects::check_next_nodes(const Json::Value &cfg_next_nodes,
     }
   } else {
     *next_is_hit_miss = false;
-    int num_actions = 0;
-    for (const auto &cfg_action : cfg_actions) {
-      (void) cfg_action;
-      num_actions++;
-      // The check that each action name is a key in cfg_next_nodes is
-      // done near where check_next_nodes is called, to avoid
-      // duplicating here the code that calculates action_name.
-    }
+    int num_actions = cfg_actions.size();
+    // The check that each action name is a key in cfg_next_nodes is
+    // done near where check_next_nodes is called, to avoid
+    // duplicating here the code that calculates action_name.
     if (num_next_nodes != num_actions) {
       throw json_exception(
           EFormat() << "Table '" << table_name << "' should have exactly "
