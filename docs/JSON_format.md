@@ -693,6 +693,11 @@ has always created tables with the value of `action_entry_const` equal
 to `action_const`.  They are both true if the `default_action` in the
 P4 source code for the table is declared `const`, and both false if
 the `default_action` is not declared `const`.
+Also since 2017 and perhaps earlier, p4c has always included the key
+`default_entry` in all table definitions with `type` equal to `simple`.
+Since then it has _not_ included the key `default_entry` in table
+definitions with types that were not `simple` (i.e. tables with
+action profiles or action selectors).
 
 Note 3: p4c always creates the value of the `next_tables` key in one
 of these ways:
