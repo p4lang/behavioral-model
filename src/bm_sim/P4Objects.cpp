@@ -1949,15 +1949,10 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
                                            is_action_entry_const);
         } else {
           throw json_exception(
-              EFormat() << "'default_action' of table '" << table_name
+              EFormat() << "'default_entry' of table '" << table_name
               << "' should have key 'action_data'",
               cfg_default_entry);
         }
-      } else {
-        throw json_exception(
-            EFormat() << "Table '" << table_name << "' should have key"
-            << " 'default_action'",
-            cfg_table);
       }
 
       // for 'simple' tables, it is possible to specify immutable entries
