@@ -631,13 +631,15 @@ attributes for these objects are:
   - `default_entry`: an optional JSON item which can force the default entry for
   the table to be set when loading the JSON, without intervention from the
   control plane. It has the following attributes:
-    - `action_id`: the id of the default action
+    - `action_id`: the id of the default action.  This is required if
+	`default_entry` is present.
     - `action_const`: an optional boolean value which is `true` iff the control
     plane is not allowed to change the default action function. Default value is
     `false`. It can only be set to `true` for `simple` tables.  See Note 2 below.
     - `action_data`: an optional JSON array where each entry is the hexstring
     value for an action argument. The size of the array needs to match the
     number of parameters expected by the action function with id `action_id`.
+	This is required if `default_entry` is present.
     - `action_entry_const`: an optional boolean value which is `true` iff the
     control plane is not allowed to modify the action entry (action function +
     action data). Default value is `false`. This attribute is ignored if the
