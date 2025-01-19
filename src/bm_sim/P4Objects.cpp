@@ -1867,13 +1867,7 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
         const Json::Value false_value(false);
         const bool is_action_const =
             cfg_default_entry.get("action_const", false_value).asBool();
-        if (table_type != "simple" && is_action_const) {
-          throw json_exception(
-              EFormat() << "Table '" << table_name << "' does not have type "
-                        << "'simple' and therefore setting 'action_const' to "
-                        << "true is meaningless",
-              cfg_table);
-        } else if (is_action_const) {
+        if (is_action_const) {
           auto simple_table = dynamic_cast<MatchTable *>(table);
           assert(simple_table);
           simple_table->set_const_default_action_fn(action);
