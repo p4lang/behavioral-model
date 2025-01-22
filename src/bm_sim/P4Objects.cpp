@@ -44,7 +44,7 @@ using std::string;
 namespace {
 
 constexpr int required_major_version = 2;
-constexpr int max_minor_version = 23;
+constexpr int max_minor_version = 24;
 // not needed for now
 // constexpr int min_minor_version = 0;
 
