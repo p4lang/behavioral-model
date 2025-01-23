@@ -44,7 +44,7 @@ using std::string;
 namespace {
 
 constexpr int required_major_version = 2;
-constexpr int max_minor_version = 23;
+constexpr int max_minor_version = 24;
 // not needed for now
 // constexpr int min_minor_version = 0;
 
@@ -1576,6 +1576,57 @@ std::vector<MatchKeyParam> parse_match_key(
 }  // namespace
 
 void
+P4Objects::check_next_nodes(const Json::Value &cfg_next_nodes,
+                            const Json::Value &cfg_actions,
+                            const std::string &table_name,
+                            bool *next_is_hit_miss) {
+  // For each table, the value of its key "next_tables" must be an
+  // object with one of the following sets of keys:
+  // (a) The set of keys must include "__HIT__" and "__MISS__", but no
+  //     others.  This is how a P4 table is implemented if, where it
+  //     is applied, it uses "t1.apply().hit" or "t1.apply().miss"
+  //     conditions to control which code is executed next.
+  // (b) The set of keys must include each action name of the table
+  //     exactly once, but no others.  This is how a P4 table is
+  //     implemented if where it is applied, it uses
+  //     "t1.apply().action_run" and a switch statement to control
+  //     which code is executed next.  It is also used by the p4c BMv2
+  //     backend for tables that use none of .hit, .miss, and
+  //     .action_run, and always execute the same code next regardless
+  //     of hit, miss, or which action the table executed.  In that
+  //     case, every action will have the same next node to execute
+  //     regardless of the action.
+  int num_next_nodes = cfg_next_nodes.size();
+  bool next_has_hit = cfg_next_nodes.isMember("__HIT__");
+  bool next_has_miss = cfg_next_nodes.isMember("__MISS__");
+  if (next_has_hit || next_has_miss) {
+    if (next_has_hit && next_has_miss && (num_next_nodes == 2)) {
+      *next_is_hit_miss = true;
+    } else {
+      throw json_exception(
+          EFormat() << "Table '" << table_name << "' has one"
+          << " of keys '__HIT__' and '__MISS__' in 'next_tables'"
+          << " but either it does not have both of them,"
+          << " or it has other keys that should not be there.",
+          cfg_next_nodes);
+    }
+  } else {
+    *next_is_hit_miss = false;
+    int num_actions = cfg_actions.size();
+    // The check that each action name is a key in cfg_next_nodes is
+    // done near where check_next_nodes is called, to avoid
+    // duplicating here the code that calculates action_name.
+    if (num_next_nodes != num_actions) {
+      throw json_exception(
+          EFormat() << "Table '" << table_name << "' should have exactly "
+          << num_actions << " keys, one for each table action, but found "
+          << num_next_nodes << "keys.",
+          cfg_next_nodes);
+    }
+  }
+}
+
+void
 P4Objects::init_pipelines(const Json::Value &cfg_root,
                           LookupStructureFactory *lookup_factory,
                           InitState *init_state) {
@@ -1818,6 +1869,9 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
       std::string actions_key = cfg_table.isMember("action_ids") ? "action_ids"
           : "actions";
       const Json::Value &cfg_actions = cfg_table[actions_key];
+      bool next_is_hit_miss = false;
+      check_next_nodes(cfg_next_nodes, cfg_actions, table_name,
+                       &next_is_hit_miss);
       for (const auto &cfg_action : cfg_actions) {
         p4object_id_t action_id = 0;
         string action_name = "";
@@ -1831,7 +1885,13 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
           action = get_one_action_with_name(action_name); assert(action);
           action_id = action->get_id();
         }
-
+        if (!next_is_hit_miss && !cfg_next_nodes.isMember(action_name)) {
+          throw json_exception(
+              EFormat() << "Table '" << table_name << "' should have key"
+              << " for action '" << action_name
+              << "' in its 'next_tables' object.",
+              cfg_next_nodes);
+        }
         const Json::Value &cfg_next_node = cfg_next_nodes[action_name];
         const ControlFlowNode *next_node = get_next_node(cfg_next_node);
         table->set_next_node(action_id, next_node);
@@ -1839,11 +1899,10 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
         if (act_prof_name != "")
           add_action_to_act_prof(act_prof_name, action_name, action);
       }
-
-      if (cfg_next_nodes.isMember("__HIT__"))
-        table->set_next_node_hit(get_next_node(cfg_next_nodes["__HIT__"]));
-      if (cfg_next_nodes.isMember("__MISS__"))
-        table->set_next_node_miss(get_next_node(cfg_next_nodes["__MISS__"]));
+      if (next_is_hit_miss) {
+          table->set_next_node_hit(get_next_node(cfg_next_nodes["__HIT__"]));
+          table->set_next_node_miss(get_next_node(cfg_next_nodes["__MISS__"]));
+      }
 
       if (cfg_table.isMember("base_default_next")) {
         table->set_next_node_miss_default(
@@ -1888,6 +1947,11 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
 
           table->set_default_default_entry(action, std::move(adata),
                                            is_action_entry_const);
+        } else {
+          throw json_exception(
+              EFormat() << "'default_entry' of table '" << table_name
+              << "' should have key 'action_data'",
+              cfg_default_entry);
         }
       }
 
@@ -1951,9 +2015,14 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
       auto conditional_name = cfg_conditional["name"].asString();
       auto conditional = get_conditional(conditional_name);
 
+      if (!cfg_conditional.isMember("true_next") &&
+          !cfg_conditional.isMember("false_next")) {
+        throw json_exception("conditional must have either or both of the"
+                             " keys 'true_next' and 'false_next'.",
+                             cfg_conditional);
+      }
       const auto &cfg_true_next = cfg_conditional["true_next"];
       const auto &cfg_false_next = cfg_conditional["false_next"];
-
       if (!cfg_true_next.isNull()) {
         auto next_node = get_control_node_cfg(cfg_true_next.asString());
         conditional->set_next_node_if_true(next_node);
