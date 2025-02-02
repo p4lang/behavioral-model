@@ -31,6 +31,7 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <initializer_list>
 
 #include "crc_map.h"
 
@@ -434,43 +435,48 @@ TEST(HashTest, Cksum16) {
   ASSERT_EQ(expected, output);
 }
 
+uint32_t calcCrc(const char *kind, std::initializer_list<unsigned char> data) {
+  const auto ptr = CalculationsMap::get_instance()->get_copy(kind);
+  EXPECT_NE(nullptr, ptr);
+  if (!ptr) return -1;
+
+  return ptr->output(reinterpret_cast<const char *>(&*data.begin()), data.size());
+}
+
 TEST(HashTest, Crc16) {
-  const auto ptr = CalculationsMap::get_instance()->get_copy("crc16");
-  ASSERT_NE(nullptr, ptr);
-
-  const unsigned char input_buffer[] = {0x0b, 0xb8, 0x1f, 0x90};
-  const uint16_t expected = 0x5d8a;
-
-  const uint16_t output = ptr->output(
-      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
-
-  ASSERT_EQ(expected, output);
+  EXPECT_EQ(calcCrc("crc16", {0x0b, 0xb8, 0x1f, 0x90}), uint32_t(0x5d8a));
+  EXPECT_EQ(calcCrc("crc16", {}), uint16_t(0x0000));
+  EXPECT_EQ(calcCrc("crc16", {0}), uint16_t(0x0000));
+  EXPECT_EQ(calcCrc("crc16", {0, 0, 0, 0, 0}), uint16_t(0x0000));
+  EXPECT_EQ(calcCrc("crc16", {'f', 'o', 'o', 'o'}), uint16_t(0x4943));
+  EXPECT_EQ(calcCrc("crc16", {'a'}), uint16_t(0xE8C1));
+  EXPECT_EQ(calcCrc("crc16", {'f', 'o', 'o', 'b', 'a', 'r'}), uint16_t(0xB0C8));
+  EXPECT_EQ(calcCrc("crc16", {'f', 'o', 'o', 'b', 'a', 'r', '%', '1', '4', '2', 'q', 'r', 's'}),
+            uint16_t(0x3DA9));
 }
 
 TEST(HashTest, CrcCCITT) {
-  const auto ptr = CalculationsMap::get_instance()->get_copy("crcCCITT");
-  ASSERT_NE(nullptr, ptr);
-
-  const unsigned char input_buffer[] = {0x0b, 0xb8, 0x1f, 0x90};
-  const uint16_t expected = 0x5d75;
-
-  const uint16_t output = ptr->output(
-      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
-
-  ASSERT_EQ(expected, output);
+  EXPECT_EQ(calcCrc("crcCCITT", {0x0b, 0xb8, 0x1f, 0x90}), uint32_t(0x5d75));
+  EXPECT_EQ(calcCrc("crcCCITT", {}), uint16_t(0xFFFF));
+  EXPECT_EQ(calcCrc("crcCCITT", {0}), uint16_t(0xE1F0));
+  EXPECT_EQ(calcCrc("crcCCITT", {0, 0, 0, 0, 0}), uint16_t(0x110C));
+  EXPECT_EQ(calcCrc("crcCCITT", {'f', 'o', 'o', '0'}), uint16_t(0xCB8C));
+  EXPECT_EQ(calcCrc("crcCCITT", {'a'}), uint16_t(0x9D77));
+  EXPECT_EQ(calcCrc("crcCCITT", {'f', 'o', 'o', 'b', 'a', 'r'}), uint16_t(0xBE35));
+  EXPECT_EQ(calcCrc("crcCCITT", {'f', 'o', 'o', 'b', 'a', 'r', '%', '1', '4', '2', 'q', 'r', 's'}),
+            uint16_t(0x5A92));
 }
 
 TEST(HashTest, Crc32) {
-  const auto ptr = CalculationsMap::get_instance()->get_copy("crc32");
-  ASSERT_NE(nullptr, ptr);
-
-  const unsigned char input_buffer[] = {0x0b, 0xb8, 0x1f, 0x90};
-  const uint32_t expected = 0x005d6a6f;
-
-  const uint32_t output = ptr->output(
-      reinterpret_cast<const char *>(input_buffer), sizeof(input_buffer));
-
-  ASSERT_EQ(expected, output);
+  EXPECT_EQ(calcCrc("crc32", {0x0b, 0xb8, 0x1f, 0x90}), uint32_t(0x005d6a6f));
+  EXPECT_EQ(calcCrc("crc32", {}), uint32_t(0x00000000));
+  EXPECT_EQ(calcCrc("crc32", {0}), uint32_t(0xD202EF8D));
+  EXPECT_EQ(calcCrc("crc32", {0, 0, 0, 0, 0}), uint32_t(0xC622F71D));
+  EXPECT_EQ(calcCrc("crc32", {'f', 'o', 'o', 'o'}), uint32_t(0x43EAF07F));
+  EXPECT_EQ(calcCrc("crc32", {'a'}), uint32_t(0xE8B7BE43));
+  EXPECT_EQ(calcCrc("crc32", {'f', 'o', 'o', 'b', 'a', 'r'}), uint32_t(0x9EF61F95));
+  EXPECT_EQ(calcCrc("crc32", {'f', 'o', 'o', 'b', 'a', 'r', '%', '1', '4', '2', 'q', 'r', 's'}),
+            uint32_t(0x95E1D00B));
 }
 
 TEST(HashTest, Crc16Custom) {
