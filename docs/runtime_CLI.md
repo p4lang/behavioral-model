@@ -461,10 +461,30 @@ The bmv2 value set implementation does *not* support match types other than
 exact.
 
 
+### register_read, register_write, register_reset
+
+These commands allow you to access a P4 register, sometimes called a
+P4 register array, from the CLI.
+
+To read a register named `myreg1` at index 5:
 ```
-TODO: register_read
-TODO: register_reset
-TODO: register_write
+RuntimeCmd: register_read myreg1 5
+myreg1[5]= 27
+```
+
+To write that same register at index 10 with a value of 42:
+```
+RuntimeCmd: register_write myreg1 10 42
+```
+
+To write the values in _all_ indices of a register array `myreg` with
+the value 0:
+```
+RuntimeCmd: register_reset myreg1
+```
+
+
+```
 TODO: reset_state
 TODO: serialize_state
 TODO: set_crc16_parameters
