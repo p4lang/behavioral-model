@@ -282,7 +282,9 @@ DevMgr::clear_port_stats(port_t port_num) {
 std::string
 DevMgr::sample_packet_data(const char *buffer, int len) {
   size_t amount = std::min(dump_packet_data, static_cast<size_t>(len));
-  assert(amount > 0);
+  if (amount == 0) {
+      return "";
+  }
   std::ostringstream ret;
   utils::dump_hexstring(ret, &buffer[0], &buffer[amount]);
   return ret.str();
