@@ -57,6 +57,7 @@ class BmiDevMgrImp : public DevMgrIface {
 
  private:
   ~BmiDevMgrImp() override {
+    p_monitor->stop();
     bmi_port_destroy_mgr(port_mgr);
   }
 
