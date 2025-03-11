@@ -169,6 +169,7 @@ static inline int delete_branch(node_t *current_node, byte_t byte) {
   return 1;
 }
 
+// replaced with < in Prefix
 static inline int prefix_cmp(const prefix_t *p1, const prefix_t *p2) {
   if (p1->prefix_length == p2->prefix_length) {
     return (int) p1->key - (int) p2->key;
