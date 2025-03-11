@@ -35,7 +35,7 @@ class LPMTrie {
  public:
   explicit LPMTrie(size_t key_width_bytes)
     : key_width_bytes(key_width_bytes) {
-    trie = bf_lpm_trie_create(key_width_bytes, true);
+    trie = std::make_unique<BfLpmTrie>(key_width_bytes, true);
   }
 
   /* Copy constructor */
@@ -43,10 +43,10 @@ class LPMTrie {
 
   /* Move constructor */
   LPMTrie(LPMTrie&& other) noexcept
-  : key_width_bytes(other.key_width_bytes), trie(other.trie) {}
+  : key_width_bytes(other.key_width_bytes) {trie.swap(other.trie);}
 
   ~LPMTrie() {
-    bf_lpm_trie_destroy(trie);
+    // Hao: may need to clearn up memory for trie
   }
 
   /* Copy assignment operator */
@@ -61,37 +61,42 @@ class LPMTrie {
 
   void insert_prefix(const ByteContainer &prefix, int prefix_length,
                      uintptr_t value) {
-    bf_lpm_trie_insert(trie, prefix.data(), prefix_length,
-                       static_cast<value_t>(value));
+    printf("LPMTrie::insert_prefix prefix: %s\n", prefix.to_hex().c_str());
+    std::string prefix_str(prefix.data(), prefix.size());
+    trie->insert(prefix_str, prefix_length, static_cast<value_t>(value));
   }
 
   bool delete_prefix(const ByteContainer &prefix, int prefix_length) {
-    return bf_lpm_trie_delete(trie, prefix.data(), prefix_length);
+    std::string prefix_str(prefix.data(), prefix.size());
+    return trie->remove(prefix_str, prefix_length);
   }
 
   bool has_prefix(const ByteContainer &prefix, int prefix_length) const {
-    return bf_lpm_trie_has_prefix(trie, prefix.data(), prefix_length);
+    std::string prefix_str(prefix.data(), prefix.size());
+    return trie->hasPrefix(prefix_str, prefix_length);
   }
 
   bool retrieve_value(const ByteContainer &prefix, int prefix_length,
-                      uintptr_t *value) const {
-    return bf_lpm_trie_retrieve_value(trie, prefix.data(), prefix_length,
-                                      reinterpret_cast<value_t *>(value));
+                      uintptr_t *value) const {               
+    std::string prefix_str(prefix.data(), prefix.size());
+    return trie->retrieveValue(prefix_str, prefix_length,
+                                      *reinterpret_cast<value_t *>(value));
   }
 
   bool lookup(const ByteContainer &key, uintptr_t *value) const {
-    return bf_lpm_trie_lookup(trie, key.data(),
-                              reinterpret_cast<value_t *>(value));
+    printf("LPMTrie::lookup key: %s\n", key.to_hex().c_str());
+    std::string key_str(key.data(), key.size());
+    return trie->lookup(key_str, *reinterpret_cast<value_t *>(value));
   }
 
   void clear() {
-    bf_lpm_trie_destroy(trie);
-    trie = bf_lpm_trie_create(key_width_bytes, true);
+    // Hao: make sure cleans up memory
+    trie.reset(new BfLpmTrie(key_width_bytes, true));
   }
 
  private:
   size_t key_width_bytes{0};
-  bf_lpm_trie_t *trie{nullptr};
+  std::unique_ptr<BfLpmTrie> trie{nullptr};
 };
 
 }  // namespace bm
