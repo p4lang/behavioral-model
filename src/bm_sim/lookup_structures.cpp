@@ -80,7 +80,6 @@ class LPMTrieStructure : public LPMLookupStructure {
 
   void add_entry(const LPMMatchKey &key,
                  internal_handle_t handle) override {
-    printf("structure add_entry: key.data: %s\n", key.data.to_hex().c_str());
     trie.insert_prefix(key.data, key.prefix_length,
                        reinterpret_cast<uintptr_t>(handle));
   }

@@ -24,26 +24,27 @@
 #include <bf_lpm_trie/bf_lpm_trie.h>
 
 #include <algorithm>  // for std::swap
-#include <utility>  // for std::swap
+#include <utility>   // for std::swap
+#include <string>
+#include <memory>
 
 namespace bm {
 
-static_assert(sizeof(value_t) == sizeof(uintptr_t),
-              "Invalid type sizes");
+static_assert(sizeof(value_t) == sizeof(uintptr_t), "Invalid type sizes");
 
 class LPMTrie {
  public:
-  explicit LPMTrie(size_t key_width_bytes)
-    : key_width_bytes(key_width_bytes) {
-    trie = std::make_unique<BfLpmTrie>(key_width_bytes, true);
+  explicit LPMTrie(size_t key_width_bytes) : key_width_bytes(key_width_bytes) {
+    trie = std::make_unique<BfLpmTrie>(key_width_bytes);
   }
 
   /* Copy constructor */
-  LPMTrie(const LPMTrie& other) = delete;
+  LPMTrie(const LPMTrie &other) = delete;
 
   /* Move constructor */
-  LPMTrie(LPMTrie&& other) noexcept
-  : key_width_bytes(other.key_width_bytes) {trie.swap(other.trie);}
+  LPMTrie(LPMTrie &&other) noexcept : key_width_bytes(other.key_width_bytes) {
+    trie.swap(other.trie);
+  }
 
   ~LPMTrie() {
     // Hao: may need to clearn up memory for trie
@@ -61,7 +62,6 @@ class LPMTrie {
 
   void insert_prefix(const ByteContainer &prefix, int prefix_length,
                      uintptr_t value) {
-    printf("LPMTrie::insert_prefix prefix: %s\n", prefix.to_hex().c_str());
     std::string prefix_str(prefix.data(), prefix.size());
     trie->insert(prefix_str, prefix_length, static_cast<value_t>(value));
   }
@@ -77,21 +77,20 @@ class LPMTrie {
   }
 
   bool retrieve_value(const ByteContainer &prefix, int prefix_length,
-                      uintptr_t *value) const {               
+                      uintptr_t *value) const {
     std::string prefix_str(prefix.data(), prefix.size());
     return trie->retrieveValue(prefix_str, prefix_length,
-                                      *reinterpret_cast<value_t *>(value));
+                               *reinterpret_cast<value_t *>(value));
   }
 
   bool lookup(const ByteContainer &key, uintptr_t *value) const {
-    printf("LPMTrie::lookup key: %s\n", key.to_hex().c_str());
     std::string key_str(key.data(), key.size());
     return trie->lookup(key_str, *reinterpret_cast<value_t *>(value));
   }
 
   void clear() {
     // Hao: make sure cleans up memory
-    trie.reset(new BfLpmTrie(key_width_bytes, true));
+    trie.reset(new BfLpmTrie(key_width_bytes));
   }
 
  private:
