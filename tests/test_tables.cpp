@@ -2173,7 +2173,6 @@ TYPED_TEST(TableBigMask, HitMiss) {
   entry_handle_t lookup_handle;
   bool hit;
   MatchErrorCode rc;
-  printf("TableBigMask Adding entry\n");
   rc = this->add_entry(key_1, key_2, &handle_1);
   ASSERT_EQ(rc, MatchErrorCode::SUCCESS);
 
@@ -2183,19 +2182,16 @@ TYPED_TEST(TableBigMask, HitMiss) {
 
   f_1.set(key_1.c_str(), key_1.size());
   f_2.set(key_2.c_str(), key_2.size());
-  printf("TableBigMask Lookup1\n");
   this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
 
   const std::string key_2_hit = "\xaa\x44\x55\x66\x77\x88";
   f_2.set(key_2_hit.c_str(), key_2_hit.size());
-  printf("TableBigMask Lookup2\n");
   this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
 
   const std::string key_2_miss = "\x33\x44\x55\x66\x77\xaa";
   f_2.set(key_2_miss.c_str(), key_2_miss.size());
-  printf("TableBigMask Lookup2\n");
   this->lookup(pkt, &hit, &lookup_handle);
   ASSERT_FALSE(hit);
 }
