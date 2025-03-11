@@ -144,8 +144,10 @@ void BfLpmTrie::insert(const std::string& prefix, int prefix_length, value_t val
       current_node = node;
   }
   // previously: unsigned key = (unsigned) (unsigned char) *prefix >> (8 - prefix_length);
-  // why unsigned? it is longer than byte_t..
-  byte_t key = static_cast<byte_t>(prefix.front()) >> (8 - prefix_length);
+  byte_t key = static_cast<byte_t>(prefix.back()) >> (8 - prefix_length);
+  printf("Key: %d\n", key);
+  printf("prefix_length: %d\n", prefix_length);
+  printf("prefix.front(): %d\n", static_cast<byte_t>(prefix.front()));
   current_node->insertPrefix(prefix_length, key, value);
 }
 
@@ -162,7 +164,7 @@ bool BfLpmTrie::retrieveValue(const std::string& prefix, int prefix_length, valu
       prefix_length -= 8;
   }
 
-  byte_t key = static_cast<byte_t>(prefix.front()) >> (8 - prefix_length);
+  byte_t key = static_cast<byte_t>(prefix.back()) >> (8 - prefix_length);
   Prefix* p = current_node->getPrefix(prefix_length, key);
   if (!p) return false;
 
@@ -186,7 +188,7 @@ bool BfLpmTrie::remove(const std::string& prefix, int prefix_length){
       prefix_length -= 8;
   }
 
-  byte_t key = static_cast<byte_t>(prefix.front()) >> (8 - prefix_length);
+  byte_t key = static_cast<byte_t>(prefix.back()) >> (8 - prefix_length);
   if (!current_node->deletePrefix(prefix_length, key)) return false;
 
   // release_memory should be used here, needed??
@@ -226,6 +228,8 @@ bool BfLpmTrie::lookup(const std::string& key, value_t& value) const {
 
     for(auto& prefix : current_node->getPrefixes().prefixes){
       byte = static_cast<byte_t>(key[key_idx]) >> (8 - prefix->prefix_length);
+      printf("byte: %d\n", byte);
+      printf("prefix->key: %d\n", prefix->key);
       if(byte == prefix->key){
         found = true;
         value = prefix->value;
