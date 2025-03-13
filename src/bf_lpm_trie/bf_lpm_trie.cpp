@@ -25,8 +25,8 @@
 
 namespace bm {
 
-bool Node::getEmptyPrefix(Prefix **prefix) {
-  if (prefixes.isEmpty()) {
+bool Node::get_empty_prefix(Prefix **prefix) {
+  if (prefixes.is_empty()) {
     prefix = nullptr;
     return false;
   }
@@ -40,16 +40,16 @@ bool Node::getEmptyPrefix(Prefix **prefix) {
   return false;
 }
 
-void BranchesVec::addBranch(byte_t byte, std::unique_ptr<Node> nextNode) {
+void BranchesVec::add_branch(byte_t byte, std::unique_ptr<Node> next_node) {
   auto it = std::lower_bound(
       branches.begin(), branches.end(), byte,
       [](const Branch &b, const byte_t &val) { return b.v < val; });
   if (it == branches.end() || it->v != byte) {
-    branches.insert(it, {byte, std::move(nextNode)});
+    branches.insert(it, {byte, std::move(next_node)});
   }
 }
 
-Node *BranchesVec::getNextNode(byte_t byte) const {
+Node *BranchesVec::get_next_node(byte_t byte) const {
   auto it =
       std::lower_bound(branches.begin(), branches.end(), byte,
                        [](const Branch &b, byte_t val) { return b.v < val; });
@@ -57,7 +57,7 @@ Node *BranchesVec::getNextNode(byte_t byte) const {
   return (it != branches.end() && it->v == byte) ? it->next.get() : nullptr;
 }
 
-bool BranchesVec::deleteBranch(byte_t byte) {
+bool BranchesVec::delete_branch(byte_t byte) {
   auto it =
       std::lower_bound(branches.begin(), branches.end(), byte,
                        [](const Branch &b, byte_t val) { return b.v < val; });
@@ -69,7 +69,7 @@ bool BranchesVec::deleteBranch(byte_t byte) {
   return false;
 }
 
-void PrefixesVec::insertPrefix(uint8_t prefix_length, byte_t key,
+void PrefixesVec::insert_prefix(uint8_t prefix_length, byte_t key,
                                value_t value) {
   Prefix prefix = {prefix_length, key, value};
   auto it =
@@ -85,7 +85,7 @@ void PrefixesVec::insertPrefix(uint8_t prefix_length, byte_t key,
   prefixes.insert(it, std::make_unique<Prefix>(prefix));
 }
 
-Prefix *PrefixesVec::getPrefix(uint8_t prefix_length, byte_t key) {
+Prefix *PrefixesVec::get_prefix(uint8_t prefix_length, byte_t key) {
   Prefix target = {prefix_length, key, 0};
   auto it =
       std::lower_bound(prefixes.begin(), prefixes.end(), target,
@@ -97,7 +97,7 @@ Prefix *PrefixesVec::getPrefix(uint8_t prefix_length, byte_t key) {
              : nullptr;
 }
 
-bool PrefixesVec::deletePrefix(uint8_t prefix_length, byte_t key) {
+bool PrefixesVec::delete_prefix(uint8_t prefix_length, byte_t key) {
   Prefix target = {prefix_length, key, 0};
   auto it =
       std::lower_bound(prefixes.begin(), prefixes.end(), target,
@@ -117,12 +117,12 @@ void BfLpmTrie::insert(const std::string &prefix, int prefix_length,
   byte_t byte;
   for (int i = 0; prefix_length >= 8; ++i) {
     byte = static_cast<byte_t>(prefix[i]);
-    Node *node = current_node->getNextNode(byte);
+    Node *node = current_node->get_next_node(byte);
 
     if (!node) {
-      auto newNode = std::make_unique<Node>(current_node, byte);
-      node = newNode.get();
-      current_node->setNextNode(byte, std::move(newNode));
+      auto new_node = std::make_unique<Node>(current_node, byte);
+      node = new_node.get();
+      current_node->set_next_node(byte, std::move(new_node));
     }
 
     prefix_length -= 8;
@@ -130,24 +130,24 @@ void BfLpmTrie::insert(const std::string &prefix, int prefix_length,
   }
 
   byte_t key = static_cast<byte_t>(prefix.back()) >> (8 - prefix_length);
-  current_node->insertPrefix(prefix_length, key, value);
+  current_node->insert_prefix(prefix_length, key, value);
 }
 
-bool BfLpmTrie::retrieveValue(const std::string &prefix, int prefix_length,
+bool BfLpmTrie::retrieve_value(const std::string &prefix, int prefix_length,
                               value_t &value) const {
   Node *current_node = root.get();
   byte_t byte;
 
   for (int i = 0; prefix_length >= 8; ++i) {
     byte = static_cast<byte_t>(prefix[i]);
-    current_node = current_node->getNextNode(byte);
+    current_node = current_node->get_next_node(byte);
     if (!current_node)
       return false;
     prefix_length -= 8;
   }
 
   byte_t key = static_cast<byte_t>(prefix.back()) >> (8 - prefix_length);
-  Prefix *p = current_node->getPrefix(prefix_length, key);
+  Prefix *p = current_node->get_prefix(prefix_length, key);
   if (!p)
     return false;
 
@@ -155,9 +155,9 @@ bool BfLpmTrie::retrieveValue(const std::string &prefix, int prefix_length,
   return true;
 }
 
-bool BfLpmTrie::hasPrefix(const std::string &prefix, int prefix_length) const {
+bool BfLpmTrie::has_prefix(const std::string &prefix, int prefix_length) const {
   value_t value;
-  return retrieveValue(prefix, prefix_length, value);
+  return retrieve_value(prefix, prefix_length, value);
 }
 
 bool BfLpmTrie::remove(const std::string &prefix, int prefix_length) {
@@ -166,22 +166,22 @@ bool BfLpmTrie::remove(const std::string &prefix, int prefix_length) {
 
   for (int i = 0; prefix_length >= 8; ++i) {
     byte = static_cast<byte_t>(prefix[i]);
-    current_node = current_node->getNextNode(byte);
+    current_node = current_node->get_next_node(byte);
     if (!current_node)
       return false;
     prefix_length -= 8;
   }
 
   byte_t key = static_cast<byte_t>(prefix.back()) >> (8 - prefix_length);
-  if (!current_node->deletePrefix(prefix_length, key))
+  if (!current_node->delete_prefix(prefix_length, key))
     return false;
 
-  while (current_node->isEmpty()) {
+  while (current_node->is_empty()) {
     Node *tmp = current_node;
-    current_node = current_node->getParent();
+    current_node = current_node->get_parent();
     if (!current_node)
       break;
-    current_node->deleteBranch(tmp->getChildID());
+    current_node->delete_branch(tmp->get_child_id());
   }
 
   return true;
@@ -197,7 +197,7 @@ bool BfLpmTrie::lookup(const std::string &key, value_t &value) const {
   int key_idx = 0;
   while (current_node) {
     if (key_width == 0) {
-      current_node->getEmptyPrefix(&p);
+      current_node->get_empty_prefix(&p);
       if (p != nullptr) {
         value = p->value;
         found = true;
@@ -205,7 +205,7 @@ bool BfLpmTrie::lookup(const std::string &key, value_t &value) const {
       break;
     }
 
-    for (auto &prefix : current_node->getPrefixes().prefixes) {
+    for (auto &prefix : current_node->get_prefixes().prefixes) {
       byte = static_cast<byte_t>(key[key_idx]) >> (8 - prefix->prefix_length);
       if (byte == prefix->key) {
         found = true;
@@ -213,7 +213,7 @@ bool BfLpmTrie::lookup(const std::string &key, value_t &value) const {
         break;
       }
     }
-    current_node = current_node->getNextNode(key[key_idx]);
+    current_node = current_node->get_next_node(key[key_idx]);
     key_width--;
     key_idx++;
   }
