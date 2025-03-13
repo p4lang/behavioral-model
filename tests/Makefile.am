@@ -25,7 +25,6 @@ $(top_builddir)/third_party/gtest/libgtest.la \
 $(top_builddir)/src/bm_runtime/libbmruntime.la \
 $(top_builddir)/src/bm_apps/libbmapps.la \
 $(top_builddir)/src/bm_sim/libbmsim.la \
-$(top_builddir)/src/bf_lpm_trie/libbflpmtrie.la \
 $(top_builddir)/thrift_src/libruntimestubs.la \
 $(THRIFT_LIB) \
 $(top_builddir)/third_party/jsoncpp/libjson.la \
