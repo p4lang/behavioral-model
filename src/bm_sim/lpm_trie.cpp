@@ -19,7 +19,7 @@
  *
  */
 
-#include <bf_lpm_trie/bf_lpm_trie.h>
+#include <lpm_trie.h>
 
 #define _unused(x) ((void)(x))
 
@@ -70,7 +70,7 @@ bool BranchesVec::delete_branch(byte_t byte) {
 }
 
 void PrefixesVec::insert_prefix(uint8_t prefix_length, byte_t key,
-                               value_t value) {
+                                value_t value) {
   Prefix prefix = {prefix_length, key, value};
   auto it =
       std::lower_bound(prefixes.begin(), prefixes.end(), prefix,
@@ -111,8 +111,8 @@ bool PrefixesVec::delete_prefix(uint8_t prefix_length, byte_t key) {
   return false;
 }
 
-void BfLpmTrie::insert(const std::string &prefix, int prefix_length,
-                       value_t value) {
+void LPMTrie::insert(const std::string &prefix, int prefix_length,
+                     value_t value) {
   Node *current_node = root.get();
   byte_t byte;
   for (int i = 0; prefix_length >= 8; ++i) {
@@ -133,8 +133,8 @@ void BfLpmTrie::insert(const std::string &prefix, int prefix_length,
   current_node->insert_prefix(prefix_length, key, value);
 }
 
-bool BfLpmTrie::retrieve_value(const std::string &prefix, int prefix_length,
-                              value_t &value) const {
+bool LPMTrie::retrieve_value(const std::string &prefix, int prefix_length,
+                             value_t *value) const {
   Node *current_node = root.get();
   byte_t byte;
 
@@ -151,16 +151,16 @@ bool BfLpmTrie::retrieve_value(const std::string &prefix, int prefix_length,
   if (!p)
     return false;
 
-  value = p->value;
+  *value = p->value;
   return true;
 }
 
-bool BfLpmTrie::has_prefix(const std::string &prefix, int prefix_length) const {
-  value_t value;
-  return retrieve_value(prefix, prefix_length, value);
+bool LPMTrie::has_prefix(const std::string &prefix, int prefix_length) const {
+  value_t value = 0;
+  return retrieve_value(prefix, prefix_length, &value);
 }
 
-bool BfLpmTrie::remove(const std::string &prefix, int prefix_length) {
+bool LPMTrie::remove(const std::string &prefix, int prefix_length) {
   Node *current_node = root.get();
   byte_t byte;
 
@@ -187,7 +187,7 @@ bool BfLpmTrie::remove(const std::string &prefix, int prefix_length) {
   return true;
 }
 
-bool BfLpmTrie::lookup(const std::string &key, value_t &value) const {
+bool LPMTrie::lookup(const std::string &key, value_t *value) const {
   Node *current_node = root.get();
   byte_t byte;
   size_t key_width = key_width_bytes;
@@ -199,7 +199,7 @@ bool BfLpmTrie::lookup(const std::string &key, value_t &value) const {
     if (key_width == 0) {
       current_node->get_empty_prefix(&p);
       if (p != nullptr) {
-        value = p->value;
+        *value = p->value;
         found = true;
       }
       break;
@@ -209,7 +209,7 @@ bool BfLpmTrie::lookup(const std::string &key, value_t &value) const {
       byte = static_cast<byte_t>(key[key_idx]) >> (8 - prefix->prefix_length);
       if (byte == prefix->key) {
         found = true;
-        value = prefix->value;
+        *value = prefix->value;
         break;
       }
     }
@@ -221,6 +221,6 @@ bool BfLpmTrie::lookup(const std::string &key, value_t &value) const {
   return found;
 }
 
-} // namespace bm
+}  // namespace bm
 
 #undef _unused
