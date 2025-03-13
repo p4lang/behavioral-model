@@ -44,10 +44,10 @@ struct Branch {
 
 class BranchesVec {
 public:
-  void addBranch(byte_t byte, std::unique_ptr<Node> nextNode);
-  Node *getNextNode(byte_t byte) const;
-  bool deleteBranch(byte_t byte);
-  bool isEmpty() const { return branches.empty(); }
+  void add_branch(byte_t byte, std::unique_ptr<Node> nextNode);
+  Node *get_next_node(byte_t byte) const;
+  bool delete_branch(byte_t byte);
+  bool is_empty() const { return branches.empty(); }
 
 private:
   std::vector<Branch> branches;
@@ -67,11 +67,11 @@ struct Prefix {
 
 class PrefixesVec {
 public:
-  void insertPrefix(uint8_t prefix_length, byte_t key, value_t value);
-  Prefix *getPrefix(uint8_t prefix_length, byte_t key);
-  bool deletePrefix(uint8_t prefix_length, byte_t key);
+  void insert_prefix(uint8_t prefix_length, byte_t key, value_t value);
+  Prefix *get_prefix(uint8_t prefix_length, byte_t key);
+  bool delete_prefix(uint8_t prefix_length, byte_t key);
 
-  inline bool isEmpty() const { return prefixes.empty(); }
+  inline bool is_empty() const { return prefixes.empty(); }
   inline Prefix *back() { return prefixes.back().get(); }
 
   std::vector<std::unique_ptr<Prefix>> prefixes;
@@ -82,36 +82,36 @@ public:
   explicit Node(Node *parent = nullptr, byte_t child_id = 0)
       : parent(parent), child_id(child_id) {}
 
-  Node *getNextNode(byte_t byte) const { return branches.getNextNode(byte); }
+  Node *get_next_node(byte_t byte) const { return branches.get_next_node(byte); }
 
-  void setNextNode(byte_t byte, std::unique_ptr<Node> nextNode) {
-    branches.addBranch(byte, std::move(nextNode));
+  void set_next_node(byte_t byte, std::unique_ptr<Node> next_node) {
+    branches.add_branch(byte, std::move(next_node));
   }
 
-  Prefix *getPrefix(uint8_t prefix_length, byte_t key) {
-    return prefixes.getPrefix(prefix_length, key);
+  Prefix *get_prefix(uint8_t prefix_length, byte_t key) {
+    return prefixes.get_prefix(prefix_length, key);
   }
 
-  PrefixesVec &getPrefixes() { return prefixes; }
+  PrefixesVec &get_prefixes() { return prefixes; }
 
-  bool insertPrefix(uint8_t prefix_length, byte_t key, value_t value) {
-    prefixes.insertPrefix(prefix_length, key, value);
+  bool insert_prefix(uint8_t prefix_length, byte_t key, value_t value) {
+    prefixes.insert_prefix(prefix_length, key, value);
     return true;
   }
 
-  bool deletePrefix(uint8_t prefix_length, byte_t key) {
-    return prefixes.deletePrefix(prefix_length, key);
+  bool delete_prefix(uint8_t prefix_length, byte_t key) {
+    return prefixes.delete_prefix(prefix_length, key);
   }
 
-  bool isEmpty() const { return prefixes.isEmpty() && branches.isEmpty(); }
+  bool is_empty() const { return prefixes.is_empty() && branches.is_empty(); }
 
-  void deleteBranch(byte_t byte) { branches.deleteBranch(byte); }
+  void delete_branch(byte_t byte) { branches.delete_branch(byte); }
 
-  bool getEmptyPrefix(Prefix **prefix);
+  bool get_empty_prefix(Prefix **prefix);
 
-  Node *getParent() const { return parent; }
+  Node *get_parent() const { return parent; }
 
-  byte_t getChildID() const { return child_id; }
+  byte_t get_child_id() const { return child_id; }
 
 private:
   BranchesVec branches;
@@ -128,9 +128,9 @@ public:
   }
 
   void insert(const std::string &prefix, int prefix_length, value_t value);
-  bool retrieveValue(const std::string &prefix, int prefix_length,
+  bool retrieve_value(const std::string &prefix, int prefix_length,
                      value_t &value) const;
-  bool hasPrefix(const std::string &prefix, int prefix_length) const;
+  bool has_prefix(const std::string &prefix, int prefix_length) const;
   bool remove(const std::string &prefix, int prefix_length);
   bool lookup(const std::string &key, value_t &value) const;
 

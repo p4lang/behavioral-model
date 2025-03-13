@@ -73,13 +73,13 @@ class LPMTrie {
 
   bool has_prefix(const ByteContainer &prefix, int prefix_length) const {
     std::string prefix_str(prefix.data(), prefix.size());
-    return trie->hasPrefix(prefix_str, prefix_length);
+    return trie->has_prefix(prefix_str, prefix_length);
   }
 
   bool retrieve_value(const ByteContainer &prefix, int prefix_length,
                       uintptr_t *value) const {
     std::string prefix_str(prefix.data(), prefix.size());
-    return trie->retrieveValue(prefix_str, prefix_length,
+    return trie->retrieve_value(prefix_str, prefix_length,
                                *reinterpret_cast<value_t *>(value));
   }
 
