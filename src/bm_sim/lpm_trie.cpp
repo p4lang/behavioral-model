@@ -19,28 +19,61 @@
  *
  */
 
+#include <bm/bm_sim/_assert.h>
 #include <lpm_trie.h>
-
-#define _unused(x) ((void)(x))
 
 namespace bm {
 
-bool Node::get_empty_prefix(Prefix **prefix) {
-  if (prefixes.is_empty()) {
-    prefix = nullptr;
+bool Node::get_empty_prefix(value_t *val) {
+  if (prefixes.empty()) {
     return false;
   }
-  Prefix *p = prefixes.back();
-  if (p->prefix_length == 0) {
-    *prefix = p;
+  Prefix &p = prefixes.back();
+  if (p.prefix_length == 0) {
+    *val = p.value;
     return true;
   }
-  *prefix = nullptr;
-  _unused(prefix);
+  _BM_UNUSED(val);
   return false;
 }
 
-void BranchesVec::add_branch(byte_t byte, std::unique_ptr<Node> next_node) {
+Node *Node::get_next_node(byte_t byte) const {
+  auto it =
+      std::lower_bound(branches.begin(), branches.end(), byte,
+                       [](const Branch &b, byte_t val) { return b.v < val; });
+
+  return (it != branches.end() && it->v == byte) ? it->next.get() : nullptr;
+}
+
+void Node::insert_prefix(uint8_t prefix_length, byte_t key, value_t value) {
+  auto it = search_prefix_with_key(prefix_length, key);
+
+  if (it != prefixes.end()) {
+    (*it).value = value;
+    return;
+  }
+  prefixes.insert(it, {prefix_length, key, value});
+}
+
+bool Node::get_prefix(uint8_t prefix_length, byte_t key, value_t *value) {
+  auto it = search_prefix_with_key(prefix_length, key);
+  if (it != prefixes.end()) {
+    *value = (*it).value;
+    return true;
+  }
+  return false;
+}
+
+bool Node::delete_prefix(uint8_t prefix_length, byte_t key) {
+  auto it = search_prefix_with_key(prefix_length, key);
+  if (it != prefixes.end()) {
+    prefixes.erase(it);
+    return true;
+  }
+  return false;
+}
+
+void Node::add_branch(byte_t byte, std::unique_ptr<Node> next_node) {
   auto it = std::lower_bound(
       branches.begin(), branches.end(), byte,
       [](const Branch &b, const byte_t &val) { return b.v < val; });
@@ -49,15 +82,7 @@ void BranchesVec::add_branch(byte_t byte, std::unique_ptr<Node> next_node) {
   }
 }
 
-Node *BranchesVec::get_next_node(byte_t byte) const {
-  auto it =
-      std::lower_bound(branches.begin(), branches.end(), byte,
-                       [](const Branch &b, byte_t val) { return b.v < val; });
-
-  return (it != branches.end() && it->v == byte) ? it->next.get() : nullptr;
-}
-
-bool BranchesVec::delete_branch(byte_t byte) {
+bool Node::delete_branch(byte_t byte) {
   auto it =
       std::lower_bound(branches.begin(), branches.end(), byte,
                        [](const Branch &b, byte_t val) { return b.v < val; });
@@ -69,46 +94,17 @@ bool BranchesVec::delete_branch(byte_t byte) {
   return false;
 }
 
-void PrefixesVec::insert_prefix(uint8_t prefix_length, byte_t key,
-                                value_t value) {
-  Prefix prefix = {prefix_length, key, value};
-  auto it =
-      std::lower_bound(prefixes.begin(), prefixes.end(), prefix,
-                       [](const std::unique_ptr<Prefix> &p,
-                          const Prefix &prefix) { return *p.get() < prefix; });
-
-  if (it != prefixes.end() && (*it)->prefix_length == prefix_length &&
-      (*it)->key == key) {
-    (*it)->value = value;
-    return;
-  }
-  prefixes.insert(it, std::make_unique<Prefix>(prefix));
-}
-
-Prefix *PrefixesVec::get_prefix(uint8_t prefix_length, byte_t key) {
+std::vector<Prefix>::iterator
+Node::search_prefix_with_key(uint8_t prefix_length, byte_t key) {
   Prefix target = {prefix_length, key, 0};
-  auto it =
-      std::lower_bound(prefixes.begin(), prefixes.end(), target,
-                       [](const std::unique_ptr<Prefix> &p,
-                          const Prefix &prefix) { return *p.get() < prefix; });
-  return (it != prefixes.end() && (*it)->prefix_length == prefix_length &&
-          (*it)->key == key)
-             ? it->get()
-             : nullptr;
-}
+  auto pred = [](const Prefix &p, const Prefix &target) { return p < target; };
+  auto it = std::lower_bound(prefixes.begin(), prefixes.end(), target, pred);
 
-bool PrefixesVec::delete_prefix(uint8_t prefix_length, byte_t key) {
-  Prefix target = {prefix_length, key, 0};
-  auto it =
-      std::lower_bound(prefixes.begin(), prefixes.end(), target,
-                       [](const std::unique_ptr<Prefix> &p,
-                          const Prefix &prefix) { return *p.get() < prefix; });
-  if (it != prefixes.end() && (*it)->prefix_length == prefix_length &&
-      (*it)->key == key) {
-    prefixes.erase(it);
-    return true;
+  if (it != prefixes.end() && it->prefix_length == prefix_length &&
+      it->key == key) {
+    return it;
   }
-  return false;
+  return prefixes.end();
 }
 
 void LPMTrie::insert(const std::string &prefix, int prefix_length,
@@ -147,12 +143,7 @@ bool LPMTrie::retrieve_value(const std::string &prefix, int prefix_length,
   }
 
   byte_t key = static_cast<byte_t>(prefix.back()) >> (8 - prefix_length);
-  Prefix *p = current_node->get_prefix(prefix_length, key);
-  if (!p)
-    return false;
-
-  *value = p->value;
-  return true;
+  return current_node->get_prefix(prefix_length, key, value);
 }
 
 bool LPMTrie::has_prefix(const std::string &prefix, int prefix_length) const {
@@ -191,26 +182,18 @@ bool LPMTrie::lookup(const std::string &key, value_t *value) const {
   Node *current_node = root.get();
   byte_t byte;
   size_t key_width = key_width_bytes;
-  bool found = false;
-  Prefix *p = nullptr;
 
   int key_idx = 0;
   while (current_node) {
     if (key_width == 0) {
-      current_node->get_empty_prefix(&p);
-      if (p != nullptr) {
-        *value = p->value;
-        found = true;
-      }
-      break;
+      return current_node->get_empty_prefix(value);
     }
 
-    for (auto &prefix : current_node->get_prefixes().prefixes) {
-      byte = static_cast<byte_t>(key[key_idx]) >> (8 - prefix->prefix_length);
-      if (byte == prefix->key) {
-        found = true;
-        *value = prefix->value;
-        break;
+    for (auto &prefix : current_node->get_prefixes()) {
+      byte = static_cast<byte_t>(key[key_idx]) >> (8 - prefix.prefix_length);
+      if (byte == prefix.key) {
+        *value = prefix.value;
+        return true;
       }
     }
     current_node = current_node->get_next_node(key[key_idx]);
@@ -218,9 +201,7 @@ bool LPMTrie::lookup(const std::string &key, value_t *value) const {
     key_idx++;
   }
 
-  return found;
+  return false;
 }
 
 }  // namespace bm
-
-#undef _unused
