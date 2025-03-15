@@ -47,17 +47,6 @@ struct Branch {
   std::unique_ptr<Node> next;
 };
 
-class BranchesVec {
- public:
-  void add_branch(byte_t byte, std::unique_ptr<Node> nextNode);
-  Node *get_next_node(byte_t byte) const;
-  bool delete_branch(byte_t byte);
-  bool is_empty() const { return branches.empty(); }
-
- private:
-  std::vector<Branch> branches;
-};
-
 struct Prefix {
   uint8_t prefix_length;
   byte_t key;
@@ -70,61 +59,48 @@ struct Prefix {
   }
 };
 
-class PrefixesVec {
- public:
-  void insert_prefix(uint8_t prefix_length, byte_t key, value_t value);
-  Prefix *get_prefix(uint8_t prefix_length, byte_t key);
-  bool delete_prefix(uint8_t prefix_length, byte_t key);
-
-  inline bool is_empty() const { return prefixes.empty(); }
-  inline Prefix *back() { return prefixes.back().get(); }
-
-  std::vector<std::unique_ptr<Prefix>> prefixes;
-};
-
 class Node {
  public:
   explicit Node(Node *parent = nullptr, byte_t child_id = 0)
       : parent(parent), child_id(child_id) {}
 
-  Node *get_next_node(byte_t byte) const {
-    return branches.get_next_node(byte);
-  }
+  Node *get_next_node(byte_t byte) const;
 
   void set_next_node(byte_t byte, std::unique_ptr<Node> next_node) {
-    branches.add_branch(byte, std::move(next_node));
+    add_branch(byte, std::move(next_node));
   }
-
-  Prefix *get_prefix(uint8_t prefix_length, byte_t key) {
-    return prefixes.get_prefix(prefix_length, key);
-  }
-
-  PrefixesVec &get_prefixes() { return prefixes; }
-
-  bool insert_prefix(uint8_t prefix_length, byte_t key, value_t value) {
-    prefixes.insert_prefix(prefix_length, key, value);
-    return true;
-  }
-
-  bool delete_prefix(uint8_t prefix_length, byte_t key) {
-    return prefixes.delete_prefix(prefix_length, key);
-  }
-
-  bool is_empty() const { return prefixes.is_empty() && branches.is_empty(); }
-
-  void delete_branch(byte_t byte) { branches.delete_branch(byte); }
-
-  bool get_empty_prefix(Prefix **prefix);
 
   Node *get_parent() const { return parent; }
 
   byte_t get_child_id() const { return child_id; }
 
+  // Prefix
+
+  bool get_prefix(uint8_t prefix_length, byte_t key, value_t *value);
+
+  std::vector<Prefix> &get_prefixes() { return prefixes; }
+
+  void insert_prefix(uint8_t prefix_length, byte_t key, value_t value);
+
+  bool delete_prefix(uint8_t prefix_length, byte_t key);
+
+  // Branch
+  void add_branch(byte_t byte, std::unique_ptr<Node> nextNode);
+
+  bool delete_branch(byte_t byte);
+
+  bool get_empty_prefix(value_t *val);
+
+  bool is_empty() const { return prefixes.empty() && branches.empty(); }
+
  private:
-  BranchesVec branches;
-  PrefixesVec prefixes;
+  std::vector<Branch> branches;
+  std::vector<Prefix> prefixes;
   Node *parent;
   byte_t child_id;
+
+  std::vector<Prefix>::iterator
+  search_prefix_with_key(uint8_t prefix_length, byte_t key);
 };
 
 class LPMTrie {
