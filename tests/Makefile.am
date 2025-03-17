@@ -2,7 +2,7 @@ if COND_STRESS_TESTS
     MAYBE_STRESS_TESTS = stress_tests
 endif
 
-SUBDIRS = . $(MAYBE_STRESS_TESTS)
+SUBDIRS = . $(MAYBE_STRESS_TESTS) test_bf_lpm_trie
 
 noinst_LTLIBRARIES = libtestutils.la
 
