@@ -33,105 +33,30 @@
 
 namespace bm {
 
-// Hao: value_t is a c type, equivalent to unsigned long, but need to make
-// sure
-typedef std::uintptr_t value_t;
-typedef unsigned char byte_t;
+using value_t = std::uintptr_t;
+using byte_t = unsigned char;
 
-static_assert(sizeof(value_t) == sizeof(std::uintptr_t), "Invalid type sizes");
+static_assert(sizeof(value_t) == sizeof(uintptr_t), "Invalid type sizes");
 
 class Node;
 
-struct Branch {
-  byte_t v;
-  std::unique_ptr<Node> next;
-};
-
-struct Prefix {
-  uint8_t prefix_length;
-  byte_t key;
-  value_t value;
-  // replace prefix_cmp, order from long to short
-  bool operator<(const Prefix &other) const {
-    return (prefix_length == other.prefix_length)
-               ? (key < other.key)
-               : (prefix_length > other.prefix_length);
-  }
-};
-
-class Node {
- public:
-  explicit Node(Node *parent = nullptr, byte_t child_id = 0)
-      : parent(parent), child_id(child_id) {}
-
-  Node *get_next_node(byte_t byte) const;
-
-  void set_next_node(byte_t byte, std::unique_ptr<Node> next_node) {
-    add_branch(byte, std::move(next_node));
-  }
-
-  Node *get_parent() const { return parent; }
-
-  byte_t get_child_id() const { return child_id; }
-
-  // Prefix
-
-  bool get_prefix(uint8_t prefix_length, byte_t key, value_t *value);
-
-  std::vector<Prefix> &get_prefixes() { return prefixes; }
-
-  void insert_prefix(uint8_t prefix_length, byte_t key, value_t value);
-
-  bool delete_prefix(uint8_t prefix_length, byte_t key);
-
-  // Branch
-  void add_branch(byte_t byte, std::unique_ptr<Node> nextNode);
-
-  bool delete_branch(byte_t byte);
-
-  bool get_empty_prefix(value_t *val);
-
-  bool is_empty() const { return prefixes.empty() && branches.empty(); }
-
- private:
-  std::vector<Branch> branches;
-  std::vector<Prefix> prefixes;
-  Node *parent;
-  byte_t child_id;
-
-  std::vector<Prefix>::iterator
-  search_prefix_with_key(uint8_t prefix_length, byte_t key);
-};
-
 class LPMTrie {
  public:
-  explicit LPMTrie(std::size_t key_width_bytes) :
-    key_width_bytes(key_width_bytes) {
-    assert(key_width_bytes <= 64);
-    root = std::make_unique<Node>();
-  }
+  explicit LPMTrie(std::size_t key_width_bytes);
 
   /* Copy constructor */
   LPMTrie(const LPMTrie &other) = delete;
 
   /* Move constructor */
-  LPMTrie(LPMTrie &&other) noexcept : key_width_bytes(other.key_width_bytes) {
-    root.reset(other.root.release());
-  }
+  LPMTrie(LPMTrie &&other) noexcept;
 
-  ~LPMTrie() {
-    // Hao: may need to clearn up memory for trie
-  }
+  ~LPMTrie();
 
   /* Copy assignment operator */
   LPMTrie &operator=(const LPMTrie &other) = delete;
 
   /* Move assignment operator */
-  LPMTrie &operator=(LPMTrie &&other) noexcept {
-    key_width_bytes = other.key_width_bytes;
-    root.reset(other.root.release());
-    return *this;
-  }
+  LPMTrie &operator=(LPMTrie &&other) noexcept;
 
   void insert(const std::string &prefix, int prefix_length, value_t value);
   void insert_prefix(const ByteContainer &prefix, int prefix_length,
@@ -164,9 +89,7 @@ class LPMTrie {
     return lookup(key_str, value);
   }
 
-  void clear() {
-    root.reset(new Node());
-  }
+  void clear();
 
  private:
   std::unique_ptr<Node> root;

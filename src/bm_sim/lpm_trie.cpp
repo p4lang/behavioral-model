@@ -24,6 +24,69 @@
 
 namespace bm {
 
+struct Branch {
+  byte_t v;
+  std::unique_ptr<Node> next;
+};
+
+struct Prefix {
+  uint8_t prefix_length;
+  byte_t key;
+  value_t value;
+  Prefix(uint8_t prefix_length, byte_t key, value_t value)
+      : prefix_length(prefix_length), key(key), value(value) {}
+  bool operator<(const Prefix &other) const {
+    return (prefix_length == other.prefix_length)
+                ? (key < other.key)
+                : (prefix_length > other.prefix_length);
+  }
+};
+
+class Node {
+ public:
+  explicit Node(Node *parent = nullptr, byte_t child_id = 0)
+      : parent(parent), child_id(child_id) {}
+
+  Node *get_next_node(byte_t byte) const;
+
+  void set_next_node(byte_t byte, std::unique_ptr<Node> next_node) {
+    add_branch(byte, std::move(next_node));
+  }
+
+  Node *get_parent() const { return parent; }
+
+  byte_t get_child_id() const { return child_id; }
+
+  // Prefix
+
+  bool get_prefix(uint8_t prefix_length, byte_t key, value_t *value);
+
+  std::vector<Prefix> &get_prefixes() { return prefixes; }
+
+  void insert_prefix(uint8_t prefix_length, byte_t key, value_t value);
+
+  bool delete_prefix(uint8_t prefix_length, byte_t key);
+
+  // Branch
+  void add_branch(byte_t byte, std::unique_ptr<Node> nextNode);
+
+  bool delete_branch(byte_t byte);
+
+  bool get_empty_prefix(value_t *val);
+
+  bool is_empty() const { return prefixes.empty() && branches.empty(); }
+
+ private:
+  std::vector<Branch> branches;
+  std::vector<Prefix> prefixes;
+  Node *parent;
+  byte_t child_id;
+
+  std::vector<Prefix>::iterator
+  search_prefix_with_key(uint8_t prefix_length, byte_t key);
+};
+
+
 bool Node::get_empty_prefix(value_t *val) {
   if (prefixes.empty()) {
     return false;
@@ -49,16 +112,16 @@ void Node::insert_prefix(uint8_t prefix_length, byte_t key, value_t value) {
   auto it = search_prefix_with_key(prefix_length, key);
 
   if (it != prefixes.end()) {
-    (*it).value = value;
+    it->value = value;
     return;
   }
-  prefixes.insert(it, {prefix_length, key, value});
+  prefixes.emplace_back(prefix_length, key, value);
 }
 
 bool Node::get_prefix(uint8_t prefix_length, byte_t key, value_t *value) {
   auto it = search_prefix_with_key(prefix_length, key);
   if (it != prefixes.end()) {
-    *value = (*it).value;
+    *value = it->value;
     return true;
   }
   return false;
@@ -105,6 +168,26 @@ Node::search_prefix_with_key(uint8_t prefix_length, byte_t key) {
     return it;
   }
   return prefixes.end();
+}
+
+
+LPMTrie::LPMTrie(std::size_t key_width_bytes) :
+    key_width_bytes(key_width_bytes) {
+    assert(key_width_bytes <= 64);
+    root = std::make_unique<Node>();
+  }
+
+LPMTrie::LPMTrie(LPMTrie &&other) noexcept :
+    key_width_bytes(other.key_width_bytes) {
+  root.reset(other.root.release());
+}
+
+LPMTrie::~LPMTrie() {}
+
+LPMTrie &LPMTrie::operator=(LPMTrie &&other) noexcept {
+  key_width_bytes = other.key_width_bytes;
+  root.reset(other.root.release());
+  return *this;
 }
 
 void LPMTrie::insert(const std::string &prefix, int prefix_length,
@@ -202,6 +285,10 @@ bool LPMTrie::lookup(const std::string &key, value_t *value) const {
   }
 
   return false;
+}
+
+void LPMTrie::clear() {
+  root.reset(new Node());
 }
 
 }  // namespace bm
