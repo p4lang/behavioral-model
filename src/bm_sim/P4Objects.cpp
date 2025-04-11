@@ -43,8 +43,11 @@ using std::string;
 
 namespace {
 
-constexpr int required_major_version = 2;
-constexpr int max_minor_version = 24;
+constexpr int required_major_version_v2 = 2;
+constexpr int max_minor_version_v2 = 24;
+// Version 3.0 introduces support for multiple applications of the same table
+constexpr int required_major_version_v3 = 3;
+constexpr int max_minor_version_v3 = 0;
 // not needed for now
 // constexpr int min_minor_version = 0;
 
@@ -120,7 +123,9 @@ using EFormat = ExceptionFormatter;
 
 std::string
 P4Objects::get_json_version_string() {
-  return get_version_str(required_major_version, max_minor_version);
+  return get_version_str(required_major_version_v2, max_minor_version_v2) +
+         " or " +
+         get_version_str(required_major_version_v3, max_minor_version_v3);
 }
 
 void
@@ -532,29 +537,50 @@ void check_json_tuple_size(const Json::Value &cfg_parent,
   }
 }
 
-void check_json_version(const Json::Value &cfg_root) {
+void check_json_version(const Json::Value &cfg_root, int *major_version_out = nullptr) {
   // to avoid a huge number of backward-compatibility issues, we accept JSON
   // inputs which are not tagged with a version number.
-  if (!cfg_root.isMember("__meta__")) return;
+  if (!cfg_root.isMember("__meta__")) {
+    if (major_version_out) *major_version_out = required_major_version_v2;
+    return;
+  }
   const auto &cfg_meta = cfg_root["__meta__"];
-  if (!cfg_meta.isMember("version")) return;
+  if (!cfg_meta.isMember("version")) {
+    if (major_version_out) *major_version_out = required_major_version_v2;
+    return;
+  }
   const auto &cfg_version = cfg_meta["version"];
   check_json_tuple_size(cfg_meta, "version", 2);
   auto major = cfg_version[0].asInt();
   auto minor = cfg_version[1].asInt();
-  if (major != required_major_version) {
+
+  // Support both version 2.x and 3.x
+  if (major == required_major_version_v2) {
+    if (minor > max_minor_version_v2) {
+      throw json_exception(
+          EFormat() << "The most recent bmv2 JSON version 2.x supported is "
+                    << get_version_str(required_major_version_v2, max_minor_version_v2)
+                    << " but this JSON input is tagged with version number "
+                    << get_version_str(major, minor),
+          cfg_meta);
+    }
+    if (major_version_out) *major_version_out = required_major_version_v2;
+  } else if (major == required_major_version_v3) {
+    if (minor > max_minor_version_v3) {
+      throw json_exception(
+          EFormat() << "The most recent bmv2 JSON version 3.x supported is "
+                    << get_version_str(required_major_version_v3, max_minor_version_v3)
+                    << " but this JSON input is tagged with version number "
+                    << get_version_str(major, minor),
+          cfg_meta);
+    }
+    if (major_version_out) *major_version_out = required_major_version_v3;
+  } else {
     throw json_exception(
         EFormat() << "We require a bmv2 JSON major version number of "
-                  << required_major_version << " but this JSON input is "
-                  << "tagged with a major version number of " << major,
-        cfg_meta);
-  }
-  if (minor > max_minor_version) {
-    throw json_exception(
-        EFormat() << "The most recent bmv2 JSON version number supported is "
-                  << get_version_str(required_major_version, max_minor_version)
-                  << " but this JSON input is tagged with version number "
-                  << get_version_str(major, minor),
+                  << required_major_version_v2 << " or " << required_major_version_v3
+                  << " but this JSON input is tagged with a major version number of "
+                  << major,
         cfg_meta);
   }
 }
@@ -2155,6 +2181,68 @@ P4Objects::init_learn_lists(const Json::Value &cfg_root) {
 }
 
 void
+P4Objects::add_control_node(const string &name, ControlFlowNode *node) {
+  control_nodes_map[name] = node;
+}
+
+void
+P4Objects::init_table_applies(const Json::Value &cfg_root, int json_version) {
+  if (json_version < required_major_version_v3) return;  // Only for version 3+
+
+  DupIdChecker dup_id_checker("table apply");
+  const auto &cfg_pipelines = cfg_root["pipelines"];
+  for (const auto &cfg_pipeline : cfg_pipelines) {
+    // Skip if the pipeline doesn't have table_applies
+    if (!cfg_pipeline.isMember("table_applies")) continue;
+
+    const auto &cfg_table_applies = cfg_pipeline["table_applies"];
+    for (const auto &cfg_table_apply : cfg_table_applies) {
+      const string table_apply_name = cfg_table_apply["name"].asString();
+      p4object_id_t table_apply_id = cfg_table_apply["id"].asInt();
+      dup_id_checker.add(table_apply_id);
+
+      const string table_name = cfg_table_apply["table"].asString();
+      auto table = get_match_action_table(table_name);
+
+      auto table_apply = new TableApply(table_apply_name, table_apply_id, table);
+
+      const Json::Value &cfg_next_tables = cfg_table_apply["next_tables"];
+
+      // Process next_tables the same way as for regular tables
+      bool next_is_hit_miss = false;
+      check_next_nodes(cfg_next_tables, Json::Value::null, table_apply_name, &next_is_hit_miss);
+
+      if (next_is_hit_miss) {
+        if (cfg_next_tables.isMember("__HIT__")) {
+          const auto next_node_name = cfg_next_tables["__HIT__"].asString();
+          const ControlFlowNode *next_node = get_control_node_cfg(next_node_name);
+          table_apply->set_next_node_hit(next_node);
+        }
+        if (cfg_next_tables.isMember("__MISS__")) {
+          const auto next_node_name = cfg_next_tables["__MISS__"].asString();
+          const ControlFlowNode *next_node = get_control_node_cfg(next_node_name);
+          table_apply->set_next_node_miss(next_node);
+        }
+      } else {
+        // For each action, get the next node
+        for (const auto &cfg_action : table->get_action_ids()) {
+          p4object_id_t action_id = cfg_action;
+          const auto action = get_action_by_id(action_id);
+          const auto action_name = action->get_name();
+          if (!cfg_next_tables.isMember(action_name)) continue;
+          const auto next_node_name = cfg_next_tables[action_name].asString();
+          const ControlFlowNode *next_node = get_control_node_cfg(next_node_name);
+          table_apply->set_next_node(action_id, next_node);
+        }
+      }
+
+      add_control_node(table_apply_name, table_apply);
+      table_applies_map[table_apply_name] = std::unique_ptr<TableApply>(table_apply);
+    }
+  }
+}
+
+void
 P4Objects::init_field_lists(const Json::Value &cfg_root) {
   DupIdChecker dup_id_checker("field list");
   const Json::Value &cfg_field_lists = cfg_root["field_lists"];
@@ -2210,10 +2298,13 @@ P4Objects::init_objects(std::istream *is,
     this->notifications_transport = notifications_transport;
   }
 
+  // Check JSON version and determine if we're using the new format
+  int json_major_version = required_major_version_v2;
+  check_json_version(cfg_root, &json_major_version);
+
   InitState init_state;
 
   try {
-    check_json_version(cfg_root);
 
     init_enums(cfg_root);
 
@@ -2267,6 +2358,9 @@ P4Objects::init_objects(std::istream *is,
         device_id, cxt_id, notifications_transport);
 
     init_pipelines(cfg_root, lookup_factory, &init_state);
+
+    // Initialize table_applies if using the new JSON format
+    init_table_applies(cfg_root, json_major_version);
 
     init_checksums(cfg_root);
 

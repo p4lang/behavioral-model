@@ -49,6 +49,7 @@
 #include "enums.h"
 #include "control_action.h"
 #include "device_id.h"
+#include "table_apply.h"
 
 // forward declaration of Json::Value
 namespace Json {
@@ -190,6 +191,15 @@ class P4Objects {
 
   MatchActionTable *get_match_action_table(const std::string &name) const {
     return match_action_tables_map.at(name).get();
+  }
+
+  TableApply *get_table_apply(const std::string &name) const {
+    return table_applies_map.at(name).get();
+  }
+
+  TableApply *get_table_apply_rt(const std::string &name) const {
+    auto it = table_applies_map.find(name);
+    return (it != table_applies_map.end()) ? it->second.get() : nullptr;
   }
 
   Conditional *get_conditional(const std::string &name) const {
@@ -384,6 +394,8 @@ class P4Objects {
                         bool *next_is_hit_miss);
   void init_pipelines(const Json::Value &root, LookupStructureFactory *,
                       InitState *);
+  void init_table_applies(const Json::Value &root, int json_version);
+  void add_control_node(const std::string &name, ControlFlowNode *node);
   void init_checksums(const Json::Value &root);
   void init_learn_lists(const Json::Value &root);
   void init_field_lists(const Json::Value &root);
@@ -417,6 +429,10 @@ class P4Objects {
   // tables
   std::unordered_map<std::string, std::unique_ptr<MatchActionTable> >
   match_action_tables_map{};
+
+  // table applies (for multiple applications of the same table)
+  std::unordered_map<std::string, std::unique_ptr<TableApply> >
+  table_applies_map{};
 
   std::unordered_map<std::string, std::unique_ptr<ActionProfile> >
   action_profiles_map{};
