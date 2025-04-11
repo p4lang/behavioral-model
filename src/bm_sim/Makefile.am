@@ -69,6 +69,7 @@ simple_pre_lag.cpp \
 source_info.cpp \
 stacks.cpp \
 tables.cpp \
+table_apply.cpp \
 target_parser.cpp \
 transport.cpp \
 transport_nn.cpp \
