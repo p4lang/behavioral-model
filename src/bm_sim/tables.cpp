@@ -46,4 +46,14 @@ MatchActionTable::operator()(Packet *pkt) const {
   return next;
 }
 
+std::vector<p4object_id_t>
+MatchActionTable::get_action_ids() const {
+  // Get the action IDs from the match table's next_nodes map
+  std::vector<p4object_id_t> action_ids;
+  for (const auto &p : match_table->get_next_nodes()) {
+    action_ids.push_back(p.first);
+  }
+  return action_ids;
+}
+
 }  // namespace bm
