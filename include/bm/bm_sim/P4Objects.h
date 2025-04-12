@@ -395,7 +395,6 @@ class P4Objects {
   void init_pipelines(const Json::Value &root, LookupStructureFactory *,
                       InitState *);
   void init_table_applies(const Json::Value &root, int json_version);
-  void add_control_node(const std::string &name, ControlFlowNode *node);
   void init_checksums(const Json::Value &root);
   void init_learn_lists(const Json::Value &root);
   void init_field_lists(const Json::Value &root);
