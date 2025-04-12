@@ -55,6 +55,9 @@ class MatchActionTable : public ControlFlowNode {
 
   MatchTableAbstract *get_match_table() { return match_table.get(); }
 
+  // Get the action IDs for this table
+  std::vector<p4object_id_t> get_action_ids() const;
+
  public:
   template <typename MT>
   static std::unique_ptr<MatchActionTable> create_match_action_table(
