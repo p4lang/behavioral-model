@@ -22,6 +22,7 @@
 #include <bm/bm_sim/P4Objects.h>
 #include <bm/bm_sim/phv.h>
 #include <bm/bm_sim/actions.h>
+#include <bm/bm_sim/table_apply.h>
 
 #include <iostream>
 #include <istream>
@@ -1638,16 +1639,20 @@ P4Objects::check_next_nodes(const Json::Value &cfg_next_nodes,
     }
   } else {
     *next_is_hit_miss = false;
-    int num_actions = cfg_actions.size();
-    // The check that each action name is a key in cfg_next_nodes is
-    // done near where check_next_nodes is called, to avoid
-    // duplicating here the code that calculates action_name.
-    if (num_next_nodes != num_actions) {
-      throw json_exception(
-          EFormat() << "Table '" << table_name << "' should have exactly "
-          << num_actions << " keys, one for each table action, but found "
-          << num_next_nodes << "keys.",
-          cfg_next_nodes);
+    // If cfg_actions is null, this is a TableApply and we don't need to check
+    // the number of actions
+    if (!cfg_actions.isNull()) {
+      int num_actions = cfg_actions.size();
+      // The check that each action name is a key in cfg_next_nodes is
+      // done near where check_next_nodes is called, to avoid
+      // duplicating here the code that calculates action_name.
+      if (num_next_nodes != num_actions) {
+        throw json_exception(
+            EFormat() << "Table '" << table_name << "' should have exactly "
+            << num_actions << " keys, one for each table action, but found "
+            << num_next_nodes << "keys.",
+            cfg_next_nodes);
+      }
     }
   }
 }
@@ -2180,10 +2185,6 @@ P4Objects::init_learn_lists(const Json::Value &cfg_root) {
   }
 }
 
-void
-P4Objects::add_control_node(const string &name, ControlFlowNode *node) {
-  control_nodes_map[name] = node;
-}
 
 void
 P4Objects::init_table_applies(const Json::Value &cfg_root, int json_version) {
@@ -2204,7 +2205,16 @@ P4Objects::init_table_applies(const Json::Value &cfg_root, int json_version) {
       const string table_name = cfg_table_apply["table"].asString();
       auto table = get_match_action_table(table_name);
 
-      auto table_apply = new TableApply(table_apply_name, table_apply_id, table);
+      // Generate a unique name for the control node if needed
+      // This ensures we don't have duplicate names in the control_nodes_map
+      std::string unique_name = table_apply_name;
+      int suffix = 1;
+      while (control_nodes_map.find(unique_name) != control_nodes_map.end()) {
+        unique_name = table_apply_name + "_" + std::to_string(suffix++);
+      }
+
+      // Create the TableApply with the unique name
+      auto table_apply = new TableApply(unique_name, table_apply_id, table);
 
       const Json::Value &cfg_next_tables = cfg_table_apply["next_tables"];
 
@@ -2236,8 +2246,20 @@ P4Objects::init_table_applies(const Json::Value &cfg_root, int json_version) {
         }
       }
 
-      add_control_node(table_apply_name, table_apply);
-      table_applies_map[table_apply_name] = std::unique_ptr<TableApply>(table_apply);
+      // Add the table_apply to the control_nodes_map with the unique name
+      add_control_node(unique_name, table_apply);
+
+      // Add to table_applies_map - this map uses the original name from the JSON
+      // as the key, which allows lookups by the original name
+      // We need to handle the case where we have multiple applications of the same table
+      auto it = table_applies_map.find(table_apply_name);
+      if (it != table_applies_map.end()) {
+        // If this is a duplicate name, we need to free the old pointer before
+        // replacing it with the new one
+        it->second.reset(table_apply);
+      } else {
+        table_applies_map[table_apply_name] = std::unique_ptr<TableApply>(table_apply);
+      }
     }
   }
 }
@@ -2928,7 +2950,20 @@ P4Objects::add_control_node(const std::string &name, ControlFlowNode *node) {
 
 ControlFlowNode *
 P4Objects::get_control_node_cfg(const std::string &name) const {
-  return get_object(control_nodes_map, "control node", name);
+  // First try to find the node in the control_nodes_map
+  auto it = control_nodes_map.find(name);
+  if (it != control_nodes_map.end()) {
+    return it->second;
+  }
+
+  // If not found, check if it's a table_apply that might have been renamed
+  auto table_apply_it = table_applies_map.find(name);
+  if (table_apply_it != table_applies_map.end()) {
+    return table_apply_it->second.get();
+  }
+
+  throw json_exception(
+      EFormat() << "Invalid reference to control node '" << name << "'");
 }
 
 void
