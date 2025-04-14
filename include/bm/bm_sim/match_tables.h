@@ -162,6 +162,11 @@ class MatchTableAbstract : public NamedP4Object {
   void set_next_node_miss(const ControlFlowNode *next_node);
   void set_next_node_miss_default(const ControlFlowNode *next_node);
 
+  // Get the next_nodes map
+  const std::unordered_map<p4object_id_t, const ControlFlowNode *> &get_next_nodes() const {
+    return next_nodes;
+  }
+
   void set_direct_meters(MeterArray *meter_array,
                          header_id_t target_header,
                          int target_offset);
@@ -211,10 +216,7 @@ class MatchTableAbstract : public NamedP4Object {
   const ControlFlowNode *get_next_node(p4object_id_t action_id) const;
   const ControlFlowNode *get_next_node_default(p4object_id_t action_id) const;
 
-  // Get the next_nodes map
-  const std::unordered_map<p4object_id_t, const ControlFlowNode *> &get_next_nodes() const {
-    return next_nodes;
-  }
+
 
   // assumes that entry->handle has been set
   void set_entry_common_info(EntryCommon *entry) const;

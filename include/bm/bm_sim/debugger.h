@@ -46,6 +46,7 @@ class DebuggerIface;
 #define DBG_CTR_CONDITION (5 << 24)
 #define DBG_CTR_ACTION (6 << 24)
 #define DBG_CTR_DEPARSER (7 << 24)
+#define DBG_CTR_TABLE_APPLY (8 << 24)
 
 #define DBG_CTR_EXIT(x) (x | (0x80 << 24))
 
