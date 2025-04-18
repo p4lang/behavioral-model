@@ -163,6 +163,7 @@ class MatchTableAbstract : public NamedP4Object {
   void set_next_node_miss_default(const ControlFlowNode *next_node);
 
   // Get the next_nodes map
+  // Made public for issue #1286 to allow get_action_ids() to access it
   const std::unordered_map<p4object_id_t, const ControlFlowNode *> &get_next_nodes() const {
     return next_nodes;
   }
