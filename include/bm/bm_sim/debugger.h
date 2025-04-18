@@ -23,6 +23,7 @@
 
 #include <bm/config.h>
 
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <string>

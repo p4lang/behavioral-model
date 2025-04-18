@@ -21,9 +21,10 @@
 #ifndef BM_BM_APPS_NOTIFICATIONS_H_
 #define BM_BM_APPS_NOTIFICATIONS_H_
 
-#include <string>
+#include <cstdint>
 #include <functional>
 #include <memory>
+#include <string>
 
 namespace bm_apps {
 
