@@ -162,12 +162,6 @@ class MatchTableAbstract : public NamedP4Object {
   void set_next_node_miss(const ControlFlowNode *next_node);
   void set_next_node_miss_default(const ControlFlowNode *next_node);
 
-  // Get the next_nodes map
-  // Made public for issue #1286 to allow get_action_ids() to access it
-  const std::unordered_map<p4object_id_t, const ControlFlowNode *> &get_next_nodes() const {
-    return next_nodes;
-  }
-
   void set_direct_meters(MeterArray *meter_array,
                          header_id_t target_header,
                          int target_offset);
@@ -194,6 +188,12 @@ class MatchTableAbstract : public NamedP4Object {
 
   handle_iterator handles_begin() const;
   handle_iterator handles_end() const;
+
+  // Get the next_nodes map
+  // Added for issue #1286 to allow get_action_ids() to access it
+  const std::unordered_map<p4object_id_t, const ControlFlowNode *> &get_next_nodes() const {
+    return next_nodes;
+  }
 
   // meant to be called by P4Objects when loading the JSON
   // set_default_entry sets a default entry obtained from the JSON. You can make
