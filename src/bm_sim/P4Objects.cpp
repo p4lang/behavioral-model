@@ -22,6 +22,7 @@
 #include <bm/bm_sim/P4Objects.h>
 #include <bm/bm_sim/phv.h>
 #include <bm/bm_sim/actions.h>
+#include <bm/bm_sim/table_apply.h>
 
 #include <iostream>
 #include <istream>
@@ -43,8 +44,11 @@ using std::string;
 
 namespace {
 
-constexpr int required_major_version = 2;
-constexpr int max_minor_version = 24;
+constexpr int required_major_version_v2 = 2;
+constexpr int max_minor_version_v2 = 24;
+// Version 3.0 introduces support for multiple applications of the same table
+constexpr int required_major_version_v3 = 3;
+constexpr int max_minor_version_v3 = 0;
 // not needed for now
 // constexpr int min_minor_version = 0;
 
@@ -120,7 +124,9 @@ using EFormat = ExceptionFormatter;
 
 std::string
 P4Objects::get_json_version_string() {
-  return get_version_str(required_major_version, max_minor_version);
+  return get_version_str(required_major_version_v2, max_minor_version_v2) +
+         " or " +
+         get_version_str(required_major_version_v3, max_minor_version_v3);
 }
 
 void
@@ -532,29 +538,50 @@ void check_json_tuple_size(const Json::Value &cfg_parent,
   }
 }
 
-void check_json_version(const Json::Value &cfg_root) {
+void check_json_version(const Json::Value &cfg_root, int *major_version_out = nullptr) {
   // to avoid a huge number of backward-compatibility issues, we accept JSON
   // inputs which are not tagged with a version number.
-  if (!cfg_root.isMember("__meta__")) return;
+  if (!cfg_root.isMember("__meta__")) {
+    if (major_version_out) *major_version_out = required_major_version_v2;
+    return;
+  }
   const auto &cfg_meta = cfg_root["__meta__"];
-  if (!cfg_meta.isMember("version")) return;
+  if (!cfg_meta.isMember("version")) {
+    if (major_version_out) *major_version_out = required_major_version_v2;
+    return;
+  }
   const auto &cfg_version = cfg_meta["version"];
   check_json_tuple_size(cfg_meta, "version", 2);
   auto major = cfg_version[0].asInt();
   auto minor = cfg_version[1].asInt();
-  if (major != required_major_version) {
+
+  // Support both version 2.x and 3.x
+  if (major == required_major_version_v2) {
+    if (minor > max_minor_version_v2) {
+      throw json_exception(
+          EFormat() << "The most recent bmv2 JSON version 2.x supported is "
+                    << get_version_str(required_major_version_v2, max_minor_version_v2)
+                    << " but this JSON input is tagged with version number "
+                    << get_version_str(major, minor),
+          cfg_meta);
+    }
+    if (major_version_out) *major_version_out = required_major_version_v2;
+  } else if (major == required_major_version_v3) {
+    if (minor > max_minor_version_v3) {
+      throw json_exception(
+          EFormat() << "The most recent bmv2 JSON version 3.x supported is "
+                    << get_version_str(required_major_version_v3, max_minor_version_v3)
+                    << " but this JSON input is tagged with version number "
+                    << get_version_str(major, minor),
+          cfg_meta);
+    }
+    if (major_version_out) *major_version_out = required_major_version_v3;
+  } else {
     throw json_exception(
         EFormat() << "We require a bmv2 JSON major version number of "
-                  << required_major_version << " but this JSON input is "
-                  << "tagged with a major version number of " << major,
-        cfg_meta);
-  }
-  if (minor > max_minor_version) {
-    throw json_exception(
-        EFormat() << "The most recent bmv2 JSON version number supported is "
-                  << get_version_str(required_major_version, max_minor_version)
-                  << " but this JSON input is tagged with version number "
-                  << get_version_str(major, minor),
+                  << required_major_version_v2 << " or " << required_major_version_v3
+                  << " but this JSON input is tagged with a major version number of "
+                  << major,
         cfg_meta);
   }
 }
@@ -1612,16 +1639,20 @@ P4Objects::check_next_nodes(const Json::Value &cfg_next_nodes,
     }
   } else {
     *next_is_hit_miss = false;
-    int num_actions = cfg_actions.size();
-    // The check that each action name is a key in cfg_next_nodes is
-    // done near where check_next_nodes is called, to avoid
-    // duplicating here the code that calculates action_name.
-    if (num_next_nodes != num_actions) {
-      throw json_exception(
-          EFormat() << "Table '" << table_name << "' should have exactly "
-          << num_actions << " keys, one for each table action, but found "
-          << num_next_nodes << "keys.",
-          cfg_next_nodes);
+    // If cfg_actions is null, this is a TableApply and we don't need to check
+    // the number of actions
+    if (!cfg_actions.isNull()) {
+      int num_actions = cfg_actions.size();
+      // The check that each action name is a key in cfg_next_nodes is
+      // done near where check_next_nodes is called, to avoid
+      // duplicating here the code that calculates action_name.
+      if (num_next_nodes != num_actions) {
+        throw json_exception(
+            EFormat() << "Table '" << table_name << "' should have exactly "
+            << num_actions << " keys, one for each table action, but found "
+            << num_next_nodes << "keys.",
+            cfg_next_nodes);
+      }
     }
   }
 }
@@ -2154,6 +2185,85 @@ P4Objects::init_learn_lists(const Json::Value &cfg_root) {
   }
 }
 
+
+void
+P4Objects::init_table_applies(const Json::Value &cfg_root, int json_version) {
+  if (json_version < required_major_version_v3) return;  // Only for version 3+
+
+  DupIdChecker dup_id_checker("table apply");
+  const auto &cfg_pipelines = cfg_root["pipelines"];
+  for (const auto &cfg_pipeline : cfg_pipelines) {
+    // Skip if the pipeline doesn't have table_applies
+    if (!cfg_pipeline.isMember("table_applies")) continue;
+
+    const auto &cfg_table_applies = cfg_pipeline["table_applies"];
+    for (const auto &cfg_table_apply : cfg_table_applies) {
+      const string table_apply_name = cfg_table_apply["name"].asString();
+      p4object_id_t table_apply_id = cfg_table_apply["id"].asInt();
+      dup_id_checker.add(table_apply_id);
+
+      const string table_name = cfg_table_apply["table"].asString();
+      auto table = get_match_action_table(table_name);
+
+      // Generate a unique name for the control node if needed
+      // This ensures we don't have duplicate names in the control_nodes_map
+      std::string unique_name = table_apply_name;
+      int suffix = 1;
+      while (control_nodes_map.find(unique_name) != control_nodes_map.end()) {
+        unique_name = table_apply_name + "_" + std::to_string(suffix++);
+      }
+
+      // Create the TableApply with the unique name
+      auto table_apply = new TableApply(unique_name, table_apply_id, table);
+
+      const Json::Value &cfg_next_tables = cfg_table_apply["next_tables"];
+
+      // Process next_tables the same way as for regular tables
+      bool next_is_hit_miss = false;
+      check_next_nodes(cfg_next_tables, Json::Value::null, table_apply_name, &next_is_hit_miss);
+
+      if (next_is_hit_miss) {
+        if (cfg_next_tables.isMember("__HIT__")) {
+          const auto next_node_name = cfg_next_tables["__HIT__"].asString();
+          const ControlFlowNode *next_node = get_control_node_cfg(next_node_name);
+          table_apply->set_next_node_hit(next_node);
+        }
+        if (cfg_next_tables.isMember("__MISS__")) {
+          const auto next_node_name = cfg_next_tables["__MISS__"].asString();
+          const ControlFlowNode *next_node = get_control_node_cfg(next_node_name);
+          table_apply->set_next_node_miss(next_node);
+        }
+      } else {
+        // For each action, get the next node
+        for (const auto &cfg_action : table->get_action_ids()) {
+          p4object_id_t action_id = cfg_action;
+          const auto action = get_action_by_id(action_id);
+          const auto action_name = action->get_name();
+          if (!cfg_next_tables.isMember(action_name)) continue;
+          const auto next_node_name = cfg_next_tables[action_name].asString();
+          const ControlFlowNode *next_node = get_control_node_cfg(next_node_name);
+          table_apply->set_next_node(action_id, next_node);
+        }
+      }
+
+      // Add the table_apply to the control_nodes_map with the unique name
+      add_control_node(unique_name, table_apply);
+
+      // Add to table_applies_map - this map uses the original name from the JSON
+      // as the key, which allows lookups by the original name
+      // We need to handle the case where we have multiple applications of the same table
+      auto it = table_applies_map.find(table_apply_name);
+      if (it != table_applies_map.end()) {
+        // If this is a duplicate name, we need to free the old pointer before
+        // replacing it with the new one
+        it->second.reset(table_apply);
+      } else {
+        table_applies_map[table_apply_name] = std::unique_ptr<TableApply>(table_apply);
+      }
+    }
+  }
+}
+
 void
 P4Objects::init_field_lists(const Json::Value &cfg_root) {
   DupIdChecker dup_id_checker("field list");
@@ -2210,10 +2320,13 @@ P4Objects::init_objects(std::istream *is,
     this->notifications_transport = notifications_transport;
   }
 
+  // Check JSON version and determine if we're using the new format
+  int json_major_version = required_major_version_v2;
+  check_json_version(cfg_root, &json_major_version);
+
   InitState init_state;
 
   try {
-    check_json_version(cfg_root);
 
     init_enums(cfg_root);
 
@@ -2267,6 +2380,9 @@ P4Objects::init_objects(std::istream *is,
         device_id, cxt_id, notifications_transport);
 
     init_pipelines(cfg_root, lookup_factory, &init_state);
+
+    // Initialize table_applies if using the new JSON format
+    init_table_applies(cfg_root, json_major_version);
 
     init_checksums(cfg_root);
 
@@ -2834,7 +2950,20 @@ P4Objects::add_control_node(const std::string &name, ControlFlowNode *node) {
 
 ControlFlowNode *
 P4Objects::get_control_node_cfg(const std::string &name) const {
-  return get_object(control_nodes_map, "control node", name);
+  // First try to find the node in the control_nodes_map
+  auto it = control_nodes_map.find(name);
+  if (it != control_nodes_map.end()) {
+    return it->second;
+  }
+
+  // If not found, check if it's a table_apply that might have been renamed
+  auto table_apply_it = table_applies_map.find(name);
+  if (table_apply_it != table_applies_map.end()) {
+    return table_apply_it->second.get();
+  }
+
+  throw json_exception(
+      EFormat() << "Invalid reference to control node '" << name << "'");
 }
 
 void

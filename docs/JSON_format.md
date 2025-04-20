@@ -10,7 +10,7 @@ on each attribute.
 
 ## Current bmv2 JSON format version
 
-The version described in this document is *2.24*.
+The version described in this document is *3.0*.
 
 The major version number will be increased by the compiler only when
 backward-compatibility of the JSON format is broken. After a major version
@@ -22,6 +22,17 @@ itself, under the key `__meta__` -> `version`.
 
 Note that the bmv2 code will perform a version check against the provided input
 JSON.
+
+### Version 3.0 Changes
+
+Version 3.0 introduces support for multiple applications of the same table in a single pipeline. This is achieved by:
+
+1. Adding a new `table_applies` array to each pipeline
+2. Removing the `next_tables` field from table objects
+3. Adding a `table` field to each table_apply object that references the actual table to apply
+4. Adding a `next_tables` field to each table_apply object
+
+BMv2 will continue to support the 2.x format for backward compatibility.
 
 ## General information
 
@@ -648,6 +659,16 @@ attributes for these objects are:
   added. This doesn't impact the default entry though (see the `default_entry`
   attribute). `entries` is a JSON array where each element follows the
   [match-action entry format](#match-action-entry-format) described below.
+- `table_applies`: a JSON array of JSON objects (only in version 3.0+). Each of these objects stores the
+information for a specific application of a table in the pipeline. This allows the same table to be applied
+multiple times in the same pipeline with different next nodes. The attributes for these objects are:
+  - `name`: a unique name for this table application
+  - `id`: a unique integer (unique with respect to other table applications)
+  - `table`: the name of the table being applied
+  - `next_tables`: maps each action to a next node name. Alternatively, maps
+  special string `__HIT__` and `__MISS__` to a next node name. This is the same format as the `next_tables`
+  attribute in the table object in version 2.x.
+
 - `conditionals`: a JSON array of JSON objects. Each of these objects stores the
 information for a given P4 condition, which is used by the current pipeline. The
 attributes for these objects are:
@@ -711,6 +732,10 @@ of these ways:
   next nodes to execute next, after the table is applied.  If you do
   not use that construct, then the next node to be executed will be
   the same for all actions.
+
+In version 3.0+, the `next_tables` attribute is moved from the table object to the
+`table_applies` object. This allows the same table to be applied multiple times in the
+same pipeline with different next nodes for each application.
 
 The `match_type` for the table needs to follow the following rules:
 - If one match field is `range`, the table `match_type` has to be `range`
