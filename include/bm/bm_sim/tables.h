@@ -56,7 +56,6 @@ class MatchActionTable : public ControlFlowNode {
   MatchTableAbstract *get_match_table() { return match_table.get(); }
 
   // Get the action IDs for this table
-  // Added for issue #1286 to support multiple table applications
   std::vector<p4object_id_t> get_action_ids() const;
 
  public:
