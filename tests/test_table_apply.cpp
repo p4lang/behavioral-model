@@ -207,21 +207,21 @@ class TableApplyTest : public ::testing::Test {
 
 TEST_F(TableApplyTest, TableApplies) {
   auto objects = parse_json(JSON_TEST_STRING_TABLE_APPLIES);
-  
+
   // Check that the table_applies were parsed correctly
   auto table_apply_1 = objects->get_table_apply("table_apply_1");
   auto table_apply_2 = objects->get_table_apply("table_apply_2");
-  
+
   ASSERT_NE(nullptr, table_apply_1);
   ASSERT_NE(nullptr, table_apply_2);
-  
+
   // Check that both table_applies reference the same table
   EXPECT_EQ(table_apply_1->get_table(), table_apply_2->get_table());
-  
+
   // Check that the pipeline was set up correctly
   auto pipeline = objects->get_pipeline("ingress");
   ASSERT_NE(nullptr, pipeline);
-  
+
   // The first node in the pipeline should be table_apply_1
   EXPECT_EQ("table_apply_1", pipeline->get_first_node()->get_name());
 }
