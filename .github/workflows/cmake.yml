@@ -1,0 +1,84 @@
+name: CMake Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        config:
+          - name: "Basic Build"
+            options: ""
+          - name: "Without Thrift"
+            options: "-DWITH_THRIFT=OFF"
+          - name: "Without Nanomsg"
+            options: "-DWITH_NANOMSG=OFF"
+          - name: "With Debugger"
+            options: "-DENABLE_DEBUGGER=ON"
+
+    name: ${{ matrix.config.name }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y automake cmake libgmp-dev \
+          libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
+          libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
+          libevent-dev libtool flex bison pkg-config g++ libssl-dev
+        ./ci/install-thrift.sh
+        ./ci/install-nanomsg.sh
+        sudo ldconfig
+
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake ${{ matrix.config.options }} ..
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build .
+
+    - name: Test
+      run: |
+        cd build
+        ctest --output-on-failure
+
+  install:
+    runs-on: ubuntu-20.04
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y automake cmake libgmp-dev \
+          libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
+          libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
+          libevent-dev libtool flex bison pkg-config g++ libssl-dev
+        ./ci/install-thrift.sh
+        ./ci/install-nanomsg.sh
+        sudo ldconfig
+
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+
+    - name: Build and Install
+      run: |
+        cd build
+        cmake --build .
+        sudo cmake --build . --target install
