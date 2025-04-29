@@ -47,7 +47,7 @@ jobs:
     - name: Run tests
       run: |
         ci_env=`bash <(curl -s https://codecov.io/env)`
-        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "make check -j$(nproc) && ./ci/codecov.sh"
+        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "cd build && make check -j$(nproc) && cd .. && ./ci/codecov.sh"
     - name: Check style
       run: |
         ./tools/check_style.sh
@@ -63,7 +63,7 @@ jobs:
     - name: Build Dockerfile.noPI image
       run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
     - name: Run tests
-      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make check -j$(nproc)"
+      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "cd build && make check -j$(nproc)"
 
   test-ubuntu22:
     needs: check-changes
@@ -77,8 +77,9 @@ jobs:
       run: sudo ./install_deps_ubuntu_22.04.sh
     - name: Build BMv2
       run: |
-        ./autogen.sh
-        ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror
+        mkdir -p build
+        cd build
+        cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..
         make -j$(nproc)
     - name: Run tests
-      run: make check -j$(nproc)
+      run: cd build && make check -j$(nproc)
