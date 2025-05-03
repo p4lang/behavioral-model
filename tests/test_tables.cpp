@@ -2173,7 +2173,6 @@ TYPED_TEST(TableBigMask, HitMiss) {
   entry_handle_t lookup_handle;
   bool hit;
   MatchErrorCode rc;
-
   rc = this->add_entry(key_1, key_2, &handle_1);
   ASSERT_EQ(rc, MatchErrorCode::SUCCESS);
 
