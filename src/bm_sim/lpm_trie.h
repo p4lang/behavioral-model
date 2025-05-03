@@ -23,7 +23,6 @@
 
 #include <bm/bm_sim/bytecontainer.h>
 
-#include <algorithm>  // for std::swap
 #include <utility>   // for std::swap
 #include <string>
 #include <memory>
@@ -50,7 +49,7 @@ class LPMTrie {
   /* Move constructor */
   LPMTrie(LPMTrie &&other) noexcept;
 
-  ~LPMTrie();
+  ~LPMTrie() = default;
 
   /* Copy assignment operator */
   LPMTrie &operator=(const LPMTrie &other) = delete;
@@ -58,36 +57,21 @@ class LPMTrie {
   /* Move assignment operator */
   LPMTrie &operator=(LPMTrie &&other) noexcept;
 
-  void insert(const std::string &prefix, int prefix_length, value_t value);
-  void insert_prefix(const ByteContainer &prefix, int prefix_length,
-                     value_t value) {
-    std::string prefix_str(prefix.data(), prefix.size());
-    insert(prefix_str, prefix_length, value);
-  }
+  void insert_prefix(const std::string &prefix, int prefix_length, value_t value);
+  void insert_prefix(const ByteContainer &prefix, int prefix_length, value_t value);
 
-  bool remove(const std::string &prefix, int prefix_length);
-  bool delete_prefix(const ByteContainer &prefix, int prefix_length) {
-    std::string prefix_str(prefix.data(), prefix.size());
-    return remove(prefix_str, prefix_length);
-  }
+  bool delete_prefix(const std::string &prefix, int prefix_length);
+  bool delete_prefix(const ByteContainer &prefix, int prefix_length);
+  
   bool has_prefix(const std::string &prefix, int prefix_length) const;
-  bool has_prefix(const ByteContainer &prefix, int prefix_length) const {
-    std::string prefix_str(prefix.data(), prefix.size());
-    return has_prefix(prefix_str, prefix_length);
-  }
+  bool has_prefix(const ByteContainer &prefix, int prefix_length) const;
 
   bool retrieve_value(const std::string &prefix, int prefix_length,
                       value_t *value) const;
   bool retrieve_value(const ByteContainer &prefix, int prefix_length,
-                      value_t *value) const {
-    std::string prefix_str(prefix.data(), prefix.size());
-    return retrieve_value(prefix_str, prefix_length, value);
-  }
+                      value_t *value) const;
   bool lookup(const std::string &key, value_t *value) const;
-  bool lookup(const ByteContainer &key, value_t *value) const {
-    std::string key_str(key.data(), key.size());
-    return lookup(key_str, value);
-  }
+  bool lookup(const ByteContainer &key, value_t *value) const;
 
   void clear();
 

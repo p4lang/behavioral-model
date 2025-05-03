@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-/*
- * Antonin Bas
- *
- */
-
 #include <bm/bm_sim/_assert.h>
 #include <lpm_trie.h>
 
 namespace bm {
 
 struct Branch {
-  byte_t v;
+  byte_t value;
   std::unique_ptr<Node> next;
 };
 
@@ -103,9 +98,9 @@ bool Node::get_empty_prefix(value_t *val) {
 Node *Node::get_next_node(byte_t byte) const {
   auto it =
       std::lower_bound(branches.begin(), branches.end(), byte,
-                       [](const Branch &b, byte_t val) { return b.v < val; });
+                       [](const Branch &b, byte_t val) { return b.value < val; });
 
-  return (it != branches.end() && it->v == byte) ? it->next.get() : nullptr;
+  return (it != branches.end() && it->value == byte) ? it->next.get() : nullptr;
 }
 
 void Node::insert_prefix(uint8_t prefix_length, byte_t key, value_t value) {
@@ -139,8 +134,8 @@ bool Node::delete_prefix(uint8_t prefix_length, byte_t key) {
 void Node::add_branch(byte_t byte, std::unique_ptr<Node> next_node) {
   auto it = std::lower_bound(
       branches.begin(), branches.end(), byte,
-      [](const Branch &b, const byte_t &val) { return b.v < val; });
-  if (it == branches.end() || it->v != byte) {
+      [](const Branch &b, const byte_t &val) { return b.value < val; });
+  if (it == branches.end() || it->value != byte) {
     branches.insert(it, {byte, std::move(next_node)});
   }
 }
@@ -148,9 +143,9 @@ void Node::add_branch(byte_t byte, std::unique_ptr<Node> next_node) {
 bool Node::delete_branch(byte_t byte) {
   auto it =
       std::lower_bound(branches.begin(), branches.end(), byte,
-                       [](const Branch &b, byte_t val) { return b.v < val; });
+                       [](const Branch &b, byte_t val) { return b.value < val; });
 
-  if (it != branches.end() && it->v == byte) {
+  if (it != branches.end() && it->value == byte) {
     branches.erase(it);
     return true;
   }
@@ -182,15 +177,13 @@ LPMTrie::LPMTrie(LPMTrie &&other) noexcept :
   root.reset(other.root.release());
 }
 
-LPMTrie::~LPMTrie() {}
-
 LPMTrie &LPMTrie::operator=(LPMTrie &&other) noexcept {
   key_width_bytes = other.key_width_bytes;
   root.reset(other.root.release());
   return *this;
 }
 
-void LPMTrie::insert(const std::string &prefix, int prefix_length,
+void LPMTrie::insert_prefix(const std::string &prefix, int prefix_length,
                      value_t value) {
   Node *current_node = root.get();
   byte_t byte;
@@ -212,6 +205,12 @@ void LPMTrie::insert(const std::string &prefix, int prefix_length,
   current_node->insert_prefix(prefix_length, key, value);
 }
 
+void LPMTrie::insert_prefix(const ByteContainer &prefix, int prefix_length,
+  value_t value) {
+  std::string prefix_str(prefix.data(), prefix.size());
+  insert_prefix(prefix_str, prefix_length, value);
+}
+
 bool LPMTrie::retrieve_value(const std::string &prefix, int prefix_length,
                              value_t *value) const {
   Node *current_node = root.get();
@@ -229,12 +228,23 @@ bool LPMTrie::retrieve_value(const std::string &prefix, int prefix_length,
   return current_node->get_prefix(prefix_length, key, value);
 }
 
+bool LPMTrie::retrieve_value(const ByteContainer &prefix, int prefix_length,
+  value_t *value) const {
+  std::string prefix_str(prefix.data(), prefix.size());
+  return retrieve_value(prefix_str, prefix_length, value);
+}
+
+
 bool LPMTrie::has_prefix(const std::string &prefix, int prefix_length) const {
   value_t value = 0;
   return retrieve_value(prefix, prefix_length, &value);
 }
+bool LPMTrie::has_prefix(const ByteContainer &prefix, int prefix_length) const {
+  std::string prefix_str(prefix.data(), prefix.size());
+  return has_prefix(prefix_str, prefix_length);
+}
 
-bool LPMTrie::remove(const std::string &prefix, int prefix_length) {
+bool LPMTrie::delete_prefix(const std::string &prefix, int prefix_length) {
   Node *current_node = root.get();
   byte_t byte;
 
@@ -261,6 +271,11 @@ bool LPMTrie::remove(const std::string &prefix, int prefix_length) {
   return true;
 }
 
+bool LPMTrie::delete_prefix(const ByteContainer &prefix, int prefix_length) {
+  std::string prefix_str(prefix.data(), prefix.size());
+  return delete_prefix(prefix_str, prefix_length);
+}
+
 bool LPMTrie::lookup(const std::string &key, value_t *value) const {
   Node *current_node = root.get();
   byte_t byte;
@@ -285,6 +300,11 @@ bool LPMTrie::lookup(const std::string &key, value_t *value) const {
   }
 
   return false;
+}
+
+bool LPMTrie::lookup(const ByteContainer &key, value_t *value) const{
+  std::string key_str(key.data(), key.size());
+  return lookup(key_str, value);
 }
 
 void LPMTrie::clear() {
