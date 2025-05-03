@@ -44,6 +44,12 @@ jobs:
         CXX: ${{ matrix.cxx }}
       run: |
         docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV .
+    - name: Prepare build directory
+      run: |
+        docker run --rm -w /behavioral-model bm /bin/bash -c "
+          mkdir -p build &&
+          cd build &&
+          cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON -DENABLE_COVERAGE=$GCOV .."
     - name: Run tests
       run: |
         ci_env=`bash <(curl -s https://codecov.io/env)`
@@ -62,6 +68,12 @@ jobs:
         submodules: 'recursive'
     - name: Build Dockerfile.noPI image
       run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
+    - name: Prepare build directory
+      run: |
+        docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "
+          mkdir -p build &&
+          cd build &&
+          cmake -DWITH_PDFIXED=ON -DWITH_PI=OFF -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON .."
     - name: Run tests
       run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "cd build && make check -j$(nproc)"
 
@@ -73,6 +85,9 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+        fetch-depth: 0
+    - name: Make script executable
+      run: chmod +x ./install_deps_ubuntu_22.04.sh
     - name: Install dependencies
       run: sudo ./install_deps_ubuntu_22.04.sh
     - name: Build BMv2
