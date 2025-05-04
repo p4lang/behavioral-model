@@ -68,12 +68,13 @@ jobs:
         submodules: 'recursive'
     - name: Build Dockerfile.noPI image
       run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
-    - name: Prepare build directory
+    - name: Build BMv2 inside Docker
       run: |
         docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "
           mkdir -p build &&
           cd build &&
-          cmake -DWITH_PDFIXED=ON -DWITH_PI=OFF -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON .."
+          cmake -DWITH_PDFIXED=ON -DWITH_PI=OFF -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON .. &&
+          make -j$(nproc)"
     - name: Run tests
       run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "cd build && make check -j$(nproc)"
 
