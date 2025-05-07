@@ -40,10 +40,14 @@ jobs:
         submodules: 'recursive'
     - name: Install system dependencies
       run: |
-        echo "Installing cmake with retry mechanism..."
+        echo "Adding cmake repository..."
+        sudo apt-get update
+        sudo apt-get install -y software-properties-common
+        sudo apt-add-repository -y ppa:kitware/cmake
+        sudo apt-get update
         for i in {1..3}; do
           echo "Attempt $i to install cmake..."
-          sudo apt-get update && sudo apt-get install -y cmake && cmake --version && break || sleep 10;
+          sudo apt-get install -y cmake && cmake --version && break || sleep 10;
         done
         # Verify installation was successful
         if ! command -v cmake &> /dev/null; then
@@ -51,6 +55,9 @@ jobs:
           exit 1
         fi
         echo "cmake installation successful"
+        # Cleanup
+        sudo apt-get clean
+        sudo rm -rf /var/lib/apt/lists/*
     - name: Build test Docker image
       env:
         CC: ${{ matrix.cc }}
@@ -81,10 +88,14 @@ jobs:
         submodules: 'recursive'
     - name: Install system dependencies
       run: |
-        echo "Installing cmake with retry mechanism..."
+        echo "Adding cmake repository..."
+        sudo apt-get update
+        sudo apt-get install -y software-properties-common
+        sudo apt-add-repository -y ppa:kitware/cmake
+        sudo apt-get update
         for i in {1..3}; do
           echo "Attempt $i to install cmake..."
-          sudo apt-get update && sudo apt-get install -y cmake && cmake --version && break || sleep 10;
+          sudo apt-get install -y cmake && cmake --version && break || sleep 10;
         done
         # Verify installation was successful
         if ! command -v cmake &> /dev/null; then
@@ -92,6 +103,9 @@ jobs:
           exit 1
         fi
         echo "cmake installation successful"
+        # Cleanup
+        sudo apt-get clean
+        sudo rm -rf /var/lib/apt/lists/*
     - name: Build Dockerfile.noPI image
       run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
     - name: Build BMv2 inside Docker
