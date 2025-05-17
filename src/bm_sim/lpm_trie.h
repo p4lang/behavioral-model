@@ -56,12 +56,14 @@ class LPMTrie {
   /* Move assignment operator */
   LPMTrie &operator=(LPMTrie &&other) noexcept;
 
-  void insert_prefix(const std::string &prefix, int prefix_length, value_t value);
-  void insert_prefix(const ByteContainer &prefix, int prefix_length, value_t value);
+  void insert_prefix(const std::string &prefix, int prefix_length,
+                     value_t value);
+  void insert_prefix(const ByteContainer &prefix, int prefix_length,
+                     value_t value);
 
   bool delete_prefix(const std::string &prefix, int prefix_length);
   bool delete_prefix(const ByteContainer &prefix, int prefix_length);
-  
+
   bool has_prefix(const std::string &prefix, int prefix_length) const;
   bool has_prefix(const ByteContainer &prefix, int prefix_length) const;
 

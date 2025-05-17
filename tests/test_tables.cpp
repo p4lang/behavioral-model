@@ -2384,7 +2384,7 @@ class AdvancedLPMTest : public AdvancedTest {
 
   MatchErrorCode add_entry_2(entry_handle_t *handle) {
     std::vector<MatchKeyParam> match_key;
-    // 10.00/12
+    // 10.00/14
     match_key.emplace_back(MatchKeyParam::Type::LPM,
                            std::string("\x0a\x00", 2), 14);
     match_key.emplace_back(MatchKeyParam::Type::EXACT,
