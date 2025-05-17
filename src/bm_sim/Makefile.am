@@ -1,8 +1,7 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 
 AM_CPPFLAGS += \
--I$(srcdir)/../BMI \
--I$(srcdir)/../bf_lpm_trie
+-I$(srcdir)/../BMI
 
 # I used to have -Weffc++ for this module. I felt that most of it was excessively
 # pedantic (like constructior initializers for non POD data), but it was
@@ -45,6 +44,7 @@ learning.cpp \
 lookup_structures.cpp \
 logger.cpp \
 lpm_trie.h \
+lpm_trie.cpp \
 match_error_codes.cpp \
 match_units.cpp \
 match_tables.cpp \

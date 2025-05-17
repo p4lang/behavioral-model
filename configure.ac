@@ -310,7 +310,6 @@ AC_CONFIG_FILES([Makefile
 		third_party/spdlog/Makefile
 		include/Makefile
 		src/Makefile
-		src/bf_lpm_trie/Makefile
 		src/bm_sim/Makefile
 		src/bm_runtime/Makefile
 		src/BMI/Makefile
