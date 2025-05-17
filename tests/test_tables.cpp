@@ -2382,6 +2382,17 @@ class AdvancedLPMTest : public AdvancedTest {
     return table->add_entry(match_key, &action_fn, ActionData(), handle);
   }
 
+  MatchErrorCode add_entry_2(entry_handle_t *handle) {
+    std::vector<MatchKeyParam> match_key;
+    // 10.00/12
+    match_key.emplace_back(MatchKeyParam::Type::LPM,
+                           std::string("\x0a\x00", 2), 14);
+    match_key.emplace_back(MatchKeyParam::Type::EXACT,
+                           std::string("\xab\xcd", 2));
+    match_key.emplace_back(MatchKeyParam::Type::VALID, std::string("\x01", 1));
+    return table->add_entry(match_key, &action_fn, ActionData(), handle);
+  }
+
   Packet gen_pkt(const std::string &h1_f16_v,
                  const std::string &h2_f16_v) const {
     Packet packet = get_pkt();
@@ -2433,6 +2444,21 @@ TEST_F(AdvancedLPMTest, Lookup3) {
   ASSERT_FALSE(hit);
 }
 
+TEST_F(AdvancedLPMTest, Lookup4) {
+  entry_handle_t handle_1;
+  entry_handle_t handle_2;
+  entry_handle_t lookup_handle;
+  bool hit;
+
+  ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry(&handle_1));
+  ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry_2(&handle_2));
+  ASSERT_NE(handle_1, handle_2);
+
+  Packet pkt = gen_pkt("0x0a00", "0xabcd");
+  lookup(pkt, &hit, &lookup_handle);
+  ASSERT_TRUE(hit);
+  ASSERT_EQ(handle_2, lookup_handle);
+}
 
 class AdvancedTernaryTest : public AdvancedTest {
  protected:

@@ -41,6 +41,7 @@ class Node {
  public:
   explicit Node(Node *parent = nullptr, byte_t child_id = 0)
       : parent(parent), child_id(child_id) {}
+  Node(const Node &) = delete;
 
   Node *get_next_node(byte_t byte) const;
 
@@ -177,6 +178,9 @@ LPMTrie::LPMTrie(LPMTrie &&other) noexcept :
   root.reset(other.root.release());
 }
 
+LPMTrie::~LPMTrie() = default;
+
+
 LPMTrie &LPMTrie::operator=(LPMTrie &&other) noexcept {
   key_width_bytes = other.key_width_bytes;
   root.reset(other.root.release());
@@ -184,7 +188,7 @@ LPMTrie &LPMTrie::operator=(LPMTrie &&other) noexcept {
 }
 
 void LPMTrie::insert_prefix(const std::string &prefix, int prefix_length,
-                     value_t value) {
+                     value_t value) {           
   Node *current_node = root.get();
   byte_t byte;
   for (int i = 0; prefix_length >= 8; ++i) {
@@ -279,6 +283,7 @@ bool LPMTrie::delete_prefix(const ByteContainer &prefix, int prefix_length) {
 bool LPMTrie::lookup(const std::string &key, value_t *value) const {
   Node *current_node = root.get();
   byte_t byte;
+  uint8_t found_prefix_length = 0;
   size_t key_width = key_width_bytes;
 
   int key_idx = 0;
@@ -289,9 +294,9 @@ bool LPMTrie::lookup(const std::string &key, value_t *value) const {
 
     for (auto &prefix : current_node->get_prefixes()) {
       byte = static_cast<byte_t>(key[key_idx]) >> (8 - prefix.prefix_length);
-      if (byte == prefix.key) {
+      if (byte == prefix.key && prefix.prefix_length > found_prefix_length) {
         *value = prefix.value;
-        return true;
+        found_prefix_length = prefix.prefix_length;
       }
     }
     current_node = current_node->get_next_node(key[key_idx]);
@@ -299,8 +304,9 @@ bool LPMTrie::lookup(const std::string &key, value_t *value) const {
     key_idx++;
   }
 
-  return false;
+  return found_prefix_length > 0;
 }
+
 
 bool LPMTrie::lookup(const ByteContainer &key, value_t *value) const{
   std::string key_str(key.data(), key.size());

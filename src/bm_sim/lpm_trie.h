@@ -48,8 +48,7 @@ class LPMTrie {
 
   /* Move constructor */
   LPMTrie(LPMTrie &&other) noexcept;
-
-  ~LPMTrie() = default;
+  ~LPMTrie();
 
   /* Copy assignment operator */
   LPMTrie &operator=(const LPMTrie &other) = delete;
