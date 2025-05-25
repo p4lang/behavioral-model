@@ -264,22 +264,21 @@ bool LPMTrie::delete_prefix(const ByteContainer &prefix, int prefix_length) {
 
 bool LPMTrie::lookup(const std::string &key, value_t *value) const {
   Node *current_node = root.get();
-  uint8_t found_prefix_length = 0;
+  bool found = false;
   size_t key_width = key_width_bytes;
 
   int key_idx = 0;
   while (current_node) {
     if (key_width == 0) {
-      // get empty prefix
       return current_node->get_prefix(0, 0, value);
     }
 
     uint8_t len = 8;
     byte_t cur_prefix = key[key_idx];
-    while (len-- > 1) {
+    while (len--) {
       cur_prefix >>= 1;
       if (current_node->get_prefix(len, cur_prefix, value)) {
-        found_prefix_length = len;
+        found = true;
         break;
       }
     }
@@ -289,7 +288,7 @@ bool LPMTrie::lookup(const std::string &key, value_t *value) const {
     key_idx++;
   }
 
-  return found_prefix_length > 0;
+  return found;
 }
 
 

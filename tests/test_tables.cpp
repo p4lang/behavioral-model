@@ -2384,9 +2384,29 @@ class AdvancedLPMTest : public AdvancedTest {
 
   MatchErrorCode add_entry_2(entry_handle_t *handle) {
     std::vector<MatchKeyParam> match_key;
-    // 10.00/12
+    // 10.00/14
     match_key.emplace_back(MatchKeyParam::Type::LPM,
                            std::string("\x0a\x00", 2), 14);
+    match_key.emplace_back(MatchKeyParam::Type::EXACT,
+                           std::string("\xab\xcd", 2));
+    match_key.emplace_back(MatchKeyParam::Type::VALID, std::string("\x01", 1));
+    return table->add_entry(match_key, &action_fn, ActionData(), handle);
+  }
+
+  MatchErrorCode add_entry_3(entry_handle_t *handle) {
+    std::vector<MatchKeyParam> match_key;
+    match_key.emplace_back(MatchKeyParam::Type::LPM,
+                           std::string("\x0a\x00", 2), 8);
+    match_key.emplace_back(MatchKeyParam::Type::EXACT,
+                           std::string("\xab\xcd", 2));
+    match_key.emplace_back(MatchKeyParam::Type::VALID, std::string("\x01", 1));
+    return table->add_entry(match_key, &action_fn, ActionData(), handle);
+  }
+
+  MatchErrorCode add_entry_4(entry_handle_t *handle) {
+    std::vector<MatchKeyParam> match_key;
+    match_key.emplace_back(MatchKeyParam::Type::LPM,
+                           std::string("\x0a\x00", 2), 16);
     match_key.emplace_back(MatchKeyParam::Type::EXACT,
                            std::string("\xab\xcd", 2));
     match_key.emplace_back(MatchKeyParam::Type::VALID, std::string("\x01", 1));
@@ -2454,10 +2474,31 @@ TEST_F(AdvancedLPMTest, Lookup4) {
   ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry_2(&handle_2));
   ASSERT_NE(handle_1, handle_2);
 
-  Packet pkt = gen_pkt("0x0a00", "0xabcd");
-  lookup(pkt, &hit, &lookup_handle);
+  Packet pkt_0 = gen_pkt("0x0a01", "0xabcd");
+  lookup(pkt_0, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
   ASSERT_EQ(handle_2, lookup_handle);
+}
+
+TEST_F(AdvancedLPMTest, Lookup5) {
+  entry_handle_t handle_3;
+  entry_handle_t handle_4;
+  entry_handle_t lookup_handle;
+  bool hit;
+
+  ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry_3(&handle_3));
+  ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry_4(&handle_4));
+  ASSERT_NE(handle_3, handle_4);
+
+  Packet pkt_0 = gen_pkt("0x0a01", "0xabcd");
+  Packet pkt_1 = gen_pkt("0x0a00", "0xabcd");
+  lookup(pkt_0, &hit, &lookup_handle);
+  ASSERT_TRUE(hit);
+  ASSERT_EQ(handle_3, lookup_handle);
+
+  lookup(pkt_1, &hit, &lookup_handle);
+  ASSERT_TRUE(hit);
+  ASSERT_EQ(handle_4, lookup_handle);
 }
 
 class AdvancedTernaryTest : public AdvancedTest {
