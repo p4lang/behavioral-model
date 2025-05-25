@@ -32,8 +32,8 @@ struct Prefix {
       : prefix_length(prefix_length), key(key), value(value) {}
   bool operator<(const Prefix &other) const {
     return (prefix_length == other.prefix_length)
-                ? (key < other.key)
-                : (prefix_length < other.prefix_length);
+               ? (key < other.key)
+               : (prefix_length < other.prefix_length);
   }
 };
 
@@ -74,21 +74,21 @@ class Node {
   Node *parent;
   byte_t child_id;
 
-  std::vector<Prefix>::iterator
-  search_prefix_with_key(uint8_t prefix_length, byte_t key);
+  std::vector<Prefix>::iterator search_prefix_with_key(uint8_t prefix_length,
+                                                       byte_t key);
 };
 
 Node *Node::get_next_node(byte_t byte) const {
-  auto it =
-      std::lower_bound(branches.begin(), branches.end(), byte,
-                       [](const Branch &b, byte_t val) { return b.value < val; });
+  auto it = std::lower_bound(
+      branches.begin(), branches.end(), byte,
+      [](const Branch &b, byte_t val) { return b.value < val; });
 
   return (it != branches.end() && it->value == byte) ? it->next.get() : nullptr;
 }
 
 void Node::insert_prefix(uint8_t prefix_length, byte_t key, value_t value) {
   Prefix target = {prefix_length, key, value};
-  auto it = std::lower_bound(prefixes.begin(), prefixes.end(),target);
+  auto it = std::lower_bound(prefixes.begin(), prefixes.end(), target);
   if (it == prefixes.end() || it->prefix_length != prefix_length ||
       it->key != key) {
     prefixes.insert(it, target);
@@ -125,9 +125,9 @@ void Node::add_branch(byte_t byte, std::unique_ptr<Node> next_node) {
 }
 
 bool Node::delete_branch(byte_t byte) {
-  auto it =
-      std::lower_bound(branches.begin(), branches.end(), byte,
-                       [](const Branch &b, byte_t val) { return b.value < val; });
+  auto it = std::lower_bound(
+      branches.begin(), branches.end(), byte,
+      [](const Branch &b, byte_t val) { return b.value < val; });
 
   if (it != branches.end() && it->value == byte) {
     branches.erase(it);
@@ -136,8 +136,8 @@ bool Node::delete_branch(byte_t byte) {
   return false;
 }
 
-std::vector<Prefix>::iterator
-Node::search_prefix_with_key(uint8_t prefix_length, byte_t key) {
+std::vector<Prefix>::iterator Node::search_prefix_with_key(
+    uint8_t prefix_length, byte_t key) {
   Prefix target = {prefix_length, key, 0};
   auto it = std::lower_bound(prefixes.begin(), prefixes.end(), target);
 
@@ -148,20 +148,18 @@ Node::search_prefix_with_key(uint8_t prefix_length, byte_t key) {
   return prefixes.end();
 }
 
+LPMTrie::LPMTrie(std::size_t key_width_bytes)
+    : key_width_bytes(key_width_bytes) {
+  assert(key_width_bytes <= 64);
+  root = std::make_unique<Node>();
+}
 
-LPMTrie::LPMTrie(std::size_t key_width_bytes) :
-    key_width_bytes(key_width_bytes) {
-    assert(key_width_bytes <= 64);
-    root = std::make_unique<Node>();
-  }
-
-LPMTrie::LPMTrie(LPMTrie &&other) noexcept :
-    key_width_bytes(other.key_width_bytes) {
+LPMTrie::LPMTrie(LPMTrie &&other) noexcept
+    : key_width_bytes(other.key_width_bytes) {
   root.reset(other.root.release());
 }
 
 LPMTrie::~LPMTrie() = default;
-
 
 LPMTrie &LPMTrie::operator=(LPMTrie &&other) noexcept {
   key_width_bytes = other.key_width_bytes;
@@ -170,7 +168,7 @@ LPMTrie &LPMTrie::operator=(LPMTrie &&other) noexcept {
 }
 
 void LPMTrie::insert_prefix(const std::string &prefix, int prefix_length,
-                     value_t value) {           
+                            value_t value) {
   Node *current_node = root.get();
   byte_t byte;
   for (int i = 0; prefix_length >= 8; ++i) {
@@ -192,7 +190,7 @@ void LPMTrie::insert_prefix(const std::string &prefix, int prefix_length,
 }
 
 void LPMTrie::insert_prefix(const ByteContainer &prefix, int prefix_length,
-  value_t value) {
+                            value_t value) {
   std::string prefix_str(prefix.data(), prefix.size());
   insert_prefix(prefix_str, prefix_length, value);
 }
@@ -205,8 +203,7 @@ bool LPMTrie::retrieve_value(const std::string &prefix, int prefix_length,
   for (int i = 0; prefix_length >= 8; ++i) {
     byte = static_cast<byte_t>(prefix[i]);
     current_node = current_node->get_next_node(byte);
-    if (!current_node)
-      return false;
+    if (!current_node) return false;
     prefix_length -= 8;
   }
 
@@ -215,11 +212,10 @@ bool LPMTrie::retrieve_value(const std::string &prefix, int prefix_length,
 }
 
 bool LPMTrie::retrieve_value(const ByteContainer &prefix, int prefix_length,
-  value_t *value) const {
+                             value_t *value) const {
   std::string prefix_str(prefix.data(), prefix.size());
   return retrieve_value(prefix_str, prefix_length, value);
 }
-
 
 bool LPMTrie::has_prefix(const std::string &prefix, int prefix_length) const {
   value_t value = 0;
@@ -237,20 +233,17 @@ bool LPMTrie::delete_prefix(const std::string &prefix, int prefix_length) {
   for (int i = 0; prefix_length >= 8; ++i) {
     byte = static_cast<byte_t>(prefix[i]);
     current_node = current_node->get_next_node(byte);
-    if (!current_node)
-      return false;
+    if (!current_node) return false;
     prefix_length -= 8;
   }
 
   byte_t key = static_cast<byte_t>(prefix.back()) >> (8 - prefix_length);
-  if (!current_node->delete_prefix(prefix_length, key))
-    return false;
+  if (!current_node->delete_prefix(prefix_length, key)) return false;
 
   while (current_node->is_empty()) {
     Node *tmp = current_node;
     current_node = current_node->get_parent();
-    if (!current_node)
-      break;
+    if (!current_node) break;
     current_node->delete_branch(tmp->get_child_id());
   }
 
@@ -291,14 +284,11 @@ bool LPMTrie::lookup(const std::string &key, value_t *value) const {
   return found;
 }
 
-
-bool LPMTrie::lookup(const ByteContainer &key, value_t *value) const{
+bool LPMTrie::lookup(const ByteContainer &key, value_t *value) const {
   std::string key_str(key.data(), key.size());
   return lookup(key_str, value);
 }
 
-void LPMTrie::clear() {
-  root.reset(new Node());
-}
+void LPMTrie::clear() { root.reset(new Node()); }
 
 }  // namespace bm
