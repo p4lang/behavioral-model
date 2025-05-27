@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         config:
@@ -54,7 +54,7 @@ jobs:
         ctest --output-on-failure
 
   install:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: build
 
     steps:
