@@ -24,7 +24,9 @@ jobs:
     name: ${{ matrix.config.name }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Install dependencies
       run: |
@@ -33,8 +35,8 @@ jobs:
           libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
           libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
           libevent-dev libtool flex bison pkg-config g++ libssl-dev
-        ./ci/install-thrift.sh
-        ./ci/install-nanomsg.sh
+        sh ./ci/install-thrift.sh
+        sh ./ci/install-nanomsg.sh
         sudo ldconfig
 
     - name: Configure CMake
@@ -58,7 +60,9 @@ jobs:
     needs: build
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Install dependencies
       run: |
@@ -67,8 +71,8 @@ jobs:
           libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
           libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
           libevent-dev libtool flex bison pkg-config g++ libssl-dev
-        ./ci/install-thrift.sh
-        ./ci/install-nanomsg.sh
+        sh ./ci/install-thrift.sh
+        sh ./ci/install-nanomsg.sh
         sudo ldconfig
 
     - name: Configure CMake
