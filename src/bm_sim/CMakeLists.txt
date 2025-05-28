@@ -41,8 +41,8 @@ add_library(bmsim OBJECT
   lookup_structures.cpp
   logger.cpp
   match_error_codes.cpp
-  match_units.cpp
   match_tables.cpp
+  match_units.cpp
   md5.c
   meters.cpp
   options_parse.cpp
@@ -51,19 +51,18 @@ add_library(bmsim OBJECT
   parser.cpp
   parser_error.cpp
   pcap_file.cpp
-  pipeline.cpp
   periodic_task.cpp
-  port_monitor.cpp
   phv.cpp
   phv_source.cpp
-  stateful.cpp
-  switch.cpp
+  pipeline.cpp
+  port_monitor.cpp
   simple_pre.cpp
   simple_pre_lag.cpp
   source_info.cpp
   stacks.cpp
+  stateful.cpp
+  switch.cpp
   tables.cpp
-  table_apply.cpp
   target_parser.cpp
   transport.cpp
   transport_nn.cpp

@@ -1,9 +1,7 @@
 # Add library
 add_library(bmapps STATIC
-  learn.cpp
+  notifications.cpp
   packet_pipe.cpp
-  nanomsg_event_logger.cpp
-  nanomsg_event_decoder.cpp
 )
 
 # Set include directories
