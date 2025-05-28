@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 
+# Include all necessary files for macros
+include(CheckIncludeFile)
+include(CheckIncludeFileCXX)
+
 # Add cmake modules path
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -45,6 +49,10 @@ if(ENABLE_COVERAGE)
   link_libraries(gcov)
 endif()
 
+# Make all code position-independent
+# (FIXME: which files should be PIC?)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Define include directories
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -56,6 +64,33 @@ include_directories(
 # Find required packages
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread program_options filesystem system)
+
+# Check for header files
+# FIXME: consider dropping BM_ prefix if autoconf support is dropped
+set(C_HEADERS
+  sys/stat.h sys/types.h unistd.h
+)
+foreach (hdr ${C_HEADERS})
+  string(TOUPPER ${hdr} hdr_uc)
+  string(REGEX REPLACE "[/.]" "_" hdr_uc ${hdr_uc})
+  CHECK_INCLUDE_FILE(${hdr} BM_HAVE_${hdr_uc})
+  if (NOT BM_HAVE_${hdr_uc})
+    message(SEND_ERROR "Could not find include: ${hdr}")
+  endif()
+endforeach()
+
+set(CXX_HEADERS
+  algorithm array cassert cmath queue
+  cstdio string sys/stat.h sys/types.h ctime tuple unistd.h unordered_map
+  utility vector
+)
+foreach (hdr ${CXX_HEADERS})
+  string(TOUPPER ${hdr} hdr_uc)
+  CHECK_INCLUDE_FILE_CXX(${hdr} BM_HAVE_${hdr_uc})
+  if (NOT BM_HAVE_${hdr_uc})
+    message(SEND_ERROR "Could not find include: ${hdr}")
+  endif()
+endforeach()
 
 # Check for libraries
 find_library(GMP_LIBRARY gmp REQUIRED)
@@ -96,10 +131,10 @@ endif()
 
 if(ENABLE_MODULES)
   # Check for dlopen
-  include(CheckIncludeFile)
   check_include_file(dlfcn.h HAVE_DLFCN_H)
   if(HAVE_DLFCN_H)
     add_definitions(-DHAVE_DLOPEN -DENABLE_MODULES)
+    check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN)
   else()
     message(FATAL_ERROR "Cannot enable modules without dlfcn.h")
   endif()

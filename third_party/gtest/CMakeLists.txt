@@ -6,4 +6,5 @@ add_library(gtest STATIC
 # Set include directories
 target_include_directories(gtest PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}
 )

@@ -41,16 +41,17 @@ install(TARGETS bmall
 )
 
 # Create apps library if nanomsg is enabled
-if(WITH_NANOMSG)
-  add_library(bmp4apps SHARED)
-  target_link_libraries(bmp4apps
-    PUBLIC
-      bmapps
-  )
-
-  # Install library
-  install(TARGETS bmp4apps
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-  )
-endif()
+# FIXME: do we need bmp4apps?
+##if(WITH_NANOMSG)
+##  add_library(bmp4apps SHARED)
+##  target_link_libraries(bmp4apps
+##    PUBLIC
+##      bmapps
+##  )
+##
+##  # Install library
+##  install(TARGETS bmp4apps
+##    LIBRARY DESTINATION lib
+##    ARCHIVE DESTINATION lib
+##  )
+##endif()

@@ -1,6 +1,6 @@
 # Create test_utils library
 add_library(test_utils STATIC
-  server.cpp
+  utils.cpp
 )
 
 # Set include directories

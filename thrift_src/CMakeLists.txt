@@ -1,3 +1,4 @@
+message(STATUS "In thrift_src")
 # Find Thrift
 find_package(Thrift REQUIRED)
 
@@ -15,6 +16,9 @@ file(GLOB THRIFT_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.thrift")
 set(THRIFT_GEN_CPP_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp)
 set(THRIFT_GEN_PY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-py)
 
+set(THRIFT_GEN_CPP_DIR ${THRIFT_GEN_CPP_DIR} PARENT_SCOPE)
+set(THRIFT_GEN_PY_DIR ${THRIFT_GEN_PY_DIR} PARENT_SCOPE)
+
 # Create directories
 file(MAKE_DIRECTORY ${THRIFT_GEN_CPP_DIR})
 file(MAKE_DIRECTORY ${THRIFT_GEN_PY_DIR})
@@ -24,17 +28,38 @@ foreach(THRIFT_FILE ${THRIFT_FILES})
   get_filename_component(THRIFT_NAME ${THRIFT_FILE} NAME_WE)
   
   set(THRIFT_CPP_FILES
-    ${THRIFT_GEN_CPP_DIR}/${THRIFT_NAME}_constants.cpp
-    ${THRIFT_GEN_CPP_DIR}/${THRIFT_NAME}_constants.h
-    ${THRIFT_GEN_CPP_DIR}/${THRIFT_NAME}_types.cpp
-    ${THRIFT_GEN_CPP_DIR}/${THRIFT_NAME}_types.h
-    ${THRIFT_GEN_CPP_DIR}/Standard.cpp
-    ${THRIFT_GEN_CPP_DIR}/Standard.h
+    ${THRIFT_GEN_CPP_DIR}/bm/${THRIFT_NAME}_constants.cpp
+    ${THRIFT_GEN_CPP_DIR}/bm/${THRIFT_NAME}_constants.h
+    ${THRIFT_GEN_CPP_DIR}/bm/${THRIFT_NAME}_types.cpp
+    ${THRIFT_GEN_CPP_DIR}/bm/${THRIFT_NAME}_types.h
+    # ${THRIFT_GEN_CPP_DIR}/bm/Standard.cpp
+    # ${THRIFT_GEN_CPP_DIR}/bm/Standard.h
   )
+
+  file(READ ${THRIFT_FILE} thrift_content)
+
+  string(REGEX MATCH "service +([A-Za-z0-9_]+) *{" match "${thrift_content}")
+
+  if (match)
+    message(STATUS "Full match: ${match}")
+    string(REGEX REPLACE "service +" "" match "${match}")
+    string(REGEX REPLACE " *{" "" service "${match}")
+    message(STATUS "Extracted service: ${service}")
+    set(THRIFT_CPP_FILES
+      ${THRIFT_CPP_FILES}
+      ${THRIFT_GEN_CPP_DIR}/bm/${service}.cpp
+      ${THRIFT_GEN_CPP_DIR}/bm/${service}.h
+    )
+  else()
+  message(STATUS "No match: ${THRIFT_FILE}")
+      #message(FATAL_ERROR "Version not found in file")
+  endif()
+
   
   add_custom_command(
     OUTPUT ${THRIFT_CPP_FILES}
-    COMMAND ${THRIFT_COMPILER} --gen cpp -r -o ${CMAKE_CURRENT_BINARY_DIR} ${THRIFT_FILE}
+    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm
+    COMMAND ${THRIFT_COMPILER} -out ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm --gen cpp -r ${THRIFT_FILE}
     COMMAND ${THRIFT_COMPILER} --gen py -r -o ${CMAKE_CURRENT_BINARY_DIR} ${THRIFT_FILE}
     DEPENDS ${THRIFT_FILE}
     COMMENT "Generating Thrift files for ${THRIFT_NAME}"
