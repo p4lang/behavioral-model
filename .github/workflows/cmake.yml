@@ -35,8 +35,8 @@ jobs:
           libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
           libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
           libevent-dev libtool flex bison pkg-config g++ libssl-dev
-        sh ./ci/install-thrift.sh
-        sh ./ci/install-nanomsg.sh
+        bash ./ci/install-thrift.sh
+        bash ./ci/install-nanomsg.sh
         sudo ldconfig
 
     - name: Configure CMake
@@ -71,8 +71,8 @@ jobs:
           libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
           libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
           libevent-dev libtool flex bison pkg-config g++ libssl-dev
-        sh ./ci/install-thrift.sh
-        sh ./ci/install-nanomsg.sh
+        bash ./ci/install-thrift.sh
+        bash ./ci/install-nanomsg.sh
         sudo ldconfig
 
     - name: Configure CMake
