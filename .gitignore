@@ -59,7 +59,7 @@ config.h
 aclocal.m4
 autom4te.cache/
 compile
-config.h.in
+/config.h.in
 config.status
 depcomp
 install-sh

@@ -1,0 +1,91 @@
+#ifndef _INCLUDE_BM_CONFIG_H
+#define _INCLUDE_BM_CONFIG_H 1
+
+/* config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* "Link with gcov." */
+#undef COVERAGE
+
+/* Enable debugger */
+#cmakedefine BM_DEBUG_ON @BM_DEBUG_ON@
+
+/* Enable nanomsg event logger */
+#cmakedefine BM_ELOG_ON @BM_ELOG_ON@
+
+/* Enable dynamic loading of modules */
+#cmakedefine BM_ENABLE_MODULES @BM_ENABLE_MODULES@
+
+/* Define to 1 if you have the <algorithm> header file. */
+#cmakedefine BM_HAVE_ALGORITHM @BM_HAVE_ALGORITHM@
+
+/* Define to 1 if you have the <array> header file. */
+#cmakedefine BM_HAVE_ARRAY @BM_HAVE_ARRAY@
+
+/* Define to 1 if you have the <cassert> header file. */
+#cmakedefine BM_HAVE_CASSERT @BM_HAVE_CASSERT@
+
+/* Define to 1 if you have the <cmath> header file. */
+#cmakedefine BM_HAVE_CMATH @BM_HAVE_CMATH@
+
+/* Define to 1 if you have the <cstdio> header file. */
+#cmakedefine BM_HAVE_CSTDIO @BM_HAVE_CSTDIO@
+
+/* Define to 1 if you have the <ctime> header file. */
+#cmakedefine BM_HAVE_CTIME @BM_HAVE_CTIME@
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#cmakedefine BM_HAVE_DLFCN_H @BM_HAVE_DLFCN_H@
+
+/* Found dlopen */
+#cmakedefine BM_HAVE_DLOPEN @BM_HAVE_DLOPEN@
+
+/* Define to 1 if you have the <queue> header file. */
+#cmakedefine BM_HAVE_QUEUE @BM_HAVE_QUEUE@
+
+/* Define to 1 if you have the <string> header file. */
+#cmakedefine BM_HAVE_STRING @BM_HAVE_STRING@
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#cmakedefine BM_HAVE_SYS_STAT_H @BM_HAVE_SYS_STAT_H@
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#cmakedefine BM_HAVE_SYS_TYPES_H @BM_HAVE_SYS_TYPES_H@
+
+/* Found Thrift stdcxx wrapper */
+#cmakedefine BM_HAVE_THRIFT_STDCXX_H @BM_HAVE_THRIFT_STDCXX_H@
+
+/* Define to 1 if you have the <tuple> header file. */
+#cmakedefine BM_HAVE_TUPLE @BM_HAVE_TUPLE@
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#cmakedefine BM_HAVE_UNISTD_H @BM_HAVE_UNISTD_H@
+
+/* Define to 1 if you have the <unordered_map> header file. */
+#cmakedefine BM_HAVE_UNORDERED_MAP @BM_HAVE_UNORDERED_MAP@
+
+/* Define to 1 if you have the <utility> header file. */
+#cmakedefine BM_HAVE_UTILITY @BM_HAVE_UTILITY@
+
+/* Define to 1 if you have the <vector> header file. */
+#cmakedefine BM_HAVE_VECTOR @BM_HAVE_VECTOR@
+
+/* Enable compile-time macro for debug logging */
+#cmakedefine BM_LOG_DEBUG_ON @BM_LOG_DEBUG_ON@
+
+/* Enable compile-time macro for trace logging */
+#cmakedefine BM_LOG_TRACE_ON @BM_LOG_TRACE_ON@
+
+/* Enable Nanomsg support */
+#cmakedefine BM_NANOMSG_ON @BM_NANOMSG_ON@
+
+/* Enable Thrift support */
+#cmakedefine BM_THRIFT_ON @BM_THRIFT_ON@
+
+/* Thrift version string extracted from thrift/config.h */
+#cmakedefine BM_THRIFT_VERSION @BM_THRIFT_VERSION@
+
+/* Implement stacks as per P4_16 spec */
+#cmakedefine BM_WP4_16_STACKS @BM_WP4_16_STACKS@
+
+/* once: _INCLUDE_BM_CONFIG_H */
+#endif

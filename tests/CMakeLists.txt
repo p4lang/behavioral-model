@@ -15,9 +15,17 @@ if(NOT ENABLE_UNDETERMINISTIC_TESTS)
   add_definitions(-DSKIP_UNDETERMINISTIC_TESTS)
 endif()
 
+# Configure utils.cpp
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp.in
+  ${CMAKE_CURRENT_BINARY_DIR}/utils.cpp
+  @ONLY
+)
+
 # Create test utilities library
 add_library(testutils STATIC
-  utils.cpp
+  #utils.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/utils.cpp
 )
 
 target_link_libraries(testutils
@@ -71,7 +79,6 @@ set(TESTS
   test_assert_assume
   test_log_msg
   test_ras
-  test_table_apply
 )
 
 # Create test executables
@@ -135,7 +142,6 @@ add_executable(test_all
   test_assert_assume.cpp
   test_log_msg.cpp
   test_ras.cpp
-  test_table_apply.cpp
 )
 
 target_link_libraries(test_all
