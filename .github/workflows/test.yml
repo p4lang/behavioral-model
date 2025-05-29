@@ -41,9 +41,18 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get remove -y containerd containerd.io
-        sudo apt-get install -y containerd.io docker.io
+        # Remove all conflicting container packages
+        sudo apt-get remove -y containerd moby-containerd containerd.io || true
+        # Clean up any remaining packages
+        sudo apt-get autoremove -y
+        # Update package lists again
+        sudo apt-get update
+        # Install docker.io with specific version to avoid conflicts
+        sudo apt-get install -y docker.io=20.10.*
+        # Start docker service
         sudo systemctl start docker
+        # Verify docker is running
+        sudo docker --version
     - name: Build test Docker image
       env:
         CC: ${{ matrix.cc }}
@@ -82,9 +91,18 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get remove -y containerd containerd.io
-        sudo apt-get install -y containerd.io docker.io
+        # Remove all conflicting container packages
+        sudo apt-get remove -y containerd moby-containerd containerd.io || true
+        # Clean up any remaining packages
+        sudo apt-get autoremove -y
+        # Update package lists again
+        sudo apt-get update
+        # Install docker.io with specific version to avoid conflicts
+        sudo apt-get install -y docker.io=20.10.*
+        # Start docker service
         sudo systemctl start docker
+        # Verify docker is running
+        sudo docker --version
     - name: Build Dockerfile.noPI image
       run: |
         echo "Building noPI image..."
@@ -129,9 +147,18 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get remove -y containerd containerd.io
-        sudo apt-get install -y containerd.io docker.io
+        # Remove all conflicting container packages
+        sudo apt-get remove -y containerd moby-containerd containerd.io || true
+        # Clean up any remaining packages
+        sudo apt-get autoremove -y
+        # Update package lists again
+        sudo apt-get update
+        # Install docker.io with specific version to avoid conflicts
+        sudo apt-get install -y docker.io=20.10.*
+        # Start docker service
         sudo systemctl start docker
+        # Verify docker is running
+        sudo docker --version
     - name: Build test Docker image
       run: |
         echo "Building test image..."

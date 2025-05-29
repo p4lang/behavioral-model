@@ -26,7 +26,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        submodules: recursive
+        submodules: 'recursive'
+
+    - name: Set executable permissions
+      run: |
+        chmod +x ./ci/install-thrift.sh
+        chmod +x ./ci/codecov.sh
+        chmod +x ./ci/install-nanomsg.sh
 
     - name: Install dependencies
       run: |
