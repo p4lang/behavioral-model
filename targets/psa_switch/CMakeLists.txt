@@ -30,24 +30,24 @@ target_link_libraries(psaswitch
   ${THRIFT_LIBRARIES}
 )
 
-# Create psa_switch executable
-add_executable(psa_switch
-  main.cpp
-)
-
-target_link_libraries(psa_switch
-  bmruntime
-  runtimestubs
-  psaswitch
-)
-
-# Install psa_switch executable
-install(TARGETS psa_switch
-  RUNTIME DESTINATION bin
-)
-
-
 if(WITH_THRIFT)
+  # Create psa_switch executable
+  add_executable(psa_switch
+    main.cpp
+  )
+
+  target_link_libraries(psa_switch
+    bmruntime
+    runtimestubs
+    psaswitch
+    psaswitch_thrift
+  )
+
+  # Install psa_switch executable
+  install(TARGETS psa_switch
+    RUNTIME DESTINATION bin
+  )
+
 
   # FIXME: need to handle python part from makefile
 
@@ -72,7 +72,12 @@ if(WITH_THRIFT)
     COMMENT "Generating Thrift files for psa_switch"
   )
 
+  add_library(psaswitch_thrift STATIC
+    ${THRIFT_CPP_FILES}
+  )
+  target_include_directories(psaswitch_thrift PUBLIC ${THRIFT_GEN_CPP_DIR})
+
   target_include_directories(psaswitch PUBLIC ${THRIFT_GEN_CPP_DIR})
-  target_sources(psaswitch PUBLIC ${THRIFT_CPP_FILES})
+  #target_sources(psaswitch PUBLIC ${THRIFT_CPP_FILES})
   target_sources(psaswitch PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/thrift/src/PsaSwitch_server.cpp)
 endif()
