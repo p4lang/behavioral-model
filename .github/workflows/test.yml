@@ -41,7 +41,8 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y docker.io
+        sudo apt-get remove -y containerd containerd.io
+        sudo apt-get install -y containerd.io docker.io
         sudo systemctl start docker
     - name: Build test Docker image
       env:
@@ -81,7 +82,8 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y docker.io
+        sudo apt-get remove -y containerd containerd.io
+        sudo apt-get install -y containerd.io docker.io
         sudo systemctl start docker
     - name: Build Dockerfile.noPI image
       run: |
@@ -127,7 +129,8 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y docker.io
+        sudo apt-get remove -y containerd containerd.io
+        sudo apt-get install -y containerd.io docker.io
         sudo systemctl start docker
     - name: Build test Docker image
       run: |
