@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         config:
@@ -24,29 +24,40 @@ jobs:
     name: ${{ matrix.config.name }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y automake cmake libgmp-dev \
-          libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
-          libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
-          libevent-dev libtool flex bison pkg-config g++ libssl-dev
+        sudo apt-get install -y \
+          automake \
+          libgmp-dev \
+          libpcap-dev \
+          libboost-dev \
+          libboost-test-dev \
+          libboost-program-options-dev \
+          libboost-system-dev \
+          libboost-filesystem-dev \
+          libboost-thread-dev \
+          libevent-dev \
+          libtool \
+          flex \
+          bison \
+          pkg-config \
+          g++ \
+          libssl-dev
         ./ci/install-thrift.sh
         ./ci/install-nanomsg.sh
         sudo ldconfig
 
-    - name: Configure CMake
+    - name: Configure and Build
       run: |
-        mkdir build
+        mkdir -p build
         cd build
         cmake ${{ matrix.config.options }} ..
-
-    - name: Build
-      run: |
-        cd build
-        cmake --build .
+        cmake --build . -j$(nproc)
 
     - name: Test
       run: |
@@ -54,31 +65,43 @@ jobs:
         ctest --output-on-failure
 
   install:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: build
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y automake cmake libgmp-dev \
-          libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
-          libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
-          libevent-dev libtool flex bison pkg-config g++ libssl-dev
+        sudo apt-get install -y \
+          automake \
+          cmake \
+          libgmp-dev \
+          libpcap-dev \
+          libboost-dev \
+          libboost-test-dev \
+          libboost-program-options-dev \
+          libboost-system-dev \
+          libboost-filesystem-dev \
+          libboost-thread-dev \
+          libevent-dev \
+          libtool \
+          flex \
+          bison \
+          pkg-config \
+          g++ \
+          libssl-dev
         ./ci/install-thrift.sh
         ./ci/install-nanomsg.sh
         sudo ldconfig
 
-    - name: Configure CMake
+    - name: Configure, Build and Install
       run: |
-        mkdir build
+        mkdir -p build
         cd build
         cmake ..
-
-    - name: Build and Install
-      run: |
-        cd build
-        cmake --build .
+        cmake --build . -j$(nproc)
         sudo cmake --build . --target install

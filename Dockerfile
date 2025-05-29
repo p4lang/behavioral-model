@@ -13,6 +13,7 @@ ARG CXX=g++
 ARG GCOV=
 ARG sswitch_grpc=yes
 
+# Common dependencies for both build and runtime
 ENV BM_DEPS automake \
             build-essential \
             clang-8 \
@@ -29,6 +30,7 @@ ENV BM_DEPS automake \
             libboost-thread-dev \
             libtool \
             pkg-config
+
 ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
                     libboost-system1.71.0 \
                     libboost-filesystem1.71.0 \
@@ -38,21 +40,25 @@ ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
                     python3 \
                     python-is-python3
 
+# CMake configuration options
+ENV CMAKE_OPTS "-DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON"
+
 COPY . /behavioral-model/
 WORKDIR /behavioral-model/
+
 RUN apt-get update -qq && \
     apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
     ./autogen.sh && \
     mkdir -p build && cd build && \
-    if [ "$GCOV" != "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_COVERAGE=ON -DENABLE_WERROR=ON ..; fi && \
-    if [ "$GCOV" = "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..; fi && \
+    cmake $CMAKE_OPTS ${GCOV:+-DENABLE_COVERAGE=ON} .. && \
     make -j$(nproc) && \
     make install && cd .. && \
     ldconfig && \
-    (test "$IMAGE_TYPE" = "build" && \
-      apt-get purge -qq $BM_DEPS && \
-      apt-get autoremove --purge -qq && \
-      rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/* && \
-      echo 'Build image ready') || \
-    (test "$IMAGE_TYPE" = "test" && \
-      echo 'Test image ready')
+    if [ "$IMAGE_TYPE" = "build" ]; then \
+        apt-get purge -qq $BM_DEPS && \
+        apt-get autoremove --purge -qq && \
+        rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/* && \
+        echo 'Build image ready'; \
+    else \
+        echo 'Test image ready'; \
+    fi
