@@ -93,6 +93,8 @@ if(WITH_THRIFT)
   target_sources(simpleswitch PRIVATE
     thrift/src/SimpleSwitch_server.cpp
   )
+  add_custom_target(genthrift_simpleswitch DEPENDS ${THRIFT_CPP_FILES})
+  add_dependencies(simpleswitch genthrift_simpleswitch)
   
   # Create simple_switch executable
   add_executable(simple_switch
