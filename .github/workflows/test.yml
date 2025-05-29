@@ -11,7 +11,7 @@ on:
 jobs:
   check-changes:
     name: Check whether tests need to be run based on diff
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
     - uses: antrea-io/has-changes@v2
@@ -24,7 +24,7 @@ jobs:
   test:
     needs: check-changes
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         include:
@@ -40,40 +40,32 @@ jobs:
         submodules: 'recursive'
     - name: Install system dependencies
       run: |
-        echo "Adding cmake repository..."
         sudo apt-get update
-        sudo apt-get install -y software-properties-common
-        sudo apt-add-repository -y ppa:kitware/cmake
-        sudo apt-get update
-        for i in {1..3}; do
-          echo "Attempt $i to install cmake..."
-          sudo apt-get install -y cmake && cmake --version && break || sleep 10;
-        done
-        # Verify installation was successful
-        if ! command -v cmake &> /dev/null; then
-          echo "cmake installation failed after 3 attempts"
-          exit 1
-        fi
-        echo "cmake installation successful"
-        # Cleanup
-        sudo apt-get clean
-        sudo rm -rf /var/lib/apt/lists/*
+        sudo apt-get install -y docker.io
+        sudo systemctl start docker
     - name: Build test Docker image
       env:
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
+        GCOV: ""
       run: |
-        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV .
-    - name: Prepare build directory
-      run: |
-        docker run --rm -w /behavioral-model bm /bin/bash -c "
-          mkdir -p build &&
-          cd build &&
-          cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON -DENABLE_COVERAGE=$GCOV .."
+        echo "Building with CC=$CC CXX=$CXX"
+        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV . 2>&1 | tee docker-build.log
+        if [ ${PIPESTATUS[0]} -ne 0 ]; then
+          echo "Docker build failed. Log:"
+          cat docker-build.log
+          exit 1
+        fi
     - name: Run tests
       run: |
+        echo "Running tests..."
         ci_env=`bash <(curl -s https://codecov.io/env)`
-        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "cd build && make check -j$(nproc) && cd .. && ./ci/codecov.sh"
+        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "cd build && make check -j$(nproc) && cd .. && ./ci/codecov.sh" 2>&1 | tee test-run.log
+        if [ ${PIPESTATUS[0]} -ne 0 ]; then
+          echo "Tests failed. Log:"
+          cat test-run.log
+          exit 1
+        fi
     - name: Check style
       run: |
         ./tools/check_style.sh
@@ -81,42 +73,47 @@ jobs:
   test-no-pi:
     needs: check-changes
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: Install system dependencies
       run: |
-        echo "Adding cmake repository..."
         sudo apt-get update
-        sudo apt-get install -y software-properties-common
-        sudo apt-add-repository -y ppa:kitware/cmake
-        sudo apt-get update
-        for i in {1..3}; do
-          echo "Attempt $i to install cmake..."
-          sudo apt-get install -y cmake && cmake --version && break || sleep 10;
-        done
-        # Verify installation was successful
-        if ! command -v cmake &> /dev/null; then
-          echo "cmake installation failed after 3 attempts"
+        sudo apt-get install -y docker.io
+        sudo systemctl start docker
+    - name: Build Dockerfile.noPI image
+      run: |
+        echo "Building noPI image..."
+        docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI . 2>&1 | tee docker-build-nopi.log
+        if [ ${PIPESTATUS[0]} -ne 0 ]; then
+          echo "Docker build failed. Log:"
+          cat docker-build-nopi.log
           exit 1
         fi
-        echo "cmake installation successful"
-        # Cleanup
-        sudo apt-get clean
-        sudo rm -rf /var/lib/apt/lists/*
-    - name: Build Dockerfile.noPI image
-      run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
     - name: Build BMv2 inside Docker
       run: |
+        echo "Building BMv2 inside Docker..."
         docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "
           mkdir -p build &&
           cd build &&
           cmake -DWITH_PDFIXED=ON -DWITH_PI=OFF -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON .. &&
-          make -j$(nproc)"
+          make -j$(nproc)" 2>&1 | tee build-nopi.log
+        if [ ${PIPESTATUS[0]} -ne 0 ]; then
+          echo "Build failed. Log:"
+          cat build-nopi.log
+          exit 1
+        fi
     - name: Run tests
-      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "cd build && make check -j$(nproc)"
+      run: |
+        echo "Running tests..."
+        docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "cd build && make check -j$(nproc)" 2>&1 | tee test-run-nopi.log
+        if [ ${PIPESTATUS[0]} -ne 0 ]; then
+          echo "Tests failed. Log:"
+          cat test-run-nopi.log
+          exit 1
+        fi
 
   test-ubuntu22:
     needs: check-changes
@@ -129,26 +126,24 @@ jobs:
         fetch-depth: 0
     - name: Install system dependencies
       run: |
-        echo "Installing cmake with retry mechanism..."
-        for i in {1..3}; do
-          echo "Attempt $i to install cmake..."
-          sudo apt-get update && sudo apt-get install -y cmake && cmake --version && break || sleep 10;
-        done
-        # Verify installation was successful
-        if ! command -v cmake &> /dev/null; then
-          echo "cmake installation failed after 3 attempts"
+        sudo apt-get update
+        sudo apt-get install -y docker.io
+        sudo systemctl start docker
+    - name: Build test Docker image
+      run: |
+        echo "Building test image..."
+        docker build -t bm --build-arg IMAGE_TYPE=test . 2>&1 | tee docker-build-ubuntu22.log
+        if [ ${PIPESTATUS[0]} -ne 0 ]; then
+          echo "Docker build failed. Log:"
+          cat docker-build-ubuntu22.log
           exit 1
         fi
-        echo "cmake installation successful"
-    - name: Make script executable
-      run: chmod +x ./install_deps_ubuntu_22.04.sh
-    - name: Install dependencies
-      run: sudo ./install_deps_ubuntu_22.04.sh
-    - name: Build BMv2
-      run: |
-        mkdir -p build
-        cd build
-        cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..
-        make -j$(nproc)
     - name: Run tests
-      run: cd build && make check -j$(nproc)
+      run: |
+        echo "Running tests..."
+        docker run --rm -w /behavioral-model bm /bin/bash -c "cd build && make check -j$(nproc)" 2>&1 | tee test-run-ubuntu22.log
+        if [ ${PIPESTATUS[0]} -ne 0 ]; then
+          echo "Tests failed. Log:"
+          cat test-run-ubuntu22.log
+          exit 1
+        fi

@@ -9,6 +9,7 @@ Runtime, it only builds bmv2 simple_switch."
 # removed from the image.
 ARG IMAGE_TYPE=build
 
+# Common dependencies for both build and runtime
 ENV BM_DEPS automake \
             build-essential \
             pkg-config \
@@ -22,6 +23,7 @@ ENV BM_DEPS automake \
             libboost-filesystem-dev \
             libboost-thread-dev \
             libtool
+
 ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
                     libboost-system1.71.0 \
                     libboost-filesystem1.71.0 \
@@ -31,20 +33,25 @@ ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
                     python3 \
                     python-is-python3
 
+# CMake configuration options
+ENV CMAKE_OPTS "-DENABLE_DEBUGGER=ON"
+
 COPY . /behavioral-model/
 WORKDIR /behavioral-model/
+
 RUN apt-get update -qq && \
     apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
     ./autogen.sh && \
     mkdir -p build && cd build && \
-    cmake -DENABLE_DEBUGGER=ON .. && \
+    cmake $CMAKE_OPTS .. && \
     make -j$(nproc) && \
     make install && cd .. && \
     ldconfig && \
-    (test "$IMAGE_TYPE" = "build" && \
+    if [ "$IMAGE_TYPE" = "build" ]; then \
         apt-get purge -qq $BM_DEPS && \
         apt-get autoremove --purge -qq && \
         rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/* && \
-        echo 'Build image ready') || \
-    (test "$IMAGE_TYPE" = "test" && \
-      echo 'Test image ready')
+        echo 'Build image ready'; \
+    else \
+        echo 'Test image ready'; \
+    fi

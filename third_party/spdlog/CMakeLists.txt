@@ -1,5 +1,4 @@
 # spdlog is a header-only library, so we just need to install the headers
-file(GLOB_RECURSE SPDLOG_HEADERS "bm/spdlog/*.h" "bm/spdlog/*.cc")
 
 # Create interface library
 add_library(spdlog INTERFACE)
