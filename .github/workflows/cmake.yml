@@ -36,44 +36,116 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        # Install system dependencies
-        sudo apt-get install -y \
-          automake \
-          libgmp-dev \
-          libpcap-dev \
-          libboost-dev \
-          libboost-test-dev \
-          libboost-program-options-dev \
-          libboost-system-dev \
-          libboost-filesystem-dev \
-          libboost-thread-dev \
-          libevent-dev \
-          libtool \
-          flex \
-          bison \
-          pkg-config \
-          g++ \
-          libssl-dev \
-          libprotobuf-dev \
-          protobuf-compiler \
-          cabal-install \
-          ghc
+        # Switch to alternative mirrors
+        sudo sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+        sudo sed -i 's|http://security.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+        
+        # Retry mechanism for apt-get update
+        for i in {1..3}; do
+          sudo apt-get update && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to update package lists after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying apt-get update... (Attempt $i)"
+            sleep 5
+          }
+        done
+        
+        # Install system dependencies with retry
+        for i in {1..3}; do
+          sudo apt-get install -y \
+            automake \
+            libgmp-dev \
+            libpcap-dev \
+            libboost-dev \
+            libboost-test-dev \
+            libboost-program-options-dev \
+            libboost-system-dev \
+            libboost-filesystem-dev \
+            libboost-thread-dev \
+            libevent-dev \
+            libtool \
+            flex \
+            bison \
+            pkg-config \
+            g++ \
+            libssl-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            cabal-install \
+            ghc && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to install system dependencies after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying system dependencies installation... (Attempt $i)"
+            sleep 5
+          }
+        done
 
-        # Install specific version of network package
-        cabal update
-        cabal install network --constraint="network < 3.0"
+        # Install specific version of network package with retry
+        for i in {1..3}; do
+          cabal update && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to update cabal after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying cabal update... (Attempt $i)"
+            sleep 5
+          }
+        done
+        
+        for i in {1..3}; do
+          cabal install network --constraint="network < 3.0" && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to install network package after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying network package installation... (Attempt $i)"
+            sleep 5
+          }
+        done
 
-        # Install Thrift with specific constraints
-        cabal install thrift --constraint="network < 3.0" --constraint="base >= 4.7 && < 4.17"
+        # Install Thrift with specific constraints and retry
+        for i in {1..3}; do
+          cabal install thrift --constraint="network < 3.0" --constraint="base >= 4.7 && < 4.17" && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to install thrift after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying thrift installation... (Attempt $i)"
+            sleep 5
+          }
+        done
 
         # Set up protobuf paths
         echo "Protobuf_INCLUDE_DIR=/usr/include" >> $GITHUB_ENV
         echo "Protobuf_LIBRARIES=/usr/lib/libprotobuf.so" >> $GITHUB_ENV
 
-        # Install other dependencies
-        ./ci/install-thrift.sh
-        ./ci/install-nanomsg.sh
+        # Install other dependencies with retry
+        for i in {1..3}; do
+          ./ci/install-thrift.sh && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to install thrift after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying thrift installation... (Attempt $i)"
+            sleep 5
+          }
+        done
+        
+        for i in {1..3}; do
+          ./ci/install-nanomsg.sh && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to install nanomsg after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying nanomsg installation... (Attempt $i)"
+            sleep 5
+          }
+        done
+        
         sudo ldconfig
 
     - name: Configure and Build
