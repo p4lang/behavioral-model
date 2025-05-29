@@ -40,18 +40,60 @@ jobs:
         submodules: 'recursive'
     - name: Install system dependencies
       run: |
-        sudo apt-get update
-        # Remove all conflicting container packages
-        sudo apt-get remove -y containerd moby-containerd containerd.io || true
-        # Clean up any remaining packages
-        sudo apt-get autoremove -y
-        # Update package lists again
-        sudo apt-get update
-        # Install docker.io with specific version to avoid conflicts
-        sudo apt-get install -y docker.io=20.10.*
+        # Switch to alternative mirrors
+        sudo sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+        sudo sed -i 's|http://security.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+        
+        # Retry mechanism for apt-get update
+        for i in {1..3}; do
+          sudo apt-get update && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to update package lists after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying apt-get update... (Attempt $i)"
+            sleep 5
+          }
+        done
+        
+        # Remove conflicting packages with retry
+        for i in {1..3}; do
+          sudo apt-get remove -y containerd moby-containerd containerd.io && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to remove packages after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying package removal... (Attempt $i)"
+            sleep 5
+          }
+        done
+        
+        # Clean up with retry
+        for i in {1..3}; do
+          sudo apt-get autoremove -y && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to autoremove packages after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying autoremove... (Attempt $i)"
+            sleep 5
+          }
+        done
+        
+        # Install docker.io with retry
+        for i in {1..3}; do
+          sudo apt-get install -y docker.io=20.10.* && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to install docker.io after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying docker.io installation... (Attempt $i)"
+            sleep 5
+          }
+        done
+        
         # Start docker service
         sudo systemctl start docker
-        # Verify docker is running
         sudo docker --version
     - name: Build test Docker image
       env:
