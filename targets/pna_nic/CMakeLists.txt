@@ -30,23 +30,24 @@ target_link_libraries(pnanic
   ${THRIFT_LIBRARIES}
 )
 
-# Create pna_nic executable
-add_executable(pna_nic
-  main.cpp
-)
-
-target_link_libraries(pna_nic
-  bmruntime
-  runtimestubs
-  pnanic
-)
-
-# Install pna_nic executable
-install(TARGETS pna_nic
-  RUNTIME DESTINATION bin
-)
-
 if(WITH_THRIFT)
+  # Create pna_nic executable
+  add_executable(pna_nic
+    main.cpp
+  )
+
+  target_link_libraries(pna_nic
+    bmruntime
+    runtimestubs
+    pnanic
+    pnanic_thrift
+  )
+
+  # Install pna_nic executable
+  install(TARGETS pna_nic
+    RUNTIME DESTINATION bin
+  )
+
   # FIXME: need to handle python part from makefile
 
   set(THRIFT_GEN_CPP_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp)
@@ -70,7 +71,12 @@ if(WITH_THRIFT)
     COMMENT "Generating Thrift files for pna_nic"
   )
 
+  add_library(pnanic_thrift STATIC
+    ${THRIFT_CPP_FILES}
+  )
+  target_include_directories(pnanic_thrift PUBLIC ${THRIFT_GEN_CPP_DIR})
+
   target_include_directories(pnanic PUBLIC ${THRIFT_GEN_CPP_DIR})
-  target_sources(pnanic PUBLIC ${THRIFT_CPP_FILES})
+  #target_sources(pnanic PUBLIC ${THRIFT_CPP_FILES})
   target_sources(pnanic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/thrift/src/PnaNic_server.cpp)
 endif()
