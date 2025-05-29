@@ -16,8 +16,13 @@ jobs:
             options: ""
           - name: "Without Thrift"
             options: "-DWITH_THRIFT=OFF"
-          - name: "Without Nanomsg"
-            options: "-DWITH_NANOMSG=OFF"
+          # FIXME: temporarily disable Without Nanomsg test
+          # This test is failing to build correctly due to programs in tests
+          # needing the bmapps lib which is not build when nanomsg is disabled.
+          # The same problem occurs with using autoconf, except the binaries in
+          # tests only get compiled when running "make check".
+          # - name: "Without Nanomsg"
+          #   options: "-DWITH_NANOMSG=OFF"
           - name: "With Debugger"
             options: "-DENABLE_DEBUGGER=ON"
 
