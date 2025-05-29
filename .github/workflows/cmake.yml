@@ -37,6 +37,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
+        # Install system dependencies
         sudo apt-get install -y \
           automake \
           libgmp-dev \
@@ -53,7 +54,24 @@ jobs:
           bison \
           pkg-config \
           g++ \
-          libssl-dev
+          libssl-dev \
+          libprotobuf-dev \
+          protobuf-compiler \
+          cabal-install \
+          ghc
+
+        # Install specific version of network package
+        cabal update
+        cabal install network --constraint="network < 3.0"
+
+        # Install Thrift with specific constraints
+        cabal install thrift --constraint="network < 3.0" --constraint="base >= 4.7 && < 4.17"
+
+        # Set up protobuf paths
+        echo "Protobuf_INCLUDE_DIR=/usr/include" >> $GITHUB_ENV
+        echo "Protobuf_LIBRARIES=/usr/lib/libprotobuf.so" >> $GITHUB_ENV
+
+        # Install other dependencies
         ./ci/install-thrift.sh
         ./ci/install-nanomsg.sh
         sudo ldconfig

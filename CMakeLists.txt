@@ -33,3 +33,20 @@ add_custom_target(check
   COMMAND ctest --output-on-failure
   COMMENT "Running tests..."
 )
+
+# Find Protobuf
+find_package(Protobuf REQUIRED)
+if(NOT Protobuf_FOUND)
+    message(FATAL_ERROR "Protobuf not found. Please install libprotobuf-dev and protobuf-compiler")
+endif()
+
+# Set Protobuf paths if not found automatically
+if(NOT Protobuf_INCLUDE_DIR)
+    set(Protobuf_INCLUDE_DIR "/usr/include")
+endif()
+if(NOT Protobuf_LIBRARIES)
+    set(Protobuf_LIBRARIES "/usr/lib/libprotobuf.so")
+endif()
+
+# Add Protobuf include directories
+include_directories(${Protobuf_INCLUDE_DIR})
