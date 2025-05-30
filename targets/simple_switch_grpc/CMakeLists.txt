@@ -14,8 +14,8 @@ endif()
 
 ### Find Protobuf and gRPC
 ##find_package(Protobuf REQUIRED)
-find_package(gRPC REQUIRED)
-find_package(absl REQUIRED)
+##find_package(gRPC REQUIRED)
+##find_package(absl REQUIRED)
 ##
 ### Generate Protobuf and gRPC files
 ##set(PROTO_FILES
