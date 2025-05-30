@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 # Include all necessary files for macros
 include(CheckIncludeFile)
+include(CheckIncludeFiles)
 include(CheckIncludeFileCXX)
 
 # Add cmake modules path
@@ -16,6 +17,9 @@ project(behavioral-model
   DESCRIPTION "Behavioral Model (BMv2) - P4 software switch"
   LANGUAGES CXX C
 )
+
+# Enable testing
+include(CTest)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -127,6 +131,14 @@ if(WITH_PI)
   # Find Protobuf and gRPC
   find_package(Protobuf REQUIRED)
   find_package(gRPC REQUIRED)
+
+  # Verify that PI headers are present
+  check_include_files("PI/pi.h;PI/target/pi_imp.h;PI/p4info.h"
+    HAVE_PI_HEADERS LANGUAGE CXX)
+  if (NOT HAVE_PI_HEADERS)
+    set(PI_URL "https://github.com/p4lang/PI/")
+    message(SEND_ERROR "Cannot find PI headers, did you install ${PI_URL}")
+  endif()
 endif()
 
 if(ENABLE_MODULES)
