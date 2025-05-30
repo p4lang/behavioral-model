@@ -68,6 +68,8 @@ if(WITH_THRIFT)
     COMMAND mkdir -p ${THRIFT_GEN_CPP_DIR}/bm
     COMMAND ${THRIFT_COMPILER} -out ${THRIFT_GEN_CPP_DIR}/bm --gen cpp -r ${THRIFT_FILE}
     COMMAND ${THRIFT_COMPILER} --gen py -r -o ${CMAKE_CURRENT_BINARY_DIR} ${THRIFT_FILE}
+    # FIXME: ported from Makefile -- some thrift versions don't create all expected outputs
+    COMMAND touch ${THRIFT_CPP_FILES}
     DEPENDS ${THRIFT_FILE}
     COMMENT "Generating Thrift files for psa_switch"
   )
