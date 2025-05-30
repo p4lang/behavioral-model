@@ -16,16 +16,30 @@ include_directories(
 add_definitions(-DTESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
 # Create test executables
-add_executable(test_packet_redirect main.cpp test_packet_redirect.cpp)
-target_link_libraries(test_packet_redirect
-  gtest
-  bmapps
-  bmsim
-  simpleswitch
-  test_utils
-  ${THRIFT_LIBRARIES}
-  Boost::system
-  Boost::filesystem
-  Boost::program_options
+set(TESTS
+  test_packet_redirect
+  test_truncate
+  test_swap
+  test_queueing
+  test_recirc
+  test_parser_error
 )
-add_test(NAME test_packet_redirect COMMAND test_packet_redirect)
+
+foreach(TEST ${TESTS})
+  add_executable(ss_test_${TEST} main.cpp ${TEST}.cpp)
+  target_link_libraries(ss_test_${TEST}
+    gtest
+    bmapps
+    bmsim
+    simpleswitch
+    test_utils
+    ${THRIFT_LIBRARIES}
+    Boost::system
+    Boost::filesystem
+    Boost::program_options
+  )
+  set_target_properties(ss_test_${TEST} PROPERTIES
+    OUTPUT_NAME ${TEST}
+  )
+  add_test(NAME simple_switch/${TEST} COMMAND ${TEST})
+endforeach()
