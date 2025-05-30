@@ -80,6 +80,8 @@ if(WITH_THRIFT)
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/gen-py
     COMMAND ${THRIFT_COMPILER} -out ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm --gen cpp -r ${THRIFT_IDL}
     COMMAND ${THRIFT_COMPILER} -o ${CMAKE_CURRENT_BINARY_DIR} --gen py -r ${THRIFT_IDL}
+    # FIXME: ported from Makefile -- some thrift versions don't create all expected outputs
+    COMMAND touch ${THRIFT_CPP_FILES}
     DEPENDS ${THRIFT_IDL}
     COMMENT "Generating Thrift files for simple_switch"
   )

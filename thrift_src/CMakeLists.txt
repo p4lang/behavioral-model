@@ -61,6 +61,8 @@ foreach(THRIFT_FILE ${THRIFT_FILES})
     COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm
     COMMAND ${THRIFT_COMPILER} -out ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm --gen cpp -r ${THRIFT_FILE}
     COMMAND ${THRIFT_COMPILER} --gen py -r -o ${CMAKE_CURRENT_BINARY_DIR} ${THRIFT_FILE}
+    # FIXME: ported from Makefile -- some thrift versions don't create all expected outputs
+    COMMAND touch ${THRIFT_CPP_FILES}
     DEPENDS ${THRIFT_FILE}
     COMMENT "Generating Thrift files for ${THRIFT_NAME}"
   )
