@@ -16,6 +16,8 @@ if(NOT ENABLE_UNDETERMINISTIC_TESTS)
 endif()
 
 # Configure utils.cpp
+set(top_srcdir ${CMAKE_SOURCE_DIR})
+set(top_builddir ${CMAKE_BINARY_DIR})
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp.in
   ${CMAKE_CURRENT_BINARY_DIR}/utils.cpp
