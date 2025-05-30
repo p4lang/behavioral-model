@@ -25,6 +25,7 @@ file(MAKE_DIRECTORY ${THRIFT_GEN_PY_DIR})
 
 # Generate Thrift sources
 foreach(THRIFT_FILE ${THRIFT_FILES})
+  message(STATUS "thrift_src: ${THRIFT_FILE}")
   get_filename_component(THRIFT_NAME ${THRIFT_FILE} NAME_WE)
   
   set(THRIFT_CPP_FILES
