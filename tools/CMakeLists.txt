@@ -50,11 +50,21 @@ endif()
 
 # Make scripts executable
 foreach(script ${BIN_SCRIPTS})
-  file(CHMOD ${script} 
-    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                GROUP_READ GROUP_EXECUTE
-                WORLD_READ WORLD_EXECUTE
-  )
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
+    file(CHMOD ${script}
+      PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                  GROUP_READ GROUP_EXECUTE
+                  WORLD_READ WORLD_EXECUTE
+    )
+  else()
+    get_filename_component(script_no_dir ${script} NAME_WE)
+    add_custom_target(
+      make_${script_no_dir}_executable
+      COMMAND ${CMAKE_COMMAND} -E chmod +x ${script}
+      DEPENDS ${script}
+      COMMENT "Making ${script} executable"
+    )
+  endif()
 endforeach()
 
 # Install Python scripts
