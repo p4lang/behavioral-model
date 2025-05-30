@@ -143,11 +143,20 @@ if(WITH_THRIFT)
     @ONLY
   )
   
-  file(CHMOD ${CMAKE_CURRENT_BINARY_DIR}/simple_switch_CLI
-    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                GROUP_READ GROUP_EXECUTE
-                WORLD_READ WORLD_EXECUTE
-  )
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.19")
+    file(CHMOD ${CMAKE_CURRENT_BINARY_DIR}/simple_switch_CLI
+      PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                  GROUP_READ GROUP_EXECUTE
+                  WORLD_READ WORLD_EXECUTE
+    )
+  else()
+    add_custom_target(
+      make_simple_switch_CLI_executable
+      COMMAND ${CMAKE_COMMAND} -E chmod +x ${CMAKE_CURRENT_BINARY_DIR}/simple_switch_CLI
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/simple_switch_CLI
+      COMMENT "Making simple_switch_CLI executable"
+    )
+  endif()
   
   install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/simple_switch_CLI
     DESTINATION bin

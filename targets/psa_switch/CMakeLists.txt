@@ -71,15 +71,16 @@ if(WITH_THRIFT)
     DEPENDS ${THRIFT_FILE}
     COMMENT "Generating Thrift files for psa_switch"
   )
+  add_custom_target(genthrift_psaswitch DEPENDS ${THRIFT_CPP_FILES})
 
   add_library(psaswitch_thrift STATIC
     ${THRIFT_CPP_FILES}
   )
   target_include_directories(psaswitch_thrift PUBLIC ${THRIFT_GEN_CPP_DIR})
+  add_dependencies(psaswitch_thrift genthrift_psaswitch)
 
   target_include_directories(psaswitch PUBLIC ${THRIFT_GEN_CPP_DIR})
   #target_sources(psaswitch PUBLIC ${THRIFT_CPP_FILES})
   target_sources(psaswitch PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/thrift/src/PsaSwitch_server.cpp)
-  add_custom_target(genthrift_psaswitch DEPENDS ${THRIFT_CPP_FILES})
   add_dependencies(psaswitch genthrift_psaswitch)
 endif()
