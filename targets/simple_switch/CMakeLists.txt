@@ -83,17 +83,18 @@ if(WITH_THRIFT)
     DEPENDS ${THRIFT_IDL}
     COMMENT "Generating Thrift files for simple_switch"
   )
+  add_custom_target(genthrift_simpleswitch DEPENDS ${THRIFT_CPP_FILES})
   
   # Create simpleswitch_thrift library
   add_library(simpleswitch_thrift STATIC
     ${THRIFT_CPP_FILES}
   )
+  add_dependencies(simpleswitch_thrift genthrift_simpleswitch)
   
   # Add Thrift server to simpleswitch library
   target_sources(simpleswitch PRIVATE
     thrift/src/SimpleSwitch_server.cpp
   )
-  add_custom_target(genthrift_simpleswitch DEPENDS ${THRIFT_CPP_FILES})
   add_dependencies(simpleswitch genthrift_simpleswitch)
   
   # Create simple_switch executable
