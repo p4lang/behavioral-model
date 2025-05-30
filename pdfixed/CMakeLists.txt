@@ -65,6 +65,8 @@ foreach(THRIFT_FILE ${THRIFT_FILES})
   list(APPEND ALL_THRIFT_CPP_FILES ${THRIFT_CPP_FILES})
 endforeach()
 
+add_custom_target(genthrift_pdfixed DEPENDS ${ALL_THRIFT_CPP_FILES})
+
 # Create libraries
 add_library(bmpdfixed STATIC
   src/pd_notifications.cpp
@@ -95,3 +97,4 @@ target_include_directories(bmpdfixed_thrift PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp
 )
+add_dependencies(bmpdfixed_thrift genthrift_pdfixed)

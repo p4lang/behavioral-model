@@ -70,15 +70,16 @@ if(WITH_THRIFT)
     DEPENDS ${THRIFT_FILE}
     COMMENT "Generating Thrift files for pna_nic"
   )
+  add_custom_target(genthrift_pnanic DEPENDS ${THRIFT_CPP_FILES})
 
   add_library(pnanic_thrift STATIC
     ${THRIFT_CPP_FILES}
   )
   target_include_directories(pnanic_thrift PUBLIC ${THRIFT_GEN_CPP_DIR})
+  add_dependencies(pnanic_thrift genthrift_pnanic)
 
   target_include_directories(pnanic PUBLIC ${THRIFT_GEN_CPP_DIR})
   #target_sources(pnanic PUBLIC ${THRIFT_CPP_FILES})
   target_sources(pnanic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/thrift/src/PnaNic_server.cpp)
-  add_custom_target(genthrift_pnanic DEPENDS ${THRIFT_CPP_FILES})
   add_dependencies(pnanic genthrift_pnanic)
 endif()
