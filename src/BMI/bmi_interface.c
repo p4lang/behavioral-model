@@ -18,6 +18,8 @@
  *
  */
 
+#include <assert.h>
+#include <limits.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -171,6 +173,8 @@ int bmi_interface_recv_with_copy(bmi_interface_t *bmi, char *data, int max_len) 
     pcap_dump_flush(bmi->pcap_input_dumper);
   }
 
+  assert(pkt_header->len < INT_MAX);
+  int pkt_header_len = (int)pkt_header->len;
   rv = (max_len < pkt_header->len) ? max_len : pkt_header->len;
 
   memcpy(data, pkt_data, rv);
