@@ -42,6 +42,7 @@ ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
 COPY . /behavioral-model/
 WORKDIR /behavioral-model/
 RUN apt-get update -qq && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata && \
     apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
     ./autogen.sh && \
     mkdir -p build && cd build && \
