@@ -54,6 +54,14 @@ if(ENABLE_COVERAGE)
   link_libraries(gcov)
 endif()
 
+# Seeing build failures that are fixed by including atomic when compiling with clang
+# FIXME: understand why this is -- wasn't required in autoconf build
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  link_libraries(${TEST_NAME}
+    atomic
+  )
+endif()
+
 # Make all code position-independent
 # (FIXME: which files should be PIC?)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
