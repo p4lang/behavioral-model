@@ -12,8 +12,9 @@ jobs:
     strategy:
       matrix:
         config:
-          - name: "Basic Build"
-            options: ""
+          # Disable basic build -- duplicated by the install step
+          #- name: "Basic Build"
+          #  options: ""
           - name: "Without Thrift"
             options: "-DWITH_THRIFT=OFF"
           # FIXME: temporarily disable Without Nanomsg test
@@ -62,7 +63,7 @@ jobs:
 
   install:
     runs-on: ubuntu-latest
-    needs: build
+    name: "Build and install"
 
     steps:
     - uses: actions/checkout@v4
@@ -86,8 +87,12 @@ jobs:
         cd build
         cmake ..
 
-    - name: Build and Install
+    - name: Build
       run: |
         cd build
         cmake --build .
+
+    - name: Install
+      run: |
+        cd build
         sudo cmake --build . --target install
