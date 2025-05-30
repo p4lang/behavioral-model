@@ -41,7 +41,7 @@ foreach(THRIFT_FILE ${THRIFT_FILES})
   string(REGEX MATCH "service +([A-Za-z0-9_]+) *{" match "${thrift_content}")
 
   if (match)
-    message(STATUS "Full match: ${match}")
+    #message(STATUS "Full match: ${match}")
     string(REGEX REPLACE "service +" "" match "${match}")
     string(REGEX REPLACE " *{" "" service "${match}")
     message(STATUS "Extracted service: ${service}")
@@ -51,8 +51,7 @@ foreach(THRIFT_FILE ${THRIFT_FILES})
       ${THRIFT_GEN_CPP_DIR}/bm/${service}.h
     )
   else()
-  message(STATUS "No match: ${THRIFT_FILE}")
-      #message(FATAL_ERROR "Version not found in file")
+    message(STATUS "No match: ${THRIFT_FILE}")
   endif()
 
   
@@ -66,6 +65,9 @@ foreach(THRIFT_FILE ${THRIFT_FILES})
   )
   
   list(APPEND ALL_THRIFT_CPP_FILES ${THRIFT_CPP_FILES})
+
+  add_custom_target(genthrift_${THRIFT_NAME} DEPENDS ${THRIFT_CPP_FILES})
+  set(THRIFT_DEPENDS ${THRIFT_DEPENDS} genthrift_${THRIFT_NAME})
 endforeach()
 
 # Create runtimestubs library
@@ -74,6 +76,7 @@ add_library(runtimestubs STATIC ${ALL_THRIFT_CPP_FILES})
 target_link_libraries(runtimestubs
   ${THRIFT_LIBRARIES}
 )
+add_dependencies(runtimestubs ${THRIFT_DEPENDS})
 
 # Install headers
 install(DIRECTORY ${THRIFT_GEN_CPP_DIR}/
