@@ -12,6 +12,7 @@ ARG IMAGE_TYPE=build
 ENV BM_DEPS automake \
             build-essential \
             pkg-config \
+            cmake \
             curl \
             git \
             libgmp-dev \

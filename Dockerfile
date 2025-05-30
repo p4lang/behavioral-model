@@ -17,6 +17,7 @@ ENV BM_DEPS automake \
             build-essential \
             clang-8 \
             clang-10 \
+            cmake \
             curl \
             git \
             lcov \
