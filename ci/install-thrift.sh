@@ -12,7 +12,12 @@ set -e
 git clone -b 0.13.0 https://github.com/apache/thrift.git thrift-0.13.0
 cd thrift-0.13.0
 ./bootstrap.sh
-./configure --with-cpp=yes --with-c_glib=no --with-java=no --with-ruby=no --with-erlang=no --with-go=no --with-nodejs=no
+./configure --with-as3=no --with-c_glib=no --with-csharp=no --with-cpp=yes \
+    --with-cl=no --with-d=no --with-dart=no --with-dotnetcore=no \
+    --with-erlang=no --with-go=no --with-haskell=no --with-haxe=no \
+    --with-java=no --with-lua=no --with-nodejs=no --with-nodets=no \
+    --with-perl=no --with-php=no --with-python=yes --with-py3=no \
+    --with-qt5=no --with-ruby=no --with-rs=no --with-swift=no
 make -j2 && sudo make install
 cd lib/py
 sudo python3 setup.py install

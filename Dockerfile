@@ -17,6 +17,7 @@ ENV BM_DEPS automake \
             build-essential \
             clang-8 \
             clang-10 \
+            cmake \
             curl \
             git \
             lcov \
@@ -41,12 +42,14 @@ ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
 COPY . /behavioral-model/
 WORKDIR /behavioral-model/
 RUN apt-get update -qq && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata && \
     apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
     ./autogen.sh && \
-    if [ "$GCOV" != "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-coverage --enable-Werror; fi && \
-    if [ "$GCOV" = "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror; fi && \
+    mkdir -p build && cd build && \
+    if [ "$GCOV" != "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_COVERAGE=ON -DENABLE_WERROR=ON ..; fi && \
+    if [ "$GCOV" = "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..; fi && \
     make -j$(nproc) && \
-    make install-strip && \
+    make install && cd .. && \
     ldconfig && \
     (test "$IMAGE_TYPE" = "build" && \
       apt-get purge -qq $BM_DEPS && \

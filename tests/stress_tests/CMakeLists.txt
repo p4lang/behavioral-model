@@ -1,0 +1,33 @@
+# Tests to compile
+set(TESTS
+  test_parser_deparser_1
+  test_exact_match_1
+  test_LPM_match_1
+  test_ternary_match_1
+)
+
+# Common files to include in all tests
+set(COMMON_SRCS
+  ../bmi_stubs.c
+  stress_utils.cpp
+)
+
+foreach(target ${TESTS})
+
+  add_executable(${target}
+    ${target}.cpp
+    ${COMMON_SRCS}
+  )
+  target_link_libraries(${target}
+    gtest
+    bmapps
+    bmsim
+    bflpmtrie
+    jsoncpp
+    ${THRIFT_LIBRARIES}
+    Boost::system
+    Boost::filesystem
+    Boost::program_options
+  )
+
+endforeach()
