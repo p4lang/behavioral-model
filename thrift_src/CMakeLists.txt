@@ -66,9 +66,11 @@ foreach(THRIFT_FILE ${THRIFT_FILES})
   
   list(APPEND ALL_THRIFT_CPP_FILES ${THRIFT_CPP_FILES})
 
-  add_custom_target(genthrift_${THRIFT_NAME} DEPENDS ${THRIFT_CPP_FILES})
-  set(THRIFT_DEPENDS ${THRIFT_DEPENDS} genthrift_${THRIFT_NAME})
+  #add_custom_target(genthrift_${THRIFT_NAME} DEPENDS ${THRIFT_CPP_FILES})
+  #set(THRIFT_DEPENDS ${THRIFT_DEPENDS} genthrift_${THRIFT_NAME})
 endforeach()
+
+add_custom_target(genthrift_thrift_src DEPENDS ${ALL_THRIFT_CPP_FILES})
 
 # Create runtimestubs library
 add_library(runtimestubs STATIC ${ALL_THRIFT_CPP_FILES})
@@ -76,7 +78,8 @@ add_library(runtimestubs STATIC ${ALL_THRIFT_CPP_FILES})
 target_link_libraries(runtimestubs
   ${THRIFT_LIBRARIES}
 )
-add_dependencies(runtimestubs ${THRIFT_DEPENDS})
+add_dependencies(runtimestubs genthrift_thrift_src)
+#add_dependencies(runtimestubs ${THRIFT_DEPENDS})
 
 # Install headers
 install(DIRECTORY ${THRIFT_GEN_CPP_DIR}/
