@@ -27,7 +27,9 @@ endif()
 if(ENABLE_WP4_16_STACKS)
   set(BM_WP4_16_STACKS 1)
 endif()
-# FIXME: BM_ENABLE_MODULES translation here
+if(ENABLE_MODULES)
+  set(BM_ENABLE_MODULES 1)
+endif()
 set (BM_THRIFT_VERSION ${THRIFT_VERSION_NUMBER})
 
 # Configure config.h
@@ -74,7 +76,15 @@ endif()
 
 # Install bm_apps headers if nanomsg is enabled
 if(WITH_NANOMSG)
-  file(GLOB BM_APPS_HEADERS "bm/bm_apps/*.h")
+  set(BM_APPS_HEADERS
+    bm/bm_apps/notifications.h
+    bm/bm_apps/packet_pipe.h
+  )
+  if(WITH_THRIFT)
+    list(APPEND BM_APPS_HEADERS
+      bm/bm_apps/learn.h
+    )
+  endif()
   install(FILES ${BM_APPS_HEADERS}
     DESTINATION include/bm/bm_apps
   )

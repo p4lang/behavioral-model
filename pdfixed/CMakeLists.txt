@@ -1,69 +1,13 @@
-
-# Get Thrift files
+# Identify Thrift files
 file(GLOB THRIFT_FILES "${CMAKE_CURRENT_SOURCE_DIR}/thrift/*.thrift")
 
-# FIXME: delete
-set(THRIFT_SRCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/thrift/conn_mgr_pd_rpc.thrift
-  ${CMAKE_CURRENT_SOURCE_DIR}/thrift/mc_pd_rpc.thrift
-  ${CMAKE_CURRENT_SOURCE_DIR}/thrift/sswitch_pd_rpc.thrift
-  ${CMAKE_CURRENT_SOURCE_DIR}/thrift/res.thrift
-)
-
-message(STATUS "In pdfixed")
-
-# Generate Thrift sources
+# Set up build dirs
 set(THRIFT_GEN_CPP_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp)
 set(THRIFT_GEN_PY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-py)
 
-set(THRIFT_GEN_CPP_DIR ${THRIFT_GEN_CPP_DIR} PARENT_SCOPE)
-set(THRIFT_GEN_PY_DIR ${THRIFT_GEN_PY_DIR} PARENT_SCOPE)
-
-# Create directories
-file(MAKE_DIRECTORY ${THRIFT_GEN_CPP_DIR})
-file(MAKE_DIRECTORY ${THRIFT_GEN_PY_DIR})
-
 # Generate Thrift sources
 foreach(THRIFT_FILE ${THRIFT_FILES})
-  get_filename_component(THRIFT_NAME ${THRIFT_FILE} NAME_WE)
-
-  set(THRIFT_CPP_FILES
-    ${THRIFT_GEN_CPP_DIR}/${THRIFT_NAME}_constants.cpp
-    ${THRIFT_GEN_CPP_DIR}/${THRIFT_NAME}_constants.h
-    ${THRIFT_GEN_CPP_DIR}/${THRIFT_NAME}_types.cpp
-    ${THRIFT_GEN_CPP_DIR}/${THRIFT_NAME}_types.h
-  )
-
-  file(READ ${THRIFT_FILE} thrift_content)
-
-  string(REGEX MATCH "service +([A-Za-z0-9_]+) *{" match "${thrift_content}")
-
-  if (match)
-    message(STATUS "Full match: ${match}")
-    string(REGEX REPLACE "service +" "" match "${match}")
-    string(REGEX REPLACE " *{" "" service "${match}")
-    message(STATUS "Extracted service: ${service}")
-    set(THRIFT_CPP_FILES
-      ${THRIFT_CPP_FILES}
-      ${THRIFT_GEN_CPP_DIR}/${service}.cpp
-      ${THRIFT_GEN_CPP_DIR}/${service}.h
-    )
-  else()
-    message(STATUS "No match: ${THRIFT_FILE}")
-  endif()
-
-
-  add_custom_command(
-    OUTPUT ${THRIFT_CPP_FILES}
-    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm
-    COMMAND ${THRIFT_COMPILER} -out ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp --gen cpp -r ${THRIFT_FILE}
-    COMMAND ${THRIFT_COMPILER} --gen py -r -o ${CMAKE_CURRENT_BINARY_DIR} ${THRIFT_FILE}
-    # FIXME: ported from Makefile -- some thrift versions don't create all expected outputs
-    COMMAND touch ${THRIFT_CPP_FILES}
-    DEPENDS ${THRIFT_FILE}
-    COMMENT "Generating Thrift files for ${THRIFT_NAME}"
-  )
-
+  generate_thrift(${THRIFT_FILE} THRIFT_CPP_FILES)
   list(APPEND ALL_THRIFT_CPP_FILES ${THRIFT_CPP_FILES})
 endforeach()
 

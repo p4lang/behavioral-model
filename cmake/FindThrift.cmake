@@ -1,9 +1,9 @@
 # - Find Thrift (a cross platform RPC lib/tool)
 # This module defines
-#  THRIFT_VERSION, version string of ant if found
-#  THRIFT_INCLUDE_DIR, where to find THRIFT headers
-#  THRIFT_LIBRARIES, THRIFT libraries
-#  THRIFT_FOUND, If false, do not try to use ant
+#  THRIFT_VERSION, version string of Thrift if found
+#  THRIFT_INCLUDE_DIR, where to find Thrift headers
+#  THRIFT_LIBRARIES, Thrift libraries
+#  THRIFT_FOUND, If false, do not try to use Thrift
 
 # prefer the thrift version supplied in THRIFT_HOME
 find_path(THRIFT_INCLUDE_DIR

@@ -7,8 +7,3 @@ add_library(bflpmtrie OBJECT
 target_include_directories(bflpmtrie PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
-
-# Add coverage flags if enabled
-if(ENABLE_COVERAGE)
-  target_compile_options(bflpmtrie PRIVATE ${COVERAGE_FLAGS})
-endif()

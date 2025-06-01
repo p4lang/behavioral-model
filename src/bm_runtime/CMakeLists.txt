@@ -8,17 +8,5 @@ add_library(bmruntime STATIC
 
 # Set include directories
 target_include_directories(bmruntime PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${THRIFT_GEN_CPP_DIR}
+  ${THRIFT_SRC_GEN_CPP_DIR}
 )
-
-# Link libraries
-target_link_libraries(bmruntime
-  bmsim
-  ${THRIFT_LIBRARIES}
-)
-
-# Add coverage flags if enabled
-if(ENABLE_COVERAGE)
-  target_compile_options(bmruntime PRIVATE ${COVERAGE_FLAGS})
-endif()

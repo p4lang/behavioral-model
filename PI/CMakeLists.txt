@@ -22,7 +22,6 @@ add_library(bmpi STATIC
 
 target_include_directories(bmpi PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_SOURCE_DIR}/targets/simple_switch
 )
 
 # FIXME: remove the redundant moves

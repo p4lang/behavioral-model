@@ -7,9 +7,6 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/jsoncpp/include
 )
 
-# Define test data directory
-add_definitions(-DTESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
-
 # Skip undeterministic tests if requested
 if(NOT ENABLE_UNDETERMINISTIC_TESTS)
   add_definitions(-DSKIP_UNDETERMINISTIC_TESTS)
@@ -100,7 +97,8 @@ foreach(TEST_NAME ${TESTS})
     Boost::filesystem
     Boost::program_options
   )
-  target_compile_options(${TEST_NAME} PRIVATE "-Wno-error")
+  target_compile_options(${TEST_NAME} PRIVATE "-Wno-error=overloaded-virtual=")
+  target_compile_definitions(${TEST_NAME} PUBLIC TESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
   add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endforeach()
 
@@ -162,7 +160,8 @@ target_link_libraries(test_all
   Boost::program_options
 )
 
-target_compile_options(test_all PRIVATE "-Wno-error")
+target_compile_options(test_all PRIVATE "-Wno-error=overloaded-virtual=")
+target_compile_definitions(test_all PUBLIC TESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
 # Add stress tests if enabled
 if(WITH_STRESS_TESTS)
@@ -170,6 +169,8 @@ if(WITH_STRESS_TESTS)
 endif()
 
 # Install test data
+# FIXME: Do we need this? Are we also installing tests?
+# FIXME: What about the reference to TESTDATADIR?
 install(DIRECTORY testdata
   DESTINATION ${CMAKE_INSTALL_PREFIX}/share/behavioral-model/tests
 )

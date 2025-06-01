@@ -29,5 +29,7 @@ foreach(target ${TESTS})
     Boost::filesystem
     Boost::program_options
   )
+  target_compile_definitions(${target} PUBLIC TESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
+  add_test(NAME stress_tests/${target} COMMAND ${target})
 
 endforeach()

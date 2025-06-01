@@ -1,13 +1,14 @@
+# FIXME: review installation + python handling
+
 # Include directories
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 # Add PI support if enabled
 if(WITH_PI)
   add_definitions(-DWITH_PI)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../PI)
+  include_directories(${CMAKE_SOURCE_DIR}/PI)
   set(PI_LIB bmpi)
 else()
   set(PI_LIB "")
@@ -57,34 +58,16 @@ if(WITH_THRIFT)
   )
   
   # Generate Thrift files
+  # FIXME: port python handling from Makefile.am
   set(THRIFT_IDL ${CMAKE_CURRENT_SOURCE_DIR}/thrift/simple_switch.thrift)
-  set(THRIFT_CPP_FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm/simple_switch_constants.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm/simple_switch_constants.h
-    ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm/SimpleSwitch.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm/SimpleSwitch.h
-    ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm/simple_switch_types.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm/simple_switch_types.h
-  )
   set(THRIFT_PY_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/gen-py/sswitch_runtime/constants.py
     ${CMAKE_CURRENT_BINARY_DIR}/gen-py/sswitch_runtime/__init__.py
     ${CMAKE_CURRENT_BINARY_DIR}/gen-py/sswitch_runtime/SimpleSwitch.py
     ${CMAKE_CURRENT_BINARY_DIR}/gen-py/sswitch_runtime/ttypes.py
   )
+  generate_thrift(${THRIFT_IDL} THRIFT_CPP_FILES GEN_CPP_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/py)
   
-  # Create Thrift generation command
-  add_custom_command(
-    OUTPUT ${THRIFT_CPP_FILES} ${THRIFT_PY_FILES}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/gen-py
-    COMMAND ${THRIFT_COMPILER} -out ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm --gen cpp -r ${THRIFT_IDL}
-    COMMAND ${THRIFT_COMPILER} -o ${CMAKE_CURRENT_BINARY_DIR} --gen py -r ${THRIFT_IDL}
-    # FIXME: ported from Makefile -- some thrift versions don't create all expected outputs
-    COMMAND touch ${THRIFT_CPP_FILES}
-    DEPENDS ${THRIFT_IDL}
-    COMMENT "Generating Thrift files for simple_switch"
-  )
   add_custom_target(genthrift_simpleswitch DEPENDS ${THRIFT_CPP_FILES})
   
   # Create simpleswitch_thrift library

@@ -5,11 +5,7 @@ include_directories(SYSTEM
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/..
   ${CMAKE_CURRENT_SOURCE_DIR}
-  #${CMAKE_CURRENT_SOURCE_DIR}/../../../src/BMI
-  #${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/gtest/include
-  #${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/jsoncpp/include
   ${CMAKE_SOURCE_DIR}/targets/test_utils
-  #${CMAKE_CURRENT_SOURCE_DIR}/../../../src/bm_sim
 )
 
 # Define test data directory
@@ -43,3 +39,5 @@ foreach(TEST ${TESTS})
   )
   add_test(NAME simple_switch/${TEST} COMMAND ${TEST})
 endforeach()
+
+# FIXME: should we have a test_all target?
