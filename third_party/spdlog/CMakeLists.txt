@@ -10,6 +10,7 @@ target_include_directories(spdlog INTERFACE
 )
 
 # Install headers
+# FIXME: evaluate whether this is needed
 install(DIRECTORY bm/spdlog
   DESTINATION include/bm
   FILES_MATCHING PATTERN "*.h" PATTERN "*.cc"

@@ -18,6 +18,7 @@ add_library(bmall SHARED
   $<TARGET_OBJECTS:bmi>
 )
 target_link_libraries(bmall
+  # FIXME: Is this scope correct?
   PUBLIC
     jsoncpp
     Boost::system

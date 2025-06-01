@@ -1,9 +1,3 @@
-# Include directories
-include_directories(
-  ${CMAKE_CURRENT_SOURCE_DIR}/../BMI
-  ${CMAKE_CURRENT_SOURCE_DIR}/../bf_lpm_trie
-)
-
 # Configure version.cpp
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp.in
@@ -66,20 +60,16 @@ add_library(bmsim OBJECT
   target_parser.cpp
   transport.cpp
   transport_nn.cpp
-  ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
   xxhash.c
   core/primitives.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
 )
 
-# Add coverage flags if enabled
-if(ENABLE_COVERAGE)
-  target_compile_options(bmsim PRIVATE ${COVERAGE_FLAGS})
-endif()
-
 # Set include directories
-target_include_directories(bmsim PUBLIC
+target_include_directories(bmsim PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/..
+  ${CMAKE_CURRENT_SOURCE_DIR}/../BMI
+  ${CMAKE_CURRENT_SOURCE_DIR}/../bf_lpm_trie
 )
 
 # Link libraries

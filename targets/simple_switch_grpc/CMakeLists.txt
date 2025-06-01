@@ -1,3 +1,7 @@
+# FIXME: Makefile.am contains references to WITH_SYSREPO. How is this set?
+
+add_subdirectory(tests)
+
 # Include directories
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
@@ -12,36 +16,7 @@ if(WITH_THRIFT)
   )
 endif()
 
-### Find Protobuf and gRPC
-##find_package(Protobuf REQUIRED)
-##find_package(gRPC REQUIRED)
-##find_package(absl REQUIRED)
-##
-### Generate Protobuf and gRPC files
-##set(PROTO_FILES
-##  ${CMAKE_CURRENT_SOURCE_DIR}/proto/simple_switch.proto
-##)
-##
-##set(PROTO_GENERATED_FILES
-##  ${CMAKE_CURRENT_BINARY_DIR}/simple_switch.pb.cc
-##  ${CMAKE_CURRENT_BINARY_DIR}/simple_switch.pb.h
-##  ${CMAKE_CURRENT_BINARY_DIR}/simple_switch.grpc.pb.cc
-##  ${CMAKE_CURRENT_BINARY_DIR}/simple_switch.grpc.pb.h
-##)
-##
-##add_custom_command(
-##  OUTPUT ${PROTO_GENERATED_FILES}
-##  COMMAND ${PROTOBUF_PROTOC_EXECUTABLE}
-##    --proto_path=${CMAKE_CURRENT_SOURCE_DIR}/proto
-##    --cpp_out=${CMAKE_CURRENT_BINARY_DIR}
-##    --grpc_out=${CMAKE_CURRENT_BINARY_DIR}
-##    --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN}
-##    ${PROTO_FILES}
-##  DEPENDS ${PROTO_FILES}
-##  COMMENT "Generating Protobuf and gRPC files"
-##)
-
-# Create simple_switch_grpc library
+# Create simpleswitchgrpc library
 add_library(simpleswitchgrpc STATIC
   switch_runner.cpp
   ${PROTO_GENERATED_FILES}
@@ -73,26 +48,28 @@ add_executable(simple_switch_grpc
   main.cpp
 )
 
-
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GRPCPP REQUIRED grpc++)
 
-
 target_link_libraries(simple_switch_grpc PRIVATE
   simpleswitchgrpc
-  ${PROTOBUF_LIBRARIES}
-  #${GRPC_LIBRARIES}
-  ${GRPCPP_LIBRARIES}
-  ##gRPC::grpc++
-  ##gRPC::grpc
-  ##gpr
-  ##absl::synchronization
-  #absl_synchronization
   pifeproto
   pigrpcserver
   pi
   pip4info
+  ${PROTOBUF_LIBRARIES}
+  ${GRPCPP_LIBRARIES}
 )
+
+# We follow this tutorial to link with grpc++_reflection:
+# https://github.com/grpc/grpc/blob/master/doc/server_reflection_tutorial.md
+#target_link_options(simple_switch_grpc PRIVATE
+#  -Wl
+#  --no-as-needed
+#  -lgrpc++_reflection
+#  --as-needed
+#  -rdynamic
+#)
 
 # Install simple_switch_grpc executable
 install(TARGETS simple_switch_grpc

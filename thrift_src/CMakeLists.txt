@@ -1,6 +1,4 @@
-message(STATUS "In thrift_src")
-# Find Thrift
-find_package(Thrift REQUIRED)
+# Assumption: this subdir is only included if thrift is present
 
 # Include directories
 include_directories(
@@ -9,68 +7,23 @@ include_directories(
   ${THRIFT_INCLUDE_DIRS}
 )
 
-# Get Thrift files
+# Identify Thrift files
 file(GLOB THRIFT_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.thrift")
 
-# Generate Thrift sources
+# Set up build dirs
 set(THRIFT_GEN_CPP_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp)
 set(THRIFT_GEN_PY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-py)
 
-set(THRIFT_GEN_CPP_DIR ${THRIFT_GEN_CPP_DIR} PARENT_SCOPE)
-set(THRIFT_GEN_PY_DIR ${THRIFT_GEN_PY_DIR} PARENT_SCOPE)
-
-# Create directories
-file(MAKE_DIRECTORY ${THRIFT_GEN_CPP_DIR})
-file(MAKE_DIRECTORY ${THRIFT_GEN_PY_DIR})
+# Export the build directories as they are use by the bm_runtime build
+set(THRIFT_SRC_GEN_CPP_DIR ${THRIFT_GEN_CPP_DIR} PARENT_SCOPE)
+set(THRIFT_SRC_GEN_PY_DIR ${THRIFT_GEN_PY_DIR} PARENT_SCOPE)
 
 # Generate Thrift sources
 foreach(THRIFT_FILE ${THRIFT_FILES})
-  message(STATUS "thrift_src: ${THRIFT_FILE}")
-  get_filename_component(THRIFT_NAME ${THRIFT_FILE} NAME_WE)
-  
-  set(THRIFT_CPP_FILES
-    ${THRIFT_GEN_CPP_DIR}/bm/${THRIFT_NAME}_constants.cpp
-    ${THRIFT_GEN_CPP_DIR}/bm/${THRIFT_NAME}_constants.h
-    ${THRIFT_GEN_CPP_DIR}/bm/${THRIFT_NAME}_types.cpp
-    ${THRIFT_GEN_CPP_DIR}/bm/${THRIFT_NAME}_types.h
-    # ${THRIFT_GEN_CPP_DIR}/bm/Standard.cpp
-    # ${THRIFT_GEN_CPP_DIR}/bm/Standard.h
+  generate_thrift(${THRIFT_FILE} THRIFT_CPP_FILES
+    GEN_CPP_DIR ${THRIFT_GEN_CPP_DIR}/bm
   )
-
-  file(READ ${THRIFT_FILE} thrift_content)
-
-  string(REGEX MATCH "service +([A-Za-z0-9_]+) *{" match "${thrift_content}")
-
-  if (match)
-    #message(STATUS "Full match: ${match}")
-    string(REGEX REPLACE "service +" "" match "${match}")
-    string(REGEX REPLACE " *{" "" service "${match}")
-    message(STATUS "Extracted service: ${service}")
-    set(THRIFT_CPP_FILES
-      ${THRIFT_CPP_FILES}
-      ${THRIFT_GEN_CPP_DIR}/bm/${service}.cpp
-      ${THRIFT_GEN_CPP_DIR}/bm/${service}.h
-    )
-  else()
-    message(STATUS "No match: ${THRIFT_FILE}")
-  endif()
-
-  
-  add_custom_command(
-    OUTPUT ${THRIFT_CPP_FILES}
-    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm
-    COMMAND ${THRIFT_COMPILER} -out ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm --gen cpp -r ${THRIFT_FILE}
-    COMMAND ${THRIFT_COMPILER} --gen py -r -o ${CMAKE_CURRENT_BINARY_DIR} ${THRIFT_FILE}
-    # FIXME: ported from Makefile -- some thrift versions don't create all expected outputs
-    COMMAND touch ${THRIFT_CPP_FILES}
-    DEPENDS ${THRIFT_FILE}
-    COMMENT "Generating Thrift files for ${THRIFT_NAME}"
-  )
-  
   list(APPEND ALL_THRIFT_CPP_FILES ${THRIFT_CPP_FILES})
-
-  #add_custom_target(genthrift_${THRIFT_NAME} DEPENDS ${THRIFT_CPP_FILES})
-  #set(THRIFT_DEPENDS ${THRIFT_DEPENDS} genthrift_${THRIFT_NAME})
 endforeach()
 
 add_custom_target(genthrift_thrift_src DEPENDS ${ALL_THRIFT_CPP_FILES})
@@ -82,7 +35,6 @@ target_link_libraries(runtimestubs
   ${THRIFT_LIBRARIES}
 )
 add_dependencies(runtimestubs genthrift_thrift_src)
-#add_dependencies(runtimestubs ${THRIFT_DEPENDS})
 
 # Install headers
 install(DIRECTORY ${THRIFT_GEN_CPP_DIR}/
@@ -92,6 +44,6 @@ install(DIRECTORY ${THRIFT_GEN_CPP_DIR}/
 
 # Install Python modules
 install(DIRECTORY ${THRIFT_GEN_PY_DIR}/
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/python
+  DESTINATION lib/python
   FILES_MATCHING PATTERN "*.py"
 )

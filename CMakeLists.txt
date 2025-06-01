@@ -1,20 +1,23 @@
 cmake_minimum_required(VERSION 3.10)
 
-# Include all necessary files for macros
+# Add cmake modules path
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+# Include necessary files for macros
 include(CheckIncludeFile)
 include(CheckIncludeFiles)
 include(CheckIncludeFileCXX)
-
-# Add cmake modules path
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+include(GenerateThrift)
 
 # Extract version from VERSION file
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" BM_VERSION)
 string(STRIP "${BM_VERSION}" BM_VERSION)
 
+# Define the project
 project(behavioral-model
   VERSION ${BM_VERSION}
   DESCRIPTION "Behavioral Model (BMv2) - P4 software switch"
+  HOMEPAGE_URL "https://github.com/p4lang/behavioral-model"
   LANGUAGES CXX C
 )
 
@@ -31,7 +34,7 @@ option(WITH_NANOMSG "Support generating Nanomsg events" ON)
 option(WITH_THRIFT "Build Thrift RPC service" ON)
 option(WITH_PI "Build PI implementation for bmv2" OFF)
 option(WITH_PDFIXED "Build pdfixed for bmv2" OFF)
-option(WITH_TARGETS "Build targets" ON)
+option(WITH_TARGETS "Build targets (simple_switch, psa_switch, ...)" ON)
 option(WITH_STRESS_TESTS "Include stress tests" OFF)
 option(ENABLE_DEBUGGER "Enable bmv2 remote debugger" OFF)
 option(ENABLE_COVERAGE "Enable code coverage tracking" OFF)
@@ -45,7 +48,7 @@ option(ENABLE_WP4_16_STACKS "Implement stacks strictly as per the P4_16 specific
 # Set compiler flags
 add_compile_options(-Wall -Wextra)
 if(ENABLE_WERROR)
-  # FIXME: remoe the -Wno-error=sign-compare when source is cleaned
+  # FIXME: remove the -Wno-error=sign-compare when source is cleaned
   add_compile_options(-Werror -Wno-error=sign-compare)
 endif()
 
@@ -54,7 +57,7 @@ if(ENABLE_COVERAGE)
   link_libraries(gcov)
 endif()
 
-# Seeing build failures that are fixed by including atomic when compiling with clang
+# clang builds were failing due to missing atomic library
 # FIXME: understand why this is -- wasn't required in autoconf build
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   link_libraries(${TEST_NAME}
@@ -63,10 +66,11 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 # Make all code position-independent
-# (FIXME: which files should be PIC?)
+# FIXME: which files should be PIC?
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Define include directories
+# FIXME: consider moving these to specific targets?
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR}/include
@@ -78,31 +82,38 @@ include_directories(
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread program_options filesystem system)
 
-# Check for header files
+# Check for the presence of an include file and report an error if not found
+#
+# Usage: require_include(HDR <C/CXX>)
+function(REQUIRE_INCLUDE HDR)
+  string(TOUPPER ${HDR} HDR_UC)
+  string(REGEX REPLACE "[/.]" "_" HDR_UC ${HDR_UC})
+  if(${LANGUAGE_C})
+    check_include_file(${HDR} BM_HAVE_${HDR_UC})
+  else()
+    check_include_file_cxx(${HDR} BM_HAVE_${HDR_UC})
+  endif()
+  if (NOT BM_HAVE_${HDR_UC})
+    message(SEND_ERROR "Could not find include: ${HDR}")
+  endif()
+endfunction()
+
+# Check for necessary header files
+# Replicates checks performed by autoconf
 # FIXME: consider dropping BM_ prefix if autoconf support is dropped
 set(C_HEADERS
   sys/stat.h sys/types.h unistd.h
 )
-foreach (hdr ${C_HEADERS})
-  string(TOUPPER ${hdr} hdr_uc)
-  string(REGEX REPLACE "[/.]" "_" hdr_uc ${hdr_uc})
-  CHECK_INCLUDE_FILE(${hdr} BM_HAVE_${hdr_uc})
-  if (NOT BM_HAVE_${hdr_uc})
-    message(SEND_ERROR "Could not find include: ${hdr}")
-  endif()
-endforeach()
-
 set(CXX_HEADERS
   algorithm array cassert cmath queue
   cstdio string sys/stat.h sys/types.h ctime tuple unistd.h unordered_map
   utility vector
 )
+foreach (hdr ${C_HEADERS})
+  require_include(${hdr} C)
+endforeach()
 foreach (hdr ${CXX_HEADERS})
-  string(TOUPPER ${hdr} hdr_uc)
-  CHECK_INCLUDE_FILE_CXX(${hdr} BM_HAVE_${hdr_uc})
-  if (NOT BM_HAVE_${hdr_uc})
-    message(SEND_ERROR "Could not find include: ${hdr}")
-  endif()
+  require_include(${hdr} CXX)
 endforeach()
 
 # Check for libraries
@@ -154,6 +165,7 @@ if(ENABLE_MODULES)
   # Check for dlopen
   check_include_file(dlfcn.h HAVE_DLFCN_H)
   if(HAVE_DLFCN_H)
+    include(CheckSymbolExists)
     add_definitions(-DHAVE_DLOPEN -DENABLE_MODULES)
     check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN)
   else()

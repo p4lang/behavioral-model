@@ -8,19 +8,9 @@ add_library(bmi OBJECT
   bmi_port.c
 )
 
-# Set include directories
-target_include_directories(bmi PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
 # Add PCAP fix if needed
 if(HAVE_PCAP_SET_IMMEDIATE_MODE)
   target_compile_definitions(bmi PRIVATE -DWITH_PCAP_FIX)
-endif()
-
-# Add coverage flags if enabled
-if(ENABLE_COVERAGE)
-  target_compile_options(bmi PRIVATE ${COVERAGE_FLAGS})
 endif()
 
 # Link libraries
