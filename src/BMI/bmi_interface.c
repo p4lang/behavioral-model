@@ -175,7 +175,7 @@ int bmi_interface_recv_with_copy(bmi_interface_t *bmi, char *data, int max_len) 
 
   assert(pkt_header->len < INT_MAX);
   int pkt_header_len = (int)pkt_header->len;
-  rv = (max_len < pkt_header->len) ? max_len : pkt_header->len;
+  rv = (max_len < pkt_header_len) ? max_len : pkt_header_len;
 
   memcpy(data, pkt_data, rv);
 
