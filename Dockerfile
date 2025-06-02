@@ -47,7 +47,7 @@ RUN apt-get update -qq && \
     apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
     ./autogen.sh && \
     mkdir -p build && cd build && \
-    if [ "$USE_CMAKE" -gt 0 ; then \
+    if [ "$USE_CMAKE" -gt 0 ] ; then \
         if [ "$GCOV" != "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_COVERAGE=ON -DENABLE_WERROR=ON ..; fi && \
         if [ "$GCOV" = "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..; fi ; \
     else \
@@ -55,7 +55,7 @@ RUN apt-get update -qq && \
         if [ "$GCOV" = "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror; fi ; \
     fi && \
     make -j$(nproc) && \
-    if [ "$USE_CMAKE" -gt 0 ; then \
+    if [ "$USE_CMAKE" -gt 0 ] ; then \
         make install && cd .. ; \
     else \
         make install-strip ; \
