@@ -27,6 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        # Temporarily running tests with and without cmake
+        #
+        # Can remove non-cmake tests when we fully switch over
         include:
         - cxx: g++
           cc: gcc
@@ -58,6 +61,8 @@ jobs:
       run: |
         docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV --build-arg USE_CMAKE=$USE_CMAKE .
     - name: Run tests
+      env:
+        USE_CMAKE: ${{ matrix.use_cmake }}
       run: |
         ci_env=`bash <(curl -s https://codecov.io/env)`
         docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c \
