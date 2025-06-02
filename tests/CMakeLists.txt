@@ -1,9 +1,11 @@
 # Include directories
+include_directories(SYSTEM
+  ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/gtest/include
+)
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/../src/bm_sim
   ${CMAKE_CURRENT_SOURCE_DIR}/../src/BMI
-  ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/gtest/include
   ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/jsoncpp/include
 )
 

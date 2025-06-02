@@ -48,8 +48,7 @@ option(ENABLE_WP4_16_STACKS "Implement stacks strictly as per the P4_16 specific
 # Set compiler flags
 add_compile_options(-Wall -Wextra)
 if(ENABLE_WERROR)
-  # FIXME: remove the -Wno-error=sign-compare when source is cleaned
-  add_compile_options(-Werror -Wno-error=sign-compare)
+  add_compile_options(-Werror)
 endif()
 
 if(ENABLE_COVERAGE)
