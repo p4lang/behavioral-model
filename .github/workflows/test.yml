@@ -30,10 +30,22 @@ jobs:
         include:
         - cxx: g++
           cc: gcc
+          use_cmake: 0
         - cxx: clang++-8
           cc: clang-8
+          use_cmake: 0
         - cxx: clang++-10
           cc: clang-10
+          use_cmake: 0
+        - cxx: g++
+          cc: gcc
+          use_cmake: 1
+        - cxx: clang++-8
+          cc: clang-8
+          use_cmake: 1
+        - cxx: clang++-10
+          cc: clang-10
+          use_cmake: 1
     steps:
     - uses: actions/checkout@v4
       with:
@@ -42,8 +54,9 @@ jobs:
       env:
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
+        USE_CMAKE: ${{ matrix.use_cmake }}
       run: |
-        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV .
+        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV --build-arg USE_CMAKE=$USE_CMAKE .
     - name: Run tests
       run: |
         ci_env=`bash <(curl -s https://codecov.io/env)`
