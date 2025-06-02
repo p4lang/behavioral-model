@@ -10,3 +10,6 @@ add_library(bmruntime STATIC
 target_include_directories(bmruntime PUBLIC
   ${THRIFT_SRC_GEN_CPP_DIR}
 )
+
+# Dependency on thrift generation from thrift_src
+add_dependencies(bmruntime genthrift_thrift_src)

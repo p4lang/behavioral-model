@@ -31,6 +31,7 @@ target_include_directories(bmpdfixed PRIVATE
   ${CMAKE_BINARY_DIR}/thrift_src/gen-cpp
   ${CMAKE_BINARY_DIR}/targets/simple_switch/gen-cpp
 )
+add_dependencies(bmpdfixed genthrift_simpleswitch)
 
 add_library(bmpdfixed_thrift STATIC
   thrift-src/pdfixed_rpc_server.cpp
