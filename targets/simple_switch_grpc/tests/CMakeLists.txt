@@ -77,6 +77,7 @@ target_link_libraries(example
   piprotobuf
   ${PROTOBUF_LIBRARIES}
   ${GRPCPP_LIBRARIES}
+  Threads::Threads
 )
 
 # FIXME: should we have a test_all target?

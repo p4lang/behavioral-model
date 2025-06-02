@@ -99,7 +99,7 @@ foreach(TEST_NAME ${TESTS})
     Boost::filesystem
     Boost::program_options
   )
-  target_compile_options(${TEST_NAME} PRIVATE "-Wno-error=overloaded-virtual=")
+  target_compile_options(${TEST_NAME} PRIVATE "-Wno-error=overloaded-virtual")
   target_compile_definitions(${TEST_NAME} PUBLIC TESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
   add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endforeach()
@@ -162,7 +162,7 @@ target_link_libraries(test_all
   Boost::program_options
 )
 
-target_compile_options(test_all PRIVATE "-Wno-error=overloaded-virtual=")
+target_compile_options(test_all PRIVATE "-Wno-error=overloaded-virtual")
 target_compile_definitions(test_all PUBLIC TESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
 # Add stress tests if enabled
