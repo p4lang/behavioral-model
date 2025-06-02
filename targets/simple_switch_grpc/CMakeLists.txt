@@ -1,7 +1,5 @@
 # FIXME: Makefile.am contains references to WITH_SYSREPO. How is this set?
 
-add_subdirectory(tests)
-
 # Include directories
 include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
@@ -75,3 +73,6 @@ target_link_libraries(simple_switch_grpc PRIVATE
 install(TARGETS simple_switch_grpc
   RUNTIME DESTINATION bin
 )
+
+# Build the tests
+add_subdirectory(tests)
