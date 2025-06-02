@@ -9,7 +9,8 @@ add_library(bmapps STATIC
 )
 
 # Link libraries
-target_link_libraries(bmapps
+target_link_libraries(bmapps PUBLIC
+  ${CMAKE_THREAD_LIBS_INIT}
   ${NANOMSG_LIBRARY}
 )
 
@@ -22,7 +23,7 @@ if(WITH_THRIFT)
     ${THRIFT_SRC_GEN_CPP_DIR}
   )
 
-  target_link_libraries(bmapps
+  target_link_libraries(bmapps PUBLIC
     runtimestubs
     ${THRIFT_LIBRARY}
   )
