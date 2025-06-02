@@ -63,7 +63,10 @@ foreach(TEST ${TESTS})
   set_target_properties(ssg_test_${TEST} PROPERTIES
     OUTPUT_NAME ${TEST}
   )
-  add_test(NAME simple_switch_grpc/${TEST} COMMAND ${TEST})
+  # These tests don't play well when run in parallel; add them to a group call run_solo
+  add_test(NAME simple_switch_grpc/${TEST} COMMAND ${TEST}
+    CONFIGURATIONS run_solo
+  )
 endforeach()
 
 # FIXME: need to generate example.run from example.run.in
