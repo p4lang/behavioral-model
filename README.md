@@ -107,7 +107,8 @@ sudo dpkg -i /path/to/package.deb
     To make your life easier, we provide the *install_deps.sh* script, which will
     install all the dependencies needed on Ubuntu 20.04.
 
-    Our CI tests now run on Ubuntu 20.04.
+    Our CI tests now run on Ubuntu 22.04 and `ubuntu-latest` (which is
+    24.04 as of 2025-Mar-05).
 
     On MacOS you can use the tools/macos/bootstrap_mac.sh script to
     install all the above dependencies using homebrew. Note that in order
