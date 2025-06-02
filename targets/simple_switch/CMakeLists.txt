@@ -66,7 +66,7 @@ if(WITH_THRIFT)
     ${CMAKE_CURRENT_BINARY_DIR}/gen-py/sswitch_runtime/SimpleSwitch.py
     ${CMAKE_CURRENT_BINARY_DIR}/gen-py/sswitch_runtime/ttypes.py
   )
-  generate_thrift(${THRIFT_IDL} THRIFT_CPP_FILES GEN_CPP_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/py)
+  generate_thrift(${THRIFT_IDL} THRIFT_CPP_FILES GEN_CPP_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm)
   
   add_custom_target(genthrift_simpleswitch DEPENDS ${THRIFT_CPP_FILES})
   
