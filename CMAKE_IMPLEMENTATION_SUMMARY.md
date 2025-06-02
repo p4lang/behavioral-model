@@ -13,22 +13,43 @@ This document summarizes the CMake implementation for the behavioral-model proje
    - Finds required dependencies (Boost, GMP, PCAP, etc.)
 
 2. **Directory-specific CMakeLists.txt files**
-   - src/CMakeLists.txt
-   - src/bm_sim/CMakeLists.txt
-   - src/bf_lpm_trie/CMakeLists.txt
-   - src/BMI/CMakeLists.txt
-   - third_party/CMakeLists.txt
-   - third_party/jsoncpp/CMakeLists.txt
-   - third_party/gtest/CMakeLists.txt
-   - third_party/spdlog/CMakeLists.txt
+   - PI/CMakeLists.txt
    - include/CMakeLists.txt
-   - tests/CMakeLists.txt
+   - pdfixed/CMakeLists.txt
+   - services/CMakeLists.txt
+   - src/BMI/CMakeLists.txt
+   - src/CMakeLists.txt
+   - src/bf_lpm_trie/CMakeLists.txt
+   - src/bm_apps/CMakeLists.txt
+   - src/bm_apps/examples/CMakeLists.txt
+   - src/bm_runtime/CMakeLists.txt
+   - src/bm_sim/CMakeLists.txt
    - targets/CMakeLists.txt
+   - targets/l2_switch/CMakeLists.txt
+   - targets/l2_switch/learn_client/CMakeLists.txt
+   - targets/pna_nic/CMakeLists.txt
+   - targets/pna_nic/tests/CMakeLists.txt
+   - targets/psa_switch/CMakeLists.txt
+   - targets/psa_switch/tests/CMakeLists.txt
+   - targets/simple_router/CMakeLists.txt
    - targets/simple_switch/CMakeLists.txt
+   - targets/simple_switch/tests/CMakeLists.txt
+   - targets/simple_switch_grpc/CMakeLists.txt
+   - targets/simple_switch_grpc/tests/CMakeLists.txt
+   - targets/test_utils/CMakeLists.txt
+   - tests/CMakeLists.txt
+   - tests/stress_tests/CMakeLists.txt
+   - third_party/CMakeLists.txt
+   - third_party/gtest/CMakeLists.txt
+   - third_party/jsoncpp/CMakeLists.txt
+   - third_party/spdlog/CMakeLists.txt
+   - thrift_src/CMakeLists.txt
+   - tools/CMakeLists.txt
 
 3. **CMake modules**
    - cmake/FindThrift.cmake
    - cmake/FindgRPC.cmake
+   - cmake/GenerateThrift.cmake
 
 4. **Configuration files**
    - include/bm/config.h.in
@@ -92,10 +113,7 @@ The following tests should be performed to ensure the CMake build system works c
 2. **Installation Paths**
    - Installation paths may need to be adjusted to match the autotools build.
 
-3. **Missing CMakeLists.txt Files**
-   - Some subdirectories may need additional CMakeLists.txt files.
-
-4. **Build Options**
+3. **Build Options**
    - Some build options from the autotools build may need further refinement.
 
 ## Conclusion
