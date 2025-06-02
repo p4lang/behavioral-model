@@ -11,11 +11,15 @@ foreach(TEST_NAME ${TESTS})
 
   target_link_libraries(${TEST_NAME}
     psaswitch
-    psaswitch_thrift
     gtest
     bmapps
     Boost::filesystem
   )
+  if(WITH_THRIFT)
+    target_link_libraries(${TEST_NAME}
+      psaswitch_thrift
+    )
+  endif()
 
   target_include_directories(${TEST_NAME} PRIVATE
     ..
@@ -32,11 +36,16 @@ add_executable(psa_switch_test_all
 
 target_link_libraries(psa_switch_test_all
   psaswitch
-  psaswitch_thrift
+  #psaswitch_thrift
   gtest
   bmapps
   Boost::filesystem
 )
+if(WITH_THRIFT)
+  target_link_libraries(psa_switch_test_all
+    psaswitch_thrift
+  )
+endif()
 
 target_include_directories(psa_switch_test_all PRIVATE
   ..
