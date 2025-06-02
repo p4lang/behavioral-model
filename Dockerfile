@@ -53,13 +53,13 @@ RUN apt-get update -qq && \
     else \
         if [ "$GCOV" != "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-coverage --enable-Werror; fi && \
         if [ "$GCOV" = "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror; fi ; \
-    endif && \
+    fi && \
     make -j$(nproc) && \
     if [ "$USE_CMAKE" -gt 0 ; then \
         make install && cd .. ; \
     else \
         make install-strip ; \
-    endif && \
+    fi && \
     ldconfig && \
     (test "$IMAGE_TYPE" = "build" && \
       apt-get purge -qq $BM_DEPS && \
