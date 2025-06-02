@@ -11,6 +11,7 @@ ARG IMAGE_TYPE=build
 ARG CC=gcc
 ARG CXX=g++
 ARG GCOV=
+ARG USE_CMAKE=
 ARG sswitch_grpc=yes
 
 ENV BM_DEPS automake \
@@ -46,10 +47,19 @@ RUN apt-get update -qq && \
     apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
     ./autogen.sh && \
     mkdir -p build && cd build && \
-    if [ "$GCOV" != "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_COVERAGE=ON -DENABLE_WERROR=ON ..; fi && \
-    if [ "$GCOV" = "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..; fi && \
+    if [ "$USE_CMAKE" -gt 0 ; then \
+        if [ "$GCOV" != "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_COVERAGE=ON -DENABLE_WERROR=ON ..; fi && \
+        if [ "$GCOV" = "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..; fi && \
+    else \
+        if [ "$GCOV" != "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-coverage --enable-Werror; fi && \
+        if [ "$GCOV" = "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror; fi && \
+    endif && \
     make -j$(nproc) && \
-    make install && cd .. && \
+    if [ "$USE_CMAKE" -gt 0 ; then \
+        make install && cd .. && \
+    else \
+        make install-strip && \
+    endif && \
     ldconfig && \
     (test "$IMAGE_TYPE" = "build" && \
       apt-get purge -qq $BM_DEPS && \
