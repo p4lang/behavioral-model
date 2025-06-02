@@ -49,16 +49,16 @@ RUN apt-get update -qq && \
     mkdir -p build && cd build && \
     if [ "$USE_CMAKE" -gt 0 ; then \
         if [ "$GCOV" != "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_COVERAGE=ON -DENABLE_WERROR=ON ..; fi && \
-        if [ "$GCOV" = "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..; fi && \
+        if [ "$GCOV" = "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..; fi ; \
     else \
         if [ "$GCOV" != "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-coverage --enable-Werror; fi && \
-        if [ "$GCOV" = "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror; fi && \
+        if [ "$GCOV" = "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror; fi ; \
     endif && \
     make -j$(nproc) && \
     if [ "$USE_CMAKE" -gt 0 ; then \
-        make install && cd .. && \
+        make install && cd .. ; \
     else \
-        make install-strip && \
+        make install-strip ; \
     endif && \
     ldconfig && \
     (test "$IMAGE_TYPE" = "build" && \
