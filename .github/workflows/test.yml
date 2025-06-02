@@ -61,7 +61,7 @@ jobs:
       run: |
         ci_env=`bash <(curl -s https://codecov.io/env)`
         docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c \
-          "if [ \"$USE_CMAKE\" -gt 0 ] ; then 
+          "if [ $USE_CMAKE -gt 0 ] ; then 
                cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure && cd .. && ./ci/codecov.sh ;
            else \
                make check -j$(nproc) && ./ci/codecov.sh ;
