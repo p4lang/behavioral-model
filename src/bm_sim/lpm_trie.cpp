@@ -158,7 +158,7 @@ LPMTrie::LPMTrie(LPMTrie &&other) noexcept
   root.reset(other.root.release());
 }
 
-// LPMTrie::~LPMTrie() = default;
+LPMTrie::~LPMTrie() = default;
 
 LPMTrie &LPMTrie::operator=(LPMTrie &&other) noexcept {
   key_width_bytes = other.key_width_bytes;
