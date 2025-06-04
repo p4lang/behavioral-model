@@ -1,5 +1,4 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
- * Copyright 2021 VMware, Inc.
+/* Copyright 2025 Contributors to the P4 Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -159,7 +158,7 @@ LPMTrie::LPMTrie(LPMTrie &&other) noexcept
   root.reset(other.root.release());
 }
 
-LPMTrie::~LPMTrie() = default;
+// LPMTrie::~LPMTrie() = default;
 
 LPMTrie &LPMTrie::operator=(LPMTrie &&other) noexcept {
   key_width_bytes = other.key_width_bytes;

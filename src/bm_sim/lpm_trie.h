@@ -1,4 +1,4 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
+/* Copyright 2025 Contributors to the P4 Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,11 +11,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-
-/*
- * Antonin Bas (antonin@barefootnetworks.com)
- *
  */
 
 #ifndef BM_SIM_LPM_TRIE_H_
@@ -48,7 +43,7 @@ class LPMTrie {
 
   /* Move constructor */
   LPMTrie(LPMTrie &&other) noexcept;
-  ~LPMTrie();
+  ~LPMTrie() = default;
 
   /* Copy assignment operator */
   LPMTrie &operator=(const LPMTrie &other) = delete;
