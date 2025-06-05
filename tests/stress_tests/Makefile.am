@@ -6,7 +6,6 @@ LDADD = \
 $(top_builddir)/third_party/gtest/libgtest.la \
 $(top_builddir)/src/bm_apps/libbmapps.la \
 $(top_builddir)/src/bm_sim/libbmsim.la \
-$(top_builddir)/src/bf_lpm_trie/libbflpmtrie.la \
 $(top_builddir)/third_party/jsoncpp/libjson.la \
 -lboost_system -lboost_filesystem -lboost_program_options
 

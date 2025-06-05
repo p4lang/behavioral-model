@@ -1,4 +1,4 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
+/* Copyright 2025 Contributors to the P4 Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,85 +13,67 @@
  * limitations under the License.
  */
 
-/*
- * Antonin Bas (antonin@barefootnetworks.com)
- *
- */
-
 #ifndef BM_SIM_LPM_TRIE_H_
 #define BM_SIM_LPM_TRIE_H_
 
-#include <bf_lpm_trie/bf_lpm_trie.h>
+#include <bm/bm_sim/bytecontainer.h>
 
-#include <algorithm>  // for std::swap
+#include <cassert>
+#include <cstdint>
+#include <memory>
+#include <string>
 #include <utility>  // for std::swap
+#include <vector>
 
 namespace bm {
 
-static_assert(sizeof(value_t) == sizeof(uintptr_t),
-              "Invalid type sizes");
+using value_t = std::uintptr_t;
+using byte_t = unsigned char;
+
+static_assert(sizeof(value_t) == sizeof(uintptr_t), "Invalid type sizes");
+
+class Node;
 
 class LPMTrie {
  public:
-  explicit LPMTrie(size_t key_width_bytes)
-    : key_width_bytes(key_width_bytes) {
-    trie = bf_lpm_trie_create(key_width_bytes, true);
-  }
+  explicit LPMTrie(std::size_t key_width_bytes);
 
   /* Copy constructor */
-  LPMTrie(const LPMTrie& other) = delete;
+  LPMTrie(const LPMTrie &other) = delete;
 
   /* Move constructor */
-  LPMTrie(LPMTrie&& other) noexcept
-  : key_width_bytes(other.key_width_bytes), trie(other.trie) {}
-
-  ~LPMTrie() {
-    bf_lpm_trie_destroy(trie);
-  }
+  LPMTrie(LPMTrie &&other) noexcept;
+  ~LPMTrie();
 
   /* Copy assignment operator */
   LPMTrie &operator=(const LPMTrie &other) = delete;
 
   /* Move assignment operator */
-  LPMTrie &operator=(LPMTrie &&other) noexcept {
-    key_width_bytes = other.key_width_bytes;
-    std::swap(trie, other.trie);
-    return *this;
-  }
+  LPMTrie &operator=(LPMTrie &&other) noexcept;
 
+  void insert_prefix(const std::string &prefix, int prefix_length,
+                     value_t value);
   void insert_prefix(const ByteContainer &prefix, int prefix_length,
-                     uintptr_t value) {
-    bf_lpm_trie_insert(trie, prefix.data(), prefix_length,
-                       static_cast<value_t>(value));
-  }
+                     value_t value);
 
-  bool delete_prefix(const ByteContainer &prefix, int prefix_length) {
-    return bf_lpm_trie_delete(trie, prefix.data(), prefix_length);
-  }
+  bool delete_prefix(const std::string &prefix, int prefix_length);
+  bool delete_prefix(const ByteContainer &prefix, int prefix_length);
 
-  bool has_prefix(const ByteContainer &prefix, int prefix_length) const {
-    return bf_lpm_trie_has_prefix(trie, prefix.data(), prefix_length);
-  }
+  bool has_prefix(const std::string &prefix, int prefix_length) const;
+  bool has_prefix(const ByteContainer &prefix, int prefix_length) const;
 
+  bool retrieve_value(const std::string &prefix, int prefix_length,
+                      value_t *value) const;
   bool retrieve_value(const ByteContainer &prefix, int prefix_length,
-                      uintptr_t *value) const {
-    return bf_lpm_trie_retrieve_value(trie, prefix.data(), prefix_length,
-                                      reinterpret_cast<value_t *>(value));
-  }
+                      value_t *value) const;
+  bool lookup(const std::string &key, value_t *value) const;
+  bool lookup(const ByteContainer &key, value_t *value) const;
 
-  bool lookup(const ByteContainer &key, uintptr_t *value) const {
-    return bf_lpm_trie_lookup(trie, key.data(),
-                              reinterpret_cast<value_t *>(value));
-  }
-
-  void clear() {
-    bf_lpm_trie_destroy(trie);
-    trie = bf_lpm_trie_create(key_width_bytes, true);
-  }
+  void clear();
 
  private:
-  size_t key_width_bytes{0};
-  bf_lpm_trie_t *trie{nullptr};
+  std::unique_ptr<Node> root;
+  std::size_t key_width_bytes;
 };
 
 }  // namespace bm
