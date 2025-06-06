@@ -12,7 +12,6 @@ add_executable(simple_router
 target_link_libraries(simple_router
   bmruntime
   bmsim
-  bflpmtrie
   bmi
   runtimestubs
   jsoncpp

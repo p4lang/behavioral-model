@@ -15,6 +15,7 @@
 
 #include <bm/bm_sim/_assert.h>
 #include <lpm_trie.h>
+#include <algorithm>
 
 namespace bm {
 

@@ -34,6 +34,7 @@ add_library(bmsim OBJECT
   learning.cpp
   lookup_structures.cpp
   logger.cpp
+  lpm_trie.cpp
   match_error_codes.cpp
   match_tables.cpp
   match_units.cpp
@@ -69,7 +70,6 @@ add_library(bmsim OBJECT
 target_include_directories(bmsim PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/../BMI
-  ${CMAKE_CURRENT_SOURCE_DIR}/../bf_lpm_trie
 )
 
 # Link libraries

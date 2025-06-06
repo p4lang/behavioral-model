@@ -90,7 +90,6 @@ foreach(TEST_NAME ${TESTS})
     bmruntime
     bmapps
     bmsim
-    bflpmtrie
     runtimestubs
     jsoncpp
     testutils
@@ -152,7 +151,6 @@ target_link_libraries(test_all
   bmruntime
   bmapps
   bmsim
-  bflpmtrie
   runtimestubs
   jsoncpp
   testutils

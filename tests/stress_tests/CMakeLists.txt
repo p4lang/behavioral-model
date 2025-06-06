@@ -22,7 +22,6 @@ foreach(target ${TESTS})
     gtest
     bmapps
     bmsim
-    bflpmtrie
     jsoncpp
     ${THRIFT_LIBRARIES}
     Boost::system

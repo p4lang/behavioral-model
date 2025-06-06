@@ -20,7 +20,6 @@ add_library(simpleswitch STATIC
 
 target_link_libraries(simpleswitch
   bmsim
-  bflpmtrie
   bmi
   jsoncpp
   Boost::system
