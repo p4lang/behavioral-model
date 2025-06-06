@@ -1,5 +1,4 @@
 # Add subdirectories
-add_subdirectory(bf_lpm_trie)
 add_subdirectory(BMI)
 add_subdirectory(bm_sim)
 
@@ -14,7 +13,6 @@ endif()
 # Create main library
 add_library(bmall SHARED
   $<TARGET_OBJECTS:bmsim>
-  $<TARGET_OBJECTS:bflpmtrie>
   $<TARGET_OBJECTS:bmi>
 )
 target_link_libraries(bmall

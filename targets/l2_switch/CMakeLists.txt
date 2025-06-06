@@ -12,7 +12,6 @@ target_link_libraries(l2_switch
   bmruntime
   runtimestubs
   bmsim
-  bflpmtrie
   bmi
   jsoncpp
   Boost::system

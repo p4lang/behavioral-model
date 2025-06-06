@@ -22,7 +22,6 @@ add_library(pnanic STATIC
 
 target_link_libraries(pnanic
   bmsim
-  bflpmtrie
   bmi
   jsoncpp
   Boost::system

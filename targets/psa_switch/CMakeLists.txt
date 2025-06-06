@@ -22,7 +22,6 @@ add_library(psaswitch STATIC
 
 target_link_libraries(psaswitch
   bmsim
-  bflpmtrie
   bmi
   jsoncpp
   Boost::system
