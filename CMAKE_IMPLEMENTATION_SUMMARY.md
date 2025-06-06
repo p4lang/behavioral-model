@@ -55,7 +55,6 @@ This document summarizes the CMake implementation for the behavioral-model proje
    - include/bm/config.h.in
 
 5. **Documentation**
-   - README.cmake.md
    - Updated README.md with CMake build instructions
 
 6. **CI support**
@@ -110,8 +109,10 @@ The following tests should be performed to ensure the CMake build system works c
 1. **Platform-Specific Code**
    - Additional platform-specific checks may be needed, especially for Windows support.
 
-2. **Installation Paths**
-   - Installation paths may need to be adjusted to match the autotools build.
+2. **Static vs shared libraries**
+   - The autotools build generated static and shared libraries for each target.
+     The cmake build currently builds one or the other for each target.
+     Evaluate whether the choice is appropriate for each.
 
 3. **Build Options**
    - Some build options from the autotools build may need further refinement.
