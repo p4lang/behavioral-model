@@ -4,8 +4,8 @@
 # To specify specific directories, add GEN_CPP_DIR <dir> and/or GEN_PY_DIR <dir>
 #
 # FIXME: Add return and ad of python files
-function(GENERATE_THRIFT THRIFT_FILE GEN_CPP_FILE_LIST)
-  cmake_parse_arguments(PARSE_ARGV 2
+function(GENERATE_THRIFT THRIFT_FILE GEN_CPP_FILE_LIST GEN_PY_NAMESPACE GEN_PY_FILE_LIST)
+  cmake_parse_arguments(PARSE_ARGV 4
     ARG "" "GEN_CPP_DIR;GEN_PY_DIR" "")
 
   if(DEFINED ARG_GEN_CPP_DIR)
@@ -45,6 +45,26 @@ function(GENERATE_THRIFT THRIFT_FILE GEN_CPP_FILE_LIST)
       ${GEN_CPP_DIR}/${service}.h
     )
   endif()
+
+  # Identify python files
+  string(REGEX MATCH "namespace py +([A-Za-z0-9_.]+)" match "${thrift_content}")
+
+  set(namespace "")
+  if (match)
+    string(REGEX REPLACE "namespace py +" "" namespace "${match}")
+    string(REGEX REPLACE "\\." "/" namespace "${namespace}")
+    set(THRIFT_PY_FILES
+      ${GEN_PY_DIR}/${namespace}/constants.py
+      ${GEN_PY_DIR}/${namespace}/__init__.py
+      ${GEN_PY_DIR}/${namespace}/ttypes.py
+    )
+    if(DEFINED service)
+      list(APPEND THRIFT_PY_FILES
+        ${GEN_PY_DIR}/${namespace}/${service}.py
+        ${GEN_PY_DIR}/${namespace}/${service}-remote
+      )
+    endif()
+  endif()
   
   # Run thrift 
   # FIXME: port the python handling code from Makefile.am
@@ -58,6 +78,8 @@ function(GENERATE_THRIFT THRIFT_FILE GEN_CPP_FILE_LIST)
     COMMENT "Generating Thrift files for ${THRIFT_NAME}"
   )
 
-  # Return the CPP files
+  # Return cpp/py file lists
   set(${GEN_CPP_FILE_LIST} ${THRIFT_CPP_FILES} PARENT_SCOPE)
+  set(${GEN_PY_NAMESPACE} ${namespace} PARENT_SCOPE)
+  set(${GEN_PY_FILE_LIST} ${THRIFT_PY_FILES} PARENT_SCOPE)
 endfunction()

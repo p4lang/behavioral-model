@@ -26,3 +26,7 @@ target_include_directories(bmpi PRIVATE
 
 # FIXME: remove the redundant moves
 target_compile_options(bmpi PRIVATE "-Wno-error=redundant-move")
+
+install(FILES bm/PI/pi.h
+  DESTINATION include/bm/PI
+)

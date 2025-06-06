@@ -7,8 +7,13 @@ set(THRIFT_GEN_PY_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-py)
 
 # Generate Thrift sources
 foreach(THRIFT_FILE ${THRIFT_FILES})
-  generate_thrift(${THRIFT_FILE} THRIFT_CPP_FILES)
+  generate_thrift(${THRIFT_FILE} THRIFT_CPP_FILES THRIFT_PY_NAMESPACE THRIFT_PY_FILES)
   list(APPEND ALL_THRIFT_CPP_FILES ${THRIFT_CPP_FILES})
+
+  install(FILES
+    ${THRIFT_PY_FILES}
+    DESTINATION "${PY_SITE_PKG_DIR}/bm/pdfixed/${THRIFT_PY_NAMESPACE}"
+  )
 endforeach()
 
 add_custom_target(genthrift_pdfixed DEPENDS ${ALL_THRIFT_CPP_FILES})
@@ -45,3 +50,36 @@ target_include_directories(bmpdfixed_thrift PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp
 )
 add_dependencies(bmpdfixed_thrift genthrift_pdfixed)
+
+# Installation
+install(FILES
+  include/bm/pdfixed/pd_pre.h
+  include/bm/pdfixed/pd_mirroring.h
+  include/bm/pdfixed/pd_static.h
+  include/bm/pdfixed/pd_common.h
+  include/bm/pdfixed/pd_swap.h
+  DESTINATION include/bm/pdfixed
+)
+
+install(FILES
+  include/bm/pdfixed/int/pd_conn_mgr.h
+  include/bm/pdfixed/int/pd_helpers.h
+  include/bm/pdfixed/int/pd_notifications.h
+  DESTINATION include/bm/pdfixed/int
+)
+
+install(FILES
+  thrift-src/pdfixed_rpc_server.h
+  DESTINATION include/bm/pdfixed/thrift-src
+)
+
+# FIXME: should res.thrift really be installed? Carried over from Makefile.am
+install(FILES
+  thrift/res.thrift
+  DESTINATION include/bm/pdfixed/thrift
+)
+
+install(TARGETS bmpdfixed bmpdfixed_thrift
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
