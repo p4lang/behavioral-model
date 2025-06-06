@@ -8,14 +8,15 @@ if(WITH_THRIFT)
     bmpy_utils.py
     runtime_CLI.py
   )
-  
+
   # Configure bm_CLI script
+  set(pythondir "${CMAKE_INSTALL_PREFIX}/${PY_SITE_PKG_DIR}")
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/bm_CLI.in
     ${CMAKE_CURRENT_BINARY_DIR}/bm_CLI
     @ONLY
   )
-  
+
   list(APPEND BIN_SCRIPTS
     ${CMAKE_CURRENT_BINARY_DIR}/bm_CLI
   )
@@ -27,21 +28,21 @@ if(WITH_NANOMSG)
     p4dbg.py
     nanomsg_client.py
   )
-  
+
   # Configure bm_p4dbg script
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/bm_p4dbg.in
     ${CMAKE_CURRENT_BINARY_DIR}/bm_p4dbg
     @ONLY
   )
-  
+
   # Configure bm_nanomsg_events script
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/bm_nanomsg_events.in
     ${CMAKE_CURRENT_BINARY_DIR}/bm_nanomsg_events
     @ONLY
   )
-  
+
   list(APPEND BIN_SCRIPTS
     ${CMAKE_CURRENT_BINARY_DIR}/bm_p4dbg
     ${CMAKE_CURRENT_BINARY_DIR}/bm_nanomsg_events
@@ -69,7 +70,7 @@ endforeach()
 
 # Install Python scripts
 install(FILES ${PYTHON_SCRIPTS}
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/python/
+  DESTINATION ${PY_SITE_PKG_DIR}
 )
 
 # Install binary scripts

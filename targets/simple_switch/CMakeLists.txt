@@ -1,5 +1,3 @@
-# FIXME: review installation + python handling
-
 # Include directories
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -58,7 +56,6 @@ if(WITH_THRIFT)
   )
   
   # Generate Thrift files
-  # FIXME: port python handling from Makefile.am
   set(THRIFT_IDL ${CMAKE_CURRENT_SOURCE_DIR}/thrift/simple_switch.thrift)
   set(THRIFT_PY_FILES
     ${CMAKE_CURRENT_BINARY_DIR}/gen-py/sswitch_runtime/constants.py
@@ -66,7 +63,9 @@ if(WITH_THRIFT)
     ${CMAKE_CURRENT_BINARY_DIR}/gen-py/sswitch_runtime/SimpleSwitch.py
     ${CMAKE_CURRENT_BINARY_DIR}/gen-py/sswitch_runtime/ttypes.py
   )
-  generate_thrift(${THRIFT_IDL} THRIFT_CPP_FILES GEN_CPP_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm)
+  generate_thrift(${THRIFT_IDL} THRIFT_CPP_FILES THRIFT_PY_NAMESPACE THRIFT_PY_FILES
+    GEN_CPP_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen-cpp/bm
+  )
   
   add_custom_target(genthrift_simpleswitch DEPENDS ${THRIFT_CPP_FILES})
   
@@ -113,15 +112,16 @@ if(WITH_THRIFT)
   
   # Install Python modules
   install(FILES ${THRIFT_PY_FILES}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/python/sswitch_runtime
+    DESTINATION ${PY_SITE_PKG_DIR}/${THRIFT_PY_NAMESPACE}
   )
   
   # Install Python CLI
   install(FILES sswitch_CLI.py
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/python
+    DESTINATION ${PY_SITE_PKG_DIR}
   )
   
   # Configure and install simple_switch_CLI script
+  set(pythondir "${CMAKE_INSTALL_PREFIX}/${PY_SITE_PKG_DIR}")
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/simple_switch_CLI.in
     ${CMAKE_CURRENT_BINARY_DIR}/simple_switch_CLI
@@ -145,6 +145,12 @@ if(WITH_THRIFT)
   
   install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/simple_switch_CLI
     DESTINATION bin
+  )
+
+  # Install libraries
+  install(TARGETS simpleswitch_thrift
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
   )
 endif()
 

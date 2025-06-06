@@ -172,6 +172,10 @@ if(ENABLE_MODULES)
   endif()
 endif()
 
+# Identify python installation directory
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+set(PY_SITE_PKG_DIR "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages")
+
 # Add subdirectories
 if(WITH_THRIFT)
   add_subdirectory(thrift_src)
