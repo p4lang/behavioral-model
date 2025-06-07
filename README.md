@@ -91,7 +91,7 @@ sudo dpkg -i /path/to/package.deb
     - [nanomsg 1.0.0](https://github.com/nanomsg/nanomsg/releases/tag/1.0.0) or
       later
 
-    If using the experimental cmake build system, additionally:
+    If using the cmake build system, additionally:
 
     ```console
     sudo apt-get install -y cmake
@@ -106,7 +106,7 @@ sudo dpkg -i /path/to/package.deb
         thrift-devel nanomsg-devel
     ```
 
-    If using the experimental cmake build system, additionally:
+    If using the cmake build system, additionally:
 
     ```console
     sudo dnf install -y cmake
@@ -153,8 +153,13 @@ sudo dpkg -i /path/to/package.deb
 
     #### Experimental: cmake-based build
 
-    A new cmake-based build process is currently under development. It is
-    currently considered experimental and may be incomplete.
+    A cmake-based build process was recently added to the project. Differences
+    from the autoconf-based system are:
+    - Static vs shared libraries: the cmake build produces a single version of
+      each library (the choice depnds upon the library), while the autoconf
+      build produces static and shared versions for every library.
+    - bmp4apps library: the cmake build system does produce the bmp4apps
+      library.
 
     ```console
     # Create a build directory
