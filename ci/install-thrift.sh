@@ -11,14 +11,13 @@ set -e
 # tar -xzvf thrift-0.13.0.tar.gz
 git clone -b 0.13.0 https://github.com/apache/thrift.git thrift-0.13.0
 cd thrift-0.13.0
-./bootstrap.sh
-./configure --with-as3=no --with-c_glib=no --with-csharp=no --with-cpp=yes \
-    --with-cl=no --with-d=no --with-dart=no --with-dotnetcore=no \
-    --with-erlang=no --with-go=no --with-haskell=no --with-haxe=no \
-    --with-java=no --with-lua=no --with-nodejs=no --with-nodets=no \
-    --with-perl=no --with-php=no --with-python=yes --with-py3=no \
-    --with-qt5=no --with-ruby=no --with-rs=no --with-swift=no
+mkdir -p build  # Likely already exists
+cd build
+cmake -DWITH_AS3=OFF -DWITH_C_GLIB=OFF -DWITH_CPP=ON -DWITH_JAVA=OFF \
+    -DWITH_JAVA=OFF -DWITH_PYTHON=ON -DWITH_HASKELL=OFF \
+    -DCMAKE_CXX_STANDARD=17 ..
 make -j4 && sudo make install
+cd ..
 cd lib/py
 sudo python3 setup.py install
 cd ../../..
