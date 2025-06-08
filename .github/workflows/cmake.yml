@@ -39,8 +39,9 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y automake cmake libgmp-dev \
           libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
-          libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
-          libevent-dev libtool flex bison pkg-config g++ libssl-dev
+          libboost-system-dev libboost-filesystem-dev libboost-random-dev \
+          libboost-thread-dev libevent-dev libtool flex bison pkg-config g++ \
+          libssl-dev
         bash ./ci/install-thrift.sh
         bash ./ci/install-nanomsg.sh
         sudo ldconfig
@@ -75,8 +76,9 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y automake cmake libgmp-dev \
           libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
-          libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
-          libevent-dev libtool flex bison pkg-config g++ libssl-dev
+          libboost-system-dev libboost-filesystem-dev libboost-random-dev \
+          libboost-thread-dev libevent-dev libtool flex bison pkg-config g++ \
+          libssl-dev
         bash ./ci/install-thrift.sh
         bash ./ci/install-nanomsg.sh
         sudo ldconfig
