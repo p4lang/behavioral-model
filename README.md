@@ -91,6 +91,12 @@ sudo dpkg -i /path/to/package.deb
     - [nanomsg 1.0.0](https://github.com/nanomsg/nanomsg/releases/tag/1.0.0) or
       later
 
+    If using the cmake build system, additionally:
+
+    ```console
+    sudo apt-get install -y cmake
+    ```
+
     #### Fedora
 
     ```console
@@ -98,6 +104,12 @@ sudo dpkg -i /path/to/package.deb
         boost-devel boost-system boost-thread boost-filesystem boost-test \
         libevent-devel libtool flex bison pkg-config g++ openssl-devel \
         thrift-devel nanomsg-devel
+    ```
+
+    If using the cmake build system, additionally:
+
+    ```console
+    sudo dnf install -y cmake
     ```
 
     To use the CLI, you will need to install the
@@ -115,6 +127,9 @@ sudo dpkg -i /path/to/package.deb
     or later.
 
 3. Building the code
+
+    #### Recommended: autoconf-based build
+
     ```bash
     ./autogen.sh
     ./configure
@@ -136,14 +151,108 @@ sudo dpkg -i /path/to/package.deb
     The new bmv2 debugger can be enabled by passing `--enable-debugger` to
     `configure`.
 
+    #### Experimental: cmake-based build
+
+    A cmake-based build process was recently added to the project. Differences
+    from the autoconf-based system are:
+    - Static vs shared libraries: the cmake build produces a single version of
+      each library (the choice depnds upon the library), while the autoconf
+      build produces static and shared versions for every library.
+    - bmp4apps library: the cmake build system does produce the bmp4apps
+      library.
+
+    ```console
+    # Create a build directory
+    mkdir build
+    cd build
+
+    # Configure the build
+    cmake ..
+
+    # Build
+    make -j`nproc`
+
+    # Install (optional)
+    make install
+    ```
+
+    ##### cmake Build Options
+
+    The following options can be specified during the configuration step:
+
+    ```bash
+    # Disable Nanomsg support
+    cmake -DWITH_NANOMSG=OFF ..
+
+    # Disable Thrift support
+    cmake -DWITH_THRIFT=OFF ..
+
+    # Enable PI support
+    cmake -DWITH_PI=ON ..
+
+    # Enable pdfixed
+    cmake -DWITH_PDFIXED=ON ..
+
+    # Disable building targets
+    cmake -DWITH_TARGETS=OFF ..
+
+    # Enable stress tests
+    cmake -DWITH_STRESS_TESTS=ON ..
+
+    # Enable debugger
+    cmake -DENABLE_DEBUGGER=ON ..
+
+    # Enable code coverage
+    cmake -DENABLE_COVERAGE=ON ..
+
+    # Disable logging macros
+    cmake -DENABLE_LOGGING_MACROS=OFF ..
+
+    # Disable event logger
+    cmake -DENABLE_ELOGGER=OFF ..
+
+    # Enable module loading
+    cmake -DENABLE_MODULES=ON ..
+
+    # Disable undeterministic tests
+    cmake -DENABLE_UNDETERMINISTIC_TESTS=OFF ..
+
+    # Enable Werror (treat warnings as errors)
+    cmake -DENABLE_WERROR=ON ..
+
+    # Disable P4_16 stacks
+    cmake -DENABLE_WP4_16_STACKS=OFF ..
+    ```
+
+    ##### Building with Ninja
+
+    For faster builds, you can use the Ninja build system:
+
+    ```bash
+    # Configure with Ninja
+    cmake -GNinja ..
+
+    # Build
+    ninja
+
+    # Install (optional)
+    sudo ninja install
+    ```
+
 ## Running the tests
 
+### autoconf-based build
 To run the unit tests, simply do:
 
     make check
 
 **If you get a nanomsg error when running the tests (make check), try running
   them as sudo**
+
+### cmake-based build
+To run the unit tests, simply do from the build directory:
+
+    ctest
 
 ## Running your P4 program
 
