@@ -34,10 +34,14 @@ jobs:
           cc: clang-8
         - cxx: clang++-10
           cc: clang-10
+
+    name: ${{ matrix.cc }} ${{ matrix.cxx }}
+
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+
     - name: Install system dependencies
       run: |
         # Switch to alternative mirrors
@@ -95,29 +99,36 @@ jobs:
         # Start docker service
         sudo systemctl start docker
         sudo docker --version
+
+    - name: Fix permissions for autogen.sh
+      run: |
+        chmod +x autogen.sh
+        chmod +x ci/install-thrift.sh
+        chmod +x ci/install-nanomsg.sh
+
     - name: Build test Docker image
       env:
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
         GCOV: ""
       run: |
-        echo "Building with CC=$CC CXX=$CXX"
-        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV . 2>&1 | tee docker-build.log
+        echo "Building test image..."
+        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV --build-arg BUILDER=autoconf . 2>&1 | tee docker-build.log
         if [ ${PIPESTATUS[0]} -ne 0 ]; then
           echo "Docker build failed. Log:"
           cat docker-build.log
           exit 1
         fi
+
     - name: Run tests
       run: |
         echo "Running tests..."
         ci_env=`bash <(curl -s https://codecov.io/env)`
-        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "cd build && make check -j$(nproc) && cd .. && ./ci/codecov.sh" 2>&1 | tee test-run.log
-        if [ ${PIPESTATUS[0]} -ne 0 ]; then
-          echo "Tests failed. Log:"
-          cat test-run.log
-          exit 1
-        fi
+        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c \
+          "make check -j$(nproc) && ./ci/codecov.sh"
+        # FIXME: replace the command above with the following when switching to cmake
+        #  "cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure && cd .. && ./ci/codecov.sh"
+
     - name: Check style
       run: |
         ./tools/check_style.sh
@@ -130,6 +141,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+
     - name: Install system dependencies
       run: |
         sudo apt-get update
@@ -145,37 +157,30 @@ jobs:
         sudo systemctl start docker
         # Verify docker is running
         sudo docker --version
-    - name: Build Dockerfile.noPI image
+
+    - name: Fix permissions for autogen.sh
       run: |
-        echo "Building noPI image..."
-        docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI . 2>&1 | tee docker-build-nopi.log
+        chmod +x autogen.sh
+        chmod +x ci/install-thrift.sh
+        chmod +x ci/install-nanomsg.sh
+
+    - name: Build test Docker image
+      run: |
+        echo "Building test image..."
+        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg BUILDER=autoconf -f Dockerfile.noPI . 2>&1 | tee docker-build-noPI.log
         if [ ${PIPESTATUS[0]} -ne 0 ]; then
           echo "Docker build failed. Log:"
-          cat docker-build-nopi.log
+          cat docker-build-noPI.log
           exit 1
         fi
-    - name: Build BMv2 inside Docker
-      run: |
-        echo "Building BMv2 inside Docker..."
-        docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "
-          mkdir -p build &&
-          cd build &&
-          cmake -DWITH_PDFIXED=ON -DWITH_PI=OFF -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON .. &&
-          make -j$(nproc)" 2>&1 | tee build-nopi.log
-        if [ ${PIPESTATUS[0]} -ne 0 ]; then
-          echo "Build failed. Log:"
-          cat build-nopi.log
-          exit 1
-        fi
+
     - name: Run tests
       run: |
-        echo "Running tests..."
-        docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "cd build && make check -j$(nproc)" 2>&1 | tee test-run-nopi.log
-        if [ ${PIPESTATUS[0]} -ne 0 ]; then
-          echo "Tests failed. Log:"
-          cat test-run-nopi.log
-          exit 1
-        fi
+        ci_env=`bash <(curl -s https://codecov.io/env)`
+        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c \
+          "make check -j$(nproc) && ./ci/codecov.sh"
+        # FIXME: replace the command above with the following when switching to cmake
+        #  "cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure && cd .. && ./ci/codecov.sh"
 
   test-ubuntu22:
     needs: check-changes

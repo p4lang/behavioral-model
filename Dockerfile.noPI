@@ -41,6 +41,7 @@ WORKDIR /behavioral-model/
 
 RUN apt-get update -qq && \
     apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
+    chmod +x autogen.sh && \
     ./autogen.sh && \
     mkdir -p build && cd build && \
     cmake $CMAKE_OPTS .. && \
