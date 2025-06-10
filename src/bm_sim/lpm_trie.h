@@ -18,11 +18,11 @@
 
 #include <bm/bm_sim/bytecontainer.h>
 
+#include <algorithm> 
 #include <cassert>
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <algorithm> 
 #include <vector>
 
 namespace bm {
