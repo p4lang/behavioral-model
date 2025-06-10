@@ -22,7 +22,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <utility>  // for std::swap
+#include <algorithm> 
 #include <vector>
 
 namespace bm {
