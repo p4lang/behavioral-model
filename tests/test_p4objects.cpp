@@ -1001,21 +1001,17 @@ TEST(P4Objects, ActionControl) {
 
 TEST(P4Objects, JsonVersionStr) {
   auto json_version_str = P4Objects::get_json_version_string();
-  // not worth using <regex> for this, which would require checking compiler
-  // compatibility (e.g. __GLIBCXX__ >= 20140422) and may create portability
-  // concerns
-  auto check_digit = [](char c) {
-    return isdigit(static_cast<unsigned char>(c));
-  };
-  auto check_version = [&json_version_str, &check_digit]() {
+  auto check_version = [&json_version_str]() {
     auto dot = json_version_str.find('.');
     ASSERT_NE(std::string::npos, dot);
     ASSERT_NE(0u, dot);
     ASSERT_NE(json_version_str.size(), dot);
-    EXPECT_TRUE(std::all_of(
-        &json_version_str.front(), &json_version_str[dot], check_digit));
-    EXPECT_TRUE(std::all_of(
-        &json_version_str[dot + 1], &json_version_str.back(), check_digit));
+    EXPECT_TRUE(std::all_of(json_version_str.begin(), json_version_str.begin() + dot, [](char c) {
+      return std::isdigit(static_cast<unsigned char>(c));
+    }));
+    EXPECT_TRUE(std::all_of(json_version_str.begin() + dot + 1, json_version_str.end(), [](char c) {
+      return std::isdigit(static_cast<unsigned char>(c));
+    }));
   };
   check_version();
 }
