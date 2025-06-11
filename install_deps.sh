@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
+
 ubuntu_release=`lsb_release -s -r`
+
 sudo apt-get install -y \
     automake \
     cmake \
@@ -26,11 +28,9 @@ sudo apt-get install -y \
 
 tmpdir=`mktemp -d -p .`
 cd $tmpdir
-
 bash ../ci/install-thrift.sh
 bash ../ci/install-nanomsg.sh
 sudo ldconfig
 bash ../ci/install-nnpy.sh
-
 cd ..
 sudo rm -rf $tmpdir

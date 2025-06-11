@@ -1,0 +1,229 @@
+name: CMake Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        config:
+          - name: "Basic Build"
+            options: ""
+          - name: "Without Thrift"
+            options: "-DWITH_THRIFT=OFF"
+          - name: "Without Nanomsg"
+            options: "-DWITH_NANOMSG=OFF"
+          - name: "With Debugger"
+            options: "-DENABLE_DEBUGGER=ON"
+
+    name: ${{ matrix.config.name }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - name: Set executable permissions
+      run: |
+        chmod +x autogen.sh
+        chmod +x ./ci/install-thrift.sh
+        chmod +x ./ci/codecov.sh
+        chmod +x ./ci/install-nanomsg.sh
+
+    - name: Install dependencies
+      run: |
+        # Switch to alternative mirrors
+        sudo sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+        sudo sed -i 's|http://security.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+
+        # Retry mechanism for apt-get update with increased attempts and delay
+        for i in {1..5}; do
+          sudo apt-get update && break || {
+            echo "Attempt $i failed to update package lists. Retrying after 10 seconds..."
+            sleep 10
+          }
+        done
+
+        if [ $i -eq 5 ]; then
+          echo "Failed to update package lists after 5 attempts"
+          exit 1
+        fi
+
+        # Install system dependencies with improved retry mechanism
+        for i in {1..5}; do
+          sudo apt-get install -y \
+            automake \
+            cmake \
+            libgmp-dev \
+            libpcap-dev \
+            libboost-dev \
+            libboost-test-dev \
+            libboost-program-options-dev \
+            libboost-system-dev \
+            libboost-filesystem-dev \
+            libboost-random-dev \
+            libboost-thread-dev \
+            libevent-dev \
+            libtool \
+            flex \
+            bison \
+            pkg-config \
+            g++ \
+            libssl-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            cabal-install \
+            ghc && break || {
+            echo "Attempt $i failed to install dependencies. Retrying after 10 seconds..."
+            sleep 10
+          }
+        done
+
+        if [ $i -eq 5 ]; then
+          echo "Failed to install dependencies after 5 attempts"
+          exit 1
+        fi
+
+        # Install specific version of network and base package with improved retry
+        for i in {1..5}; do
+          cabal update && break || {
+            echo "Attempt $i failed to update cabal. Retrying after 10 seconds..."
+            sleep 10
+          }
+        done
+
+        if [ $i -eq 5 ]; then
+          echo "Failed to update cabal after 5 attempts"
+          exit 1
+        fi
+
+        # Install the compatible versions of network and base
+        cabal install network-3.1.2.1 --constraint="base >= 4.7 && <= 4.21"
+
+        # Install Thrift and Nanomsg
+        bash ./ci/install-thrift.sh
+        bash ./ci/install-nanomsg.sh
+        sudo ldconfig
+
+    - name: Configure and Build
+      run: |
+        mkdir -p build
+        cd build
+        cmake ${{ matrix.config.options }} ..
+        cmake --build . -j$(nproc)
+
+    - name: Test
+      run: |
+        cd build
+        ctest --output-on-failure
+
+  install:
+    runs-on: ubuntu-22.04
+    needs: build
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Set executable permissions
+      run: |
+        chmod +x autogen.sh
+        chmod +x ci/install-thrift.sh
+        chmod +x ci/install-nanomsg.sh
+
+    - name: Install dependencies
+      run: |
+        # Switch to alternative mirrors
+        sudo sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+        sudo sed -i 's|http://security.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+
+        # Retry mechanism for apt-get update with increased attempts and delay
+        for i in {1..5}; do
+          sudo apt-get update && break || {
+            echo "Attempt $i failed to update package lists. Retrying after 10 seconds..."
+            sleep 10
+          }
+        done
+
+        if [ $i -eq 5 ]; then
+          echo "Failed to update package lists after 5 attempts"
+          exit 1
+        fi
+
+        # Install system dependencies with improved retry mechanism
+        for i in {1..5}; do
+          sudo apt-get install -y \
+            automake \
+            cmake \
+            libgmp-dev \
+            libpcap-dev \
+            libboost-dev \
+            libboost-test-dev \
+            libboost-program-options-dev \
+            libboost-system-dev \
+            libboost-filesystem-dev \
+            libboost-random-dev \
+            libboost-thread-dev \
+            libevent-dev \
+            libtool \
+            flex \
+            bison \
+            pkg-config \
+            g++ \
+            libssl-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            cabal-install \
+            ghc && break || {
+            echo "Attempt $i failed to install dependencies. Retrying after 10 seconds..."
+            sleep 10
+          }
+        done
+
+        if [ $i -eq 5 ]; then
+          echo "Failed to install dependencies after 5 attempts"
+          exit 1
+        fi
+
+        # Install specific version of network and base package with improved retry
+        for i in {1..5}; do
+          cabal update && break || {
+            echo "Attempt $i failed to update cabal. Retrying after 10 seconds..."
+            sleep 10
+          }
+        done
+
+        if [ $i -eq 5 ]; then
+          echo "Failed to update cabal after 5 attempts"
+          exit 1
+        fi
+
+        # Install the compatible versions of network and base
+        cabal install network-3.1.2.1 --constraint="base >= 4.7 && <= 4.21"
+
+        # Install Thrift and Nanomsg
+        bash ./ci/install-thrift.sh
+        bash ./ci/install-nanomsg.sh
+        sudo ldconfig
+
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build .
+
+    - name: Install
+      run: |
+        cd build
+        sudo cmake --build . --target install
