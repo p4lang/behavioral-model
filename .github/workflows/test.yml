@@ -76,6 +76,7 @@ jobs:
 
         # Install Haskell dependencies with compatible versions
         cabal update
+        cabal install base-4.20.0.0
         cabal install network-3.2.1.0 --constraint="base >= 4.18 && <4.21"
         cabal install --dependencies-only
 
@@ -152,6 +153,7 @@ jobs:
 
         # Install Haskell dependencies with compatible versions
         cabal update
+        cabal install base-4.20.0.0
         cabal install network-3.2.1.0 --constraint="base >= 4.18 && <4.21"
         cabal install --dependencies-only
 
@@ -236,6 +238,7 @@ jobs:
 
         # Install Haskell dependencies with compatible versions
         cabal update
+        cabal install base-4.20.0.0
         cabal install network-3.2.1.0 --constraint="base >= 4.18 && <4.21"
         cabal install --dependencies-only
 
