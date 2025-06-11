@@ -22,6 +22,7 @@
 #include <bm/bm_sim/P4Objects.h>
 #include <bm/bm_sim/phv.h>
 #include <bm/bm_sim/actions.h>
+#include <bm/bm_sim/logger.h>
 
 #include <iostream>
 #include <istream>
@@ -1655,8 +1656,20 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
       std::unique_ptr<ActionProfile> action_profile(
           new ActionProfile(act_prof_name, act_prof_id, with_selection));
       if (with_selection) {
-        auto calc = process_cfg_selector(cfg_act_prof["selector"]);
-        action_profile->set_hash(std::move(calc));
+        // TODO(Hao): clean debug logs
+        BMLOG_DEBUG(
+            "Action profile '{}' with id {} has a selector",
+            act_prof_name, act_prof_id);
+
+        if(is_path_permutation(cfg_act_prof["selector"])){
+          BMLOG_DEBUG(
+              "Action profile '{}' with id {} enabled path permutation selector",
+              act_prof_name, act_prof_id);
+          action_profile->set_path_permutation();
+        }else{
+          auto calc = process_cfg_selector(cfg_act_prof["selector"]);
+          action_profile->set_hash(std::move(calc));
+        }
       }
       add_action_profile(act_prof_name, std::move(action_profile));
     }
@@ -2497,6 +2510,12 @@ P4Objects::check_hash(const std::string &name) const {
   }
   throw json_exception(EFormat() << "Unknown hash algorithm: " << name);
   return nullptr;
+}
+
+// TODO(Hao): messy, so i think use pragma is better
+bool P4Objects::is_path_permutation(const Json::Value &cfg_selector) const {
+  return cfg_selector.isMember("algo") && // not to hardcode names, fix later
+         cfg_selector["algo"].asString() == "path_permutation";
 }
 
 std::unique_ptr<Calculation>

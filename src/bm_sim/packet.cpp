@@ -207,6 +207,16 @@ Packet::clone_no_phv_ptr() const {
   return clone_choose_context_ptr(cxt_id);
 }
 
+bool Packet::has_continue_node() const {
+  return continue_node.has_value();
+}
+const ControlFlowNode *Packet::get_continue_node() const {
+  return continue_node.value_or(nullptr);
+}
+void Packet::set_continue_node(const ControlFlowNode *node) {
+  continue_node = node;
+}
+
 /* Cannot get away with defaults here, we need to swap the phvs, otherwise we
    could "leak" the old phv (i.e. not put it back into the pool) */
 

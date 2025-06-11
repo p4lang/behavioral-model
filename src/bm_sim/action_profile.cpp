@@ -22,6 +22,7 @@
 #include <bm/bm_sim/action_profile.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/replicated_pkt_vec.h>
 
 #include <iostream>
 #include <memory>
@@ -126,6 +127,8 @@ ActionProfile::mbr_hdl_t
 ActionProfile::GroupMgr::get_from_hash(grp_hdl_t grp, hash_t h) const {
   const auto &group_info = groups.at(grp);
   auto s = group_info.size();
+  BMLOG_DEBUG("Hao: Choosing member from group {} with hash {} (size {})",
+                grp, h, s);
   return group_info.get_nth(h % s);
 }
 
@@ -175,9 +178,29 @@ ActionProfile::lookup(const Packet &pkt, const IndirectIndex &index) const {
   } else {
     grp_hdl_t grp = index.get_grp();
     assert(is_valid_grp(grp));
+    //Hao: critical part for permutating all possible members
+    std::vector<mbr_hdl_t> mbrs;
     mbr = choose_from_group(grp, pkt);
     // TODO(antonin): change to trace?
     BMLOG_DEBUG_PKT(pkt, "Choosing member {} from group {}", mbr, grp);
+
+    if(path_permutation_enabled){
+      BMLOG_DEBUG_PKT(pkt, "Path permutation enabled, choosing member from group {} WIP", grp);
+      // TODO(Hao): STOOOOOP here for this WEEEEEEK ....
+      mbrs = get_all_mbrs_from_group(grp);
+      for(auto m:mbrs){
+        if(m == mbr){
+          continue;
+        }
+        // TODO(Hao): get the entry, use the entry to get the next node,
+        //  set the next node to the packet, add it to the replicated packet vector
+        // for now just copy the pkt.. like a recirculate
+        std::unique_ptr<Packet> rep_pkt = pkt.clone_with_phv_ptr();
+        BMLOG_DEBUG_PKT(*rep_pkt, "Path permutation enabled, adding member {} to replicated packet vector", m);
+        ReplicatedPktVec::instance().push_back(rep_pkt.release());
+        BMLOG_DEBUG("Pushed vec.")
+      }
+    }
   }
   assert(is_valid_mbr(mbr));
 
@@ -615,6 +638,20 @@ ActionProfile::choose_from_group(grp_hdl_t grp, const Packet &pkt) const {
   if (!hash) return grp_selector->get_from_hash(grp, 0);
   hash_t h = static_cast<hash_t>(hash->output(pkt));
   return grp_selector->get_from_hash(grp, h);
+}
+
+std::vector<ActionProfile::mbr_hdl_t>
+ActionProfile::get_all_mbrs_from_group(grp_hdl_t grp) const {
+  std::vector<ActionProfile::mbr_hdl_t> mbrs;
+  const GroupInfo& grp_info = grp_mgr.at(grp);
+  for(auto mbr = grp_info.begin(); mbr != grp_info.end(); ++mbr) {
+    mbrs.push_back(*mbr);
+  }
+  return mbrs;
+}
+
+void ActionProfile::set_path_permutation(){
+  path_permutation_enabled = true;
 }
 
 }  // namespace bm
