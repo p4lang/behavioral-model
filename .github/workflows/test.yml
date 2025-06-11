@@ -44,10 +44,22 @@ jobs:
         CXX: ${{ matrix.cxx }}
       run: |
         docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV .
-    - name: Run tests
+    - name: Run tests with verbose output
       run: |
         ci_env=`bash <(curl -s https://codecov.io/env)`
-        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "make check -j$(nproc) && ./ci/codecov.sh"
+        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "make check -j$(nproc) VERBOSE=1 && ./ci/codecov.sh"
+    - name: Upload test logs on failure
+      if: failure()
+      run: |
+        mkdir -p logs
+        docker run --rm -v $(pwd)/logs:/logs bm /bin/bash -c "cp -r tests/test-suite.log /logs/ && cp -r tests/p4objects.log /logs/ && cp -r tests/table_apply.log /logs/"
+        zip -r logs.zip logs/
+    - name: Upload test logs artifact
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-logs
+        path: logs.zip
     - name: Check style
       run: |
         ./tools/check_style.sh
@@ -62,8 +74,20 @@ jobs:
         submodules: 'recursive'
     - name: Build Dockerfile.noPI image
       run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
-    - name: Run tests
-      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make check -j$(nproc)"
+    - name: Run tests with verbose output
+      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make check -j$(nproc) VERBOSE=1"
+    - name: Upload test logs on failure
+      if: failure()
+      run: |
+        mkdir -p logs
+        docker run --rm -v $(pwd)/logs:/logs bm-no-pi /bin/bash -c "cp -r tests/test-suite.log /logs/ && cp -r tests/p4objects.log /logs/ && cp -r tests/table_apply.log /logs/"
+        zip -r logs.zip logs/
+    - name: Upload test logs artifact
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-logs-no-pi
+        path: logs.zip
 
   test-ubuntu22:
     needs: check-changes
@@ -80,5 +104,19 @@ jobs:
         ./autogen.sh
         ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror
         make -j$(nproc)
-    - name: Run tests
-      run: make check -j$(nproc)
+    - name: Run tests with verbose output
+      run: make check -j$(nproc) VERBOSE=1
+    - name: Upload test logs on failure
+      if: failure()
+      run: |
+        mkdir -p logs
+        cp tests/test-suite.log logs/
+        cp tests/p4objects.log logs/
+        cp tests/table_apply.log logs/
+        zip -r logs.zip logs/
+    - name: Upload test logs artifact
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-logs-ubuntu22
+        path: logs.zip
