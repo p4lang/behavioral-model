@@ -1,29 +1,13 @@
 name: Test
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  check-changes:
-    name: Check whether tests need to be run based on diff
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v4
-    - uses: antrea-io/has-changes@v2
-      id: check_diff
-      with:
-        paths-ignore: docs/* *.md
-    outputs:
-      has_changes: ${{ steps.check_diff.outputs.has_changes }}
-
   test:
-    needs: check-changes
-    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -116,7 +100,7 @@ jobs:
         done
 
         # Install the compatible versions of network and base
-        cabal install network-2.8.0.1 --constraint="base >= 4.7 && < 4.18"
+        cabal install network-3.1.2.1 --constraint="base >= 4.18"
 
         # Install Thrift and Nanomsg
         bash ./ci/install-thrift.sh
@@ -136,96 +120,111 @@ jobs:
         ctest --output-on-failure
 
   test-no-pi:
-    needs: check-changes
-    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
     runs-on: ubuntu-22.04
+    needs: test
+
     steps:
     - uses: actions/checkout@v4
       with:
-        submodules: 'recursive'
+        submodules: recursive
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        # Remove all conflicting container packages
-        sudo apt-get remove -y containerd moby-containerd containerd.io || true
-        # Clean up any remaining packages
-        sudo apt-get autoremove -y
-        # Update package lists again
-        sudo apt-get update
-        # Install docker.io with specific version to avoid conflicts
-        sudo apt-get install -y docker.io=20.10.*
-        # Start docker service
-        sudo systemctl start docker
-        # Verify docker is running
-        sudo docker --version
-
-    - name: Fix permissions for autogen.sh
+    - name: Set executable permissions
       run: |
         chmod +x autogen.sh
         chmod +x ci/install-thrift.sh
         chmod +x ci/install-nanomsg.sh
 
+    - name: Install dependencies
+      run: |
+        # Switch to alternative mirrors
+        sudo sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+        sudo sed -i 's|http://security.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+
+        # Retry mechanism for apt-get update
+        for i in {1..3}; do
+          sudo apt-get update && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to update package lists after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying apt-get update... (Attempt $i)"
+            sleep 5
+          }
+        done
+
+        # Install system dependencies with retry
+        for i in {1..3}; do
+          sudo apt-get install -y \
+            automake \
+            cmake \
+            libgmp-dev \
+            libpcap-dev \
+            libboost-dev \
+            libboost-test-dev \
+            libboost-program-options-dev \
+            libboost-system-dev \
+            libboost-filesystem-dev \
+            libboost-random-dev \
+            libboost-thread-dev \
+            libevent-dev \
+            libtool \
+            flex \
+            bison \
+            pkg-config \
+            g++ \
+            libssl-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            cabal-install \
+            ghc && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to install system dependencies after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying system dependencies installation... (Attempt $i)"
+            sleep 5
+          }
+        done
+
+        # Install specific version of network and base package with retry
+        for i in {1..3}; do
+          cabal update && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to update cabal after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying cabal update... (Attempt $i)"
+            sleep 5
+          }
+        done
+
+        # Install the compatible versions of network and base
+        cabal install network-3.1.2.1 --constraint="base >= 4.18"
+
+        # Install Thrift and Nanomsg
+        bash ./ci/install-thrift.sh
+        bash ./ci/install-nanomsg.sh
+        sudo ldconfig
+
     - name: Build test Docker image
       run: |
-        echo "Building test image..."
-        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg BUILDER=autoconf -f Dockerfile.noPI . 2>&1 | tee docker-build-noPI.log
-        if [ ${PIPESTATUS[0]} -ne 0 ]; then
-          echo "Docker build failed. Log:"
-          cat docker-build-noPI.log
-          exit 1
-        fi
+        for i in {1..3}; do
+          docker build -t bm --build-arg IMAGE_TYPE=test --build-arg BUILDER=autoconf -f Dockerfile.noPI . && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to build the Docker image after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying Docker build... (Attempt $i)"
+            sleep 5
+          }
+        done
 
-    - name: Run tests
-      run: |
-        ci_env=`bash <(curl -s https://codecov.io/env)`
-        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c \
-          "make check -j$(nproc) && ./ci/codecov.sh"
-        # FIXME: replace the command above with the following when switching to cmake
-        #  "cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure && cd .. && ./ci/codecov.sh"
-
-  test-ubuntu22:
-    needs: check-changes
-    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
-        fetch-depth: 0
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        # Remove all conflicting container packages
-        sudo apt-get remove -y containerd moby-containerd containerd.io || true
-        # Clean up any remaining packages
-        sudo apt-get autoremove -y
-        # Update package lists again
-        sudo apt-get update
-        # Install docker.io with specific version to avoid conflicts
-        sudo apt-get install -y docker.io=20.10.*
-        # Start docker service
-        sudo systemctl start docker
-        # Verify docker is running
-        sudo docker --version
-    - name: Build test Docker image
-      run: |
-        echo "Building test image..."
-        docker build -t bm --build-arg IMAGE_TYPE=test . 2>&1 | tee docker-build-ubuntu22.log
-        if [ ${PIPESTATUS[0]} -ne 0 ]; then
-          echo "Docker build failed. Log:"
-          cat docker-build-ubuntu22.log
-          exit 1
-        fi
     - name: Run tests
       run: |
         echo "Running tests..."
-        docker run --rm -w /behavioral-model bm /bin/bash -c "cd build && make check -j$(nproc)" 2>&1 | tee test-run-ubuntu22.log
-        if [ ${PIPESTATUS[0]} -ne 0 ]; then
-          echo "Tests failed. Log:"
-          cat test-run-ubuntu22.log
-          exit 1
-        fi
+        ci_env=`bash <(curl -s https://codecov.io/env)`
+        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c \
+          "make check -j$(nproc) && ./ci/codecov.sh"
 
   install:
     runs-on: ubuntu-22.04
@@ -307,7 +306,7 @@ jobs:
         done
 
         # Install the compatible versions of network and base
-        cabal install network-2.8.0.1 --constraint="base >= 4.7 && < 4.18"
+        cabal install network-3.1.2.1 --constraint="base >= 4.18"
 
         # Install Thrift and Nanomsg
         bash ./ci/install-thrift.sh
