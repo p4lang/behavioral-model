@@ -76,8 +76,7 @@ jobs:
 
         # Install Haskell dependencies with compatible versions
         cabal update
-        cabal install base-4.20.0.0
-        cabal install network-3.2.1.0 --constraint="base >= 4.18 && <4.21"
+        cabal install network-3.1.2.1 --constraint="base >= 4.7 && < 4.22"
         cabal install --dependencies-only
 
         # Install Thrift and Nanomsg
@@ -153,8 +152,7 @@ jobs:
 
         # Install Haskell dependencies with compatible versions
         cabal update
-        cabal install base-4.20.0.0
-        cabal install network-3.2.1.0 --constraint="base >= 4.18 && <4.21"
+        cabal install network-3.1.2.1 --constraint="base >= 4.7 && < 4.22"
         cabal install --dependencies-only
 
         # Install Thrift and Nanomsg
@@ -238,8 +236,7 @@ jobs:
 
         # Install Haskell dependencies with compatible versions
         cabal update
-        cabal install base-4.20.0.0
-        cabal install network-3.2.1.0 --constraint="base >= 4.18 && <4.21"
+        cabal install network-3.1.2.1 --constraint="base >= 4.7 && < 4.22"
         cabal install --dependencies-only
 
         # Install Thrift and Nanomsg
