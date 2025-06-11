@@ -27,27 +27,36 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        include:
-        - cxx: g++
-          cc: gcc
-        - cxx: clang++-8
-          cc: clang-8
-        - cxx: clang++-10
-          cc: clang-10
+        config:
+          - name: "Basic Build"
+            options: ""
+          - name: "Without Thrift"
+            options: "-DWITH_THRIFT=OFF"
+          - name: "Without Nanomsg"
+            options: "-DWITH_NANOMSG=OFF"
+          - name: "With Debugger"
+            options: "-DENABLE_DEBUGGER=ON"
 
-    name: ${{ matrix.cc }} ${{ matrix.cxx }}
+    name: ${{ matrix.config.name }}
 
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
-    - name: Install system dependencies
+    - name: Set executable permissions
+      run: |
+        chmod +x autogen.sh
+        chmod +x ./ci/install-thrift.sh
+        chmod +x ./ci/codecov.sh
+        chmod +x ./ci/install-nanomsg.sh
+
+    - name: Install dependencies
       run: |
         # Switch to alternative mirrors
         sudo sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
         sudo sed -i 's|http://security.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
-        
+
         # Retry mechanism for apt-get update
         for i in {1..3}; do
           sudo apt-get update && break || {
@@ -59,79 +68,72 @@ jobs:
             sleep 5
           }
         done
-        
-        # Remove conflicting packages with retry
+
+        # Install system dependencies with retry
         for i in {1..3}; do
-          sudo apt-get remove -y containerd moby-containerd containerd.io && break || {
+          sudo apt-get install -y \
+            automake \
+            cmake \
+            libgmp-dev \
+            libpcap-dev \
+            libboost-dev \
+            libboost-test-dev \
+            libboost-program-options-dev \
+            libboost-system-dev \
+            libboost-filesystem-dev \
+            libboost-random-dev \
+            libboost-thread-dev \
+            libevent-dev \
+            libtool \
+            flex \
+            bison \
+            pkg-config \
+            g++ \
+            libssl-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            cabal-install \
+            ghc && break || {
             if [ $i -eq 3 ]; then
-              echo "Failed to remove packages after 3 attempts"
+              echo "Failed to install system dependencies after 3 attempts"
               exit 1
             fi
-            echo "Retrying package removal... (Attempt $i)"
+            echo "Retrying system dependencies installation... (Attempt $i)"
             sleep 5
           }
         done
-        
-        # Clean up with retry
+
+        # Install specific version of network and base package with retry
         for i in {1..3}; do
-          sudo apt-get autoremove -y && break || {
+          cabal update && break || {
             if [ $i -eq 3 ]; then
-              echo "Failed to autoremove packages after 3 attempts"
+              echo "Failed to update cabal after 3 attempts"
               exit 1
             fi
-            echo "Retrying autoremove... (Attempt $i)"
+            echo "Retrying cabal update... (Attempt $i)"
             sleep 5
           }
         done
-        
-        # Install docker.io with retry
-        for i in {1..3}; do
-          sudo apt-get install -y docker.io=20.10.* && break || {
-            if [ $i -eq 3 ]; then
-              echo "Failed to install docker.io after 3 attempts"
-              exit 1
-            fi
-            echo "Retrying docker.io installation... (Attempt $i)"
-            sleep 5
-          }
-        done
-        
-        # Start docker service
-        sudo systemctl start docker
-        sudo docker --version
 
-    - name: Fix permissions for autogen.sh
-      run: |
-        chmod +x autogen.sh
-        chmod +x ci/install-thrift.sh
-        chmod +x ci/install-nanomsg.sh
+        # Install the compatible versions of network and base
+        cabal install network-2.8.0.1 --constraint="base >= 4.7 && < 4.18"
 
-    - name: Build test Docker image
-      env:
-        CC: ${{ matrix.cc }}
-        CXX: ${{ matrix.cxx }}
-        GCOV: ""
-      run: |
-        echo "Building test image..."
-        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV --build-arg BUILDER=autoconf . 2>&1 | tee docker-build.log
-        if [ ${PIPESTATUS[0]} -ne 0 ]; then
-          echo "Docker build failed. Log:"
-          cat docker-build.log
-          exit 1
-        fi
+        # Install Thrift and Nanomsg
+        bash ./ci/install-thrift.sh
+        bash ./ci/install-nanomsg.sh
+        sudo ldconfig
 
-    - name: Run tests
+    - name: Configure and Build
       run: |
-        echo "Running tests..."
-        ci_env=`bash <(curl -s https://codecov.io/env)`
-        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c \
-          "make check -j$(nproc) && ./ci/codecov.sh"
-        # FIXME: replace the command above with the following when switching to cmake
-        #  "cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure && cd .. && ./ci/codecov.sh"
+        mkdir -p build
+        cd build
+        cmake ${{ matrix.config.options }} ..
+        cmake --build . -j$(nproc)
 
-    - name: Check style
+    - name: Test
       run: |
-        ./tools/check_style.sh
+        cd build
+        ctest --output-on-failure
 
   test-no-pi:
     needs: check-changes
@@ -224,3 +226,106 @@ jobs:
           cat test-run-ubuntu22.log
           exit 1
         fi
+
+  install:
+    runs-on: ubuntu-22.04
+    needs: test
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Set executable permissions
+      run: |
+        chmod +x autogen.sh
+        chmod +x ci/install-thrift.sh
+        chmod +x ci/install-nanomsg.sh
+
+    - name: Install dependencies
+      run: |
+        # Switch to alternative mirrors
+        sudo sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+        sudo sed -i 's|http://security.ubuntu.com/ubuntu|http://mirror.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+
+        # Retry mechanism for apt-get update
+        for i in {1..3}; do
+          sudo apt-get update && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to update package lists after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying apt-get update... (Attempt $i)"
+            sleep 5
+          }
+        done
+
+        # Install system dependencies with retry
+        for i in {1..3}; do
+          sudo apt-get install -y \
+            automake \
+            cmake \
+            libgmp-dev \
+            libpcap-dev \
+            libboost-dev \
+            libboost-test-dev \
+            libboost-program-options-dev \
+            libboost-system-dev \
+            libboost-filesystem-dev \
+            libboost-random-dev \
+            libboost-thread-dev \
+            libevent-dev \
+            libtool \
+            flex \
+            bison \
+            pkg-config \
+            g++ \
+            libssl-dev \
+            libprotobuf-dev \
+            protobuf-compiler \
+            cabal-install \
+            ghc && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to install system dependencies after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying system dependencies installation... (Attempt $i)"
+            sleep 5
+          }
+        done
+
+        # Install specific version of network and base package with retry
+        for i in {1..3}; do
+          cabal update && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to update cabal after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying cabal update... (Attempt $i)"
+            sleep 5
+          }
+        done
+
+        # Install the compatible versions of network and base
+        cabal install network-2.8.0.1 --constraint="base >= 4.7 && < 4.18"
+
+        # Install Thrift and Nanomsg
+        bash ./ci/install-thrift.sh
+        bash ./ci/install-nanomsg.sh
+        sudo ldconfig
+
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build .
+
+    - name: Install
+      run: |
+        cd build
+        sudo cmake --build . --target install

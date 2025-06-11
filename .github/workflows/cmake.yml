@@ -100,7 +100,7 @@ jobs:
         done
 
         # Install the compatible versions of network and base
-        cabal install network-2.8.0.1 --constraint="base >= 4.7 && < 4.17"
+        cabal install network-2.8.0.1 --constraint="base >= 4.7 && < 4.18"
 
         # Install Thrift and Nanomsg
         bash ./ci/install-thrift.sh
@@ -199,7 +199,7 @@ jobs:
         done
 
         # Install the compatible versions of network and base
-        cabal install network-2.8.0.1 --constraint="base >= 4.7 && < 4.17"
+        cabal install network-2.8.0.1 --constraint="base >= 4.7 && < 4.18"
 
         # Install Thrift and Nanomsg
         bash ./ci/install-thrift.sh
