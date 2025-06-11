@@ -206,22 +206,40 @@ class TableApplyTest : public ::testing::Test {
 };
 
 TEST_F(TableApplyTest, TableApplies) {
-  auto objects = parse_json(JSON_TEST_STRING_TABLE_APPLIES);
+  std::stringstream ss(JSON_TEST_STRING_TABLE_APPLIES);
+  auto objects = std::unique_ptr<P4Objects>(new P4Objects());
+  LookupStructureFactory factory;
+  
+  // Validate JSON initialization
+  ASSERT_EQ(0, objects->init_objects(&ss, &factory)) << "Failed to initialize objects from JSON";
+  ASSERT_TRUE(objects->is_valid()) << "Objects validation failed";
 
   // Check that the table_applies were parsed correctly
   auto table_apply_1 = objects->get_table_apply("table_apply_1");
   auto table_apply_2 = objects->get_table_apply("table_apply_2");
 
-  ASSERT_NE(nullptr, table_apply_1);
-  ASSERT_NE(nullptr, table_apply_2);
+  ASSERT_NE(nullptr, table_apply_1) << "table_apply_1 not found";
+  ASSERT_NE(nullptr, table_apply_2) << "table_apply_2 not found";
 
   // Check that both table_applies reference the same table
-  EXPECT_EQ(table_apply_1->get_table(), table_apply_2->get_table());
+  EXPECT_EQ(table_apply_1->get_table(), table_apply_2->get_table()) 
+      << "Table applies reference different tables";
 
   // Check that the pipeline was set up correctly
   auto pipeline = objects->get_pipeline("ingress");
-  ASSERT_NE(nullptr, pipeline);
+  ASSERT_NE(nullptr, pipeline) << "Ingress pipeline not found";
 
   // The first node in the pipeline should be table_apply_1
-  EXPECT_EQ("table_apply_1", pipeline->get_first_node()->get_name());
+  EXPECT_EQ("table_apply_1", pipeline->get_first_node()->get_name())
+      << "First node is not table_apply_1";
+
+  // Verify table apply next nodes
+  EXPECT_NE(nullptr, table_apply_1->get_next_node_hit())
+      << "table_apply_1 hit node is null";
+  EXPECT_EQ(nullptr, table_apply_1->get_next_node_miss())
+      << "table_apply_1 miss node is not null";
+  EXPECT_EQ(nullptr, table_apply_2->get_next_node_hit())
+      << "table_apply_2 hit node is not null";
+  EXPECT_EQ(nullptr, table_apply_2->get_next_node_miss())
+      << "table_apply_2 miss node is not null";
 }
