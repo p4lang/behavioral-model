@@ -18,11 +18,12 @@
 
 #include <bm/bm_sim/bytecontainer.h>
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <utility>  // for std::swap
+#include <utility>
 #include <vector>
 
 namespace bm {
