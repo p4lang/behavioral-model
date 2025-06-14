@@ -189,6 +189,12 @@ class MatchTableAbstract : public NamedP4Object {
   handle_iterator handles_begin() const;
   handle_iterator handles_end() const;
 
+  // Get the next_nodes map
+  // Added for issue #1286 to allow get_action_ids() to access it
+  const std::unordered_map<p4object_id_t, const ControlFlowNode *> &get_next_nodes() const {
+    return next_nodes;
+  }
+
   // meant to be called by P4Objects when loading the JSON
   // set_default_entry sets a default entry obtained from the JSON. You can make
   // sure that it cannot be changed by the control plane by using the is_const
@@ -210,6 +216,8 @@ class MatchTableAbstract : public NamedP4Object {
  protected:
   const ControlFlowNode *get_next_node(p4object_id_t action_id) const;
   const ControlFlowNode *get_next_node_default(p4object_id_t action_id) const;
+
+
 
   // assumes that entry->handle has been set
   void set_entry_common_info(EntryCommon *entry) const;
