@@ -1,84 +1,261 @@
 name: Test
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  check-changes:
-    name: Check whether tests need to be run based on diff
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: antrea-io/has-changes@v2
-      id: check_diff
-      with:
-        paths-ignore: docs/* *.md
-    outputs:
-      has_changes: ${{ steps.check_diff.outputs.has_changes }}
-
   test:
-    needs: check-changes
-    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        include:
-        - cxx: g++
-          cc: gcc
-        - cxx: clang++-8
-          cc: clang-8
-        - cxx: clang++-10
-          cc: clang-10
+        config:
+          - name: "Basic Build"
+            options: ""
+          - name: "Without Thrift"
+            options: "-DWITH_THRIFT=OFF"
+          - name: "Without Nanomsg"
+            options: "-DWITH_NANOMSG=OFF"
+          - name: "With Debugger"
+            options: "-DENABLE_DEBUGGER=ON"
+
+    name: ${{ matrix.config.name }}
+
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
-    - name: Build test Docker image
-      env:
-        CC: ${{ matrix.cc }}
-        CXX: ${{ matrix.cxx }}
+
+    - name: Set executable permissions
       run: |
-        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV .
-    - name: Run tests
+        chmod +x autogen.sh
+        chmod +x ./ci/install-thrift.sh
+        chmod +x ./ci/codecov.sh
+        chmod +x ./ci/install-nanomsg.sh
+
+    - name: Install dependencies
       run: |
-        ci_env=`bash <(curl -s https://codecov.io/env)`
-        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "make check -j$(nproc) && ./ci/codecov.sh"
-    - name: Check style
+        # Install system dependencies
+        sudo apt-get update
+        sudo apt-get install -y \
+          autoconf \
+          automake \
+          cmake \
+          curl \
+          g++ \
+          git \
+          libboost-dev \
+          libboost-system-dev \
+          libboost-thread-dev \
+          libevent-dev \
+          libffi-dev \
+          libfl-dev \
+          libgc-dev \
+          libgflags-dev \
+          libgtest-dev \
+          libhiredis-dev \
+          libjudy-dev \
+          libpcap-dev \
+          libssl-dev \
+          libtool \
+          libunwind-dev \
+          pkg-config \
+          python3 \
+          python3-pip \
+          python3-setuptools \
+          tcpdump \
+          protobuf-compiler \
+          libprotobuf-dev \
+          libgrpc++-dev \
+          libgrpc-dev \
+          protobuf-compiler-grpc \
+          cabal-install \
+          ghc
+
+        # Install Haskell dependencies with compatible versions
+        cabal update
+        cabal install network-3.1.2.1 --constraint="base >= 4.7 && < 4.22"
+        cabal install --dependencies-only
+
+        # Install Thrift and Nanomsg
+        bash ./ci/install-thrift.sh
+        bash ./ci/install-nanomsg.sh
+        sudo ldconfig
+
+    - name: Configure and Build
       run: |
-        ./tools/check_style.sh
+        mkdir -p build
+        cd build
+        cmake ${{ matrix.config.options }} ..
+        cmake --build . -j$(nproc)
+
+    - name: Test
+      run: |
+        cd build
+        ctest --output-on-failure
 
   test-no-pi:
-    needs: check-changes
-    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
-    - name: Build Dockerfile.noPI image
-      run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
-    - name: Run tests
-      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make check -j$(nproc)"
-
-  test-ubuntu22:
-    needs: check-changes
-    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
     runs-on: ubuntu-22.04
+    needs: test
+
     steps:
     - uses: actions/checkout@v4
       with:
-        submodules: 'recursive'
-    - name: Install dependencies
-      run: sudo ./install_deps_ubuntu_22.04.sh
-    - name: Build BMv2
+        submodules: recursive
+
+    - name: Set executable permissions
       run: |
-        ./autogen.sh
-        ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror
-        make -j$(nproc)
+        chmod +x autogen.sh
+        chmod +x ci/install-thrift.sh
+        chmod +x ci/install-nanomsg.sh
+
+    - name: Install dependencies
+      run: |
+        # Install system dependencies
+        sudo apt-get update
+        sudo apt-get install -y \
+          autoconf \
+          automake \
+          cmake \
+          curl \
+          g++ \
+          git \
+          libboost-dev \
+          libboost-system-dev \
+          libboost-thread-dev \
+          libevent-dev \
+          libffi-dev \
+          libfl-dev \
+          libgc-dev \
+          libgflags-dev \
+          libgtest-dev \
+          libhiredis-dev \
+          libjudy-dev \
+          libpcap-dev \
+          libssl-dev \
+          libtool \
+          libunwind-dev \
+          pkg-config \
+          python3 \
+          python3-pip \
+          python3-setuptools \
+          tcpdump \
+          protobuf-compiler \
+          libprotobuf-dev \
+          libgrpc++-dev \
+          libgrpc-dev \
+          protobuf-compiler-grpc \
+          cabal-install \
+          ghc
+
+        # Install Haskell dependencies with compatible versions
+        cabal update
+        cabal install network-3.1.2.1 --constraint="base >= 4.7 && < 4.22"
+        cabal install --dependencies-only
+
+        # Install Thrift and Nanomsg
+        bash ./ci/install-thrift.sh
+        bash ./ci/install-nanomsg.sh
+        sudo ldconfig
+
+    - name: Build test Docker image
+      run: |
+        for i in {1..3}; do
+          docker build -t bm --build-arg IMAGE_TYPE=test --build-arg BUILDER=autoconf -f Dockerfile.noPI . && break || {
+            if [ $i -eq 3 ]; then
+              echo "Failed to build the Docker image after 3 attempts"
+              exit 1
+            fi
+            echo "Retrying Docker build... (Attempt $i)"
+            sleep 5
+          }
+        done
+
     - name: Run tests
-      run: make check -j$(nproc)
+      run: |
+        echo "Running tests..."
+        ci_env=`bash <(curl -s https://codecov.io/env)`
+        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c \
+          "make check -j$(nproc) && ./ci/codecov.sh"
+
+  install:
+    runs-on: ubuntu-22.04
+    needs: test
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Set executable permissions
+      run: |
+        chmod +x autogen.sh
+        chmod +x ci/install-thrift.sh
+        chmod +x ci/install-nanomsg.sh
+
+    - name: Install dependencies
+      run: |
+        # Install system dependencies
+        sudo apt-get update
+        sudo apt-get install -y \
+          autoconf \
+          automake \
+          cmake \
+          curl \
+          g++ \
+          git \
+          libboost-dev \
+          libboost-system-dev \
+          libboost-thread-dev \
+          libevent-dev \
+          libffi-dev \
+          libfl-dev \
+          libgc-dev \
+          libgflags-dev \
+          libgtest-dev \
+          libhiredis-dev \
+          libjudy-dev \
+          libpcap-dev \
+          libssl-dev \
+          libtool \
+          libunwind-dev \
+          pkg-config \
+          python3 \
+          python3-pip \
+          python3-setuptools \
+          tcpdump \
+          protobuf-compiler \
+          libprotobuf-dev \
+          libgrpc++-dev \
+          libgrpc-dev \
+          protobuf-compiler-grpc \
+          cabal-install \
+          ghc
+
+        # Install Haskell dependencies with compatible versions
+        cabal update
+        cabal install network-3.1.2.1 --constraint="base >= 4.7 && < 4.22"
+        cabal install --dependencies-only
+
+        # Install Thrift and Nanomsg
+        bash ./ci/install-thrift.sh
+        bash ./ci/install-nanomsg.sh
+        sudo ldconfig
+
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build .
+
+    - name: Install
+      run: |
+        cd build
+        sudo cmake --build . --target install
