@@ -52,7 +52,8 @@ Pipeline::apply(Packet *pkt) {
 
 // Hao: placeholder for path permutation, just seems easier to have another apply here
 //  Should snapshot some metadata/reg states before calling this
-void Pipeline::apply_continued(Packet *pkt, const ControlFlowNode *cont_node) {
+void Pipeline::apply_continued(Packet *pkt) {
+  const ControlFlowNode *cont_node = pkt->get_continue_node();
   // pipeline_start is used for monitoring and debugging purposes, we can have ours as well
   // but should change this anyways to differentiate between the two applies
   BMELOG(pipeline_start, *pkt, *this);

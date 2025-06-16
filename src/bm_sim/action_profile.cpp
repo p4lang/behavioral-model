@@ -186,19 +186,25 @@ ActionProfile::lookup(const Packet &pkt, const IndirectIndex &index) const {
 
     if(path_permutation_enabled){
       BMLOG_DEBUG_PKT(pkt, "Path permutation enabled, choosing member from group {} WIP", grp);
-      // TODO(Hao): STOOOOOP here for this WEEEEEEK ....
       mbrs = get_all_mbrs_from_group(grp);
       for(auto m:mbrs){
         if(m == mbr){
           continue;
         }
-        // TODO(Hao): get the entry, use the entry to get the next node,
-        //  set the next node to the packet, add it to the replicated packet vector
-        // for now just copy the pkt.. like a recirculate
-        std::unique_ptr<Packet> rep_pkt = pkt.clone_with_phv_ptr();
-        BMLOG_DEBUG_PKT(*rep_pkt, "Path permutation enabled, adding member {} to replicated packet vector", m);
-        ReplicatedPktVec::instance().push_back(rep_pkt.release());
-        BMLOG_DEBUG("Pushed vec.")
+        // TODO(Hao): apply_action in match_tables has a full procedure,
+        //   need to make sure that directly applying the func does not
+        //   cause any issues
+        //Things to consider:
+        // 1. set the entry index
+        // 2. set meters
+        // 3. set counters
+        // 4. incorporate with the debugger?
+        const ActionEntry &action = action_entries[m];
+        Packet* rep_pkt = pkt.clone_with_phv_ptr().release();
+        action.action_fn(rep_pkt);
+        rep_pkt->set_continue_node(action.next_node);
+        BMLOG_DEBUG_PKT(*rep_pkt, "Action {} applied to replicated packet", action);
+        ReplicatedPktVec::instance().push_back(rep_pkt);
       }
     }
   }

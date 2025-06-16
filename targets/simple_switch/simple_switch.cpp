@@ -529,8 +529,7 @@ SimpleSwitch::ingress_thread() {
     // Hao: check if the packet has an optional continue node
     // TODO(Hao): remember to update the doc/simple_switch.md
     if(packet->has_continue_node()){
-      ingress_mau->apply_continued(packet.get(),
-                                    packet->get_continue_node());
+      ingress_mau->apply_continued(packet.get());
       // reset the node here???? who is responsible for this?
     }
     else{

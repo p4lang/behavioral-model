@@ -44,8 +44,8 @@ class Pipeline : public NamedP4Object {
   //! step (table lookup or condition evaluation), according to the P4 control
   //! flow graph.
   void apply(Packet *pkt);
-  // Hao: see cpp file for cmts...
-  void apply_continued(Packet *pkt, const ControlFlowNode *cont_node);
+  // Start from continue_node instead of first_node
+  void apply_continued(Packet *pkt);
 
   //! Deleted copy constructor
   Pipeline(const Pipeline &other) = delete;
