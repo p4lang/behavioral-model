@@ -217,6 +217,10 @@ void Packet::set_continue_node(const ControlFlowNode *node) {
   continue_node = node;
 }
 
+void Packet::reset_continue_node() {
+  continue_node.reset();
+}
+
 /* Cannot get away with defaults here, we need to swap the phvs, otherwise we
    could "leak" the old phv (i.e. not put it back into the pool) */
 

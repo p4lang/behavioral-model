@@ -323,6 +323,8 @@ class Packet final {
   const ControlFlowNode *get_continue_node() const;
   //! Set the continue node, which is used to continue the packet processing
   void set_continue_node(const ControlFlowNode *node);
+  //! Reset the continue node
+  void reset_continue_node();
 
 
   //! Deleted copy constructor

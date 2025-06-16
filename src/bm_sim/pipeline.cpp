@@ -76,6 +76,7 @@ void Pipeline::apply_continued(Packet *pkt) {
   DEBUGGER_NOTIFY_CTR(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
       DBG_CTR_EXIT(DBG_CTR_CONTROL) | get_id());
+  pkt->reset_continue_node();
   BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': continue end", get_name());
 }
 
