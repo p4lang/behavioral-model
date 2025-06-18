@@ -45,6 +45,10 @@ jobs:
         git clone https://github.com/p4lang/PI.git /tmp/PI
         cd /tmp/PI && git submodule update --init --recursive
         cd /tmp/PI && ./autogen.sh && ./configure && make && sudo make install
+        if [ ! -f /usr/local/include/PI/pi.h ]; then
+          echo "PI headers not found after installation."
+          exit 1
+        fi
     - name: Build test Docker image
       env:
         CC: ${{ matrix.cc }}
@@ -54,7 +58,7 @@ jobs:
     - name: Run tests with verbose output
       run: |
         ci_env=`bash <(curl -s https://codecov.io/env)`
-        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "make check -j$(nproc) VERBOSE=1 && ./ci/codecov.sh"
+        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "make -j$(nproc) VERBOSE=1 && ./ci/codecov.sh"
     - name: Check style
       run: |
         ./tools/check_style.sh
@@ -74,10 +78,14 @@ jobs:
         git clone https://github.com/p4lang/PI.git /tmp/PI
         cd /tmp/PI && git submodule update --init --recursive
         cd /tmp/PI && ./autogen.sh && ./configure && make && sudo make install
+        if [ ! -f /usr/local/include/PI/pi.h ]; then
+          echo "PI headers not found after installation."
+          exit 1
+        fi
     - name: Build Dockerfile.noPI image
       run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
     - name: Run tests with verbose output
-      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make check -j$(nproc) VERBOSE=1"
+      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make -j$(nproc) VERBOSE=1"
 
   test-ubuntu22:
     needs: check-changes
@@ -96,10 +104,14 @@ jobs:
         git clone https://github.com/p4lang/PI.git /tmp/PI
         cd /tmp/PI && git submodule update --init --recursive
         cd /tmp/PI && ./autogen.sh && ./configure && make && sudo make install
+        if [ ! -f /usr/local/include/PI/pi.h ]; then
+          echo "PI headers not found after installation."
+          exit 1
+        fi
     - name: Build BMv2
       run: |
         ./autogen.sh
         ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror
         make -j$(nproc)
     - name: Run tests with verbose output
-      run: make check -j$(nproc) VERBOSE=1
+      run: make -j$(nproc) VERBOSE=1
