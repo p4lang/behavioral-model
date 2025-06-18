@@ -48,26 +48,6 @@ jobs:
       run: |
         ci_env=`bash <(curl -s https://codecov.io/env)`
         docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "make check -j$(nproc) VERBOSE=1 && ./ci/codecov.sh"
-    - name: Generate Test Logs
-      if: always()
-      run: |
-        mkdir -p logs
-        cp -r tests/test-suite.log logs/ || echo "test-suite.log missing"
-        cp -r tests/p4objects.log logs/ || echo "p4objects.log missing"
-        cp -r tests/table_apply.log logs/ || echo "table_apply.log missing"
-        echo "Test logs have been collected"
-        ls -la logs/
-        echo "Contents of logs directory:"
-        find logs -type f -exec echo {} \;
-    - name: Upload test logs on failure
-      if: failure()
-      run: |
-        zip -r logs.zip logs/
-        echo "Test logs have been zipped"
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-logs
-        path: logs.zip
     - name: Check style
       run: |
         ./tools/check_style.sh
@@ -84,26 +64,6 @@ jobs:
       run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
     - name: Run tests with verbose output
       run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make check -j$(nproc) VERBOSE=1"
-    - name: Generate Test Logs
-      if: always()
-      run: |
-        mkdir -p logs
-        cp -r tests/test-suite.log logs/ || echo "test-suite.log missing"
-        cp -r tests/p4objects.log logs/ || echo "p4objects.log missing"
-        cp -r tests/table_apply.log logs/ || echo "table_apply.log missing"
-        echo "Test logs have been collected"
-        ls -la logs/
-        echo "Contents of logs directory:"
-        find logs -type f -exec echo {} \;
-    - name: Upload test logs on failure
-      if: failure()
-      run: |
-        zip -r logs.zip logs/
-        echo "Test logs have been zipped"
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-logs-no-pi
-        path: logs.zip
 
   test-ubuntu22:
     needs: check-changes
@@ -122,23 +82,3 @@ jobs:
         make -j$(nproc)
     - name: Run tests with verbose output
       run: make check -j$(nproc) VERBOSE=1
-    - name: Generate Test Logs
-      if: always()
-      run: |
-        mkdir -p logs
-        cp -r tests/test-suite.log logs/ || echo "test-suite.log missing"
-        cp -r tests/p4objects.log logs/ || echo "p4objects.log missing"
-        cp -r tests/table_apply.log logs/ || echo "table_apply.log missing"
-        echo "Test logs have been collected"
-        ls -la logs/
-        echo "Contents of logs directory:"
-        find logs -type f -exec echo {} \;
-    - name: Upload test logs on failure
-      if: failure()
-      run: |
-        zip -r logs.zip logs/
-        echo "Test logs have been zipped"
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-logs-ubuntu22
-        path: logs.zip
