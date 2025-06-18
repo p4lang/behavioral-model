@@ -50,7 +50,17 @@ jobs:
         cd /tmp/PI && git submodule update --init --recursive
         cd /tmp/PI && ./autogen.sh && ./configure && make && sudo make install
         if [ ! -f /usr/local/include/PI/pi.h ]; then
-          echo "PI headers not found after installation."
+          echo "PI headers not found after installation. Retrying..."
+          cd /tmp/PI && ./autogen.sh && ./configure && make && sudo make install
+          if [ ! -f /usr/local/include/PI/pi.h ]; then
+            echo "PI headers still missing. Please review installation steps."
+            exit 1
+          fi
+        fi
+    - name: Check Makefile existence
+      run: |
+        if [ ! -f Makefile ]; then
+          echo "Makefile not found. Ensure the repository is set up correctly."
           exit 1
         fi
     - name: Build test Docker image
