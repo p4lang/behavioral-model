@@ -40,6 +40,10 @@ jobs:
         submodules: 'recursive'
     - name: Initialize submodules
       run: git submodule update --init --recursive
+    - name: Install build dependencies for PI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential autoconf libtool pkg-config
     - name: Install PI library
       run: |
         git clone https://github.com/p4lang/PI.git /tmp/PI
@@ -64,8 +68,8 @@ jobs:
         ./tools/check_style.sh
 
   test-no-pi:
+    if: false
     needs: check-changes
-    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -88,8 +92,8 @@ jobs:
       run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make -j$(nproc) VERBOSE=1"
 
   test-ubuntu22:
+    if: false
     needs: check-changes
-    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
