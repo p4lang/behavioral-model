@@ -38,9 +38,12 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+    - name: Initialize submodules
+      run: git submodule update --init --recursive
     - name: Install PI library
       run: |
         git clone https://github.com/p4lang/PI.git /tmp/PI
+        cd /tmp/PI && git submodule update --init --recursive
         cd /tmp/PI && ./autogen.sh && ./configure && make && sudo make install
     - name: Build test Docker image
       env:
@@ -64,9 +67,12 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+    - name: Initialize submodules
+      run: git submodule update --init --recursive
     - name: Install PI library
       run: |
         git clone https://github.com/p4lang/PI.git /tmp/PI
+        cd /tmp/PI && git submodule update --init --recursive
         cd /tmp/PI && ./autogen.sh && ./configure && make && sudo make install
     - name: Build Dockerfile.noPI image
       run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
@@ -81,11 +87,14 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
+    - name: Initialize submodules
+      run: git submodule update --init --recursive
     - name: Install dependencies
       run: sudo ./install_deps_ubuntu_22.04.sh
     - name: Install PI library
       run: |
         git clone https://github.com/p4lang/PI.git /tmp/PI
+        cd /tmp/PI && git submodule update --init --recursive
         cd /tmp/PI && ./autogen.sh && ./configure && make && sudo make install
     - name: Build BMv2
       run: |
