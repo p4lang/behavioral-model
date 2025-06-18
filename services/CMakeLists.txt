@@ -1,4 +1,4 @@
-# Do we have grpc pytyhon support
+# Do we have grpc python support
 find_program(GRPC_PYTHON_PLUGIN grpc_python_plugin)
 
 set(PROTO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/p4/bm/dataplane_interface.proto)

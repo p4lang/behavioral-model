@@ -1,4 +1,7 @@
 # Should only be built if compiling with nanomsg
+if(NOT WITH_NANOMSG)
+  message(SEND_ERROR "bm_apps compilation requires NANOMSG")
+endif()
 
 add_subdirectory(examples)
 
