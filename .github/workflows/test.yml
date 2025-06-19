@@ -43,16 +43,18 @@ jobs:
     - name: Install build dependencies for PI
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential autoconf libtool pkg-config libthrift-dev thrift-compiler
+        sudo apt-get install -y build-essential autoconf libtool pkg-config libthrift-dev thrift-compiler libnanomsg-dev
     - name: Install PI library
       run: |
         git clone https://github.com/p4lang/PI.git /tmp/PI
         cd /tmp/PI && git submodule update --init --recursive
         sudo apt-get install -y autoconf automake libtool pkg-config
         ./autogen.sh && ./configure && make -j$(nproc) && sudo make install
+        ls -al /usr/local/include/PI  # Debugging step to verify installation
         if [ ! -f /usr/local/include/PI/pi.h ]; then
           echo "PI headers not found after installation. Retrying..."
           ./autogen.sh && ./configure && make -j$(nproc) && sudo make install
+          ls -al /usr/local/include/PI  # Debugging step to verify installation
           if [ ! -f /usr/local/include/PI/pi.h ]; then
             echo "PI headers still missing. Please review installation steps."
             exit 1
