@@ -45,4 +45,8 @@ RUN apt-get update -qq && \
         rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/* && \
         echo 'Build image ready') || \
     (test "$IMAGE_TYPE" = "test" && \
-      echo 'Test image ready') 
+      echo 'Test image ready')
+
+# Trigger rebuild: confirming Dockerfile is up to date for CI troubleshooting 
+
+# CI debug: force rebuild at 2024-06-19 

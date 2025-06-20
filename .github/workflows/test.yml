@@ -43,7 +43,7 @@ jobs:
     - name: Install build dependencies for PI
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential autoconf libtool pkg-config libthrift-dev thrift-compiler libnanomsg-dev
+        sudo apt-get install -y build-essential autoconf libtool pkg-config libthrift-dev thrift-compiler libnanomsg-dev libpcap-dev
     - name: Install PI library
       run: |
         git clone https://github.com/p4lang/PI.git /tmp/PI
