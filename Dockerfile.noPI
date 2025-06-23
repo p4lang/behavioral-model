@@ -8,6 +8,7 @@ Runtime, it only builds bmv2 simple_switch."
 # testing; in this case, the source code and build-only dependencies will not be
 # removed from the image.
 ARG IMAGE_TYPE=build
+ARG USE_CMAKE=
 
 ENV BM_DEPS automake \
             build-essential \
@@ -37,11 +38,19 @@ WORKDIR /behavioral-model/
 RUN apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata && \
     apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
-    ./autogen.sh && \
-    mkdir -p build && cd build && \
-    cmake -DENABLE_DEBUGGER=ON .. && \
+    if [ "$USE_CMAKE" -gt 0 ] ; then \
+        mkdir -p build && cd build && \
+        cmake -DENABLE_DEBUGGER=ON .. ; \
+    else \
+        ./autogen.sh && \
+        ./configure --enable-debugger ; \
+    fi && \
     make -j$(nproc) && \
-    make install && cd .. && \
+    if [ "$USE_CMAKE" -gt 0 ] ; then \
+        make install && cd .. ; \
+    else \
+        make install-strip ; \
+    fi && \
     ldconfig && \
     (test "$IMAGE_TYPE" = "build" && \
         apt-get purge -qq $BM_DEPS && \

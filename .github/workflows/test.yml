@@ -66,7 +66,9 @@ jobs:
     - name: Build Dockerfile.noPI image
       run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
     - name: Run tests
-      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure"
+      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make check -j$(nproc)"
+      # FIXME: replace the command above with the following when switching to cmake
+      # "cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure"
 
   test-ubuntu22:
     needs: check-changes
