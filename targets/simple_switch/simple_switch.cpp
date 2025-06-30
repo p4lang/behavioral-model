@@ -488,7 +488,6 @@ SimpleSwitch::ingress_thread() {
     if (packet == nullptr) break;
 
     // TODO(antonin): only update these if swapping actually happened?
-    Parser *parser = this->get_parser("parser");
     Pipeline *ingress_mau = this->get_pipeline("ingress");
 
     phv = packet->get_phv();
@@ -509,17 +508,6 @@ SimpleSwitch::ingress_thread() {
        parser leave the buffer unchanged, and move the pop logic to the
        deparser. TODO? */
     const Packet::buffer_state_t packet_in_state = packet->save_buffer_state();
-    parser->parse(packet.get());
-
-    if (phv->has_field("standard_metadata.parser_error")) {
-      phv->get_field("standard_metadata.parser_error").set(
-          packet->get_error_code().get());
-    }
-
-    if (phv->has_field("standard_metadata.checksum_error")) {
-      phv->get_field("standard_metadata.checksum_error").set(
-           packet->get_checksum_error() ? 1 : 0);
-    }
 
     // Check if the packet has an optional continue node
     // TODO(Hao): update the doc/simple_switch.md
@@ -527,6 +515,18 @@ SimpleSwitch::ingress_thread() {
       ingress_mau->apply_continued(packet.get());
     }
     else{
+      Parser *parser = this->get_parser("parser");
+      parser->parse(packet.get());
+      if (phv->has_field("standard_metadata.parser_error")) {
+        phv->get_field("standard_metadata.parser_error").set(
+            packet->get_error_code().get());
+      }
+
+      if (phv->has_field("standard_metadata.checksum_error")) {
+        phv->get_field("standard_metadata.checksum_error").set(
+            packet->get_checksum_error() ? 1 : 0);
+      }
+
       ingress_mau->apply(packet.get());
     }
 
@@ -579,7 +579,9 @@ SimpleSwitch::ingress_thread() {
         packet_copy->get_phv()
             ->get_field("standard_metadata.ingress_port")
             .set(ingress_port);
+        Parser *parser = this->get_parser("parser");
         parser->parse(packet_copy.get());
+        
         copy_field_list_and_set_type(packet, packet_copy,
                                      PKT_INSTANCE_TYPE_INGRESS_CLONE,
                                      field_list_id);
@@ -627,6 +629,24 @@ SimpleSwitch::ingress_thread() {
       continue;
     }
 
+    //GSOC MODS
+    {
+      Deparser *deparser = this->get_deparser("deparser");
+      for(auto pkt: ReplicatedPktVec::instance()){
+        // TODO(Hao): add a higher priority in queue impl
+        // currently sharing priority with resubmit and recirculate
+        BMLOG_DEBUG_PKT(*pkt, "Permutated/Replicated");
+        // Deparse helps to "restack" the popped headers
+        // Could be optimized by bypassing the parser, but there could be
+        //  too many states to take care of. 
+        deparser->deparse(pkt);
+        input_buffer->push_front(InputBuffer::PacketType::PERMUTATE, 
+          std::unique_ptr<bm::Packet>(pkt));
+        BMLOG_DEBUG_PKT(*pkt, "Permutated/Replicated packet pushed to ingress_buffer");
+      }
+      ReplicatedPktVec::instance().clear();
+    }
+
     // MULTICAST
     if (mgid != 0) {
       BMLOG_DEBUG_PKT(*packet, "Multicast requested for packet");
@@ -647,22 +667,8 @@ SimpleSwitch::ingress_thread() {
     auto &f_instance_type = phv->get_field("standard_metadata.instance_type");
     f_instance_type.set(PKT_INSTANCE_TYPE_NORMAL);
 
-    Deparser *deparser = this->get_deparser("deparser");
-    for(auto pkt: ReplicatedPktVec::instance()){
-      // TODO(Hao): add a higher priority in queue impl
-      // currently sharing priority with resubmit and recirculate
-      BMLOG_DEBUG_PKT(*pkt, "Permutated/Replicated");
-      // Deparse helps to "restack" the popped headers
-      // Could be optimized by bypassing the parser, but there could be
-      //  too many states to take care of. 
-      deparser->deparse(pkt);
-      input_buffer->push_front(InputBuffer::PacketType::PERMUTATE, 
-        std::unique_ptr<bm::Packet>(pkt));
-      BMLOG_DEBUG_PKT(*pkt, "Permutated/Replicated packet pushed to ingress_buffer");
-    }
-    ReplicatedPktVec::instance().clear();
-
     enqueue(egress_port, std::move(packet));
+    
   }
 }
 
