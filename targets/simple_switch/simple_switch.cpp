@@ -631,15 +631,10 @@ SimpleSwitch::ingress_thread() {
 
     //GSOC MODS
     {
-      Deparser *deparser = this->get_deparser("deparser");
       for(auto pkt: ReplicatedPktVec::instance()){
         // TODO(Hao): add a higher priority in queue impl
         // currently sharing priority with resubmit and recirculate
         BMLOG_DEBUG_PKT(*pkt, "Permutated/Replicated");
-        // Deparse helps to "restack" the popped headers
-        // Could be optimized by bypassing the parser, but there could be
-        //  too many states to take care of. 
-        deparser->deparse(pkt);
         input_buffer->push_front(InputBuffer::PacketType::PERMUTATE, 
           std::unique_ptr<bm::Packet>(pkt));
         BMLOG_DEBUG_PKT(*pkt, "Permutated/Replicated packet pushed to ingress_buffer");
