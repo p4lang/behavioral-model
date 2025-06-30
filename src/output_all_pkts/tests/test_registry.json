@@ -1,0 +1,60 @@
+{
+    "tests": [
+        {
+            "name": "ingress_round_robin_test",
+            "enabled": true,
+            "description": "A single round robin selector in ingress",
+            "program": "./ingress_round_robin_test/ingress_round_robin_test.json",
+            "input_packets": [
+                {
+                    "packet": "ffeeddccbbaaaabbccddeeff08004500002800010000400666cd0a0000020a00000104d2162e00000000000000005002200060e00000",
+                    "ingress_intf": "veth0"
+                }
+            ],
+            "expected_outputs": [
+                {
+                    "packet": "ffeeddccbbaaaabbccddeeff08004500002800010000400666cd0a0000020000030904d2162e00000000000000005002200060e00000",
+                    "egress_intf": "veth2"
+                },
+                {
+                    "packet": "ffeeddccbbaaaabbccddeeff08004500002800010000400666cd0000022b0a00000104d2162e00000000000000005002200060e00000",
+                    "egress_intf": "veth4"
+                }
+            ],
+            "runtime_cli_commands": [
+                "act_prof_create_group action_profile_0",
+                "act_prof_create_member action_profile_0 foo1 777",
+                "act_prof_create_member action_profile_0 foo2 555",
+                "act_prof_add_member_to_group action_profile_0 0 0",
+                "act_prof_add_member_to_group action_profile_0 1 0",
+                "table_indirect_set_default_with_group t2 0",
+                "table_num_entries t2"
+            ]
+        },
+        {
+            "name": "ingress_rr_mc_test",
+            "enabled": false,
+            "description": "A round robin selector and multicast in ingress.\nThere will be 3 ports in the multicast group.",
+            "program": "./ingress_rr_mc_test/ingress_rr_mc_test.json",
+            "expected_output": [
+                0
+            ],
+            "runtime_cli_commands": [
+                "mc_mgrp_create 1",
+                "mc_node_create 0 2",
+                "mc_node_create 1 3",
+                "mc_node_create 2 4",
+                "mc_node_associate 1 0",
+                "mc_node_associate 1 1",
+                "mc_node_associate 1 2",
+                "act_prof_create_group action_profile_0",
+                "act_prof_create_member action_profile_0 foo1 777",
+                "act_prof_create_member action_profile_0 foo2 555",
+                "act_prof_add_member_to_group action_profile_0 0 0",
+                "act_prof_add_member_to_group action_profile_0 1 0",
+                "table_indirect_set_default_with_group t2 0"
+            ]
+        }
+
+    ]
+}
