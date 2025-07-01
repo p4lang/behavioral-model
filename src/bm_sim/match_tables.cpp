@@ -134,7 +134,6 @@ MatchTableAbstract::apply_action(Packet *pkt) {
       Debugger::FIELD_ACTION, action_entry.action_fn.get_action_id());
 
   BMLOG_DEBUG_PKT(*pkt, "Action entry is {}", action_entry);
-
   action_entry.action_fn(pkt);
 
   return next_node;
@@ -723,6 +722,7 @@ MatchTableIndirect::lookup(const Packet &pkt,
   *next_node = (*hit) ?
       get_next_node(entry.action_fn.get_action_id()) :
       get_next_node_default(entry.action_fn.get_action_id());
+  ReplicatedPktVec::instance().set_next_nodes(this,*hit);
   return entry;
 }
 

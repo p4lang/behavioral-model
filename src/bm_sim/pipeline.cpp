@@ -37,11 +37,15 @@ Pipeline::apply(Packet *pkt) {
   BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': start", get_name());
   const ControlFlowNode *node = first_node;
   while (node) {
+    BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': after applying node '{}'",
+                    get_name(), node->get_name());
     if (pkt->is_marked_for_exit()) {
       BMLOG_DEBUG_PKT(*pkt, "Packet is marked for exit, interrupting pipeline");
       break;
     }
     node = (*node)(pkt);
+    BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': before applying node '{}'",
+                    get_name(), node ? node->get_name() : "None");
   }
   BMELOG(pipeline_done, *pkt, *this);
   DEBUGGER_NOTIFY_CTR(
@@ -62,7 +66,8 @@ void Pipeline::apply_continued(Packet *pkt) {
   DEBUGGER_NOTIFY_CTR(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
       DBG_CTR_CONTROL | get_id());
-  BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': continue", get_name());
+  BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': continue from node '{}'",
+                  get_name(), cont_node? cont_node->get_name() : "None");
   const ControlFlowNode *node = cont_node;
   while (node) {
     if (pkt->is_marked_for_exit()) {

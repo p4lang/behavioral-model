@@ -182,7 +182,7 @@ ActionProfile::lookup(const Packet &pkt, const IndirectIndex &index) const {
     std::vector<mbr_hdl_t> mbrs;
     mbr = choose_from_group(grp, pkt);
     // TODO(antonin): change to trace?
-    BMLOG_DEBUG_PKT(pkt, "Choosing member {} from group {}", mbr, grp);
+    BMLOG_DEBUG_PKT(pkt, "Chose member {} from group {}", mbr, grp);
 
     if(path_permutation_enabled){
       BMLOG_DEBUG_PKT(pkt, "Path permutation enabled, choosing member from group {} WIP", grp);
@@ -202,9 +202,10 @@ ActionProfile::lookup(const Packet &pkt, const IndirectIndex &index) const {
         const ActionEntry &action = action_entries[m];
         Packet* rep_pkt = pkt.clone_with_phv_ptr().release();
         action.action_fn(rep_pkt);
-        rep_pkt->set_continue_node(action.next_node);
-        BMLOG_DEBUG_PKT(*rep_pkt, "Action {} applied to replicated packet", action);
-        ReplicatedPktVec::instance().push_back(rep_pkt);
+        BMLOG_DEBUG_PKT(*rep_pkt, "Action {} applied to replicated packet",
+                        action);
+        ReplicatedPktVec::instance().replicated_pkts_w_act_id.emplace_back(rep_pkt,
+                                                          action.action_fn.get_action_id());
       }
     }
   }

@@ -18,7 +18,7 @@ import json
 from scapy.all import Ether, sendp, AsyncSniffer, Packet
 from runtime_CLI import *
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(levelname)s - %(message)s')
 
 # This is setup by veth_setup.sh
 # should the shell script be part of this script??
@@ -30,6 +30,7 @@ THRIFT_IP = "127.0.0.1"
 THRIFT_PORT = 9090
 
 TMP_TEST = "../src/output_all_pkts/tests/pragma/rr.json" 
+
 
 class TestCase:
     """
@@ -80,6 +81,8 @@ class TestCase:
             pkt (Packet): The sniffed packet to process.
         """
         intf = pkt.sniffed_on
+        p = bytes(pkt).hex()
+        logging.debug(f"Processing packet on interface {intf}: {p}")
         if intf not in self.success_counter:
             logging.error(f"Interface {intf} not found in expected outputs.")
             self.passed = False
@@ -92,7 +95,6 @@ class TestCase:
             return
         
         # Check if the packet matches any expected output
-        p = bytes(pkt).hex()
         for exp_pkt in expected_pkts:
             if p == exp_pkt:
                 # One sniffer per intf, so no need to lock it. 
@@ -101,7 +103,7 @@ class TestCase:
                 self.exp_output_per_intf[intf].remove(exp_pkt)
                 return
             
-        logging.error(f"Packet on interface {intf} did not match any expected output:", p)
+        logging.error(f"Packet on interface {intf} did not match any expected output: {p}")
         self.passed = False 
 
 
@@ -128,6 +130,7 @@ class TestCase:
             list[AsyncSniffer]: A list of AsyncSniffer objects.
         """
         sniffers = []
+
         for intf, packets in self.exp_output_per_intf.items():
             self.success_counter[intf] = 0  # Initialize success counter for each interface
             sniffer = AsyncSniffer(iface=intf, prn=lambda pkt: self.process_sniffed_pkts(pkt),
@@ -159,7 +162,7 @@ class TestCase:
         self.exp_output_per_intf = self.get_expected_output_per_intf()
         sniffers = self.get_sniffers()
         self.send_input_packets()
-        time.sleep(0.5)  # Wait for packets to be sent and captured
+        time.sleep(3)  # Wait for packets to be sent and captured
         # wait for sniffers upto 2 seconds to capture packets
         for sniffer, intf in sniffers:
             sniffer.join(timeout=2)
@@ -169,7 +172,7 @@ class TestCase:
                 logging.debug(f"Sniffer on interface {intf} finished capturing packets.")
 
         self.check_success()
-        logging.info(f"Test case '{self.name}' completed. Passed: {self.passed}")
+        logging.info(f"Test case '{self.name}' completed. Status: {"Passed" if self.passed else "Failed"}")
         return self.passed
         
 
@@ -261,8 +264,9 @@ class PathPermutationTestRunner:
                 pass
             logging.info(f"Logging output to {log_file}")
 
-            cmd = [switch_exe, p4_json, SWITCH_VETH_INTF, "--pcap", "--log-console",
-                    "-Ldebug", "--thrift-port", str(THRIFT_PORT), ">", log_file]
+            cmd = [switch_exe, p4_json, SWITCH_VETH_INTF, 
+                   f"--pcap={os.path.dirname(log_file)}", "--log-console",
+                    "-Ltrace", "--thrift-port", str(THRIFT_PORT), ">", log_file]
             
             switch_exe = " ".join(cmd)
             logging.debug(f"Switch command: {switch_exe}")
@@ -346,9 +350,12 @@ class PathPermutationTestRunner:
         """
         try:
             logging.debug(f"Setup test case: {test_case.name}")
-            sw_log_file = os.path.join(self.log_dir, 
+            log_dir = os.path.join(self.log_dir, test_case.name)
+            if not os.path.exists(log_dir):
+                os.makedirs(log_dir)
+            sw_log_file = os.path.join(log_dir, 
                                        f"{test_case.name}_{SW_LOG_FILE}")
-            cli_log_file = os.path.join(self.log_dir, 
+            cli_log_file = os.path.join(log_dir, 
                                         f"{test_case.name}_{CLI_LOG_FILE}")
             self.start_switch(test_case.p4_json, sw_log_file)
             time.sleep(0.5)  # Wait for the switch to initialize
@@ -443,6 +450,8 @@ def main():
         runner = PathPermutationTestRunner(switch_exe, runtime_cli_path, args.test_registry)
         runner.run_tests()
     except Exception as e:
+        logging.error(f"An error occurred while running the tests: {e}")
+    finally:
         runner.cleanup()
 
 

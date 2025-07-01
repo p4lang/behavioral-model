@@ -43,6 +43,9 @@ MatchActionTable::operator()(Packet *pkt) const {
   DEBUGGER_NOTIFY_CTR(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
       DBG_CTR_EXIT(DBG_CTR_TABLE) | get_id());
+  BMLOG_TRACE_PKT(*pkt, "Next node after table '{}': {}",
+                  get_name(),
+                  next ? next->get_name() : "None");
   return next;
 }
 

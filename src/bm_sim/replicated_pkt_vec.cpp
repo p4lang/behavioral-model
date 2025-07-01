@@ -13,8 +13,26 @@
  * limitations under the License.
  */
 
+#include <bm/bm_sim/replicated_pkt_vec.h>
 
 namespace bm {
 
-
+void 
+ReplicatedPktVec::set_next_nodes(const MatchTableAbstract *match_table, bool hit) {
+    for (auto &pkt_act_id : replicated_pkts_w_act_id) {
+        auto pkt = pkt_act_id.first;
+        auto act_id = pkt_act_id.second;
+        const ControlFlowNode *next_node = hit ?
+            match_table->get_next_node(act_id) :
+            match_table->get_next_node_default(act_id);
+        if (next_node == nullptr) {
+            BMLOG_ERROR_PKT(*pkt, "No next node for action id {}", act_id);
+        }else{
+            BMLOG_DEBUG_PKT(*pkt, "Next node for action id {}: {}", act_id, next_node->get_name());
+        }
+        pkt->set_continue_node(next_node);
+        replicated_pkts.push_back(pkt);
+    }
+    replicated_pkts_w_act_id.clear();
+}
 }

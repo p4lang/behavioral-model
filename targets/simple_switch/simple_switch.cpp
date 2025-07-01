@@ -631,15 +631,14 @@ SimpleSwitch::ingress_thread() {
 
     //GSOC MODS
     {
-      for(auto pkt: ReplicatedPktVec::instance()){
+      for(auto pkt: ReplicatedPktVec::instance().replicated_pkts){
         // TODO(Hao): add a higher priority in queue impl
         // currently sharing priority with resubmit and recirculate
-        BMLOG_DEBUG_PKT(*pkt, "Permutated/Replicated");
         input_buffer->push_front(InputBuffer::PacketType::PERMUTATE, 
           std::unique_ptr<bm::Packet>(pkt));
         BMLOG_DEBUG_PKT(*pkt, "Permutated/Replicated packet pushed to ingress_buffer");
       }
-      ReplicatedPktVec::instance().clear();
+      ReplicatedPktVec::instance().replicated_pkts.clear();
     }
 
     // MULTICAST

@@ -17,19 +17,31 @@
 
 #include "logger.h"
 #include "packet.h"
-
+#include "match_tables.h"
 #include <vector>
 
 namespace bm {
+class MatchTableAbstract;
 // TODO(Hao): should this be per ingress thread or just global?
 class ReplicatedPktVec {
 public:
-    static std::vector<Packet *>& instance() {
-        static std::vector<Packet *> instance_;
-        return instance_;
-    }
     ReplicatedPktVec(const ReplicatedPktVec&) = delete;
     ReplicatedPktVec& operator=(const ReplicatedPktVec&) = delete;
+
+    static ReplicatedPktVec& instance() {
+        static ReplicatedPktVec instance_;
+        return instance_;
+    }
+
+    void set_next_nodes(const MatchTableAbstract *match_table, bool hit);
+    // TODO(Hao): deduplicate packets replciated
+
+public:
+    // Replicated pkts will first be added to replicated_pkts
+    // in order to get the corresponding next table node.
+    // After the cont_node is set, the pkt will be added to replicated_pkts
+    std::vector<Packet *> replicated_pkts;
+    std::vector<std::pair<Packet *, p4object_id_t>> replicated_pkts_w_act_id;
 
 private:
     ReplicatedPktVec() = default;
