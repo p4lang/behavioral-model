@@ -171,7 +171,8 @@ void LPMTrie::insert_prefix(const std::string &prefix, int prefix_length,
                             value_t value) {
   Node *current_node = root.get();
   byte_t byte;
-  for (int i = 0; prefix_length >= 8; ++i) {
+  int i = 0;
+  for (; prefix_length >= 8; ++i) {
     byte = static_cast<byte_t>(prefix[i]);
     Node *node = current_node->get_next_node(byte);
 
@@ -184,8 +185,8 @@ void LPMTrie::insert_prefix(const std::string &prefix, int prefix_length,
     prefix_length -= 8;
     current_node = node;
   }
-
-  byte_t key = static_cast<byte_t>(prefix.back()) >> (8 - prefix_length);
+  // This also effectively trimmes the bytes after i
+  byte_t key = static_cast<byte_t>(prefix[i]) >> (8 - prefix_length);
   current_node->insert_prefix(prefix_length, key, value);
 }
 
@@ -199,15 +200,15 @@ bool LPMTrie::retrieve_value(const std::string &prefix, int prefix_length,
                              value_t *value) const {
   Node *current_node = root.get();
   byte_t byte;
-
-  for (int i = 0; prefix_length >= 8; ++i) {
+  int i = 0;
+  for (; prefix_length >= 8; ++i) {
     byte = static_cast<byte_t>(prefix[i]);
     current_node = current_node->get_next_node(byte);
     if (!current_node) return false;
     prefix_length -= 8;
   }
 
-  byte_t key = static_cast<byte_t>(prefix.back()) >> (8 - prefix_length);
+  byte_t key = static_cast<byte_t>(prefix[i]) >> (8 - prefix_length);
   return current_node->get_prefix(prefix_length, key, value);
 }
 
@@ -229,15 +230,15 @@ bool LPMTrie::has_prefix(const ByteContainer &prefix, int prefix_length) const {
 bool LPMTrie::delete_prefix(const std::string &prefix, int prefix_length) {
   Node *current_node = root.get();
   byte_t byte;
-
-  for (int i = 0; prefix_length >= 8; ++i) {
+  int i = 0;
+  for (; prefix_length >= 8; ++i) {
     byte = static_cast<byte_t>(prefix[i]);
     current_node = current_node->get_next_node(byte);
     if (!current_node) return false;
     prefix_length -= 8;
   }
 
-  byte_t key = static_cast<byte_t>(prefix.back()) >> (8 - prefix_length);
+  byte_t key = static_cast<byte_t>(prefix[i]) >> (8 - prefix_length);
   if (!current_node->delete_prefix(prefix_length, key)) return false;
 
   while (current_node->is_empty()) {

@@ -2407,6 +2407,7 @@ class AdvancedLPMTest : public AdvancedTest {
   }
 };
 
+
 // TODO(antonin): use value-parametrized test to cover every case?
 TEST_F(AdvancedLPMTest, Lookup1) {
   entry_handle_t handle;
@@ -2479,6 +2480,17 @@ TEST_F(AdvancedLPMTest, Lookup5) {
   lookup(pkt_1, &hit, &lookup_handle);
   ASSERT_TRUE(hit);
   ASSERT_EQ(handle_2, lookup_handle);
+}
+
+TEST_F(AdvancedLPMTest, Lookup6) {
+  entry_handle_t handle;
+  entry_handle_t lookup_handle;
+  bool hit;
+  ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry_w_len(&handle, 5));
+
+  Packet pkt = gen_pkt("0x0a7f", "0xabcd");
+  lookup(pkt, &hit, &lookup_handle);
+  ASSERT_TRUE(hit);
 }
 
 class AdvancedTernaryTest : public AdvancedTest {
