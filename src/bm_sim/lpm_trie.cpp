@@ -185,7 +185,8 @@ void LPMTrie::insert_prefix(const std::string &prefix, int prefix_length,
     prefix_length -= 8;
     current_node = node;
   }
-  // This also effectively trimmes the bytes after i
+  // All bytes after the ith one are ignored, 
+  // as they are effectively not part of the prefix.
   byte_t key = static_cast<byte_t>(prefix[i]) >> (8 - prefix_length);
   current_node->insert_prefix(prefix_length, key, value);
 }
