@@ -39,6 +39,7 @@
 #include "lookup_structures.h"
 #include "action_entry.h"
 #include "action_profile.h"
+#include "replicated_pkt_vec.h"
 
 namespace bm {
 
@@ -52,6 +53,7 @@ enum class MatchTableType {
 class MatchTableAbstract : public NamedP4Object {
  public:
   friend class handle_iterator;
+  friend class ReplicatedPktVec;
 
   using counter_value_t = Counter::counter_value_t;
 

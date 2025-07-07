@@ -27,6 +27,7 @@
 #include <bm/bm_sim/switch.h>
 #include <bm/bm_sim/event_logger.h>
 #include <bm/bm_sim/simple_pre_lag.h>
+#include <bm/bm_sim/replicated_pkt_vec.h>
 
 #include <memory>
 #include <chrono>
@@ -58,6 +59,7 @@ using bm::Field;
 using bm::FieldList;
 using bm::packet_id_t;
 using bm::p4object_id_t;
+using bm::ReplicatedPktVec;
 
 class SimpleSwitch : public Switch {
  public:

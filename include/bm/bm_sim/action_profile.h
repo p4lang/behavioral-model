@@ -165,6 +165,8 @@ class ActionProfile : public NamedP4Object {
   void serialize(std::ostream *out) const;
   void deserialize(std::istream *in, const P4Objects &objs);
 
+  void set_path_permutation();
+
  private:
   using ReadLock = boost::shared_lock<boost::shared_mutex>;
   using WriteLock = boost::unique_lock<boost::shared_mutex>;
@@ -261,6 +263,7 @@ class ActionProfile : public NamedP4Object {
 
  private:
   mbr_hdl_t choose_from_group(grp_hdl_t grp, const Packet &pkt) const;
+  std::vector<ActionProfile::mbr_hdl_t> get_all_mbrs_from_group(grp_hdl_t grp) const;
 
   MatchErrorCode get_member_(mbr_hdl_t handle, Member *member) const;
 
@@ -307,6 +310,7 @@ class ActionProfile : public NamedP4Object {
   std::shared_ptr<GroupSelectionIface> grp_selector_{nullptr};
   GroupSelectionIface *grp_selector{&grp_mgr};
   std::unique_ptr<Calculation> hash{nullptr};
+  bool path_permutation_enabled{false};
 };
 
 }  // namespace bm

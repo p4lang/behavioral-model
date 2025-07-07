@@ -128,6 +128,7 @@ class SimpleSwitch::InputBuffer {
     NORMAL,
     RESUBMIT,
     RECIRCULATE,
+    PERMUTATE,
     SENTINEL  // signal for the ingress thread to terminate
   };
 
@@ -141,6 +142,7 @@ class SimpleSwitch::InputBuffer {
                           std::move(item), true);
       case PacketType::RESUBMIT:
       case PacketType::RECIRCULATE:
+      case PacketType::PERMUTATE: // TODO(Hao): PERMUTATE should be even higher priority
         return push_front(&queue_hi, capacity_hi, &cvar_can_push_hi,
                           std::move(item), false);
       case PacketType::SENTINEL:
@@ -481,18 +483,18 @@ SimpleSwitch::ingress_thread() {
 
   while (1) {
     std::unique_ptr<Packet> packet;
+    // Hao: does a replicated pkt have to go through this?
     input_buffer->pop_back(&packet);
     if (packet == nullptr) break;
 
     // TODO(antonin): only update these if swapping actually happened?
-    Parser *parser = this->get_parser("parser");
     Pipeline *ingress_mau = this->get_pipeline("ingress");
 
     phv = packet->get_phv();
 
     port_t ingress_port = packet->get_ingress_port();
     (void) ingress_port;
-    BMLOG_DEBUG_PKT(*packet, "Processing packet received on port {}",
+    BMLOG_DEBUG_PKT(*packet, "Processing packet received on ingress port {}",
                     ingress_port);
 
     auto ingress_packet_size =
@@ -506,19 +508,27 @@ SimpleSwitch::ingress_thread() {
        parser leave the buffer unchanged, and move the pop logic to the
        deparser. TODO? */
     const Packet::buffer_state_t packet_in_state = packet->save_buffer_state();
-    parser->parse(packet.get());
 
-    if (phv->has_field("standard_metadata.parser_error")) {
-      phv->get_field("standard_metadata.parser_error").set(
-          packet->get_error_code().get());
+    // Check if the packet has an optional continue node
+    // TODO(Hao): update the doc/simple_switch.md
+    if(packet->has_continue_node()){
+      ingress_mau->apply_continued(packet.get());
     }
+    else{
+      Parser *parser = this->get_parser("parser");
+      parser->parse(packet.get());
+      if (phv->has_field("standard_metadata.parser_error")) {
+        phv->get_field("standard_metadata.parser_error").set(
+            packet->get_error_code().get());
+      }
 
-    if (phv->has_field("standard_metadata.checksum_error")) {
-      phv->get_field("standard_metadata.checksum_error").set(
-           packet->get_checksum_error() ? 1 : 0);
+      if (phv->has_field("standard_metadata.checksum_error")) {
+        phv->get_field("standard_metadata.checksum_error").set(
+            packet->get_checksum_error() ? 1 : 0);
+      }
+
+      ingress_mau->apply(packet.get());
     }
-
-    ingress_mau->apply(packet.get());
 
     packet->reset_exit();
 
@@ -569,7 +579,9 @@ SimpleSwitch::ingress_thread() {
         packet_copy->get_phv()
             ->get_field("standard_metadata.ingress_port")
             .set(ingress_port);
+        Parser *parser = this->get_parser("parser");
         parser->parse(packet_copy.get());
+        
         copy_field_list_and_set_type(packet, packet_copy,
                                      PKT_INSTANCE_TYPE_INGRESS_CLONE,
                                      field_list_id);
@@ -612,9 +624,21 @@ SimpleSwitch::ingress_thread() {
                                 ingress_packet_size);
       phv_copy->get_field("standard_metadata.packet_length")
           .set(ingress_packet_size);
-      input_buffer->push_front(
+      input_buffer->push_front( 
           InputBuffer::PacketType::RESUBMIT, std::move(packet_copy));
       continue;
+    }
+
+    //GSOC MODS
+    {
+      for(auto pkt: ReplicatedPktVec::instance().replicated_pkts){
+        // TODO(Hao): add a higher priority in queue impl
+        // currently sharing priority with resubmit and recirculate
+        input_buffer->push_front(InputBuffer::PacketType::PERMUTATE, 
+          std::unique_ptr<bm::Packet>(pkt));
+        BMLOG_DEBUG_PKT(*pkt, "Permutated/Replicated packet pushed to ingress_buffer");
+      }
+      ReplicatedPktVec::instance().replicated_pkts.clear();
     }
 
     // MULTICAST
@@ -638,6 +662,7 @@ SimpleSwitch::ingress_thread() {
     f_instance_type.set(PKT_INSTANCE_TYPE_NORMAL);
 
     enqueue(egress_port, std::move(packet));
+    
   }
 }
 
@@ -652,6 +677,8 @@ SimpleSwitch::egress_thread(size_t worker_id) {
     egress_buffers.pop_back(worker_id, &port, &priority, &packet);
     if (packet == nullptr) break;
 
+    BMLOG_DEBUG_PKT(*packet, "Processing packet in egress port {}",
+                    worker_id);
     Deparser *deparser = this->get_deparser("deparser");
     Pipeline *egress_mau = this->get_pipeline("egress");
 

@@ -32,6 +32,7 @@
 #include <atomic>
 #include <algorithm>  // for std::min
 #include <limits>
+#include <optional>
 
 #include <cassert>
 
@@ -40,6 +41,7 @@
 #include "parser_error.h"
 #include "phv_source.h"
 #include "phv_forward.h"
+#include "control_flow.h"
 
 namespace bm {
 
@@ -315,6 +317,16 @@ class Packet final {
   //! @copydoc clone_choose_context
   std::unique_ptr<Packet> clone_choose_context_ptr(cxt_id_t new_cxt) const;
 
+  // Hao: pkt permutation stuff:
+  bool has_continue_node() const;
+  //! Get the continue node, if it exists
+  const ControlFlowNode *get_continue_node() const;
+  //! Set the continue node, which is used to continue the packet processing
+  void set_continue_node(const ControlFlowNode *node);
+  //! Reset the continue node
+  void reset_continue_node();
+
+
   //! Deleted copy constructor
   Packet(const Packet &other) = delete;
   //! Deleted copy assignment operator
@@ -385,6 +397,7 @@ class Packet final {
 
   bool checksum_error{false};
 
+  std::optional<const ControlFlowNode *> continue_node{std::nullopt};
  private:
   static CopyIdGenerator *copy_id_gen;
 };
