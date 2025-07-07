@@ -2481,6 +2481,17 @@ TEST_F(AdvancedLPMTest, Lookup5) {
   ASSERT_EQ(handle_2, lookup_handle);
 }
 
+TEST_F(AdvancedLPMTest, Lookup6) {
+  entry_handle_t handle;
+  entry_handle_t lookup_handle;
+  bool hit;
+  ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry_w_len(&handle, 7));
+
+  Packet pkt = gen_pkt("0x0a7f", "0xabcd");
+  lookup(pkt, &hit, &lookup_handle);
+  ASSERT_TRUE(hit);
+}
+
 class AdvancedTernaryTest : public AdvancedTest {
  protected:
   AdvancedTernaryTest()
