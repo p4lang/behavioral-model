@@ -131,8 +131,9 @@ jobs:
         fi
     - name: Build BMv2
       run: |
-        ./autogen.sh
-        ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror
+        mkdir -p build
+        cd build
+        cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..
         make -j$(nproc)
-    - name: Run tests with verbose output
-      run: make -j$(nproc) VERBOSE=1
+    - name: Run tests
+      run: cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure
