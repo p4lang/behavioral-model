@@ -22,6 +22,7 @@
 #include <bm/bm_sim/action_profile.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/replicated_pkt_vec.h>
 
 #include <iostream>
 #include <memory>
@@ -126,6 +127,8 @@ ActionProfile::mbr_hdl_t
 ActionProfile::GroupMgr::get_from_hash(grp_hdl_t grp, hash_t h) const {
   const auto &group_info = groups.at(grp);
   auto s = group_info.size();
+  BMLOG_DEBUG("Hao: Choosing member from group {} with hash {} (size {})",
+                grp, h, s);
   return group_info.get_nth(h % s);
 }
 
@@ -175,9 +178,36 @@ ActionProfile::lookup(const Packet &pkt, const IndirectIndex &index) const {
   } else {
     grp_hdl_t grp = index.get_grp();
     assert(is_valid_grp(grp));
+    //Hao: critical part for fanout all possible members
+    std::vector<mbr_hdl_t> mbrs;
     mbr = choose_from_group(grp, pkt);
     // TODO(antonin): change to trace?
-    BMLOG_DEBUG_PKT(pkt, "Choosing member {} from group {}", mbr, grp);
+    BMLOG_DEBUG_PKT(pkt, "Chose member {} from group {}", mbr, grp);
+
+    if(selector_fanout_enabled){
+      BMLOG_DEBUG_PKT(pkt, "Selector fanout enabled, choosing member from group {} WIP", grp);
+      mbrs = get_all_mbrs_from_group(grp);
+      for(auto m:mbrs){
+        if(m == mbr){
+          continue;
+        }
+        // TODO(Hao): apply_action in match_tables has a full procedure,
+        //   need to make sure that directly applying the func does not
+        //   cause any issues
+        //Things to consider:
+        // 1. set the entry index
+        // 2. set meters
+        // 3. set counters
+        // 4. incorporate with the debugger?
+        const ActionEntry &action = action_entries[m];
+        Packet* rep_pkt = pkt.clone_with_phv_ptr().release();
+        action.action_fn(rep_pkt);
+        BMLOG_DEBUG_PKT(*rep_pkt, "Action {} applied to replicated packet",
+                        action);
+        ReplicatedPktVec::instance().replicated_pkts_w_act_id.emplace_back(rep_pkt,
+                                                          action.action_fn.get_action_id());
+      }
+    }
   }
   assert(is_valid_mbr(mbr));
 
@@ -615,6 +645,20 @@ ActionProfile::choose_from_group(grp_hdl_t grp, const Packet &pkt) const {
   if (!hash) return grp_selector->get_from_hash(grp, 0);
   hash_t h = static_cast<hash_t>(hash->output(pkt));
   return grp_selector->get_from_hash(grp, h);
+}
+
+std::vector<ActionProfile::mbr_hdl_t>
+ActionProfile::get_all_mbrs_from_group(grp_hdl_t grp) const {
+  std::vector<ActionProfile::mbr_hdl_t> mbrs;
+  const GroupInfo& grp_info = grp_mgr.at(grp);
+  for(auto mbr = grp_info.begin(); mbr != grp_info.end(); ++mbr) {
+    mbrs.push_back(*mbr);
+  }
+  return mbrs;
+}
+
+void ActionProfile::set_selector_fanout(){
+  selector_fanout_enabled = true;
 }
 
 }  // namespace bm

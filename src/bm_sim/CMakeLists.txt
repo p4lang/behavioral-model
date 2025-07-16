@@ -51,6 +51,7 @@ add_library(bmsim OBJECT
   phv_source.cpp
   pipeline.cpp
   port_monitor.cpp
+  replicated_pkt_vec.cpp
   simple_pre.cpp
   simple_pre_lag.cpp
   source_info.cpp

@@ -60,6 +60,7 @@ pcap_file.cpp \
 pipeline.cpp \
 periodic_task.cpp \
 port_monitor.cpp \
+replicated_pkt_vec.cpp \
 phv.cpp \
 phv_source.cpp \
 stateful.cpp \
