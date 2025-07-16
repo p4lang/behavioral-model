@@ -165,7 +165,7 @@ class ActionProfile : public NamedP4Object {
   void serialize(std::ostream *out) const;
   void deserialize(std::istream *in, const P4Objects &objs);
 
-  void set_path_permutation();
+  void set_selector_fanout();
 
  private:
   using ReadLock = boost::shared_lock<boost::shared_mutex>;
@@ -310,7 +310,7 @@ class ActionProfile : public NamedP4Object {
   std::shared_ptr<GroupSelectionIface> grp_selector_{nullptr};
   GroupSelectionIface *grp_selector{&grp_mgr};
   std::unique_ptr<Calculation> hash{nullptr};
-  bool path_permutation_enabled{false};
+  bool selector_fanout_enabled{false};
 };
 
 }  // namespace bm

@@ -545,7 +545,7 @@ class P4Objects {
   void enable_arith(header_id_t header_id, int field_offset);
   void enable_arith(header_id_t header_id);
 
-  bool is_path_permutation(
+  bool is_selector_fanout(
       const Json::Value &cfg_next_nodes) const;
   std::unique_ptr<Calculation> process_cfg_selector(
       const Json::Value &cfg_selector) const;

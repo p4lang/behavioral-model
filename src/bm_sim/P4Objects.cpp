@@ -1661,11 +1661,11 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
             "Action profile '{}' with id {} has a selector",
             act_prof_name, act_prof_id);
 
-        if(is_path_permutation(cfg_act_prof["selector"])){
+        if(is_selector_fanout(cfg_act_prof["selector"])){
           BMLOG_DEBUG(
-              "Action profile '{}' with id {} enabled path permutation selector",
+              "Action profile '{}' with id {} enabled selector fanout",
               act_prof_name, act_prof_id);
-          action_profile->set_path_permutation();
+          action_profile->set_selector_fanout();
         }else{
           auto calc = process_cfg_selector(cfg_act_prof["selector"]);
           action_profile->set_hash(std::move(calc));
@@ -2513,9 +2513,9 @@ P4Objects::check_hash(const std::string &name) const {
 }
 
 // TODO(Hao): messy, so i think use pragma is better
-bool P4Objects::is_path_permutation(const Json::Value &cfg_selector) const {
+bool P4Objects::is_selector_fanout(const Json::Value &cfg_selector) const {
   return cfg_selector.isMember("algo") && // not to hardcode names, fix later
-         cfg_selector["algo"].asString() == "path_permutation";
+         cfg_selector["algo"].asString() == "selector_fanout";
 }
 
 std::unique_ptr<Calculation>

@@ -69,7 +69,8 @@ AM_CONDITIONAL([WITH_THRIFT], [test "$with_thrift" = yes])
 
 # Generate makefiles
 AC_CONFIG_FILES([Makefile
-                 tests/Makefile])
+                 tests/Makefile
+                 tests/test_selector_fanout/Makefile])
 
 AC_CONFIG_FILES([tests/example.run], [chmod +x tests/example.run])
 

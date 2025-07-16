@@ -178,14 +178,14 @@ ActionProfile::lookup(const Packet &pkt, const IndirectIndex &index) const {
   } else {
     grp_hdl_t grp = index.get_grp();
     assert(is_valid_grp(grp));
-    //Hao: critical part for permutating all possible members
+    //Hao: critical part for fanout all possible members
     std::vector<mbr_hdl_t> mbrs;
     mbr = choose_from_group(grp, pkt);
     // TODO(antonin): change to trace?
     BMLOG_DEBUG_PKT(pkt, "Chose member {} from group {}", mbr, grp);
 
-    if(path_permutation_enabled){
-      BMLOG_DEBUG_PKT(pkt, "Path permutation enabled, choosing member from group {} WIP", grp);
+    if(selector_fanout_enabled){
+      BMLOG_DEBUG_PKT(pkt, "Selector fanout enabled, choosing member from group {} WIP", grp);
       mbrs = get_all_mbrs_from_group(grp);
       for(auto m:mbrs){
         if(m == mbr){
@@ -657,8 +657,8 @@ ActionProfile::get_all_mbrs_from_group(grp_hdl_t grp) const {
   return mbrs;
 }
 
-void ActionProfile::set_path_permutation(){
-  path_permutation_enabled = true;
+void ActionProfile::set_selector_fanout(){
+  selector_fanout_enabled = true;
 }
 
 }  // namespace bm
