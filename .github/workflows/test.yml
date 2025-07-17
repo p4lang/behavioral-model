@@ -79,7 +79,10 @@ jobs:
     - name: Run tests with verbose output
       run: |
         ci_env=`bash <(curl -s https://codecov.io/env)`
-        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c "make -j$(nproc) VERBOSE=1 && ./ci/codecov.sh"
+        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c \
+          "make check -j$(nproc) VERBOSE=1 && ./ci/codecov.sh"
+        # FIXME: replace the command above with the following when switching to cmake
+        # "cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure && cd .. && ./ci/codecov.sh"
     - name: Check style
       run: |
         ./tools/check_style.sh
@@ -106,7 +109,9 @@ jobs:
     - name: Build Dockerfile.noPI image
       run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
     - name: Run tests with verbose output
-      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make -j$(nproc) VERBOSE=1"
+      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make check -j$(nproc) VERBOSE=1"
+      # FIXME: replace the command above with the following when switching to cmake
+      # "cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure"
 
   test-ubuntu22:
     if: false
