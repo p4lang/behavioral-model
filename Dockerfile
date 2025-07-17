@@ -15,21 +15,21 @@ ARG USE_CMAKE=
 ARG sswitch_grpc=yes
 
 ENV BM_DEPS automake \
-            build-essential \
-            clang-8 \
-            clang-10 \
-            cmake \
-            pkg-config \
-            curl \
-            git \
-            libgmp-dev \
-            libpcap-dev \
-            libboost-dev \
-            libboost-program-options-dev \
-            libboost-system-dev \
-            libboost-filesystem-dev \
-            libboost-thread-dev \
-            libtool
+    build-essential \
+    clang-8 \
+    clang-10 \
+    cmake \
+    pkg-config \
+    curl \
+    git \
+    libgmp-dev \
+    libpcap-dev \
+    libboost-dev \
+    libboost-program-options-dev \
+    libboost-system-dev \
+    libboost-filesystem-dev \
+    libboost-thread-dev \
+    libtool
 ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
                     libboost-system1.71.0 \
                     libboost-filesystem1.71.0 \
