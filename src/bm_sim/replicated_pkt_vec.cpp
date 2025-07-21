@@ -26,7 +26,7 @@ ReplicatedPktVec::set_next_nodes(const MatchTableAbstract *match_table, bool hit
             match_table->get_next_node(act_id) :
             match_table->get_next_node_default(act_id);
         if (next_node == nullptr) {
-            BMLOG_ERROR_PKT(*pkt, "No next node for action id {}", act_id);
+            BMLOG_DEBUG_PKT(*pkt, "No next node for action id {}", act_id);
         }else{
             BMLOG_DEBUG_PKT(*pkt, "Next node for action id {}: {}", act_id, next_node->get_name());
         }

@@ -229,7 +229,9 @@ class Packet final {
   const PHV *get_phv() const { return phv.get(); }
 
   //! Write to general purpose register at index \p idx
-  void set_register(size_t idx, uint64_t v) { registers.at(idx) = v; }
+  void set_register(size_t idx, uint64_t v) { 
+    printf("Setting register %zu to %lu\n", idx, v);
+    registers.at(idx) = v; }
   //! Read general purpose register at index \p idx
   uint64_t get_register(size_t idx) { return registers.at(idx); }
 
@@ -303,6 +305,11 @@ class Packet final {
   //! @copydoc clone_with_phv_reset_metadata
   std::unique_ptr<Packet> clone_with_phv_reset_metadata_ptr() const;
 
+  //! Clone the current packet, along with its PHV and registers.
+  Packet clone_with_phv_and_registers() const;
+  //! @copydoc clone_with_phv_and_registers
+  std::unique_ptr<Packet> clone_with_phv_and_registers_ptr() const;
+
   //! Clone the current packet, without the PHV. The value of the fields in the
   //! clone will be undefined and should not be accessed before setting it
   //! first.
@@ -317,7 +324,7 @@ class Packet final {
   //! @copydoc clone_choose_context
   std::unique_ptr<Packet> clone_choose_context_ptr(cxt_id_t new_cxt) const;
 
-  // Hao: pkt permutation stuff:
+  // Hao: pkt fanout stuff:
   bool has_continue_node() const;
   //! Get the continue node, if it exists
   const ControlFlowNode *get_continue_node() const;

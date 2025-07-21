@@ -200,7 +200,7 @@ ActionProfile::lookup(const Packet &pkt, const IndirectIndex &index) const {
         // 3. set counters
         // 4. incorporate with the debugger?
         const ActionEntry &action = action_entries[m];
-        Packet* rep_pkt = pkt.clone_with_phv_ptr().release();
+        Packet* rep_pkt = pkt.clone_with_phv_and_registers_ptr().release();
         action.action_fn(rep_pkt);
         BMLOG_DEBUG_PKT(*rep_pkt, "Action {} applied to replicated packet",
                         action);

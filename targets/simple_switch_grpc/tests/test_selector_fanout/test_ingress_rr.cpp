@@ -40,13 +40,6 @@ namespace {
 constexpr char ingress_round_robin_json[] = TESTDATADIR "/ingress_round_robin_test.json";
 constexpr char ingress_round_robin_proto[] = TESTDATADIR "/ingress_round_robin_test.proto.txtpb";
 
-std::string port_to_bytes(int port) {
-  std::string v;
-  v.push_back(static_cast<char>((port >> 8) & 0xff));
-  v.push_back(static_cast<char>(port & 0xff));
-  return v;
-}
-
 class OutputPkt{
 public:
   uint32_t eg_port;
@@ -71,36 +64,33 @@ public:
   }
 };
 
-class SimpleSwitchGrpcTest_RoundRobin : public SimpleSwitchGrpcBaseTest {
+class ActionInfo{
+public:
+  int action_id;
+  std::string action_name;
+  std::vector<std::pair<int, unsigned char>> params; // pair of param id and value
+
+  ActionInfo(int action_id, const std::string &action_name,
+              const std::vector<std::pair<int, unsigned char>> &params)
+        : action_id(action_id), action_name(action_name), params(params) {}
+};
+
+class SimpleSwitchGrpcTest_FanoutBase : public SimpleSwitchGrpcBaseTest {
  protected:
   using StreamType = grpc::ClientReaderWriter<p4::bm::PacketStreamRequest,
                                             p4::bm::PacketStreamResponse>;
-  // action id, action name, param id 1, param 1, param id 2, param 2                                         
-  using ActionInfo = std::tuple<int, std::string, int, unsigned char, int, unsigned char>;
-  SimpleSwitchGrpcTest_RoundRobin()
-      : SimpleSwitchGrpcBaseTest(ingress_round_robin_proto),
-        dataplane_channel(grpc::CreateChannel(
-            dp_grpc_server_addr, grpc::InsecureChannelCredentials())),
-        dataplane_stub(p4::bm::DataplaneInterface::NewStub(
-            dataplane_channel)) { }
+
+  SimpleSwitchGrpcTest_FanoutBase(const char* proto, const char* json)
+    : SimpleSwitchGrpcBaseTest(proto),
+      p4json_file(json),
+      dataplane_channel(grpc::CreateChannel(
+          dp_grpc_server_addr, grpc::InsecureChannelCredentials())),
+      dataplane_stub(p4::bm::DataplaneInterface::NewStub(
+          dataplane_channel)) { }
 
   void SetUp() override {
     SimpleSwitchGrpcBaseTest::SetUp();
-    update_json(ingress_round_robin_json);
-    table_id = get_table_id(p4info, "selector_tbl");
-    action_id_1 = get_action_id(p4info, "foo1");
-    action_1_param_ids.push_back(get_param_id(p4info, "foo1", "val"));
-    action_1_param_ids.push_back(get_param_id(p4info, "foo1", "port"));
-
-    action_id_2 = get_action_id(p4info, "foo2");
-    action_2_param_ids.push_back(get_param_id(p4info, "foo2", "val"));
-    action_2_param_ids.push_back(get_param_id(p4info, "foo2", "port"));
-
-    action_id_3 = get_action_id(p4info, "foo3");
-    action_3_param_ids.push_back(get_param_id(p4info, "foo3", "val"));
-    action_3_param_ids.push_back(get_param_id(p4info, "foo3", "port"));
-
-    act_prof_id = get_act_prof_id(p4info, "rr_selector");
+    update_json(p4json_file);
   }
 
   void send_packet(StreamType* stream, const char& in_, const int& ig_port) {
@@ -162,7 +152,7 @@ class SimpleSwitchGrpcTest_RoundRobin : public SimpleSwitchGrpcBaseTest {
     return grpc::Status::OK;
   }
 
-  Status add_table_entry(
+  Status add_ap_table_entry(
       const int &table_id, const std::string & tbl_name, 
       const std::string &key_field_name,
       const std::string &key_value, const std::vector<ActionInfo> &actions) {
@@ -173,29 +163,79 @@ class SimpleSwitchGrpcTest_RoundRobin : public SimpleSwitchGrpcBaseTest {
     mf->set_field_id(get_mf_id(p4info, tbl_name, key_field_name));
     mf->mutable_exact()->set_value(key_value);
     auto act_set = entry->mutable_action()->mutable_action_profile_action_set();
+    // Add actions as members of the selector's group
     for (const auto &act_info : actions) {
       auto *action_entry = act_set->add_action_profile_actions();
       auto *act = action_entry->mutable_action();
-      act->set_action_id(std::get<0>(act_info));
+      act->set_action_id(act_info.action_id);
 
-      auto *param1 = act->add_params();
-      param1->set_param_id(std::get<2>(act_info));
-      param1->set_value(std::string(1, std::get<3>(act_info)));
-
-      auto *param2 = act->add_params();
-      param2->set_param_id(std::get<4>(act_info));
-      param2->set_value(std::string(1, std::get<5>(act_info)));
+      for(auto param: act_info.params) {
+        auto *param_entry = act->add_params();
+        param_entry->set_param_id(param.first);
+        param_entry->set_value(std::string(1, static_cast<char>(param.second)));
+      }
       
       action_entry->set_weight(1);
     }
-
-
     return write(entity, p4v1::Update::INSERT);
   }
 
+  Status add_table_entry(
+      const int &table_id, const std::string & tbl_name, 
+      const std::string &key_field_name,
+      const std::string &key_value, const ActionInfo &action) {
+    p4v1::Entity entity;
+    auto *entry = entity.mutable_table_entry();
+    entry->set_table_id(table_id);
+    auto *mf = entry->add_match();
+    mf->set_field_id(get_mf_id(p4info, tbl_name, key_field_name));
+    mf->mutable_exact()->set_value(key_value);
+    auto act = entry->mutable_action()->mutable_action();
+    act->set_action_id(action.action_id);
+    for (auto param : action.params) {
+      auto *param_entry = act->add_params();
+      param_entry->set_param_id(param.first);
+      param_entry->set_value(std::string(1, static_cast<char>(param.second)));
+    }
+    return write(entity, p4v1::Update::INSERT);
+  }
+
+  const char *p4json_file = nullptr;
   std::shared_ptr<grpc::Channel> dataplane_channel{nullptr};
   std::unique_ptr<p4::bm::DataplaneInterface::Stub> dataplane_stub{nullptr};
-  int act_prof_id;
+};
+
+
+
+
+class SimpleSwitchGrpcTest_RoundRobin : public SimpleSwitchGrpcTest_FanoutBase {
+ protected:
+  using StreamType = grpc::ClientReaderWriter<p4::bm::PacketStreamRequest,
+                                            p4::bm::PacketStreamResponse>;
+
+  SimpleSwitchGrpcTest_RoundRobin()
+      : SimpleSwitchGrpcTest_FanoutBase(ingress_round_robin_proto, ingress_round_robin_json)
+       { }
+
+  void SetUp() override {
+    SimpleSwitchGrpcTest_FanoutBase::SetUp();
+    table_id = get_table_id(p4info, "selector_tbl");
+    action_id_1 = get_action_id(p4info, "foo1");
+    action_1_param_ids.push_back(get_param_id(p4info, "foo1", "val"));
+    action_1_param_ids.push_back(get_param_id(p4info, "foo1", "port"));
+
+    action_id_2 = get_action_id(p4info, "foo2");
+    action_2_param_ids.push_back(get_param_id(p4info, "foo2", "val"));
+    action_2_param_ids.push_back(get_param_id(p4info, "foo2", "port"));
+
+    action_id_3 = get_action_id(p4info, "foo3");
+    action_3_param_ids.push_back(get_param_id(p4info, "foo3", "val"));
+    action_3_param_ids.push_back(get_param_id(p4info, "foo3", "port"));
+  }
+
+  const char *p4json_file = nullptr;
+  std::shared_ptr<grpc::Channel> dataplane_channel{nullptr};
+  std::unique_ptr<p4::bm::DataplaneInterface::Stub> dataplane_stub{nullptr};
   int table_id;
   int action_id_1;
   std::vector<int> action_1_param_ids;
@@ -210,14 +250,15 @@ class SimpleSwitchGrpcTest_RoundRobin : public SimpleSwitchGrpcBaseTest {
 TEST_F(SimpleSwitchGrpcTest_RoundRobin, SingleGroup) {
 
   std::vector<ActionInfo> actions = {
-      {action_id_1, "foo1", action_1_param_ids[0], 1,
-       action_1_param_ids[1], 1},
-      {action_id_2, "foo2", action_2_param_ids[0], 2,
-       action_2_param_ids[1], 2},
-      {action_id_3, "foo3", action_3_param_ids[0], 3,
-       action_3_param_ids[1], 3}};
-  
-  EXPECT_TRUE(add_table_entry(table_id, "selector_tbl", "h.hdr.in_", "\xab", actions).ok());
+      {action_id_1, "foo1", {{action_1_param_ids[0], 1},
+                               {action_1_param_ids[1], 1}}},
+      {action_id_2, "foo2", {{action_2_param_ids[0], 2},
+                               {action_2_param_ids[1], 2}}},
+      {action_id_3, "foo3", {{action_3_param_ids[0], 3},
+                               {action_3_param_ids[1], 3}}}
+  };
+
+  EXPECT_TRUE(add_ap_table_entry(table_id, "selector_tbl", "h.hdr.in_", "\xab", actions).ok());
   
   OutputPkt expected_1(1, "\xab\x00\x01\x00\x00");
   OutputPkt expected_2(2, "\xab\x00\x00\x02\x00");
@@ -227,6 +268,136 @@ TEST_F(SimpleSwitchGrpcTest_RoundRobin, SingleGroup) {
 
   EXPECT_TRUE(send_and_receive("\xab",1,3,received_set).ok());
   EXPECT_TRUE(received_set == expected_set);
+}
+
+TEST_F(SimpleSwitchGrpcTest_RoundRobin, TwoGroups) {
+
+  std::vector<ActionInfo> actions_1 = {
+      {action_id_1, "foo1", {{action_1_param_ids[0], 1},
+                               {action_1_param_ids[1], 1}}},
+      {action_id_2, "foo2", {{action_2_param_ids[0], 2},
+                               {action_2_param_ids[1], 2}}},
+      {action_id_3, "foo3", {{action_3_param_ids[0], 3},
+                               {action_3_param_ids[1], 3}}}
+  };
+
+  std::vector<ActionInfo> actions_2 = {
+      {action_id_1, "foo1", {{action_1_param_ids[0], 4},
+                               {action_1_param_ids[1], 1}}},
+      {action_id_2, "foo2", {{action_2_param_ids[0], 5},
+                               {action_2_param_ids[1], 2}}},
+      {action_id_2, "foo2", {{action_2_param_ids[0], 6},
+                               {action_2_param_ids[1], 3}}}
+  };
+  EXPECT_TRUE(add_ap_table_entry(table_id, "selector_tbl", "h.hdr.in_", "\xab", actions_1).ok());
+  EXPECT_TRUE(add_ap_table_entry(table_id, "selector_tbl", "h.hdr.in_", "\xaa", actions_2).ok());
+
+  
+  OutputPkt expected_1_1(1, "\xab\x00\x01\x00\x00");
+  OutputPkt expected_1_2(2, "\xab\x00\x00\x02\x00");
+  OutputPkt expected_1_3(3, "\xab\x00\x00\x00\x03");
+  std::set<OutputPkt> expected_set_1 = {expected_1_1, expected_1_2, expected_1_3};
+  std::set<OutputPkt> received_set_1;
+
+  EXPECT_TRUE(send_and_receive("\xab",1,3,received_set_1).ok());
+  EXPECT_TRUE(received_set_1 == expected_set_1);
+  
+  OutputPkt expected_2_1(1, "\xaa\x00\x04\x00\x00");
+  OutputPkt expected_2_2(2, "\xaa\x00\x00\x05\x00");
+  OutputPkt expected_2_3(3, "\xaa\x00\x00\x06\x00");
+  std::set<OutputPkt> expected_set_2 = {expected_2_1, expected_2_2, expected_2_3};
+  std::set<OutputPkt> received_set_2;
+
+  EXPECT_TRUE(send_and_receive("\xaa",1,3,received_set_2).ok());
+  EXPECT_TRUE(received_set_2 == expected_set_2);
+}
+
+
+
+// TODO(Hao): RR_MC, move to its own file later
+constexpr char ingress_rr_mc_json[] = TESTDATADIR "/ingress_rr_mc_test.json";
+constexpr char ingress_rr_mc_proto[] = TESTDATADIR "/ingress_rr_mc_test.proto.txtpb";
+
+class SimpleSwitchGrpcTest_RoundRobin_Multicast : public SimpleSwitchGrpcTest_FanoutBase{
+protected:
+  using GroupEntry = ::p4v1::MulticastGroupEntry;
+  
+  SimpleSwitchGrpcTest_RoundRobin_Multicast()
+      : SimpleSwitchGrpcTest_FanoutBase(ingress_rr_mc_proto, ingress_rr_mc_json) { }
+
+  void SetUp() override {
+    SimpleSwitchGrpcTest_FanoutBase::SetUp();
+    selector_table_id = get_table_id(p4info, "selector_tbl");
+    selector_action_id_1 = get_action_id(p4info, "foo1");
+    selector_action_1_param_ids.push_back(get_param_id(p4info, "foo1", "val"));
+    selector_action_1_param_ids.push_back(get_param_id(p4info, "foo1", "port"));
+
+    selector_action_id_2 = get_action_id(p4info, "foo2");
+    selector_action_2_param_ids.push_back(get_param_id(p4info, "foo2", "val"));
+    selector_action_2_param_ids.push_back(get_param_id(p4info, "foo2", "port"));
+
+    mc_table_id = get_table_id(p4info, "multicast_tbl");
+    mc_multicast_action_id = get_action_id(p4info, "multicast");
+    mc_multicast_action_param_ids.push_back(get_param_id(p4info, "multicast", "mc_grp"));
+    mc_forward_action_id_2 = get_action_id(p4info, "forward");
+    mc_forward_action_param_ids_2.push_back(get_param_id(p4info, "forward", "port"));
+  }
+
+  Status create_group(const GroupEntry &entry) {
+    p4v1::WriteRequest request;
+    request.set_device_id(device_id);
+    auto *update = request.add_updates();
+    update->set_type(p4v1::Update::INSERT);
+    auto *entity = update->mutable_entity();
+    auto *pre_entry = entity->mutable_packet_replication_engine_entry();
+    auto *mc_entry = pre_entry->mutable_multicast_group_entry();
+    mc_entry->CopyFrom(entry);
+    p4v1::WriteResponse response;
+    ClientContext context;
+    return Write(&context, request, &response);
+  }
+
+  int selector_table_id;
+  int selector_action_id_1;
+  std::vector<int> selector_action_1_param_ids;
+  int selector_action_id_2;
+  std::vector<int> selector_action_2_param_ids;
+
+  int mc_table_id;
+  int mc_multicast_action_id;
+  std::vector<int> mc_multicast_action_param_ids;
+  int mc_forward_action_id_2;
+  std::vector<int> mc_forward_action_param_ids_2;
+
+
+};
+
+
+TEST_F(SimpleSwitchGrpcTest_RoundRobin_Multicast, SingleMCGroup) {
+  int16_t group_id = 1;
+  GroupEntry group;
+  group.set_multicast_group_id(group_id);
+  // Set group members for group 1
+  std::vector<uint32_t> group_replicas = {1, 2, 3}; 
+  for (const auto &r : group_replicas) {
+    auto *replica = group.add_replicas();
+    replica->set_instance(r);
+    replica->set_egress_port(r);
+  }
+  EXPECT_TRUE(create_group(group).ok());
+
+  std::vector<ActionInfo> selector_actions = {
+    {selector_action_id_1, "foo1", {{selector_action_1_param_ids[0], 1},
+      {selector_action_1_param_ids[1], 1}}},
+    {selector_action_id_2, "foo2", {{selector_action_2_param_ids[0], 2},
+      {selector_action_2_param_ids[1], 2}}}};
+  EXPECT_TRUE(add_ap_table_entry(selector_table_id, "selector_tbl", "h.hdr.in_", "\xab", selector_actions).ok());
+
+  ActionInfo multicast_action(mc_multicast_action_id, "multicast",
+      {{mc_multicast_action_param_ids[0], group_id}});
+  EXPECT_TRUE(add_table_entry(mc_table_id, "multicast_tbl", "h.hdr.f1", "\xac", multicast_action).ok());
+
+
 }
 
 }  // namespace

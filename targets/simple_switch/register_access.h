@@ -59,6 +59,7 @@ class RegisterAccess {
     }
     static void set_clone_mirror_session_id(Packet *pkt,
                                             uint16_t mirror_session_id) {
+        BMLOG_DEBUG_PKT(*pkt, "Setting clone mirror session id to {}", mirror_session_id);
         uint64_t rv = pkt->get_register(CLONE_MIRROR_SESSION_ID_REG_IDX);
         rv = ((rv & ~CLONE_MIRROR_SESSION_ID_MASK) |
               ((static_cast<uint64_t>(mirror_session_id)) <<
