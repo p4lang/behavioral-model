@@ -39,9 +39,6 @@ public:
     void process_fanout(const Packet &pkt, EntryVec &entries, const MatchTableIndirect *match_table, bool hit);
 
     std::mutex fanout_pkt_mutex;
-    // Fanout pkts will first be added to fanout_pkts
-    // in order to get the corresponding next table node.
-    // After the next_node is set, the pkt will be added to fanout_pkts
     std::vector<Packet *> fanout_pkts;
     // TODO(Hao): deduplicate packets fanout, optional
 

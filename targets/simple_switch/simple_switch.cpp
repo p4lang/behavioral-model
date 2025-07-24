@@ -491,6 +491,9 @@ SimpleSwitch::ingress_thread() {
     if (packet == nullptr) break;
 
     // TODO(antonin): only update these if swapping actually happened?
+    Parser *parser = this->get_parser("parser");
+
+    // TODO(antonin): only update these if swapping actually happened?
     Pipeline *ingress_mau = this->get_pipeline("ingress");
 
     phv = packet->get_phv();
@@ -518,7 +521,6 @@ SimpleSwitch::ingress_thread() {
       ingress_mau->apply_from_next_node(packet.get());
     }
     else{
-      Parser *parser = this->get_parser("parser");
       parser->parse(packet.get());
       if (phv->has_field("standard_metadata.parser_error")) {
         phv->get_field("standard_metadata.parser_error").set(
@@ -582,7 +584,6 @@ SimpleSwitch::ingress_thread() {
         packet_copy->get_phv()
             ->get_field("standard_metadata.ingress_port")
             .set(ingress_port);
-        Parser *parser = this->get_parser("parser");
         parser->parse(packet_copy.get());
         
         copy_field_list_and_set_type(packet, packet_copy,
@@ -636,8 +637,6 @@ SimpleSwitch::ingress_thread() {
     {
       std::lock_guard<std::mutex> lock(FanoutPktMgr::instance().fanout_pkt_mutex);
       for(auto pkt: FanoutPktMgr::instance().fanout_pkts){
-        // TODO(Hao): add a higher priority in queue impl
-        // currently sharing priority with resubmit and recirculate
         input_buffer->push_front(InputBuffer::PacketType::SELECTOR_FANOUT, 
           std::unique_ptr<bm::Packet>(pkt));
         BMLOG_DEBUG_PKT(*pkt, "SELECTOR_FANOUT packet pushed to ingress_buffer");
