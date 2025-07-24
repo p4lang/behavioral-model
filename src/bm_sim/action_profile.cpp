@@ -22,6 +22,7 @@
 #include <bm/bm_sim/action_profile.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/fanout_pkt_mgr.h>
 
 #include <iostream>
 #include <memory>
@@ -126,6 +127,8 @@ ActionProfile::mbr_hdl_t
 ActionProfile::GroupMgr::get_from_hash(grp_hdl_t grp, hash_t h) const {
   const auto &group_info = groups.at(grp);
   auto s = group_info.size();
+  BMLOG_DEBUG("Choosing member from group {} with hash {} (size {})",
+                grp, h, s);
   return group_info.get_nth(h % s);
 }
 
@@ -182,6 +185,30 @@ ActionProfile::lookup(const Packet &pkt, const IndirectIndex &index) const {
   assert(is_valid_mbr(mbr));
 
   return action_entries[mbr];
+}
+
+
+const std::vector<const ActionEntry*>
+ActionProfile::get_all_entries_from_grp(const IndirectIndex &index) const {
+  assert(index.is_grp() && with_selection);
+  grp_hdl_t grp = index.get_grp();
+
+  assert(is_valid_grp(grp));
+  Group group;
+  MatchErrorCode rc = get_group(grp, &group);
+  _BM_UNUSED(rc);
+  assert(rc == MatchErrorCode::SUCCESS);
+  for(auto m : group.mbr_handles){
+    assert(is_valid_mbr(m));
+  }
+
+  std::vector<const ActionEntry*> entries;
+  entries.reserve(group.mbr_handles.size());
+  for (auto m : group.mbr_handles) {
+    assert(is_valid_mbr(m));
+    entries.push_back(&action_entries[m]);
+  }
+  return entries;
 }
 
 bool
@@ -615,6 +642,10 @@ ActionProfile::choose_from_group(grp_hdl_t grp, const Packet &pkt) const {
   if (!hash) return grp_selector->get_from_hash(grp, 0);
   hash_t h = static_cast<hash_t>(hash->output(pkt));
   return grp_selector->get_from_hash(grp, h);
+}
+
+void ActionProfile::set_selector_fanout(){
+  selector_fanout_enabled = true;
 }
 
 }  // namespace bm
