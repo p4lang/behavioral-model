@@ -22,7 +22,7 @@
 #include <bm/bm_sim/action_profile.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/packet.h>
-#include <bm/bm_sim/fanout_pkt_vec.h>
+#include <bm/bm_sim/fanout_pkt_mgr.h>
 
 #include <iostream>
 #include <memory>
@@ -180,42 +180,35 @@ ActionProfile::lookup(const Packet &pkt, const IndirectIndex &index) const {
     assert(is_valid_grp(grp));
     mbr = choose_from_group(grp, pkt);
     // TODO(antonin): change to trace?
-    BMLOG_DEBUG_PKT(pkt, "Chose member {} from group {}", mbr, grp);
-
-    //Hao: critical part for fanout all possible members
-    if(selector_fanout_enabled){
-      BMLOG_DEBUG_PKT(pkt, "Selector fanout enabled, choosing member from group {} WIP", grp);
-      Group group;
-      MatchErrorCode rc = get_group(grp, &group);
-      _BM_UNUSED(rc);
-      assert(rc == MatchErrorCode::SUCCESS);
-      
-      std::lock_guard<std::mutex> lock(FanoutPktVec::instance().fanout_pkt_vec_mutex);
-      for(auto m:group.mbr_handles){
-        if(m == mbr){
-          continue;
-        }
-        // TODO(Hao): apply_action in match_tables has a full procedure,
-        //   need to make sure that directly applying the func does not
-        //   cause any issues
-        //Things to consider:
-        // 1. set the entry index
-        // 2. set meters
-        // 3. set counters
-        // 4. incorporate with the debugger?
-        const ActionEntry &action = action_entries[m];
-        Packet* rep_pkt = pkt.clone_with_phv_and_registers_ptr().release();
-        action.action_fn(rep_pkt);
-        BMLOG_DEBUG_PKT(*rep_pkt, "Action {} applied to fanout packet",
-                        action);
-        FanoutPktVec::instance().add_fanout_pkts_w_act_id(rep_pkt,
-                                                          action.action_fn.get_action_id());
-      }
-    }
+    BMLOG_DEBUG_PKT(pkt, "Choosing member {} from group {}", mbr, grp);
   }
   assert(is_valid_mbr(mbr));
 
   return action_entries[mbr];
+}
+
+
+const std::vector<const ActionEntry*>
+ActionProfile::get_all_entries_from_grp(const IndirectIndex &index) const {
+  assert(index.is_grp() && with_selection);
+  grp_hdl_t grp = index.get_grp();
+
+  assert(is_valid_grp(grp));
+  Group group;
+  MatchErrorCode rc = get_group(grp, &group);
+  _BM_UNUSED(rc);
+  assert(rc == MatchErrorCode::SUCCESS);
+  for(auto m : group.mbr_handles){
+    assert(is_valid_mbr(m));
+  }
+
+  std::vector<const ActionEntry*> entries;
+  entries.reserve(group.mbr_handles.size());
+  for (auto m : group.mbr_handles) {
+    assert(is_valid_mbr(m));
+    entries.push_back(&action_entries[m]);
+  }
+  return entries;
 }
 
 bool

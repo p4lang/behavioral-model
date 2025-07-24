@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef BM_BM_SIM_FANOUT_PKT_VEC_H_
-#define BM_BM_SIM_FANOUT_PKT_VEC_H_
+#ifndef BM_BM_SIM_FANOUT_PKT_MGR_H_
+#define BM_BM_SIM_FANOUT_PKT_MGR_H_
 
 #include "logger.h"
 #include "packet.h"
@@ -21,24 +21,24 @@
 #include <vector>
 
 namespace bm {
-class MatchTableAbstract;
-// TODO(Hao): should this be per ingress thread or just global?
-class FanoutPktVec {
-public:
-    FanoutPktVec(const FanoutPktVec&) = delete;
-    FanoutPktVec& operator=(const FanoutPktVec&) = delete;
+class MatchTableIndirect;
 
-    static FanoutPktVec& instance() {
-        static FanoutPktVec instance_;
+// TODO(Hao): should this be per ingress thread or just global?
+class FanoutPktMgr {
+public:
+    using EntryVec = const std::vector<const ActionEntry*>;
+
+
+    FanoutPktMgr(const FanoutPktMgr&) = delete;
+    FanoutPktMgr& operator=(const FanoutPktMgr&) = delete;
+    static FanoutPktMgr& instance() {
+        static FanoutPktMgr instance_;
         return instance_;
     }
 
-    void set_next_nodes(const MatchTableAbstract *match_table, bool hit);
-    inline void add_fanout_pkts_w_act_id(Packet *pkt, p4object_id_t act_id) {
-        fanout_pkts_w_act_id.emplace_back(pkt, act_id);
-    }
+    void process_fanout(const Packet &pkt, EntryVec &entries, const MatchTableIndirect *match_table, bool hit);
 
-    std::mutex fanout_pkt_vec_mutex;
+    std::mutex fanout_pkt_mutex;
     // Fanout pkts will first be added to fanout_pkts
     // in order to get the corresponding next table node.
     // After the next_node is set, the pkt will be added to fanout_pkts
@@ -47,12 +47,10 @@ public:
 
 
 private:
-    FanoutPktVec() = default;
-
-    std::vector<std::pair<Packet *, p4object_id_t>> fanout_pkts_w_act_id;
+    FanoutPktMgr() = default;
 
 };
 
 } // namespace bm
 
-#endif  // BM_BM_SIM_FANOUT_PKT_VEC_H_
+#endif  // BM_BM_SIM_FANOUT_PKT_MGR_H_

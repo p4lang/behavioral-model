@@ -39,7 +39,7 @@
 #include "lookup_structures.h"
 #include "action_entry.h"
 #include "action_profile.h"
-#include "fanout_pkt_vec.h"
+#include "fanout_pkt_mgr.h"
 
 namespace bm {
 
@@ -53,7 +53,6 @@ enum class MatchTableType {
 class MatchTableAbstract : public NamedP4Object {
  public:
   friend class handle_iterator;
-  friend class FanoutPktVec;
 
   using counter_value_t = Counter::counter_value_t;
 
@@ -387,6 +386,7 @@ class MatchTable : public MatchTableAbstract {
 
 class MatchTableIndirect : public MatchTableAbstract {
  public:
+  friend class FanoutPktMgr;
   using mbr_hdl_t = ActionProfile::mbr_hdl_t;
 
   using IndirectIndex = ActionProfile::IndirectIndex;

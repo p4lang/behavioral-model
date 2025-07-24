@@ -634,15 +634,15 @@ SimpleSwitch::ingress_thread() {
 
     // SELECTOR_FANOUT
     {
-      std::lock_guard<std::mutex> lock(FanoutPktVec::instance().fanout_pkt_vec_mutex);
-      for(auto pkt: FanoutPktVec::instance().fanout_pkts){
+      std::lock_guard<std::mutex> lock(FanoutPktMgr::instance().fanout_pkt_mutex);
+      for(auto pkt: FanoutPktMgr::instance().fanout_pkts){
         // TODO(Hao): add a higher priority in queue impl
         // currently sharing priority with resubmit and recirculate
         input_buffer->push_front(InputBuffer::PacketType::SELECTOR_FANOUT, 
           std::unique_ptr<bm::Packet>(pkt));
         BMLOG_DEBUG_PKT(*pkt, "SELECTOR_FANOUT packet pushed to ingress_buffer");
       }
-      FanoutPktVec::instance().fanout_pkts.clear();
+      FanoutPktMgr::instance().fanout_pkts.clear();
     }
 
     // MULTICAST

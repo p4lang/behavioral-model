@@ -716,13 +716,23 @@ MatchTableIndirect::lookup(const Packet &pkt,
   }
 
   const auto &entry = action_profile->lookup(pkt, index);
+
+  if(action_profile->is_selector_fanout_enabled() && index.is_grp()){
+    auto entries = action_profile->get_all_entries_from_grp(index);
+    // Not to replicate for the actually selected entry
+    auto it = std::find(entries.begin(), entries.end(), &entry);
+    if (it != entries.end()) {
+      entries.erase(it);
+    }
+    FanoutPktMgr::instance().process_fanout(pkt, entries, this, *hit);
+  }
+
   // Unfortunately this has to be done at this stage and cannot be done when
   // inserting a member because for 2 match tables sharing the same action
   // profile (and therefore the same members), the next node mapping can vary
   *next_node = (*hit) ?
       get_next_node(entry.action_fn.get_action_id()) :
       get_next_node_default(entry.action_fn.get_action_id());
-  FanoutPktVec::instance().set_next_nodes(this,*hit);
   return entry;
 }
 

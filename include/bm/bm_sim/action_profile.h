@@ -115,7 +115,7 @@ class ActionProfile : public NamedP4Object {
   };
 
   ActionProfile(const std::string &name, p4object_id_t id, bool with_selection);
-
+  
   bool has_selection() const;
 
   void set_hash(std::unique_ptr<Calculation> h) {
@@ -293,8 +293,14 @@ class ActionProfile : public NamedP4Object {
 
   bool group_is_empty(grp_hdl_t grp) const;
 
+  bool is_selector_fanout_enabled() const {
+    return selector_fanout_enabled;
+  }
+
   const ActionEntry &lookup(const Packet &pkt,
                             const IndirectIndex &index) const;
+
+  const std::vector<const ActionEntry*> get_all_entries_from_grp(const IndirectIndex &index) const;
 
  private:
   mutable boost::shared_mutex t_mutex{};
