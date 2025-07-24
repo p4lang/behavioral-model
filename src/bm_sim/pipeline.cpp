@@ -54,20 +54,13 @@ Pipeline::apply(Packet *pkt) {
   BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': end", get_name());
 }
 
-//  Should snapshot some metadata/reg states before calling this
-void Pipeline::apply_continued(Packet *pkt) {
-  const ControlFlowNode *cont_node = pkt->get_next_node();
-  // pipeline_start is used for monitoring and debugging purposes, we can have ours as well
-  // but should change this anyways to differentiate between the two applies
-  BMELOG(pipeline_start, *pkt, *this);
-  // TODO(antonin)
-  // this is temporary while we experiment with the debugger
-  DEBUGGER_NOTIFY_CTR(
-      Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
-      DBG_CTR_CONTROL | get_id());
-  BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': continue from node '{}'",
-                  get_name(), cont_node? cont_node->get_name() : "None");
-  const ControlFlowNode *node = cont_node;
+// TODO(Hao):
+//  Snapshot of metadata/reg states before calling this
+//  Support for debugger notify and event logging
+void Pipeline::apply_from_next_node(Packet *pkt) {
+  const ControlFlowNode *node = pkt->get_next_node();
+  BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': packet fanout from node '{}'",
+                  get_name(), node? node->get_name() : "None");
   while (node) {
     if (pkt->is_marked_for_exit()) {
       BMLOG_DEBUG_PKT(*pkt, "Packet is marked for exit, interrupting pipeline");
@@ -75,13 +68,8 @@ void Pipeline::apply_continued(Packet *pkt) {
     }
     node = (*node)(pkt);
   }
-  // same
-  BMELOG(pipeline_done, *pkt, *this);
-  DEBUGGER_NOTIFY_CTR(
-      Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
-      DBG_CTR_EXIT(DBG_CTR_CONTROL) | get_id());
   pkt->reset_next_node();
-  BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': continue end", get_name());
+  BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': fanout end", get_name());
 }
 
 }  // namespace bm

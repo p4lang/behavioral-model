@@ -515,7 +515,7 @@ SimpleSwitch::ingress_thread() {
     // Check if the packet has an optional continue node
     // TODO(Hao): update the doc/simple_switch.md
     if(packet->has_next_node()){
-      ingress_mau->apply_continued(packet.get());
+      ingress_mau->apply_from_next_node(packet.get());
     }
     else{
       Parser *parser = this->get_parser("parser");

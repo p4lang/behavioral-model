@@ -40,12 +40,12 @@ class Pipeline : public NamedP4Object {
     : NamedP4Object(name, id), first_node(first_node) {}
 
   //! Sends the \p pkt through the correct match-action tables and
-  //! condiitons. Each step is determined based on the result of the previous
+  //! conditions. Each step is determined based on the result of the previous
   //! step (table lookup or condition evaluation), according to the P4 control
   //! flow graph.
   void apply(Packet *pkt);
-  // Start from continue_node instead of first_node
-  void apply_continued(Packet *pkt);
+  // Start from next_node instead of first_node
+  void apply_from_next_node(Packet *pkt);
 
   //! Deleted copy constructor
   Pipeline(const Pipeline &other) = delete;

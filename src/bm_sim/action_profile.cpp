@@ -189,6 +189,8 @@ ActionProfile::lookup(const Packet &pkt, const IndirectIndex &index) const {
       MatchErrorCode rc = get_group(grp, &group);
       _BM_UNUSED(rc);
       assert(rc == MatchErrorCode::SUCCESS);
+      
+      std::lock_guard<std::mutex> lock(FanoutPktVec::instance().fanout_pkt_vec_mutex);
       for(auto m:group.mbr_handles){
         if(m == mbr){
           continue;
