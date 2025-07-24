@@ -37,6 +37,7 @@ event_logger.cpp \
 expressions.cpp \
 extern.cpp \
 extract.h \
+fanout_pkt_vec.cpp \
 fields.cpp \
 headers.cpp \
 header_unions.cpp \
@@ -60,7 +61,6 @@ pcap_file.cpp \
 pipeline.cpp \
 periodic_task.cpp \
 port_monitor.cpp \
-replicated_pkt_vec.cpp \
 phv.cpp \
 phv_source.cpp \
 stateful.cpp \

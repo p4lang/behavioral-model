@@ -28,6 +28,7 @@ add_library(bmsim OBJECT
   event_logger.cpp
   expressions.cpp
   extern.cpp
+  fanout_pkt_vec.cpp
   fields.cpp
   headers.cpp
   header_unions.cpp
@@ -51,7 +52,6 @@ add_library(bmsim OBJECT
   phv_source.cpp
   pipeline.cpp
   port_monitor.cpp
-  replicated_pkt_vec.cpp
   simple_pre.cpp
   simple_pre_lag.cpp
   source_info.cpp

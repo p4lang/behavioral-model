@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef BM_BM_SIM_REPLICATED_PKT_VEC_H_
-#define BM_BM_SIM_REPLICATED_PKT_VEC_H_
+#ifndef BM_BM_SIM_FANOUT_PKT_VEC_H_
+#define BM_BM_SIM_FANOUT_PKT_VEC_H_
 
 #include "logger.h"
 #include "packet.h"
@@ -23,30 +23,36 @@
 namespace bm {
 class MatchTableAbstract;
 // TODO(Hao): should this be per ingress thread or just global?
-class ReplicatedPktVec {
+class FanoutPktVec {
 public:
-    ReplicatedPktVec(const ReplicatedPktVec&) = delete;
-    ReplicatedPktVec& operator=(const ReplicatedPktVec&) = delete;
+    FanoutPktVec(const FanoutPktVec&) = delete;
+    FanoutPktVec& operator=(const FanoutPktVec&) = delete;
 
-    static ReplicatedPktVec& instance() {
-        static ReplicatedPktVec instance_;
+    static FanoutPktVec& instance() {
+        static FanoutPktVec instance_;
         return instance_;
     }
 
     void set_next_nodes(const MatchTableAbstract *match_table, bool hit);
-    // TODO(Hao): deduplicate packets replciated
+    inline void add_fanout_pkts_w_act_id(Packet *pkt, p4object_id_t act_id) {
+        fanout_pkts_w_act_id.emplace_back(pkt, act_id);
+    }
 
-public:
-    // Replicated pkts will first be added to replicated_pkts
+    std::mutex fanout_pkt_vec_mutex;
+    // Fanout pkts will first be added to fanout_pkts
     // in order to get the corresponding next table node.
-    // After the cont_node is set, the pkt will be added to replicated_pkts
-    std::vector<Packet *> replicated_pkts;
-    std::vector<std::pair<Packet *, p4object_id_t>> replicated_pkts_w_act_id;
+    // After the next_node is set, the pkt will be added to fanout_pkts
+    std::vector<Packet *> fanout_pkts;
+    // TODO(Hao): deduplicate packets fanout, optional
+
 
 private:
-    ReplicatedPktVec() = default;
+    FanoutPktVec() = default;
+
+    std::vector<std::pair<Packet *, p4object_id_t>> fanout_pkts_w_act_id;
+
 };
 
 } // namespace bm
 
-#endif  // BM_BM_SIM_REPLICATED_PKT_VEC_H_
+#endif  // BM_BM_SIM_FANOUT_PKT_VEC_H_

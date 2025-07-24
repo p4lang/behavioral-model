@@ -222,18 +222,18 @@ Packet::clone_no_phv_ptr() const {
   return clone_choose_context_ptr(cxt_id);
 }
 
-bool Packet::has_continue_node() const {
-  return continue_node.has_value();
+bool Packet::has_next_node() const {
+  return next_node.has_value();
 }
-const ControlFlowNode *Packet::get_continue_node() const {
-  return continue_node.value_or(nullptr);
+const ControlFlowNode *Packet::get_next_node() const {
+  return next_node.value_or(nullptr);
 }
-void Packet::set_continue_node(const ControlFlowNode *node) {
-  continue_node = node;
+void Packet::set_next_node(const ControlFlowNode *node) {
+  next_node = node;
 }
 
-void Packet::reset_continue_node() {
-  continue_node.reset();
+void Packet::reset_next_node() {
+  next_node.reset();
 }
 
 /* Cannot get away with defaults here, we need to swap the phvs, otherwise we

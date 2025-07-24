@@ -722,7 +722,7 @@ MatchTableIndirect::lookup(const Packet &pkt,
   *next_node = (*hit) ?
       get_next_node(entry.action_fn.get_action_id()) :
       get_next_node_default(entry.action_fn.get_action_id());
-  ReplicatedPktVec::instance().set_next_nodes(this,*hit);
+  FanoutPktVec::instance().set_next_nodes(this,*hit);
   return entry;
 }
 

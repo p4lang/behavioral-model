@@ -54,10 +54,9 @@ Pipeline::apply(Packet *pkt) {
   BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': end", get_name());
 }
 
-// Hao: placeholder for path permutation, just seems easier to have another apply here
 //  Should snapshot some metadata/reg states before calling this
 void Pipeline::apply_continued(Packet *pkt) {
-  const ControlFlowNode *cont_node = pkt->get_continue_node();
+  const ControlFlowNode *cont_node = pkt->get_next_node();
   // pipeline_start is used for monitoring and debugging purposes, we can have ours as well
   // but should change this anyways to differentiate between the two applies
   BMELOG(pipeline_start, *pkt, *this);
@@ -81,7 +80,7 @@ void Pipeline::apply_continued(Packet *pkt) {
   DEBUGGER_NOTIFY_CTR(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
       DBG_CTR_EXIT(DBG_CTR_CONTROL) | get_id());
-  pkt->reset_continue_node();
+  pkt->reset_next_node();
   BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': continue end", get_name());
 }
 

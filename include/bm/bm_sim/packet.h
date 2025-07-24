@@ -229,9 +229,7 @@ class Packet final {
   const PHV *get_phv() const { return phv.get(); }
 
   //! Write to general purpose register at index \p idx
-  void set_register(size_t idx, uint64_t v) { 
-    printf("Setting register %zu to %lu\n", idx, v);
-    registers.at(idx) = v; }
+  void set_register(size_t idx, uint64_t v) { registers.at(idx) = v; }
   //! Read general purpose register at index \p idx
   uint64_t get_register(size_t idx) { return registers.at(idx); }
 
@@ -324,14 +322,15 @@ class Packet final {
   //! @copydoc clone_choose_context
   std::unique_ptr<Packet> clone_choose_context_ptr(cxt_id_t new_cxt) const;
 
-  // Hao: pkt fanout stuff:
-  bool has_continue_node() const;
-  //! Get the continue node, if it exists
-  const ControlFlowNode *get_continue_node() const;
-  //! Set the continue node, which is used to continue the packet processing
-  void set_continue_node(const ControlFlowNode *node);
-  //! Reset the continue node
-  void reset_continue_node();
+  // Packet fanout related methods
+  //! Returns true if the packet has a next node set
+  bool has_next_node() const;
+  //! Get the next node, if it exists
+  const ControlFlowNode *get_next_node() const;
+  //! Set the next node, which is used to next the packet processing
+  void set_next_node(const ControlFlowNode *node);
+  //! Reset the next node
+  void reset_next_node();
 
 
   //! Deleted copy constructor
@@ -404,7 +403,7 @@ class Packet final {
 
   bool checksum_error{false};
 
-  std::optional<const ControlFlowNode *> continue_node{std::nullopt};
+  std::optional<const ControlFlowNode *> next_node{std::nullopt};
  private:
   static CopyIdGenerator *copy_id_gen;
 };

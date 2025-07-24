@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-#include <bm/bm_sim/replicated_pkt_vec.h>
+#include <bm/bm_sim/fanout_pkt_vec.h>
 
 namespace bm {
 
 void 
-ReplicatedPktVec::set_next_nodes(const MatchTableAbstract *match_table, bool hit) {
-    for (auto &pkt_act_id : replicated_pkts_w_act_id) {
+FanoutPktVec::set_next_nodes(const MatchTableAbstract *match_table, bool hit) {
+    for (auto &pkt_act_id : fanout_pkts_w_act_id) {
         auto pkt = pkt_act_id.first;
         auto act_id = pkt_act_id.second;
         const ControlFlowNode *next_node = hit ?
@@ -30,9 +30,9 @@ ReplicatedPktVec::set_next_nodes(const MatchTableAbstract *match_table, bool hit
         }else{
             BMLOG_DEBUG_PKT(*pkt, "Next node for action id {}: {}", act_id, next_node->get_name());
         }
-        pkt->set_continue_node(next_node);
-        replicated_pkts.push_back(pkt);
+        pkt->set_next_node(next_node);
+        fanout_pkts.push_back(pkt);
     }
-    replicated_pkts_w_act_id.clear();
+    fanout_pkts_w_act_id.clear();
 }
 }

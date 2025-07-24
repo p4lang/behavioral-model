@@ -263,7 +263,6 @@ class ActionProfile : public NamedP4Object {
 
  private:
   mbr_hdl_t choose_from_group(grp_hdl_t grp, const Packet &pkt) const;
-  std::vector<ActionProfile::mbr_hdl_t> get_all_mbrs_from_group(grp_hdl_t grp) const;
 
   MatchErrorCode get_member_(mbr_hdl_t handle, Member *member) const;
 

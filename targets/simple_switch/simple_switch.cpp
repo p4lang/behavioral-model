@@ -128,7 +128,7 @@ class SimpleSwitch::InputBuffer {
     NORMAL,
     RESUBMIT,
     RECIRCULATE,
-    PERMUTATE,
+    SELECTOR_FANOUT,
     SENTINEL  // signal for the ingress thread to terminate
   };
 
@@ -142,7 +142,7 @@ class SimpleSwitch::InputBuffer {
                           std::move(item), true);
       case PacketType::RESUBMIT:
       case PacketType::RECIRCULATE:
-      case PacketType::PERMUTATE: // TODO(Hao): PERMUTATE should be even higher priority
+      case PacketType::SELECTOR_FANOUT:
         return push_front(&queue_hi, capacity_hi, &cvar_can_push_hi,
                           std::move(item), false);
       case PacketType::SENTINEL:
@@ -157,7 +157,7 @@ class SimpleSwitch::InputBuffer {
     Lock lock(mutex);
     cvar_can_pop.wait(
         lock, [this] { return (queue_hi.size() + queue_lo.size()) > 0; });
-    // give higher priority to resubmit/recirculate queue
+    // give higher priority to resubmit/recirculate/selector-fanout queue
     if (queue_hi.size() > 0) {
       *pItem = std::move(queue_hi.back());
       queue_hi.pop_back();
@@ -181,7 +181,10 @@ class SimpleSwitch::InputBuffer {
                  std::unique_ptr<Packet> &&item, bool blocking) {
     Lock lock(mutex);
     while (queue->size() == capacity) {
-      if (!blocking) return 0;
+      if (!blocking){
+        BMLOG_DEBUG_PKT(*item, "Input buffer is full, dropping packet");
+        return 0;
+      }
       cvar->wait(lock);
     }
     queue->push_front(std::move(item));
@@ -483,7 +486,7 @@ SimpleSwitch::ingress_thread() {
 
   while (1) {
     std::unique_ptr<Packet> packet;
-    // Hao: does a replicated pkt have to go through this?
+
     input_buffer->pop_back(&packet);
     if (packet == nullptr) break;
 
@@ -511,7 +514,7 @@ SimpleSwitch::ingress_thread() {
 
     // Check if the packet has an optional continue node
     // TODO(Hao): update the doc/simple_switch.md
-    if(packet->has_continue_node()){
+    if(packet->has_next_node()){
       ingress_mau->apply_continued(packet.get());
     }
     else{
@@ -629,16 +632,17 @@ SimpleSwitch::ingress_thread() {
       continue;
     }
 
-    //GSOC MODS
+    // SELECTOR_FANOUT
     {
-      for(auto pkt: ReplicatedPktVec::instance().replicated_pkts){
+      std::lock_guard<std::mutex> lock(FanoutPktVec::instance().fanout_pkt_vec_mutex);
+      for(auto pkt: FanoutPktVec::instance().fanout_pkts){
         // TODO(Hao): add a higher priority in queue impl
         // currently sharing priority with resubmit and recirculate
-        input_buffer->push_front(InputBuffer::PacketType::PERMUTATE, 
+        input_buffer->push_front(InputBuffer::PacketType::SELECTOR_FANOUT, 
           std::unique_ptr<bm::Packet>(pkt));
-        BMLOG_DEBUG_PKT(*pkt, "Permutated/Replicated packet pushed to ingress_buffer");
+        BMLOG_DEBUG_PKT(*pkt, "SELECTOR_FANOUT packet pushed to ingress_buffer");
       }
-      ReplicatedPktVec::instance().replicated_pkts.clear();
+      FanoutPktVec::instance().fanout_pkts.clear();
     }
 
     // MULTICAST
