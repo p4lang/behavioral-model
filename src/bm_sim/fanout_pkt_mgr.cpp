@@ -17,6 +17,15 @@
 
 namespace bm {
 
+std::vector<Packet *>& FanoutPktMgr::get_fanout_pkts(std::thread::id thread_id) {
+    BMLOG_DEBUG("Getting fanout packets for thread {}", thread_id);
+    auto it = fanout_vec_map.find(thread_id);
+    if (it == fanout_vec_map.end()) {
+        BMLOG_ERROR("No fanout vector registered for thread {}", thread_id);
+        throw std::runtime_error("Fanout vector not found for thread");
+    }
+    return it->second;
+}
 void FanoutPktMgr::process_fanout(const Packet &pkt, EntryVec &entries, const MatchTableIndirect *match_table, bool hit) {
     std::vector<bm::Packet *> replica_pkts;
     replica_pkts.reserve(entries.size());
@@ -31,6 +40,9 @@ void FanoutPktMgr::process_fanout(const Packet &pkt, EntryVec &entries, const Ma
         // 3. set counters
         // 4. incorporate with the debugger?
         Packet* rep_pkt = pkt.clone_with_phv_and_registers_ptr().release();
+        // why egress is not copied directly?
+        rep_pkt->set_egress_port(pkt.get_egress_port());
+
         entry->action_fn(rep_pkt);
         BMLOG_DEBUG_PKT(*rep_pkt, "Action {} applied to fanout packet",
                         *entry);
@@ -47,10 +59,22 @@ void FanoutPktMgr::process_fanout(const Packet &pkt, EntryVec &entries, const Ma
         rep_pkt->set_next_node(next_node);
         replica_pkts.push_back(rep_pkt);
     }
-    
+
+    // Hao: remove the lock if can make sure threads access exclusive vecs
     std::lock_guard<std::mutex> lock(fanout_pkt_mutex);
+    BMLOG_DEBUG("Processing fanout for thread {}", std::this_thread::get_id());
+    auto cur_vec_it = fanout_vec_map.find(std::this_thread::get_id());
+    if (cur_vec_it == fanout_vec_map.end()) {
+        BMLOG_ERROR("No fanout vector registered for thread {}", std::this_thread::get_id());
+        return;
+    }
+    auto &fanout_pkts = cur_vec_it->second;
     for (auto rep_pkt : replica_pkts) {
         fanout_pkts.push_back(rep_pkt);
     }
 }
+
+
+
+
 }

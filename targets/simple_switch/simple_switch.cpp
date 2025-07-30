@@ -182,7 +182,7 @@ class SimpleSwitch::InputBuffer {
     Lock lock(mutex);
     while (queue->size() == capacity) {
       if (!blocking){
-        BMLOG_DEBUG_PKT(*item, "Input buffer is full, dropping packet");
+        BMLOG_WARN_PKT(*item, "Input buffer is full, dropping packet");
         return 0;
       }
       cvar->wait(lock);
@@ -279,9 +279,15 @@ void
 SimpleSwitch::start_and_return_() {
   check_queueing_metadata();
 
-  threads_.push_back(std::thread(&SimpleSwitch::ingress_thread, this));
+  auto ingress_thread = std::thread(&SimpleSwitch::ingress_thread, this);
+  FanoutPktMgr::instance().register_thread(
+      ingress_thread.get_id());
+  threads_.push_back(std::move(ingress_thread));
   for (size_t i = 0; i < nb_egress_threads; i++) {
-    threads_.push_back(std::thread(&SimpleSwitch::egress_thread, this, i));
+    auto egress_thread = std::thread(&SimpleSwitch::egress_thread, this, i);
+    FanoutPktMgr::instance().register_thread(
+        egress_thread.get_id());
+    threads_.push_back(std::move(egress_thread));
   }
   threads_.push_back(std::thread(&SimpleSwitch::transmit_thread, this));
 }
@@ -484,6 +490,7 @@ void
 SimpleSwitch::ingress_thread() {
   PHV *phv;
 
+
   while (1) {
     std::unique_ptr<Packet> packet;
 
@@ -519,8 +526,7 @@ SimpleSwitch::ingress_thread() {
     // TODO(Hao): update the doc/simple_switch.md
     if(packet->has_next_node()){
       ingress_mau->apply_from_next_node(packet.get());
-    }
-    else{
+    } else {
       parser->parse(packet.get());
       if (phv->has_field("standard_metadata.parser_error")) {
         phv->get_field("standard_metadata.parser_error").set(
@@ -533,6 +539,18 @@ SimpleSwitch::ingress_thread() {
       }
 
       ingress_mau->apply(packet.get());
+    }
+
+    // SELECTOR_FANOUT
+    {
+      std::lock_guard<std::mutex> lock(FanoutPktMgr::instance().fanout_pkt_mutex);
+      auto &fanout_pkts = FanoutPktMgr::instance().get_fanout_pkts(std::this_thread::get_id());
+      for(auto pkt: fanout_pkts){
+        input_buffer->push_front(InputBuffer::PacketType::SELECTOR_FANOUT, 
+          std::unique_ptr<bm::Packet>(pkt));
+        BMLOG_DEBUG_PKT(*pkt, "SELECTOR_FANOUT packet pushed to ingress_buffer");
+      }
+      fanout_pkts.clear();
     }
 
     packet->reset_exit();
@@ -633,17 +651,6 @@ SimpleSwitch::ingress_thread() {
       continue;
     }
 
-    // SELECTOR_FANOUT
-    {
-      std::lock_guard<std::mutex> lock(FanoutPktMgr::instance().fanout_pkt_mutex);
-      for(auto pkt: FanoutPktMgr::instance().fanout_pkts){
-        input_buffer->push_front(InputBuffer::PacketType::SELECTOR_FANOUT, 
-          std::unique_ptr<bm::Packet>(pkt));
-        BMLOG_DEBUG_PKT(*pkt, "SELECTOR_FANOUT packet pushed to ingress_buffer");
-      }
-      FanoutPktMgr::instance().fanout_pkts.clear();
-    }
-
     // MULTICAST
     if (mgid != 0) {
       BMLOG_DEBUG_PKT(*packet, "Multicast requested for packet");
@@ -686,36 +693,54 @@ SimpleSwitch::egress_thread(size_t worker_id) {
     Pipeline *egress_mau = this->get_pipeline("egress");
 
     phv = packet->get_phv();
-
-    if (phv->has_field("intrinsic_metadata.egress_global_timestamp")) {
-      phv->get_field("intrinsic_metadata.egress_global_timestamp")
-          .set(get_ts().count());
-    }
-
-    if (with_queueing_metadata) {
-      auto enq_timestamp =
-          phv->get_field("queueing_metadata.enq_timestamp").get<ts_res::rep>();
-      phv->get_field("queueing_metadata.deq_timedelta").set(
-          get_ts().count() - enq_timestamp);
-      phv->get_field("queueing_metadata.deq_qdepth").set(
-          egress_buffers.size(port, priority));
-      if (phv->has_field("queueing_metadata.qid")) {
-        auto &qid_f = phv->get_field("queueing_metadata.qid");
-        qid_f.set(priority);
-      }
-    }
-
-    phv->get_field("standard_metadata.egress_port").set(port);
-
+    // TODO(Hao): why egress_spec is cleared when passed to egress?
+    //  should bypass the metadata setting here for the replicated pkts
     Field &f_egress_spec = phv->get_field("standard_metadata.egress_spec");
-    // When egress_spec == drop_port the packet will be dropped, thus
-    // here we initialize egress_spec to a value different from drop_port.
-    f_egress_spec.set(drop_port + 1);
+    
+    if(packet->has_next_node()){
+      egress_mau->apply_from_next_node(packet.get());
+    } else {     
+      if (phv->has_field("intrinsic_metadata.egress_global_timestamp")) {
+        phv->get_field("intrinsic_metadata.egress_global_timestamp")
+            .set(get_ts().count());
+      }
 
-    phv->get_field("standard_metadata.packet_length").set(
-        packet->get_register(RegisterAccess::PACKET_LENGTH_REG_IDX));
+      if (with_queueing_metadata) {
+        auto enq_timestamp =
+            phv->get_field("queueing_metadata.enq_timestamp").get<ts_res::rep>();
+        phv->get_field("queueing_metadata.deq_timedelta").set(
+            get_ts().count() - enq_timestamp);
+        phv->get_field("queueing_metadata.deq_qdepth").set(
+            egress_buffers.size(port, priority));
+        if (phv->has_field("queueing_metadata.qid")) {
+          auto &qid_f = phv->get_field("queueing_metadata.qid");
+          qid_f.set(priority);
+        }
+      }
 
-    egress_mau->apply(packet.get());
+      phv->get_field("standard_metadata.egress_port").set(port);
+
+      // When egress_spec == drop_port the packet will be dropped, thus
+      // here we initialize egress_spec to a value different from drop_port.
+      f_egress_spec.set(drop_port + 1);
+
+      phv->get_field("standard_metadata.packet_length").set(
+          packet->get_register(RegisterAccess::PACKET_LENGTH_REG_IDX));
+
+      egress_mau->apply(packet.get());
+    }
+
+    // SELECTOR_FANOUT
+    {
+      // rm lock if okay
+      std::lock_guard<std::mutex> lock(FanoutPktMgr::instance().fanout_pkt_mutex);
+      auto &fanout_pkts = FanoutPktMgr::instance().get_fanout_pkts(std::this_thread::get_id());
+      for(auto pkt: fanout_pkts){
+        egress_buffers.push_front(worker_id, 0, std::unique_ptr<Packet>(pkt));
+        BMLOG_DEBUG_PKT(*pkt, "SELECTOR_FANOUT packet pushed to egress_buffer");
+      }
+      fanout_pkts.clear();
+    }
 
     auto clone_mirror_session_id =
         RegisterAccess::get_clone_mirror_session_id(packet.get());

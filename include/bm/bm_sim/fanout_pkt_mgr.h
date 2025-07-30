@@ -36,10 +36,16 @@ public:
         return instance_;
     }
 
+    inline void register_thread(std::thread::id thread_id) {
+        BMLOG_DEBUG("Registering thread {}", thread_id);
+        fanout_vec_map.emplace(thread_id, std::vector<Packet *>());
+    }
+
+    std::vector<Packet *>& get_fanout_pkts(std::thread::id thread_id);
     void process_fanout(const Packet &pkt, EntryVec &entries, const MatchTableIndirect *match_table, bool hit);
 
     std::mutex fanout_pkt_mutex;
-    std::vector<Packet *> fanout_pkts;
+    std::unordered_map<std::thread::id, std::vector<Packet *>> fanout_vec_map; 
     // TODO(Hao): deduplicate packets fanout, optional
 
 
