@@ -17,18 +17,79 @@
 
 namespace bm {
 
-std::vector<Packet *>& FanoutPktMgr::get_fanout_pkts(std::thread::id thread_id) {
+
+void FanoutPktSelection::add_member_to_group(grp_hdl_t grp, mbr_hdl_t mbr) {
+  (void) grp;
+  (void) mbr;
+}
+
+void FanoutPktSelection::remove_member_from_group(grp_hdl_t grp, mbr_hdl_t mbr) {
+  (void) grp;
+  (void) mbr;
+}
+
+FanoutPktSelection::mbr_hdl_t FanoutPktSelection::get_from_hash(grp_hdl_t grp, hash_t h) const {
+  (void)h;
+  auto &ctx = FanoutPktMgr::instance().get_fanout_ctx();
+  auto *action_profile = ctx.action_profile;
+  if (!action_profile) {
+    BMLOG_ERROR("No action profile set for fanout packet selection");
+    throw std::runtime_error("No action profile set for fanout packet selection");
+  }
+
+  std::vector<mbr_hdl_t> mbrs = action_profile->get_all_mbrs_from_grp(grp);
+  mbr_hdl_t selected_mbr = mbrs.back();
+  mbrs.pop_back();
+  
+  auto entries = action_profile->get_entries_with_mbrs(mbrs);
+  BMLOG_DEBUG("Fanout Selected member {} from group {} with hash {} with number of entries {}", selected_mbr, grp, h, entries.size());
+  FanoutPktMgr::instance().replicate_for_entries(entries);
+  return selected_mbr;
+}
+
+
+std::vector<Packet *>& FanoutPktMgr::get_fanout_pkts() {
+    std::thread::id thread_id = std::this_thread::get_id();
     BMLOG_DEBUG("Getting fanout packets for thread {}", thread_id);
-    auto it = fanout_vec_map.find(thread_id);
-    if (it == fanout_vec_map.end()) {
+    auto it = fanout_ctx_map.find(thread_id);
+    if (it == fanout_ctx_map.end()) {
         BMLOG_ERROR("No fanout vector registered for thread {}", thread_id);
         throw std::runtime_error("Fanout vector not found for thread");
     }
+    return it->second.fanout_pkts;
+}
+
+FanoutCtx& FanoutPktMgr::get_fanout_ctx() {
+    std::thread::id thread_id = std::this_thread::get_id();
+    auto it = fanout_ctx_map.find(thread_id);
+    if (it == fanout_ctx_map.end()) {
+        BMLOG_ERROR("No fanout context registered for thread {}", thread_id);
+        throw std::runtime_error("Fanout context not found for thread");
+    }
     return it->second;
 }
-void FanoutPktMgr::process_fanout(const Packet &pkt, EntryVec &entries, const MatchTableIndirect *match_table, bool hit) {
+void FanoutPktMgr::set_ctx(MatchTableIndirect *table, const Packet &pkt, ActionProfile *action_profile, bool hit) {
+    auto &ctx = get_fanout_ctx();
+    ctx.cur_table = table;
+    ctx.cur_pkt = &pkt;
+    ctx.action_profile = action_profile;
+    ctx.hit = hit;
+}
+
+void FanoutPktMgr::reset_ctx() {
+    auto &ctx = get_fanout_ctx();
+    ctx.cur_table = nullptr;
+    ctx.cur_pkt = nullptr;
+    ctx.action_profile = nullptr;
+}
+
+void FanoutPktMgr::replicate_for_entries(const std::vector<const ActionEntry*> &entries) {
     std::vector<bm::Packet *> replica_pkts;
     replica_pkts.reserve(entries.size());
+    auto &ctx = get_fanout_ctx();
+    auto *match_table = ctx.cur_table;
+    const Packet &pkt = *ctx.cur_pkt;
+    bool hit = ctx.hit;
 
     for(auto entry : entries) {
         // TODO(Hao): apply_action in match_tables has a full procedure,
@@ -40,7 +101,7 @@ void FanoutPktMgr::process_fanout(const Packet &pkt, EntryVec &entries, const Ma
         // 3. set counters
         // 4. incorporate with the debugger?
         Packet* rep_pkt = pkt.clone_with_phv_and_registers_ptr().release();
-        // why egress is not copied directly?
+        // why egress is not copied directly? i have to set it here
         rep_pkt->set_egress_port(pkt.get_egress_port());
 
         entry->action_fn(rep_pkt);
@@ -60,15 +121,7 @@ void FanoutPktMgr::process_fanout(const Packet &pkt, EntryVec &entries, const Ma
         replica_pkts.push_back(rep_pkt);
     }
 
-    // Hao: remove the lock if can make sure threads access exclusive vecs
-    std::lock_guard<std::mutex> lock(fanout_pkt_mutex);
-    BMLOG_DEBUG("Processing fanout for thread {}", std::this_thread::get_id());
-    auto cur_vec_it = fanout_vec_map.find(std::this_thread::get_id());
-    if (cur_vec_it == fanout_vec_map.end()) {
-        BMLOG_ERROR("No fanout vector registered for thread {}", std::this_thread::get_id());
-        return;
-    }
-    auto &fanout_pkts = cur_vec_it->second;
+    auto &fanout_pkts = get_fanout_pkts();
     for (auto rep_pkt : replica_pkts) {
         fanout_pkts.push_back(rep_pkt);
     }

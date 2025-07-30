@@ -18,40 +18,78 @@
 #include "logger.h"
 #include "packet.h"
 #include "match_tables.h"
+#include "action_profile.h"
 #include <vector>
 
 namespace bm {
 class MatchTableIndirect;
+using bm::ActionProfile;
+using EntryVec = const std::vector<const ActionEntry*>;
+using SelectorIface = ActionProfile::GroupSelectionIface;
 
-// TODO(Hao): should this be per ingress thread or just global?
+struct FanoutCtx {
+  bool hit{false};
+  std::vector<Packet *> fanout_pkts;
+  const Packet * cur_pkt{nullptr};
+  ActionProfile *action_profile{nullptr};
+  MatchTableIndirect *cur_table{nullptr};
+};
+
+class FanoutPktSelection: public SelectorIface{
+  public:
+    using grp_hdl_t = ActionProfile::grp_hdl_t;
+    using mbr_hdl_t = ActionProfile::mbr_hdl_t;
+    using hash_t = ActionProfile::hash_t;
+    using MatchErrorCode = bm::MatchErrorCode;
+
+    FanoutPktSelection() = default;
+  
+    void add_member_to_group(grp_hdl_t grp, mbr_hdl_t mbr) override;
+  
+    void remove_member_from_group(grp_hdl_t grp, mbr_hdl_t mbr) override;
+  
+    mbr_hdl_t get_from_hash(grp_hdl_t grp, hash_t h) const override;
+  
+    void reset() override {}
+  
+  private:
+    std::unordered_map<grp_hdl_t, std::vector<mbr_hdl_t>> groups;
+};
+
 class FanoutPktMgr {
 public:
-    using EntryVec = const std::vector<const ActionEntry*>;
-
-
     FanoutPktMgr(const FanoutPktMgr&) = delete;
     FanoutPktMgr& operator=(const FanoutPktMgr&) = delete;
     static FanoutPktMgr& instance() {
-        static FanoutPktMgr instance_;
-        return instance_;
+      static FanoutPktMgr instance_;
+      return instance_;
     }
 
     inline void register_thread(std::thread::id thread_id) {
-        BMLOG_DEBUG("Registering thread {}", thread_id);
-        fanout_vec_map.emplace(thread_id, std::vector<Packet *>());
+      BMLOG_DEBUG("Registering thread {}", thread_id);
+      fanout_ctx_map.emplace(thread_id, FanoutCtx());
+    }
+    inline SelectorIface* get_grp_selector() {
+      return grp_selector;
     }
 
-    std::vector<Packet *>& get_fanout_pkts(std::thread::id thread_id);
-    void process_fanout(const Packet &pkt, EntryVec &entries, const MatchTableIndirect *match_table, bool hit);
+
+
+    std::vector<Packet *>& get_fanout_pkts();
+    FanoutCtx& get_fanout_ctx();
+    void set_ctx(MatchTableIndirect *table, const Packet &pkt, ActionProfile *action_profile, bool hit);
+    void reset_ctx();
+    void replicate_for_entries(const std::vector<const ActionEntry*> &entries);
 
     std::mutex fanout_pkt_mutex;
-    std::unordered_map<std::thread::id, std::vector<Packet *>> fanout_vec_map; 
     // TODO(Hao): deduplicate packets fanout, optional
 
 
 private:
     FanoutPktMgr() = default;
-
+    std::unordered_map<std::thread::id, FanoutCtx> fanout_ctx_map; 
+    FanoutPktSelection fanout_selection;
+    SelectorIface* grp_selector{&fanout_selection};
 };
 
 } // namespace bm

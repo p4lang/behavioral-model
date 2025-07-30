@@ -27,6 +27,7 @@
 #include <bm/bm_sim/switch.h>
 #include <bm/bm_sim/event_logger.h>
 #include <bm/bm_sim/simple_pre_lag.h>
+#include <bm/bm_sim/action_profile.h>
 #include <bm/bm_sim/fanout_pkt_mgr.h>
 
 #include <memory>
@@ -57,9 +58,9 @@ using bm::Pipeline;
 using bm::McSimplePreLAG;
 using bm::Field;
 using bm::FieldList;
+using bm::FanoutPktMgr;
 using bm::packet_id_t;
 using bm::p4object_id_t;
-using bm::FanoutPktMgr;
 
 class SimpleSwitch : public Switch {
  public:

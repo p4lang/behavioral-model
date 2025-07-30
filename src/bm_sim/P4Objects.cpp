@@ -23,6 +23,7 @@
 #include <bm/bm_sim/phv.h>
 #include <bm/bm_sim/actions.h>
 #include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/fanout_pkt_mgr.h>
 
 #include <iostream>
 #include <istream>
@@ -2512,7 +2513,6 @@ P4Objects::check_hash(const std::string &name) const {
   return nullptr;
 }
 
-// TODO(Hao): messy, so i think use pragma is better
 bool P4Objects::is_selector_fanout(const Json::Value &cfg_selector) const {
   return cfg_selector.isMember("algo") && // not to hardcode names, fix later
          cfg_selector["algo"].asString() == "selector_fanout";

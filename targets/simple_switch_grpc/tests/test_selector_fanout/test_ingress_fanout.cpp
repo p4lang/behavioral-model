@@ -560,16 +560,6 @@ TEST_F(SSGrpcFanoutTest_EgressSingleSelector, SingleGroup) {
 
   EXPECT_TRUE(send_and_receive("\xab",1,6,received_set).ok());
   EXPECT_TRUE(received_set == expected_set);
-  // print received packets
-  for (const auto &pkt : received_set) {
-    std::cout << "Received packet: " << std::endl
-              << "  Egress Port: " << pkt.eg_port << std::endl
-              << "  Header: " << pkt.in_ << " " 
-              << static_cast<int>(pkt.hash_val) << " "
-              << static_cast<int>(pkt.f1) << " "
-              << static_cast<int>(pkt.f2) << " "
-              << static_cast<int>(pkt.f3) << std::endl;
-  }
 }
 
 

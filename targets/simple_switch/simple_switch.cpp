@@ -24,6 +24,7 @@
 #include <bm/bm_sim/tables.h>
 #include <bm/bm_sim/logger.h>
 
+
 #include <unistd.h>
 
 #include <condition_variable>
@@ -544,7 +545,7 @@ SimpleSwitch::ingress_thread() {
     // SELECTOR_FANOUT
     {
       std::lock_guard<std::mutex> lock(FanoutPktMgr::instance().fanout_pkt_mutex);
-      auto &fanout_pkts = FanoutPktMgr::instance().get_fanout_pkts(std::this_thread::get_id());
+      auto &fanout_pkts = FanoutPktMgr::instance().get_fanout_pkts();
       for(auto pkt: fanout_pkts){
         input_buffer->push_front(InputBuffer::PacketType::SELECTOR_FANOUT, 
           std::unique_ptr<bm::Packet>(pkt));
@@ -734,7 +735,7 @@ SimpleSwitch::egress_thread(size_t worker_id) {
     {
       // rm lock if okay
       std::lock_guard<std::mutex> lock(FanoutPktMgr::instance().fanout_pkt_mutex);
-      auto &fanout_pkts = FanoutPktMgr::instance().get_fanout_pkts(std::this_thread::get_id());
+      auto &fanout_pkts = FanoutPktMgr::instance().get_fanout_pkts();
       for(auto pkt: fanout_pkts){
         egress_buffers.push_front(worker_id, 0, std::unique_ptr<Packet>(pkt));
         BMLOG_DEBUG_PKT(*pkt, "SELECTOR_FANOUT packet pushed to egress_buffer");

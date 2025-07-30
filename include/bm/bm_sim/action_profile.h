@@ -167,6 +167,9 @@ class ActionProfile : public NamedP4Object {
 
   void set_selector_fanout();
 
+  std::vector<mbr_hdl_t> get_all_mbrs_from_grp(grp_hdl_t grp) const;
+  std::vector<const ActionEntry*> get_entries_with_mbrs(const std::vector<mbr_hdl_t> &mbrs) const;
+
  private:
   using ReadLock = boost::shared_lock<boost::shared_mutex>;
   using WriteLock = boost::unique_lock<boost::shared_mutex>;
@@ -299,8 +302,6 @@ class ActionProfile : public NamedP4Object {
 
   const ActionEntry &lookup(const Packet &pkt,
                             const IndirectIndex &index) const;
-
-  const std::vector<const ActionEntry*> get_all_entries_from_grp(const IndirectIndex &index) const;
 
  private:
   mutable boost::shared_mutex t_mutex{};
