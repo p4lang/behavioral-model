@@ -134,7 +134,6 @@ MatchTableAbstract::apply_action(Packet *pkt) {
       Debugger::FIELD_ACTION, action_entry.action_fn.get_action_id());
 
   BMLOG_DEBUG_PKT(*pkt, "Action entry is {}", action_entry);
-
   action_entry.action_fn(pkt);
 
   return next_node;
@@ -715,8 +714,11 @@ MatchTableIndirect::lookup(const Packet &pkt,
         pkt, "Lookup in table '{}' yielded empty group", get_name());
     return empty_action;
   }
-
+  // A bit hacky, in order to get the next_table for fanout
+  FanoutPktMgr::instance().set_ctx(this, pkt, action_profile, *hit);
   const auto &entry = action_profile->lookup(pkt, index);
+  FanoutPktMgr::instance().reset_ctx();
+
   // Unfortunately this has to be done at this stage and cannot be done when
   // inserting a member because for 2 match tables sharing the same action
   // profile (and therefore the same members), the next node mapping can vary
