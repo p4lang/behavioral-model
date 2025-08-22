@@ -1,4 +1,5 @@
 # Check for pcap_set_immediate_mode
+set(CMAKE_REQUIRED_LIBRARIES "pcap")
 include(CheckSymbolExists)
 check_symbol_exists(pcap_set_immediate_mode "pcap.h" HAVE_PCAP_SET_IMMEDIATE_MODE)
 
