@@ -27,6 +27,14 @@ target_include_directories(bmpi PRIVATE
 # FIXME: remove the redundant moves
 target_compile_options(bmpi PRIVATE "-Wno-error=redundant-move")
 
+if(WITH_TARGETS)
+  target_compile_definitions(bmpi PRIVATE WITH_SIMPLE_SWITCH)
+
+  target_include_directories(bmpi PRIVATE
+    ${CMAKE_SOURCE_DIR}/targets/simple_switch
+  )
+endif()
+
 install(TARGETS bmpi
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
