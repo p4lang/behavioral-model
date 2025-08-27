@@ -544,7 +544,6 @@ SimpleSwitch::ingress_thread() {
 
     // SELECTOR_FANOUT
     {
-      std::lock_guard<std::mutex> lock(FanoutPktMgr::instance().fanout_pkt_mutex);
       auto &fanout_pkts = FanoutPktMgr::instance().get_fanout_pkts();
       for(auto pkt: fanout_pkts){
         input_buffer->push_front(InputBuffer::PacketType::SELECTOR_FANOUT, 
@@ -733,8 +732,6 @@ SimpleSwitch::egress_thread(size_t worker_id) {
 
     // SELECTOR_FANOUT
     {
-      // rm lock if okay
-      std::lock_guard<std::mutex> lock(FanoutPktMgr::instance().fanout_pkt_mutex);
       auto &fanout_pkts = FanoutPktMgr::instance().get_fanout_pkts();
       for(auto pkt: fanout_pkts){
         egress_buffers.push_front(worker_id, 0, std::unique_ptr<Packet>(pkt));

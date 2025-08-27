@@ -14,6 +14,7 @@
  */
 
 #include <bm/bm_sim/fanout_pkt_mgr.h>
+#include <bm/bm_sim/event_logger.h>
 
 namespace bm {
 
@@ -51,6 +52,8 @@ FanoutPktSelection::mbr_hdl_t FanoutPktSelection::get_from_hash(grp_hdl_t grp, h
 std::vector<Packet *>& FanoutPktMgr::get_fanout_pkts() {
     std::thread::id thread_id = std::this_thread::get_id();
     BMLOG_DEBUG("Getting fanout packets for thread {}", thread_id);
+
+    std::lock_guard<std::mutex> lock(fanout_pkt_mutex);
     auto it = fanout_ctx_map.find(thread_id);
     if (it == fanout_ctx_map.end()) {
         BMLOG_ERROR("No fanout vector registered for thread {}", thread_id);
@@ -62,6 +65,8 @@ std::vector<Packet *>& FanoutPktMgr::get_fanout_pkts() {
 FanoutCtx& FanoutPktMgr::get_fanout_ctx() {
     std::thread::id thread_id = std::this_thread::get_id();
     auto it = fanout_ctx_map.find(thread_id);
+
+    std::lock_guard<std::mutex> lock(fanout_pkt_mutex);
     if (it == fanout_ctx_map.end()) {
         BMLOG_ERROR("No fanout context registered for thread {}", thread_id);
         throw std::runtime_error("Fanout context not found for thread");
@@ -84,13 +89,15 @@ void FanoutPktMgr::reset_ctx() {
 }
 
 void FanoutPktMgr::replicate_for_entries(const std::vector<const ActionEntry*> &entries) {
-    std::vector<bm::Packet *> replica_pkts;
-    replica_pkts.reserve(entries.size());
+    auto &fanout_pkts = get_fanout_pkts();
     auto &ctx = get_fanout_ctx();
     auto *match_table = ctx.cur_table;
     const Packet &pkt = *ctx.cur_pkt;
     bool hit = ctx.hit;
 
+    // for event logger
+    uint64_t parent_pkt_copy_id = pkt.get_copy_id();
+    uint64_t table_id = match_table->get_id();
     for(auto entry : entries) {
         // TODO(Hao): apply_action in match_tables has a full procedure,
         //   need to make sure that directly applying the func does not
@@ -118,13 +125,12 @@ void FanoutPktMgr::replicate_for_entries(const std::vector<const ActionEntry*> &
             BMLOG_DEBUG_PKT(*rep_pkt, "Next node for action id {}: {}", act_id, next_node->get_name());
         }
         rep_pkt->set_next_node(next_node);
-        replica_pkts.push_back(rep_pkt);
+        fanout_pkts.push_back(rep_pkt);
+
+        BMELOG(fanout_gen, *rep_pkt, table_id, parent_pkt_copy_id);
     }
 
-    auto &fanout_pkts = get_fanout_pkts();
-    for (auto rep_pkt : replica_pkts) {
-        fanout_pkts.push_back(rep_pkt);
-    }
+    reset_ctx();
 }
 
 

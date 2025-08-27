@@ -44,6 +44,7 @@ class FanoutPktSelection: public SelectorIface{
 
     FanoutPktSelection() = default;
   
+    // callbacks after member op, not actual member/group ops
     void add_member_to_group(grp_hdl_t grp, mbr_hdl_t mbr) override;
   
     void remove_member_from_group(grp_hdl_t grp, mbr_hdl_t mbr) override;

@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+#include <boost/stacktrace.hpp> // remove 
 namespace bm {
 
 void
@@ -551,6 +552,8 @@ ActionProfile::set_group_selector(
   WriteLock lock = lock_write();
   BMLOG_DEBUG("Setting group selector for action profile '{}'",
                 get_name());
+  // output stack trace, remove later
+  BMLOG_DEBUG("Stack trace: {}", boost::stacktrace::stacktrace());
   grp_selector_ = selector;
   grp_selector = grp_selector_.get();
 }
@@ -639,7 +642,8 @@ ActionProfile::ref_count_decrease(const IndirectIndex &index) {
 
 ActionProfile::mbr_hdl_t
 ActionProfile::choose_from_group(grp_hdl_t grp, const Packet &pkt) const {
-  // TODO(Hao): I dont know how to better set the selector, as PI reset to it own
+  // TODO(Hao): PI resets to it own grp_selector, might be a bug, so I just sets
+  //  here for now..
   if(selector_fanout_enabled) {
     return FanoutPktMgr::instance().get_grp_selector()->get_from_hash(grp, 0);
   }

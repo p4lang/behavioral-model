@@ -83,7 +83,8 @@ class MSG_TYPES:
      CHECKSUM_UPDATE,
      PIPELINE_START, PIPELINE_DONE,
      CONDITION_EVAL, TABLE_HIT, TABLE_MISS,
-     ACTION_EXECUTE) = list(range(15))
+     ACTION_EXECUTE,
+     FANOUT_GEN) = list(range(16))
     CONFIG_CHANGE = 999
 
     @staticmethod
@@ -104,6 +105,7 @@ class MSG_TYPES:
             MSG_TYPES.TABLE_HIT: TableHit,
             MSG_TYPES.TABLE_MISS: TableMiss,
             MSG_TYPES.ACTION_EXECUTE: ActionExecute,
+            MSG_TYPES.FANOUT_GEN: FanoutGen,
             MSG_TYPES.CONFIG_CHANGE: ConfigChange,
         }
         return classes[type_]
@@ -126,6 +128,7 @@ class MSG_TYPES:
             MSG_TYPES.TABLE_HIT: "TABLE_HIT",
             MSG_TYPES.TABLE_MISS: "TABLE_MISS",
             MSG_TYPES.ACTION_EXECUTE: "ACTION_EXECUTE",
+            MSG_TYPES.FANOUT_GEN: "FANOUT_GEN",
             MSG_TYPES.CONFIG_CHANGE: "CONFIG_CHANGE",
         }
         return strs[type_]
@@ -433,6 +436,24 @@ class ActionExecute(Msg):
             s += " (" + name + ")"
         return s
 
+class FanoutGen(Msg):
+    def __init__(self, msg):
+        super(FanoutGen, self).__init__(msg)
+        self.type_ = MSG_TYPES.FANOUT_GEN
+        self.type_str = MSG_TYPES.get_str(self.type_)
+        self.struct_ = struct.Struct("QQ")
+
+    def extract(self):
+        self.table_id, self.parent_packet_copy_id = super(FanoutGen, self).extract()
+
+    def __str__(self):
+        s = super(FanoutGen, self).__str__()
+        s += ", table_id: " + str(self.table_id)
+        name = name_lookup("table", self.table_id)
+        if name:
+            s += " (" + name + ")"
+        s += ", parent_packet_copy_id: " + str(self.parent_packet_copy_id)
+        return s
 
 class ConfigChange(Msg):
     def __init__(self, msg):
@@ -472,8 +493,9 @@ def recv_msgs(socket_addr, client):
 
         try:
             p = MSG_TYPES.get_msg_class(msg_type)(msg)
-        except:
+        except Exception as e:
             print("Unknown msg type", msg_type)
+            print("Error:", e)
             continue
         p.extract()
         print(p)

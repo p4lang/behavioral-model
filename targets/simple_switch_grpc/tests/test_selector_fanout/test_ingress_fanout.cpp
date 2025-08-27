@@ -452,7 +452,7 @@ class SSGrpcFanoutTest_TwoSelectors : public SSGrpcFanoutTest_FanoutBase {
 };
 
 TEST_F(SSGrpcFanoutTest_TwoSelectors, SingleGroup) {
-
+  // Round robin selector mode would not be able to handle this case
   std::vector<ActionInfo> actions_1 = {
       {action_id_1, "foo1", {{action_1_param_ids[0], 1},
                                {action_1_param_ids[1], 1}}},
@@ -466,7 +466,10 @@ TEST_F(SSGrpcFanoutTest_TwoSelectors, SingleGroup) {
       {action_id_1, "foo1", {{action_1_param_ids[0], 4},
                                {action_1_param_ids[1], 2}}},
       {action_id_2, "foo2", {{action_2_param_ids[0], 5},
-                               {action_2_param_ids[1], 3}}}
+                               {action_2_param_ids[1], 3}}},
+      {action_id_3, "foo3", {{action_3_param_ids[0], 6},
+                               {action_3_param_ids[1], 4}}}
+
   };
 
   EXPECT_TRUE(add_ap_table_entry(selector_table_id_1, "selector_tbl_1", "h.hdr.in_", "\xab", actions_1).ok());
@@ -474,19 +477,24 @@ TEST_F(SSGrpcFanoutTest_TwoSelectors, SingleGroup) {
 
   OutputPkt expected_1(2, "\xab\x00\x04\x00\x00");
   OutputPkt expected_2(3, "\xab\x00\x01\x05\x00");
+  OutputPkt expected_3(4, "\xab\x00\x01\x00\x06");
 
-  OutputPkt expected_3(2, "\xab\x00\x04\x02\x00");
-  OutputPkt expected_4(3, "\xab\x00\x00\x05\x00");
+  OutputPkt expected_4(2, "\xab\x00\x04\x02\x00");
+  OutputPkt expected_5(3, "\xab\x00\x00\x05\x00");
+  OutputPkt expected_6(4, "\xab\x00\x00\x02\x06");
 
-  OutputPkt expected_5(2, "\xab\x00\x04\x00\x03");
-  OutputPkt expected_6(3, "\xab\x00\x00\x05\x03");
+  OutputPkt expected_7(2, "\xab\x00\x04\x00\x03");
+  OutputPkt expected_8(3, "\xab\x00\x00\x05\x03");
+  OutputPkt expected_9(4, "\xab\x00\x00\x00\x06");
 
-  std::multiset<OutputPkt> expected_set = {expected_1, expected_2, expected_3, expected_4, expected_5, expected_6};
+  std::multiset<OutputPkt> expected_set = {expected_1, expected_2, expected_3, expected_4, expected_5, expected_6, expected_7, expected_8, expected_9};
   std::multiset<OutputPkt> received_set;
 
-  EXPECT_TRUE(send_and_receive("\xab",1,6,received_set).ok());
+  EXPECT_TRUE(send_and_receive("\xab",1,9,received_set).ok());
   EXPECT_TRUE(received_set == expected_set);
 }
+
+
 
 
 constexpr char egress_single_selector_json[] = TESTDATADIR "/egress_single_selector_test.json";
