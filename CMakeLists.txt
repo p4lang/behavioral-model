@@ -167,6 +167,17 @@ if(WITH_PI)
   endif()
 endif()
 
+# Check for dlopen
+check_include_file(dlfcn.h HAVE_DLFCN_H)
+if(HAVE_DLFCN_H)
+  include(CheckSymbolExists)
+  check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN)
+  message(STATUS "Found dlopen.  Enabling ENABLE_MODULES")
+  set(ENABLE_MODULES TRUE)
+else()
+  message(STATUS "Did not find dlopen")
+endif()
+
 if(ENABLE_MODULES)
   # Check for dlopen
   check_include_file(dlfcn.h HAVE_DLFCN_H)
