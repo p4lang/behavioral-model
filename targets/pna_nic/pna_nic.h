@@ -79,6 +79,7 @@ class PnaNic : public Switch {
 
  private:
   static packet_id_t packet_id;
+  static constexpr port_t PNA_PORT_RECIRCULATE = 0xfffffffa;
 
   enum PktInstanceType {
     FROM_NET_PORT,
