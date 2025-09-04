@@ -47,7 +47,8 @@ option(ENABLE_DEBUGGER "Enable bmv2 remote debugger" OFF)
 option(ENABLE_COVERAGE "Enable code coverage tracking" OFF)
 option(ENABLE_LOGGING_MACROS "Enable compile time debug and trace logging macros" ON)
 option(ENABLE_ELOGGER "Enable nanomsg event logger" ON)
-option(ENABLE_MODULES "Allow loading third-party modules at runtime" OFF)
+option(ENABLE_MODULES "Allow loading third-party modules at runtime" ON)
+option(REQUIRE_MODULES "Require support for loading third-party modules at runtime" OFF)
 option(ENABLE_UNDETERMINISTIC_TESTS "Run undeterministic tests (e.g. queueing) when running tests" ON)
 option(ENABLE_WERROR "Make all compiler warnings fatal" OFF)
 option(ENABLE_WP4_16_STACKS "Implement stacks strictly as per the P4_16 specification" ON)
@@ -167,15 +168,30 @@ if(WITH_PI)
   endif()
 endif()
 
+if(REQUIRE_MODULES AND NOT ENABLE_MODULES)
+  message(FATAL_ERROR
+    "Incompatible settings for ENABLE_MODULES (OFF) and REQUIRE_MODULES (ON): "
+    "REQUIRE_MODULES requires ENABLE_MODULES")
+endif()
+
 if(ENABLE_MODULES)
-  # Check for dlopen
+  # Check if dlopen is available
+  # Set ENABLE_MODULES to OFF if it's not available
   check_include_file(dlfcn.h HAVE_DLFCN_H)
   if(HAVE_DLFCN_H)
     include(CheckSymbolExists)
-    add_definitions(-DHAVE_DLOPEN -DENABLE_MODULES)
+    set(CMAKE_REQUIRED_LIBRARIES "dl")
     check_symbol_exists(dlopen "dlfcn.h" HAVE_DLOPEN)
-  else()
-    message(FATAL_ERROR "Cannot enable modules without dlfcn.h")
+    unset(CMAKE_REQUIRED_LIBRARIES)
+    if(HAVE_DLOPEN)
+      add_definitions(-DHAVE_DLOPEN -DENABLE_MODULES)
+    else()
+      set(ENABLE_MODULES OFF)
+    endif()
+  endif()
+
+  if(REQUIRE_MODULES AND NOT HAVE_DLOPEN)
+    message(FATAL_ERROR "Cannot enable modules without dlopen()")
   endif()
 endif()
 
