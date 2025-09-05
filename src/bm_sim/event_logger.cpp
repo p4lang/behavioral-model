@@ -40,6 +40,7 @@ enum EventType {
   PIPELINE_START, PIPELINE_DONE,
   CONDITION_EVAL, TABLE_HIT, TABLE_MISS,
   ACTION_EXECUTE,
+  FANOUT_GEN,
   CONFIG_CHANGE = 999
 };
 
@@ -51,6 +52,7 @@ struct msg_hdr_t {
   uint64_t id;
   uint64_t copy_id;
 } __attribute__((packed));
+
 
 namespace {
 
@@ -266,6 +268,24 @@ EventLogger::action_execute(const Packet &packet,
   // to costly to send action data?
   (void) action_data;
 }
+
+
+void
+EventLogger::fanout_gen(const Packet &packet, uint64_t table_id,
+                        uint64_t parent_pkt_copy_id) {
+  struct msg_t : msg_hdr_t {
+    uint64_t table_id;
+    uint64_t parent_packet_copy_id;
+  } __attribute__((packed));
+
+  msg_t msg;
+  fill_msg_hdr(EventType::FANOUT_GEN, device_id, packet, &msg);
+  msg.table_id = table_id;
+  msg.parent_packet_copy_id = parent_pkt_copy_id;
+  transport_instance->send(reinterpret_cast<char *>(&msg), sizeof(msg));
+}
+
+
 
 void
 EventLogger::config_change() {
