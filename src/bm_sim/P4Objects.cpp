@@ -2509,7 +2509,7 @@ P4Objects::check_hash(const std::string &name) const {
 bool P4Objects::is_selector_fanout(const Json::Value &cfg_selector) const {
   bool is_fanout = cfg_selector.isMember("algo") &&
          cfg_selector["algo"].asString() == "selector_fanout";
-  if(is_fanout && !FanoutPktMgr::pkt_fanout_on){
+  if (is_fanout && !FanoutPktMgr::pkt_fanout_on) {
     throw std::runtime_error("Selector fanout is not enabled, but"
                              " found selector_fanout mode used");
   }

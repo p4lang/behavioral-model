@@ -289,7 +289,7 @@ SimpleSwitch::start_and_return_() {
          BMLOG_DEBUG_PKT(*pkt,
            "SELECTOR_FANOUT packet pushed to ingress_buffer");
         });
-        
+
     threads_.push_back(std::move(ingress_thread));
     for (size_t i = 0; i < nb_egress_threads; i++) {
       auto egress_thread = std::thread(&SimpleSwitch::egress_thread, this, i);
@@ -298,7 +298,7 @@ SimpleSwitch::start_and_return_() {
           egress_thread.get_id(), [&](const bm::Packet *pkt) {
             this->egress_buffers.push_front(i, 0,
               std::unique_ptr<bm::Packet>(const_cast<bm::Packet *>(pkt)));
-            BMLOG_DEBUG_PKT(*pkt, 
+            BMLOG_DEBUG_PKT(*pkt,
               "SELECTOR_FANOUT packet pushed to egress_buffer");
           });
 
@@ -696,7 +696,7 @@ SimpleSwitch::egress_thread(size_t worker_id) {
 
     phv = packet->get_phv();
     Field &f_egress_spec = phv->get_field("standard_metadata.egress_spec");
-    
+
     if (packet->has_next_node()) {
       egress_mau->apply_from_next_node(packet.get());
     } else {

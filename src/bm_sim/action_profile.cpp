@@ -643,4 +643,8 @@ ActionProfile::choose_from_group(grp_hdl_t grp, const Packet &pkt) const {
   return grp_selector->get_from_hash(grp, h);
 }
 
+void ActionProfile::set_selector_fanout() {
+  selector_fanout_enabled = true;
+}
+
 }  // namespace bm

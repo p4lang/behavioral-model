@@ -1,4 +1,4 @@
-/* Copyright 2013-present Contributors to the P4 Project
+/* Copyright 2025-present Contributors to the P4 Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 #ifndef BM_BM_SIM_FANOUT_PKT_MGR_H_
 #define BM_BM_SIM_FANOUT_PKT_MGR_H_
 
-#include <vector>
+#include <memory>
 #include <unordered_map>
+#include <vector>
 #include "logger.h"
 #include "packet.h"
 #include "match_tables.h"
@@ -35,7 +36,8 @@ struct FanoutCtx {
   MatchTableIndirect *cur_table{nullptr};
   std::function<void(const bm::Packet *)> buffer_push_fn;
 
-  FanoutCtx(const std::function<void(const bm::Packet *)> &buffer_push_fn)
+  explicit FanoutCtx(
+    const std::function<void(const bm::Packet *)> &buffer_push_fn)
       : buffer_push_fn(buffer_push_fn) { }
 };
 
@@ -97,12 +99,12 @@ class FanoutPktMgr {
 #endif
     std::mutex fanout_pkt_mutex;
     std::vector<ActionProfile*> act_profs;
-    
+
  private:
     FanoutPktMgr() = default;
     std::unordered_map<std::thread::id, FanoutCtx> fanout_ctx_map;
-    std::shared_ptr<SelectorIface> 
-    grp_selector{std::make_shared<FanoutPktSelection>()};
+    std::shared_ptr<SelectorIface>
+      grp_selector{std::make_shared<FanoutPktSelection>()};
 };
 
 }  // namespace bm

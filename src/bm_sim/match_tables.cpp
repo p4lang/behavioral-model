@@ -722,7 +722,7 @@ MatchTableIndirect::lookup(const Packet &pkt,
       FanoutPktMgr::instance().set_ctx(this, pkt, action_profile, *hit);
     }
   }
-  
+
   const auto &entry = action_profile->lookup(pkt, index);
   // Unfortunately this has to be done at this stage and cannot be done when
   // inserting a member because for 2 match tables sharing the same action
