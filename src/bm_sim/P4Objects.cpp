@@ -1659,6 +1659,7 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
       if (with_selection) {
         if (is_selector_fanout(cfg_act_prof["selector"])) {
           action_profile->set_selector_fanout();
+          FanoutPktMgr::instance().act_profs.push_back(action_profile.get());
         } else {
           auto calc = process_cfg_selector(cfg_act_prof["selector"]);
           action_profile->set_hash(std::move(calc));

@@ -70,35 +70,39 @@ class FanoutPktMgr {
       return instance_;
     }
 
-    inline void register_thread(std::thread::id thread_id,
-          const std::function<void(const bm::Packet *)> &buffer_push_fn) {
-      BMLOG_DEBUG("Registering thread {}", thread_id);
-      fanout_ctx_map.emplace(thread_id, FanoutCtx(buffer_push_fn));
-    }
-    inline SelectorIface* get_grp_selector() {
-      return grp_selector;
-    }
-
     FanoutCtx& get_fanout_ctx();
     void set_ctx(MatchTableIndirect *table, const Packet &pkt,
                  ActionProfile *action_profile, bool hit);
     void reset_ctx();
     void replicate_for_entries(const std::vector<const ActionEntry*> &entries);
 
+    // PI overwrite selector specified during P4Object init,
+    // so we need to set the selector in switch start_and_return_
+    void set_grp_selector() {
+      for (const auto &ap : act_profs) {
+        ap->set_group_selector(grp_selector);
+      }
+    }
+    inline void register_thread(std::thread::id thread_id,
+      const std::function<void(const bm::Packet *)> &buffer_push_fn) {
+      BMLOG_DEBUG("Registering thread {}", thread_id);
+      fanout_ctx_map.emplace(thread_id, FanoutCtx(buffer_push_fn));
+    }
+
+    // TODO(Hao): deduplicate packets fanout, optional
 #ifdef BM_PKT_FANOUT_ON
     static constexpr bool pkt_fanout_on = true;
 #else
     static constexpr bool pkt_fanout_on = false;
 #endif
     std::mutex fanout_pkt_mutex;
-    // TODO(Hao): deduplicate packets fanout, optional
-
-
+    std::vector<ActionProfile*> act_profs;
+    
  private:
     FanoutPktMgr() = default;
     std::unordered_map<std::thread::id, FanoutCtx> fanout_ctx_map;
-    FanoutPktSelection fanout_selection;
-    SelectorIface* grp_selector{&fanout_selection};
+    std::shared_ptr<SelectorIface> 
+    grp_selector{std::make_shared<FanoutPktSelection>()};
 };
 
 }  // namespace bm

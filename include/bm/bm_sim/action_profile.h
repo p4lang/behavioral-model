@@ -297,10 +297,6 @@ class ActionProfile : public NamedP4Object {
 
   bool group_is_empty(grp_hdl_t grp) const;
 
-  bool is_selector_fanout_enabled() const {
-    return selector_fanout_enabled;
-  }
-
   const ActionEntry &lookup(const Packet &pkt,
                             const IndirectIndex &index) const;
 
@@ -317,7 +313,6 @@ class ActionProfile : public NamedP4Object {
   std::shared_ptr<GroupSelectionIface> grp_selector_{nullptr};
   GroupSelectionIface *grp_selector{&grp_mgr};
   std::unique_ptr<Calculation> hash{nullptr};
-  bool selector_fanout_enabled{false};
 };
 
 }  // namespace bm

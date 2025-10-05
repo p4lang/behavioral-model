@@ -279,6 +279,7 @@ void
 SimpleSwitch::start_and_return_() {
   check_queueing_metadata();
   if (FanoutPktMgr::pkt_fanout_on) {
+    FanoutPktMgr::instance().set_grp_selector();
     auto ingress_thread = std::thread(&SimpleSwitch::ingress_thread, this);
     FanoutPktMgr::instance().register_thread(
         ingress_thread.get_id(), [&](const bm::Packet *pkt) {

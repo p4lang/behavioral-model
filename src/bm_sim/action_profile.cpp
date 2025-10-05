@@ -638,18 +638,9 @@ ActionProfile::ref_count_decrease(const IndirectIndex &index) {
 
 ActionProfile::mbr_hdl_t
 ActionProfile::choose_from_group(grp_hdl_t grp, const Packet &pkt) const {
-  // TODO(Hao): PI resets to it own grp_selector, might be a bug, so I just sets
-  //  here for now..
-  if (FanoutPktMgr::pkt_fanout_on && selector_fanout_enabled) {
-    return FanoutPktMgr::instance().get_grp_selector()->get_from_hash(grp, 0);
-  }
   if (!hash) return grp_selector->get_from_hash(grp, 0);
   hash_t h = static_cast<hash_t>(hash->output(pkt));
   return grp_selector->get_from_hash(grp, h);
-}
-
-void ActionProfile::set_selector_fanout() {
-  selector_fanout_enabled = true;
 }
 
 }  // namespace bm
