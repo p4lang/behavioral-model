@@ -278,23 +278,37 @@ SimpleSwitch::receive_(port_t port_num, const char *buffer, int len) {
 void
 SimpleSwitch::start_and_return_() {
   check_queueing_metadata();
-#ifdef PKT_FANOUT_ON
-  auto ingress_thread = std::thread(&SimpleSwitch::ingress_thread, this);
-  FanoutPktMgr::instance().register_thread(
-      ingress_thread.get_id());
-  threads_.push_back(std::move(ingress_thread));
-  for (size_t i = 0; i < nb_egress_threads; i++) {
-    auto egress_thread = std::thread(&SimpleSwitch::egress_thread, this, i);
+  if (FanoutPktMgr::pkt_fanout_on) {
+    auto ingress_thread = std::thread(&SimpleSwitch::ingress_thread, this);
     FanoutPktMgr::instance().register_thread(
-        egress_thread.get_id());
-    threads_.push_back(std::move(egress_thread));
+        ingress_thread.get_id(), [&](const bm::Packet *pkt) {
+          this->input_buffer->push_front(
+              InputBuffer::PacketType::SELECTOR_FANOUT,
+              std::unique_ptr<bm::Packet>(const_cast<bm::Packet *>(pkt)));
+         BMLOG_DEBUG_PKT(*pkt,
+           "SELECTOR_FANOUT packet pushed to ingress_buffer");
+        });
+        
+    threads_.push_back(std::move(ingress_thread));
+    for (size_t i = 0; i < nb_egress_threads; i++) {
+      auto egress_thread = std::thread(&SimpleSwitch::egress_thread, this, i);
+
+      FanoutPktMgr::instance().register_thread(
+          egress_thread.get_id(), [&](const bm::Packet *pkt) {
+            this->egress_buffers.push_front(i, 0,
+              std::unique_ptr<bm::Packet>(const_cast<bm::Packet *>(pkt)));
+            BMLOG_DEBUG_PKT(*pkt, 
+              "SELECTOR_FANOUT packet pushed to egress_buffer");
+          });
+
+      threads_.push_back(std::move(egress_thread));
+    }
+  } else {
+    threads_.push_back(std::thread(&SimpleSwitch::ingress_thread, this));
+    for (size_t i = 0; i < nb_egress_threads; i++) {
+      threads_.push_back(std::thread(&SimpleSwitch::egress_thread, this, i));
+    }
   }
-#else
-  threads_.push_back(std::thread(&SimpleSwitch::ingress_thread, this));
-  for (size_t i = 0; i < nb_egress_threads; i++) {
-    threads_.push_back(std::thread(&SimpleSwitch::egress_thread, this, i));
-  }
-#endif
   threads_.push_back(std::thread(&SimpleSwitch::transmit_thread, this));
 }
 
@@ -524,9 +538,9 @@ SimpleSwitch::ingress_thread() {
        deparser. TODO? */
     const Packet::buffer_state_t packet_in_state = packet->save_buffer_state();
 
-    // Check if the packet has an optional continue node
+    // Check if the packet has an optional continue node for pkt fanout
     // TODO(Hao): update the doc/simple_switch.md
-    if (packet->has_next_node()) {
+    if (FanoutPktMgr::pkt_fanout_on && packet->has_next_node()) {
       ingress_mau->apply_from_next_node(packet.get());
     } else {
       parser->parse(packet.get());
@@ -542,20 +556,6 @@ SimpleSwitch::ingress_thread() {
 
       ingress_mau->apply(packet.get());
     }
-
-#ifdef PKT_FANOUT_ON
-    {
-      auto &fanout_pkts = FanoutPktMgr::instance().get_fanout_pkts();
-      for (auto pkt : fanout_pkts) {
-        input_buffer->push_front(InputBuffer::PacketType::SELECTOR_FANOUT,
-          std::unique_ptr<bm::Packet>(pkt));
-        BMLOG_DEBUG_PKT(*pkt,
-          "SELECTOR_FANOUT packet pushed to ingress_buffer");
-      }
-      fanout_pkts.clear();
-    }
-#endif
-
     packet->reset_exit();
 
     Field &f_egress_spec = phv->get_field("standard_metadata.egress_spec");
@@ -694,7 +694,8 @@ SimpleSwitch::egress_thread(size_t worker_id) {
     Pipeline *egress_mau = this->get_pipeline("egress");
 
     phv = packet->get_phv();
-
+    Field &f_egress_spec = phv->get_field("standard_metadata.egress_spec");
+    
     if (packet->has_next_node()) {
       egress_mau->apply_from_next_node(packet.get());
     } else {
@@ -717,7 +718,6 @@ SimpleSwitch::egress_thread(size_t worker_id) {
       }
 
       phv->get_field("standard_metadata.egress_port").set(port);
-      Field &f_egress_spec = phv->get_field("standard_metadata.egress_spec");
       // When egress_spec == drop_port the packet will be dropped, thus
       // here we initialize egress_spec to a value different from drop_port.
       f_egress_spec.set(drop_port + 1);
@@ -727,17 +727,6 @@ SimpleSwitch::egress_thread(size_t worker_id) {
 
       egress_mau->apply(packet.get());
     }
-
-#ifdef PKT_FANOUT_ON
-    {
-      auto &fanout_pkts = FanoutPktMgr::instance().get_fanout_pkts();
-      for (auto pkt : fanout_pkts) {
-        egress_buffers.push_front(worker_id, 0, std::unique_ptr<Packet>(pkt));
-        BMLOG_DEBUG_PKT(*pkt, "SELECTOR_FANOUT packet pushed to egress_buffer");
-      }
-      fanout_pkts.clear();
-    }
-#endif
 
     auto clone_mirror_session_id =
         RegisterAccess::get_clone_mirror_session_id(packet.get());

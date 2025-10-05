@@ -30,10 +30,13 @@ using SelectorIface = ActionProfile::GroupSelectionIface;
 
 struct FanoutCtx {
   bool hit{false};
-  std::vector<Packet *> fanout_pkts;
   const Packet * cur_pkt{nullptr};
   ActionProfile *action_profile{nullptr};
   MatchTableIndirect *cur_table{nullptr};
+  std::function<void(const bm::Packet *)> buffer_push_fn;
+
+  FanoutCtx(const std::function<void(const bm::Packet *)> &buffer_push_fn)
+      : buffer_push_fn(buffer_push_fn) { }
 };
 
 class FanoutPktSelection: public SelectorIface{
@@ -67,23 +70,26 @@ class FanoutPktMgr {
       return instance_;
     }
 
-    inline void register_thread(std::thread::id thread_id) {
+    inline void register_thread(std::thread::id thread_id,
+          const std::function<void(const bm::Packet *)> &buffer_push_fn) {
       BMLOG_DEBUG("Registering thread {}", thread_id);
-      fanout_ctx_map.emplace(thread_id, FanoutCtx());
+      fanout_ctx_map.emplace(thread_id, FanoutCtx(buffer_push_fn));
     }
     inline SelectorIface* get_grp_selector() {
       return grp_selector;
     }
 
-
-
-    std::vector<Packet *>& get_fanout_pkts();
     FanoutCtx& get_fanout_ctx();
     void set_ctx(MatchTableIndirect *table, const Packet &pkt,
                  ActionProfile *action_profile, bool hit);
     void reset_ctx();
     void replicate_for_entries(const std::vector<const ActionEntry*> &entries);
 
+#ifdef BM_PKT_FANOUT_ON
+    static constexpr bool pkt_fanout_on = true;
+#else
+    static constexpr bool pkt_fanout_on = false;
+#endif
     std::mutex fanout_pkt_mutex;
     // TODO(Hao): deduplicate packets fanout, optional
 

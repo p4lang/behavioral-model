@@ -715,10 +715,14 @@ MatchTableIndirect::lookup(const Packet &pkt,
         pkt, "Lookup in table '{}' yielded empty group", get_name());
     return empty_action;
   }
-  // A bit hacky, in order to get the next_table for fanout.
-  if (action_profile->is_selector_fanout_enabled()) {
-    FanoutPktMgr::instance().set_ctx(this, pkt, action_profile, *hit);
+
+  if (FanoutPktMgr::pkt_fanout_on) {
+    // A bit hacky, in order to get the next_table for fanout.
+    if (action_profile->is_selector_fanout_enabled()) {
+      FanoutPktMgr::instance().set_ctx(this, pkt, action_profile, *hit);
+    }
   }
+  
   const auto &entry = action_profile->lookup(pkt, index);
   // Unfortunately this has to be done at this stage and cannot be done when
   // inserting a member because for 2 match tables sharing the same action

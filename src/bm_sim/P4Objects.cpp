@@ -1657,15 +1657,7 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
       std::unique_ptr<ActionProfile> action_profile(
           new ActionProfile(act_prof_name, act_prof_id, with_selection));
       if (with_selection) {
-        // TODO(Hao): clean debug logs
-        BMLOG_DEBUG(
-            "Action profile '{}' with id {} has a selector",
-            act_prof_name, act_prof_id);
-
         if (is_selector_fanout(cfg_act_prof["selector"])) {
-          BMLOG_DEBUG(
-              "Action profile '{}' with id {} enabled selector fanout",
-              act_prof_name, act_prof_id);
           action_profile->set_selector_fanout();
         } else {
           auto calc = process_cfg_selector(cfg_act_prof["selector"]);
@@ -2514,8 +2506,13 @@ P4Objects::check_hash(const std::string &name) const {
 }
 
 bool P4Objects::is_selector_fanout(const Json::Value &cfg_selector) const {
-  return cfg_selector.isMember("algo") &&
+  bool is_fanout = cfg_selector.isMember("algo") &&
          cfg_selector["algo"].asString() == "selector_fanout";
+  if(is_fanout && !FanoutPktMgr::pkt_fanout_on){
+    throw std::runtime_error("Selector fanout is not enabled, but"
+                             " found selector_fanout mode used");
+  }
+  return is_fanout;
 }
 
 std::unique_ptr<Calculation>

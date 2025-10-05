@@ -53,20 +53,6 @@ FanoutPktSelection::get_from_hash(grp_hdl_t grp, hash_t h) const {
   return selected_mbr;
 }
 
-
-std::vector<Packet *>& FanoutPktMgr::get_fanout_pkts() {
-    std::thread::id thread_id = std::this_thread::get_id();
-    BMLOG_DEBUG("Getting fanout packets for thread {}", thread_id);
-
-    std::lock_guard<std::mutex> lock(fanout_pkt_mutex);
-    auto it = fanout_ctx_map.find(thread_id);
-    if (it == fanout_ctx_map.end()) {
-        BMLOG_ERROR("No fanout vector registered for thread {}", thread_id);
-        throw std::runtime_error("Fanout vector not found for thread");
-    }
-    return it->second.fanout_pkts;
-}
-
 FanoutCtx& FanoutPktMgr::get_fanout_ctx() {
     std::thread::id thread_id = std::this_thread::get_id();
     auto it = fanout_ctx_map.find(thread_id);
@@ -98,7 +84,6 @@ void FanoutPktMgr::reset_ctx() {
 
 void FanoutPktMgr::replicate_for_entries(
     const std::vector<const ActionEntry*> &entries) {
-    auto &fanout_pkts = get_fanout_pkts();
     auto &ctx = get_fanout_ctx();
     auto *match_table = ctx.cur_table;
     const Packet &pkt = *ctx.cur_pkt;
@@ -126,7 +111,7 @@ void FanoutPktMgr::replicate_for_entries(
                             act_id, next_node->get_name());
         }
         rep_pkt->set_next_node(next_node);
-        fanout_pkts.push_back(rep_pkt);
+        ctx.buffer_push_fn(rep_pkt);
 
         BMELOG(fanout_gen, *rep_pkt, table_id, parent_pkt_copy_id);
     }
