@@ -99,7 +99,8 @@ class EventLogger {
 
   void action_execute(const Packet &packet,
                       const ActionFn &action_fn, const ActionData &action_data);
-
+  void fanout_gen(const Packet &packet, uint64_t table_id,
+                  uint64_t parent_pkt_copy_id);
   void config_change();
 
   static EventLogger *get() {

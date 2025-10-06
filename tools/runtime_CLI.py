@@ -1536,7 +1536,7 @@ class RuntimeAPI(cmd.Cmd):
 
     @handle_bad_input
     def do_table_indirect_set_default_with_group(self, line):
-        "Set default group for indirect match table: table_indirect_set_default <table name> <group handle>"
+        "Set default group for indirect match table: table_indirect_set_default_with_group <table name> <group handle>"
 
         table_name, handle = self.indirect_set_default_common(line, ws=True)
 
