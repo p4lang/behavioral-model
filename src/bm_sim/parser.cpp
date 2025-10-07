@@ -267,7 +267,7 @@ void extract_VL(Header *hdr,
   // get_nbytes_packet counts the VL field in the header as 0 bits
   auto bytes_to_extract = static_cast<size_t>(
       hdr->get_nbytes_packet() + nbits / 8);
-  if (pkt->get_ingress_length() - *bytes_parsed < bytes_to_extract)
+  if (pkt->get_data_size() - *bytes_parsed < bytes_to_extract)
     throw parser_exception_core(ErrorCodeMap::Core::PacketTooShort);
 
   if (max_header_bytes != 0 && max_header_bytes < bytes_to_extract)
@@ -443,7 +443,7 @@ struct ParserOpShift : ParserOp {
   void operator()(Packet *pkt, const char *data,
                   size_t *bytes_parsed) const override {
     (void) data;
-    if (pkt->get_ingress_length() - *bytes_parsed < shift_bytes)
+    if (pkt->get_data_size() - *bytes_parsed < shift_bytes)
       throw parser_exception_core(ErrorCodeMap::Core::PacketTooShort);
     *bytes_parsed += shift_bytes;
   }
@@ -475,7 +475,7 @@ ParserOpAdvance<Data>::operator()(Packet *pkt, const char *data,
   }
   const auto shift_bytes_uint = shift_bits_uint / 8;
   BMLOG_DEBUG_PKT(*pkt, "Advancing by {} bytes", shift_bytes_uint);
-  if (pkt->get_ingress_length() - *bytes_parsed < shift_bytes_uint)
+  if (pkt->get_data_size() - *bytes_parsed < shift_bytes_uint)
     throw parser_exception_core(ErrorCodeMap::Core::PacketTooShort);
   *bytes_parsed += shift_bytes_uint;
 }
@@ -499,7 +499,7 @@ ParserOpAdvance<ArithExpression>::operator()(Packet *pkt, const char *data,
   }
   const auto shift_bytes_uint = shift_bits_uint / 8;
   BMLOG_DEBUG_PKT(*pkt, "Advancing by {} bytes", shift_bytes_uint);
-  if (pkt->get_ingress_length() - *bytes_parsed < shift_bytes_uint)
+  if (pkt->get_data_size() - *bytes_parsed < shift_bytes_uint)
     throw parser_exception_core(ErrorCodeMap::Core::PacketTooShort);
   *bytes_parsed += shift_bytes_uint;
 }
@@ -522,7 +522,7 @@ ParserOpAdvance<field_t>::operator()(Packet *pkt, const char *data,
   }
   const auto shift_bytes_uint = shift_bits_uint / 8;
   BMLOG_DEBUG_PKT(*pkt, "Advancing by {} bytes", shift_bytes_uint);
-  if (pkt->get_ingress_length() - *bytes_parsed < shift_bytes_uint)
+  if (pkt->get_data_size() - *bytes_parsed < shift_bytes_uint)
     throw parser_exception_core(ErrorCodeMap::Core::PacketTooShort);
   *bytes_parsed += shift_bytes_uint;
 }
