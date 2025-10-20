@@ -28,6 +28,7 @@ namespace bm {
 
 void
 Pipeline::apply(Packet *pkt) {
+  pkt->reset_exit();
   BMELOG(pipeline_start, *pkt, *this);
   // TODO(antonin)
   // this is temporary while we experiment with the debugger
