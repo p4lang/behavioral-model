@@ -29,7 +29,7 @@ $(top_builddir)/thrift_src/libruntimestubs.la \
 $(THRIFT_LIB) \
 $(top_builddir)/third_party/jsoncpp/libjson.la \
 $(builddir)/libtestutils.la \
--lboost_system -lboost_filesystem -lboost_program_options
+-lboost_filesystem -lboost_program_options
 
 # Define unit tests
 common_source = main.cpp bmi_stubs.c primitives.cpp

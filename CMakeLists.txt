@@ -87,7 +87,7 @@ include_directories(
 
 # Find required packages
 find_package(Threads REQUIRED)
-find_package(Boost REQUIRED COMPONENTS thread program_options filesystem system)
+find_package(Boost REQUIRED COMPONENTS thread program_options filesystem)
 
 # Check for the presence of an include file and report an error if not found
 #

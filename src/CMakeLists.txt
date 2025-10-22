@@ -19,7 +19,6 @@ target_link_libraries(bmall
   # FIXME: Is this scope correct?
   PUBLIC
     jsoncpp
-    Boost::system
     Boost::program_options
     Boost::filesystem
 )

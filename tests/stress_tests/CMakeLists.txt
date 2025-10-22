@@ -24,7 +24,6 @@ foreach(target ${TESTS})
     bmsim
     jsoncpp
     ${THRIFT_LIBRARIES}
-    Boost::system
     Boost::filesystem
     Boost::program_options
   )
