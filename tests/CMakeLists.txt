@@ -94,7 +94,6 @@ foreach(TEST_NAME ${TESTS})
     jsoncpp
     testutils
     ${THRIFT_LIBRARIES}
-    Boost::system
     Boost::filesystem
     Boost::program_options
   )
@@ -155,7 +154,6 @@ target_link_libraries(test_all
   jsoncpp
   testutils
   ${THRIFT_LIBRARIES}
-  Boost::system
   Boost::filesystem
   Boost::program_options
 )

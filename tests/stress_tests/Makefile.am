@@ -7,7 +7,7 @@ $(top_builddir)/third_party/gtest/libgtest.la \
 $(top_builddir)/src/bm_apps/libbmapps.la \
 $(top_builddir)/src/bm_sim/libbmsim.la \
 $(top_builddir)/third_party/jsoncpp/libjson.la \
--lboost_system -lboost_filesystem -lboost_program_options
+-lboost_filesystem -lboost_program_options
 
 # TODO(antonin): should the traffic.bin files be generated at compile time by
 # running the Python generator (instead of being checked in)?

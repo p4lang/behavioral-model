@@ -30,7 +30,6 @@ foreach(TEST ${TESTS})
     simpleswitch
     test_utils
     ${THRIFT_LIBRARIES}
-    Boost::system
     Boost::filesystem
     Boost::program_options
   )
