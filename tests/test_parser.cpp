@@ -1901,6 +1901,34 @@ TEST_F(ParserShiftTest, AdvanceByFieldInvalidArgument) {
   parse_and_check_error(&packet, ErrorCodeMap::Core::ParserInvalidArgument);
 }
 
+TEST_F(ParserShiftTest, ShiftAllowsExtendedPacketData) {
+  parse_state.add_shift(2);  // shift past original packet length
+  parse_state.add_extract(testHeader);
+
+  std::string packet_data("\xaa\xbb\xcc");
+  auto packet = get_pkt(packet_data);
+  packet.set_ingress_length(1);  // simulate recirculated packet with new bytes
+
+  parse_and_check_no_error(&packet);
+  const auto &f = packet.get_phv()->get_field(testHeader, 0);  // f8
+  ASSERT_EQ(static_cast<unsigned char>(packet_data.at(2)),
+            f.get<unsigned char>());
+}
+
+TEST_F(ParserShiftTest, AdvanceAllowsExtendedPacketData) {
+  parse_state.add_advance_from_data(Data(2 * 8));  // shift past original length
+  parse_state.add_extract(testHeader);
+
+  std::string packet_data("\xaa\xbb\xcc");
+  auto packet = get_pkt(packet_data);
+  packet.set_ingress_length(1);  // simulate recirculated packet with new bytes
+
+  parse_and_check_no_error(&packet);
+  const auto &f = packet.get_phv()->get_field(testHeader, 0);  // f8
+  ASSERT_EQ(static_cast<unsigned char>(packet_data.at(2)),
+            f.get<unsigned char>());
+}
+
 
 class ParserExtractVLTest : public ParserTestGeneric {
  protected:
@@ -1990,6 +2018,18 @@ TEST_F(ParserExtractVLTest, InvalidArgument) {
   std::string packet_data(16, '\xaa');
   auto packet = get_pkt(packet_data);
   parse_and_check_error(&packet, ErrorCodeMap::Core::ParserInvalidArgument);
+}
+
+TEST_F(ParserExtractVLTest, ResubmittedPacketLargerThanIngressLength) {
+  parse_state.add_extract_VL(testHeader, make_expr(max_header_bytes * 8),
+                             max_header_bytes);
+  std::string packet_data(max_header_bytes, '\xaa');
+  auto packet = get_pkt(packet_data);
+  packet.set_ingress_length(max_header_bytes / 2);
+
+  parse_and_check_no_error(&packet);
+  const auto &f = packet.get_phv()->get_field(testHeader, 0);  // fVL
+  ASSERT_EQ(packet_data, f.get_string());
 }
 
 
