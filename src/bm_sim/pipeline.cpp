@@ -50,4 +50,19 @@ Pipeline::apply(Packet *pkt) {
   BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': end", get_name());
 }
 
+void Pipeline::apply_from_next_node(Packet *pkt) {
+  const ControlFlowNode *node = pkt->get_next_node();
+  BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': packet fanout from node '{}'",
+                  get_name(), node? node->get_name() : "None");
+  while (node) {
+    if (pkt->is_marked_for_exit()) {
+      BMLOG_DEBUG_PKT(*pkt, "Packet is marked for exit, interrupting pipeline");
+      break;
+    }
+    node = (*node)(pkt);
+  }
+  pkt->reset_next_node();
+  BMLOG_DEBUG_PKT(*pkt, "Pipeline '{}': fanout end", get_name());
+}
+
 }  // namespace bm

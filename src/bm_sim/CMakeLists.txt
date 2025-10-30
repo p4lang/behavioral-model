@@ -28,6 +28,7 @@ add_library(bmsim OBJECT
   event_logger.cpp
   expressions.cpp
   extern.cpp
+  fanout_pkt_mgr.cpp
   fields.cpp
   headers.cpp
   header_unions.cpp
