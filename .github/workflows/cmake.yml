@@ -30,7 +30,7 @@ jobs:
     name: ${{ matrix.config.name }}
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
 
@@ -66,7 +66,7 @@ jobs:
     name: "Build and install"
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
 
