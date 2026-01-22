@@ -11,5 +11,11 @@ target_include_directories(bmruntime PUBLIC
   ${THRIFT_SRC_GEN_CPP_DIR}
 )
 
+target_link_libraries(bmruntime PRIVATE
+  Boost::system
+  Boost::filesystem
+  Boost::program_options
+)
+
 # Dependency on thrift generation from thrift_src
 add_dependencies(bmruntime genthrift_thrift_src)
