@@ -10,8 +10,11 @@ endif
 
 if COND_THRIFT
     MAYBE_THRIFT = thrift_src
+if COND_NANOMSG
     MAYBE_TESTS = tests
 endif
+endif
+
 
 if COND_PI
     MAYBE_PI = PI services
