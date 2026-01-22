@@ -208,7 +208,7 @@ add_subdirectory(third_party)
 add_subdirectory(src)
 add_subdirectory(include)
 
-if(WITH_THRIFT AND WITH_TARGETS)
+if(WITH_THRIFT AND WITH_NANOMSG AND WITH_TARGETS)
   add_subdirectory(tests)
 endif()
 
