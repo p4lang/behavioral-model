@@ -12,7 +12,6 @@ target_include_directories(bmruntime PUBLIC
 )
 
 target_link_libraries(bmruntime PRIVATE
-  Boost::system
   Boost::filesystem
   Boost::program_options
 )
