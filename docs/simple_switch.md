@@ -3,7 +3,7 @@
 The bmv2 framework lets developers implement their own P4-programmable
 architecture as a software switch. The simple_switch architecture is the
 de-facto architecture for most users, as it is roughly equivalent to the
-"abstract switch model" described in the [P4_14 spec](https://p4.org/specs).
+"abstract switch model" described in the [P4_14 spec](https://p4.org/specifications).
 
 The P4_16 language has been designed such that there can be multiple
 architectures, e.g. one or more architectures for a switch device, one
@@ -16,7 +16,7 @@ and v1model called out below, primarily in the names of a few metadata
 fields.
 
 The P4_16 language also now has a Portable Switch Architecture (PSA)
-defined in [its own specification](https://p4.org/specs).  As of
+defined in [its own specification](https://p4.org/specifications).  As of
 January 2022, a partial implementation of the PSA architecture has
 been done, but it is not yet complete.  It will be implemented in a
 separate executable program named `psa_switch`, separate from the
@@ -103,8 +103,8 @@ Here are the fields:
   you do assign to this field, but if you wish your P4 code to be
   easier to port to other programmable switches, do not ever assign it
   a value.  See [Appendix D.2 "No output port change during egress" of
-  the PNA
-  specification](https://staging.p4.org/p4-spec/docs/psa-working-draft-html-version.html#appendix-rationale-egress-cannot-change-output-port)
+  the PSA
+  specification](https://p4.org/wp-content/uploads/sites/53/p4-spec/docs/PSA-v1.2.html#appendix-rationale-egress-cannot-change-output-port)
   for some explanation of why.
 - `egress_instance` (sm14) - Renamed `egress_rid` in simple_switch.
   See `egress_rid` below.
@@ -1082,9 +1082,9 @@ matched.
 ```
 
 See Sections
-["Idle-timeout"](https://p4.org/p4-spec/p4runtime/v1.3.0/P4Runtime-Spec.html#sec-idle-timeout)
+["Idle-timeout"](https://p4.org/wp-content/uploads/sites/53/2024/10/P4Runtime-Spec-v1.4.1.html#sec-idle-timeout)
 and ["Table Idle Timeout
-Notification"](https://p4.org/p4-spec/p4runtime/v1.3.0/P4Runtime-Spec.html#sec-table-idle-timeout-notification)
+Notification"](https://p4.org/wp-content/uploads/sites/53/2024/10/P4Runtime-Spec-v1.4.1.html#sec-table-idle-timeout-notification)
 in the P4Runtime Specification for how a controller can configure the
 time interval for each entry it adds to such a table, and the contents
 of IdleTimeoutNotification messages sent from the switch to a
@@ -1129,7 +1129,7 @@ developers and P4 language design work group, and the decision made
 is:
 
 * Long term, the P4_16 [Portable Switch
-  Architecture](https://p4.org/specs/) uses a different mechanism for
+  Architecture](https://p4.org/specifications) uses a different mechanism for
   specifying metadata to preserve than the v1model architecture uses,
   and should work correctly.  As of October 2019 the implementation of
   PSA is not complete, so this does not help one write working code
