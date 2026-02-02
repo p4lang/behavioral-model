@@ -805,7 +805,7 @@ template<typename V>
 MatchErrorCode
 MatchUnitAbstract<V>::add_entry(const std::vector<MatchKeyParam> &match_key,
                                 V value, entry_handle_t *handle, int priority) {
-  if (this->get_size_key() == 0) return MatchErrorCode::NO_TABLE_KEY;
+  if (this->get_size_key() == 0 && match_key.size()) return MatchErrorCode::NO_TABLE_KEY;
   MatchErrorCode rc = add_entry_(match_key, std::move(value), handle, priority);
   if (rc != MatchErrorCode::SUCCESS) return rc;
   EntryMeta &meta = entry_meta[HANDLE_INTERNAL(*handle)];
