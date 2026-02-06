@@ -22,6 +22,7 @@
 #include <bm/bm_sim/action_profile.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/fanout_pkt_mgr.h>
 
 #include <iostream>
 #include <memory>
@@ -182,6 +183,29 @@ ActionProfile::lookup(const Packet &pkt, const IndirectIndex &index) const {
   assert(is_valid_mbr(mbr));
 
   return action_entries[mbr];
+}
+
+
+std::vector<ActionProfile::mbr_hdl_t>
+ActionProfile::get_all_mbrs_from_grp(const grp_hdl_t &grp) const {
+  assert(is_valid_grp(grp));
+  Group group;
+  MatchErrorCode rc = get_group(grp, &group);
+  _BM_UNUSED(rc);
+  assert(rc == MatchErrorCode::SUCCESS);
+  return group.mbr_handles;
+}
+
+std::vector<const ActionEntry*>
+ActionProfile::get_entries_with_mbrs(
+  const std::vector<ActionProfile::mbr_hdl_t> &mbrs) const {
+  std::vector<const ActionEntry*> entries;
+  entries.reserve(mbrs.size());
+  for (auto m : mbrs) {
+    assert(is_valid_mbr(m));
+    entries.push_back(&action_entries[m]);
+  }
+  return entries;
 }
 
 bool
@@ -524,6 +548,8 @@ void
 ActionProfile::set_group_selector(
     std::shared_ptr<GroupSelectionIface> selector) {
   WriteLock lock = lock_write();
+  BMLOG_DEBUG("Setting group selector for action profile '{}'",
+                get_name());
   grp_selector_ = selector;
   grp_selector = grp_selector_.get();
 }
@@ -615,6 +641,10 @@ ActionProfile::choose_from_group(grp_hdl_t grp, const Packet &pkt) const {
   if (!hash) return grp_selector->get_from_hash(grp, 0);
   hash_t h = static_cast<hash_t>(hash->output(pkt));
   return grp_selector->get_from_hash(grp, h);
+}
+
+void ActionProfile::set_selector_fanout() {
+  selector_fanout_enabled = true;
 }
 
 }  // namespace bm

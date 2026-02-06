@@ -39,6 +39,7 @@
 #include "lookup_structures.h"
 #include "action_entry.h"
 #include "action_profile.h"
+#include "fanout_pkt_mgr.h"
 
 namespace bm {
 
@@ -385,6 +386,7 @@ class MatchTable : public MatchTableAbstract {
 
 class MatchTableIndirect : public MatchTableAbstract {
  public:
+  friend class FanoutPktMgr;
   using mbr_hdl_t = ActionProfile::mbr_hdl_t;
 
   using IndirectIndex = ActionProfile::IndirectIndex;

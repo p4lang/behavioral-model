@@ -165,6 +165,21 @@ Packet::clone_with_phv_ptr() const {
 }
 
 Packet
+Packet::clone_with_phv_and_registers() const {
+  copy_id_t new_copy_id = copy_id_gen->add_one(packet_id);
+  Packet pkt(cxt_id, ingress_port, packet_id, new_copy_id, ingress_length,
+             buffer.clone(buffer.get_data_size()), phv_source);
+  pkt.phv->copy_headers(*phv);
+  pkt.registers = registers;
+  return pkt;
+}
+
+std::unique_ptr<Packet>
+Packet::clone_with_phv_and_registers_ptr() const {
+  return std::unique_ptr<Packet>(new Packet(clone_with_phv_and_registers()));
+}
+
+Packet
 Packet::clone_with_phv_reset_metadata() const {
   copy_id_t new_copy_id = copy_id_gen->add_one(packet_id);
   Packet pkt(cxt_id, ingress_port, packet_id, new_copy_id, ingress_length,
@@ -205,6 +220,20 @@ Packet::clone_no_phv() const {
 std::unique_ptr<Packet>
 Packet::clone_no_phv_ptr() const {
   return clone_choose_context_ptr(cxt_id);
+}
+
+bool Packet::has_next_node() const {
+  return next_node.has_value();
+}
+const ControlFlowNode *Packet::get_next_node() const {
+  return next_node.value_or(nullptr);
+}
+void Packet::set_next_node(const ControlFlowNode *node) {
+  next_node = node;
+}
+
+void Packet::reset_next_node() {
+  next_node.reset();
 }
 
 /* Cannot get away with defaults here, we need to swap the phvs, otherwise we

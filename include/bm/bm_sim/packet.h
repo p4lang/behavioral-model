@@ -32,6 +32,7 @@
 #include <atomic>
 #include <algorithm>  // for std::min
 #include <limits>
+#include <optional>
 
 #include <cassert>
 
@@ -40,6 +41,7 @@
 #include "parser_error.h"
 #include "phv_source.h"
 #include "phv_forward.h"
+#include "control_flow.h"
 
 namespace bm {
 
@@ -301,6 +303,11 @@ class Packet final {
   //! @copydoc clone_with_phv_reset_metadata
   std::unique_ptr<Packet> clone_with_phv_reset_metadata_ptr() const;
 
+  //! Clone the current packet, along with its PHV and registers.
+  Packet clone_with_phv_and_registers() const;
+  //! @copydoc clone_with_phv_and_registers
+  std::unique_ptr<Packet> clone_with_phv_and_registers_ptr() const;
+
   //! Clone the current packet, without the PHV. The value of the fields in the
   //! clone will be undefined and should not be accessed before setting it
   //! first.
@@ -314,6 +321,17 @@ class Packet final {
   Packet clone_choose_context(cxt_id_t new_cxt) const;
   //! @copydoc clone_choose_context
   std::unique_ptr<Packet> clone_choose_context_ptr(cxt_id_t new_cxt) const;
+
+  // Packet fanout related methods
+  //! Returns true if the packet has a next node set
+  bool has_next_node() const;
+  //! Get the next node, if it exists
+  const ControlFlowNode *get_next_node() const;
+  //! Set the next node, which is used to next the packet processing
+  void set_next_node(const ControlFlowNode *node);
+  //! Reset the next node
+  void reset_next_node();
+
 
   //! Deleted copy constructor
   Packet(const Packet &other) = delete;
@@ -384,6 +402,8 @@ class Packet final {
   ErrorCode error_code{ErrorCode::make_invalid()};
 
   bool checksum_error{false};
+
+  std::optional<const ControlFlowNode *> next_node{std::nullopt};
 
  private:
   static CopyIdGenerator *copy_id_gen;

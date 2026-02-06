@@ -63,6 +63,15 @@ AS_IF([test "x$enable_debugger" = "xyes"], [
     ])
 ])
 
+# TODO: add this to cmake build as well
+pkt_fanout_enabled=no
+AC_ARG_ENABLE([pkt_fanout],
+    AS_HELP_STRING([--enable-pkt-fanout], [Enable packet fanout support]))
+AS_IF([test "x$enable_pkt_fanout" = "xyes"], [
+    pkt_fanout_enabled=yes
+    AC_DEFINE([PKT_FANOUT_ON], [], [Enable packet fanout support])
+])
+
 logging_macros_enabled=no
 AC_ARG_ENABLE([logging_macros],
     AS_HELP_STRING([--disable-logging-macros],
