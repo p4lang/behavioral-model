@@ -215,12 +215,13 @@ class DevMgr : public PacketDispatcherIface {
   DevMgr(DevMgr &&other) = delete;
   DevMgr &operator=(DevMgr &&other) = delete;
 
- protected:
-  ~DevMgr();
-
+ public:
   std::string sample_packet_data(const char *buffer, int len);
 
   size_t dump_packet_data{0};
+
+ protected:
+  ~DevMgr();
 
   int max_port_count;
 
