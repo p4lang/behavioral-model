@@ -122,10 +122,23 @@ sudo dpkg -i /path/to/package.deb
     Our CI tests now run on Ubuntu 22.04 and `ubuntu-latest` (which is
     24.04 as of 2025-Mar-05).
 
+    #### MacOS
+
     On MacOS you can use the tools/macos/bootstrap_mac.sh script to
     install all the above dependencies using homebrew. Note that in order
     to compile the code you need [XCode 8](https://itunes.apple.com/us/app/xcode/id497799835?mt=12)
     or later.
+
+    With MacPorts, you can use
+
+    ```console
+    sudo port install automake autoconf libtool thrift gmp boost
+    ```
+
+    You may need to specify `LDFLAGS=-L/opt/local/lib` on the `configure` command line.
+    You'll also need to manually install the [nanomsg](https://github.com/nanomsg/nanomsg)
+    library.  Macports may fail to install non-mt versions of the boost libraries; you may
+    need to add symlinks in /opt/local/lib for libboost_X.dynlib -> libboost_X-mt.dynlib.
 
 3. Building the code
 
