@@ -291,6 +291,11 @@ int SimpleSwitchRunner::init_and_start(const bm::OptionsParser &parser) {
     (void)pkt_id;
     if (cpu_port > 0 && port_num == cpu_port) {
       BMLOG_DEBUG("Transmitting packet-in");
+      if (simple_switch->dump_packet_data > 0) {
+        bm::Logger::get()->info(
+            "Sending packet-in of length {} on port {}: {}",
+            len, cpu_port, simple_switch->sample_packet_data(buf, len));
+      }
       auto status = pi_packetin_receive(simple_switch->get_device_id(),
                                         buf, static_cast<size_t>(len));
       if (status != PI_STATUS_SUCCESS)
