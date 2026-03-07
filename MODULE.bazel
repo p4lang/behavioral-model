@@ -1,0 +1,13 @@
+module(
+    name = "behavioral-model",
+    version = "1.0.0",
+)
+# C++ rules for Bazel
+bazel_dep(name = "rules_cc", version = "0.1.1")
+
+# Google Test for running the unit tests
+bazel_dep(name = "googletest", version = "1.17.0")
+
+# gRPC and Protobuf for the simple_switch_grpc server
+bazel_dep(name = "grpc", version = "1.78.0")
+bazel_dep(name = "protobuf", version = "31.1")
