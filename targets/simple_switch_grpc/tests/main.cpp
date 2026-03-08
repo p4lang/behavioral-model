@@ -71,9 +71,11 @@ class SimpleSwitchGrpcEnv : public ::testing::Environment {
 
 }  // namespace sswitch_grpc
 
-int main(int argc, char *argv[]) {
+#include <gtest/gtest.h>
+
+bool WITH_VALGRIND = false;
+
+int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
-  ::testing::AddGlobalTestEnvironment(
-       new sswitch_grpc::testing::SimpleSwitchGrpcEnv);
   return RUN_ALL_TESTS();
 }
