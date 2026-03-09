@@ -19,6 +19,6 @@ cc_library(
         "//third_party:spdlog",
         "//src/BMI:bmi",
     ],
-    linkopts = ["-lgmp", "-lpcap", "-lnanomsg", "-lpthread", "-ldl"],
+    linkopts = ["-lgmp", "-lpcap", "-lnanomsg", "-lpthread", "-ldl", "-lboost_program_options", "-lboost_system", "-lboost_filesystem", "-lboost_thread"],
     visibility = ["//visibility:public"],
 )

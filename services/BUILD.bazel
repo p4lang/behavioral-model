@@ -1,23 +1,29 @@
-load("@rules_proto//proto:defs.bzl", "proto_library")
-load("@grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//:pkgconfig_grpc.bzl", "get_grpc_linkopts")
 
-proto_library(
-    name = "dataplane_interface_proto",
+genrule(
+    name = "dataplane_interface_codegen",
     srcs = ["p4/bm/dataplane_interface.proto"],
-    strip_import_prefix = "",
+    outs = [
+        "p4/bm/dataplane_interface.pb.h",
+        "p4/bm/dataplane_interface.pb.cc",
+        "p4/bm/dataplane_interface.grpc.pb.h",
+        "p4/bm/dataplane_interface.grpc.pb.cc",
+    ],
+    cmd = "protoc -Iservices --cpp_out=$(RULEDIR) --grpc_out=$(RULEDIR) --plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin $(location p4/bm/dataplane_interface.proto)",
 )
 
-cc_proto_library(
-    name = "dataplane_interface_cc_proto",
-    deps = [":dataplane_interface_proto"],
-    visibility = ["//visibility:public"],
-)
-
-cc_grpc_library(
+cc_library(
     name = "bm_grpc_dataplane",
-    srcs = [":dataplane_interface_proto"],
-    grpc_only = True,
-    deps = [":dataplane_interface_cc_proto"],
+    srcs = [
+        "p4/bm/dataplane_interface.pb.cc",
+        "p4/bm/dataplane_interface.grpc.pb.cc",
+    ],
+    hdrs = [
+        "p4/bm/dataplane_interface.pb.h",
+        "p4/bm/dataplane_interface.grpc.pb.h",
+    ],
+    includes = ["."],
+    linkopts = get_grpc_linkopts(),
     visibility = ["//visibility:public"],
 )

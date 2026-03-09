@@ -15,8 +15,7 @@ cc_library(
         "//include:bm_headers",
         "//src/bm_sim:bmsim",
         "//targets/simple_switch:simpleswitch_headers",
-        # For now, we will assume PI libraries are built and linked at the top level
-        # so we don't strictly need them to build this static library.
     ],
+    alwayslink = True,
     visibility = ["//visibility:public"],
 )
