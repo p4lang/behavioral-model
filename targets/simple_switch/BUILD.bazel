@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# Expose headers for PI subsystem
+cc_library(
+    name = "simpleswitch_headers",
+    hdrs = ["simple_switch.h", "register_access.h"],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+)
