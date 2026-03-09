@@ -1,0 +1,67 @@
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+load("//:pkgconfig_grpc.bzl", "get_grpc_linkopts")
+
+_PI_LINKOPTS = [
+    "-L/usr/local/lib",
+    "-lpigrpcserver",
+    "-lpifeproto",
+    "-lpiprotogrpc",
+    "-lpiprotobuf",
+    "-lpifecpp",
+    "-lpiconvertproto",
+    "-lpi",
+    "-lpip4info",
+    "-lpifegeneric",
+] + get_grpc_linkopts() + ["-lgrpc++_reflection"]
+
+cc_library(
+    name = "test_common",
+    srcs = [
+        "base_test.cpp",
+        "utils.cpp",
+    ],
+    hdrs = [
+        "base_test.h",
+        "utils.h",
+    ],
+    deps = [
+        "//targets/simple_switch_grpc:switch_runner",
+        "//targets/simple_switch:simpleswitch",
+        "//services:bm_grpc_dataplane",
+        "@googletest//:gtest",
+    ],
+    linkopts = _PI_LINKOPTS,
+    defines = ["TESTDATADIR=\\\"targets/simple_switch_grpc/tests/testdata\\\""],
+    copts = ["-Wno-error=unused-result", "-Wno-error=deprecated-declarations"],
+)
+
+[
+    cc_test(
+        name = test_name,
+        srcs = [
+            test_name + ".cpp",
+            "main.cpp",
+        ],
+        deps = [
+            ":test_common",
+            "@googletest//:gtest",
+        ],
+        data = glob(["testdata/**"]),
+        linkopts = _PI_LINKOPTS,
+        linkstatic = True,
+        tags = ["exclusive"],
+    )
+    for test_name in [
+        "test_basic",
+        "test_grpc_dp",
+        "test_packet_io",
+        "test_counter",
+        "test_meter",
+        "test_ternary",
+        "test_pre",
+        "test_digest",
+        "test_idle_timeout",
+        "test_action_profile",
+        "test_optional",
+    ]
+]
