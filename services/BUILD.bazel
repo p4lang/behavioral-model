@@ -1,0 +1,23 @@
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+
+proto_library(
+    name = "dataplane_interface_proto",
+    srcs = ["p4/bm/dataplane_interface.proto"],
+    strip_import_prefix = "",
+)
+
+cc_proto_library(
+    name = "dataplane_interface_cc_proto",
+    deps = [":dataplane_interface_proto"],
+    visibility = ["//visibility:public"],
+)
+
+cc_grpc_library(
+    name = "bm_grpc_dataplane",
+    srcs = [":dataplane_interface_proto"],
+    grpc_only = True,
+    deps = [":dataplane_interface_cc_proto"],
+    visibility = ["//visibility:public"],
+)
