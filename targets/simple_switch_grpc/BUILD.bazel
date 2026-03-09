@@ -2,17 +2,17 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("//:pkgconfig_grpc.bzl", "get_grpc_linkopts")
 
 _PI_LINKOPTS = [
-    "-Wl,--start-group",
-    "/usr/local/lib/libpigrpcserver.a",
-    "/usr/local/lib/libpifeproto.a",
-    "/usr/local/lib/libpiprotogrpc.a",
-    "/usr/local/lib/libpiprotobuf.a",
-    "/usr/local/lib/libpifecpp.a",
-    "/usr/local/lib/libpiconvertproto.a",
-    "/usr/local/lib/libpi.a",
-    "/usr/local/lib/libpip4info.a",
-    "/usr/local/lib/libpifegeneric.a",
-    "-Wl,--end-group",
+    "-L/usr/local/lib",
+    "-Wl,-rpath=/usr/local/lib",
+    "-lpigrpcserver",
+    "-lpifeproto",
+    "-lpiprotogrpc",
+    "-lpiprotobuf",
+    "-lpifecpp",
+    "-lpiconvertproto",
+    "-lpi",
+    "-lpip4info",
+    "-lpifegeneric",
 ] + get_grpc_linkopts() + ["-lgrpc++_reflection"]
 
 # Library for starting the gRPC server attached to the switch
