@@ -1,0 +1,38 @@
+name: Bazel
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: sudo ./install_deps_ubuntu_22.04.sh
+
+      - name: Cache Bazel
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/bazel
+          key: ${{ runner.os }}-bazel-${{ hashFiles('.bazelversion', '.bazelrc', 'MODULE.bazel') }}
+          restore-keys: |
+            ${{ runner.os }}-bazel-
+
+      - name: Build simple_switch_grpc
+        run: |
+          bazel build //targets/simple_switch_grpc:simple_switch_grpc
+
+      - name: Run simple_switch_grpc tests
+        run: |
+          bazel test //targets/simple_switch_grpc/tests/...
