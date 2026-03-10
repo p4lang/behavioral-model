@@ -16,7 +16,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
+    
+      - name: Fix expired p4lang GPG key
+        run: |
+            sudo sed -i "s|deb http://download.opensuse.org/repositories/home:/p4lang/xUbuntu_22.04/|deb [trusted=yes] http://download.opensuse.org/repositories/home:/p4lang/xUbuntu_22.04/|g" install_deps_ubuntu_22.04.sh
+            sudo sed -i '/curl -fsSL https:\/\/download.opensuse.org\/repositories\/home:/p4lang/d' install_deps_ubuntu_22.04.sh
       - name: Install dependencies
         run: sudo ./install_deps_ubuntu_22.04.sh
 
