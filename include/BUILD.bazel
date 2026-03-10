@@ -1,8 +1,15 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
+genrule(
+    name = "bm_config_h",
+    srcs = ["bm/config.h.in"],
+    outs = ["bm/config.h"],
+    cmd = "sed -e 's/#cmakedefine/#undef/g' $< > $@",
+)
+
 cc_library(
     name = "bm_headers",
-    hdrs = glob(["bm/**/*.h"]),
+    hdrs = glob(["bm/**/*.h"]) + [":bm_config_h"],
     includes = ["."],
     visibility = ["//visibility:public"],
 )

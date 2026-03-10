@@ -3,7 +3,7 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 cc_library(
     name = "simpleswitch",
     srcs = glob(["*.cpp"], exclude=["main.cpp"]),
-    hdrs = glob(["*.h"]),
+    hdrs = glob(["*.h", "bm/**/*.h"]),
     includes = ["."],
     deps = [
         "//include:bm_headers",
