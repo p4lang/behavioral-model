@@ -21,10 +21,24 @@ jobs:
           # Fetch all history for all branches and tags
           fetch-depth: 0
 
+      - name: Check for new commits
+        id: check_commits
+        run: |
+          TAG="$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)"
+          COMMIT_COUNT="$(git rev-list $TAG..HEAD --count)"
+          echo "count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+          if [ "$COMMIT_COUNT" -eq 0 ]; then
+            echo "No new commits since $TAG, skipping release."
+          else
+            echo "$COMMIT_COUNT new commits since $TAG."
+          fi
+
       - name: Increment version number
+        if: steps.check_commits.outputs.count != '0'
         run: perl -i -pe 's/\b(\d+)(?=\D*$)/$1+1/e' VERSION
 
       - name: Get changelog
+        if: steps.check_commits.outputs.count != '0'
         id: changelog
         run: |
           TAG="$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)"
@@ -40,17 +54,20 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Display changelog
+        if: steps.check_commits.outputs.count != '0'
         run: |
           cat <<'EOF'
           ${{ steps.changelog.outputs.content }}
           EOF
 
       - name: Get version
+        if: steps.check_commits.outputs.count != '0'
         run: |
           VERSION="$(cat VERSION)"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Get commit message
+        if: steps.check_commits.outputs.count != '0'
         id: message
         run: |
           COMMIT_MSG=$(cat << 'EOF'
@@ -64,6 +81,7 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Get pull request body message
+        if: steps.check_commits.outputs.count != '0'
         id: body
         run: |
           MSG=$(cat << 'EOF'
@@ -79,6 +97,7 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Create Pull Request
+        if: steps.check_commits.outputs.count != '0'
         uses: peter-evans/create-pull-request@v8
         with:
           base: main
