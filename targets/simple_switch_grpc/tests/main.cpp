@@ -1,13 +1,11 @@
-// Copyright 2026 The P4lang Project Authors
+// Copyright 2026 Prakash Kumar
 
-#include "base_test.h"
-#include "switch_runner.h"
+#include <signal.h>
+#include <stdlib.h>
+
+#include <iostream>
 
 #include <gtest/gtest.h>
-
-#include <vector>
-
-#include <bm/bm_sim/options_parse.h>
 
 namespace sswitch_grpc {
 namespace testing {
