@@ -1,11 +1,11 @@
-// Copyright 2026 Prakash Kumar
-
-#include <signal.h>
-#include <stdlib.h>
-
-#include <iostream>
+#include <bm/bm_sim/options_parse.h>
 
 #include <gtest/gtest.h>
+
+#include <vector>
+
+#include "switch_runner.h"
+#include "base_test.h"
 
 namespace sswitch_grpc {
 namespace testing {
@@ -31,7 +31,7 @@ class SimpleSwitchGrpcEnv : public ::testing::Environment {
     argv.push_back("--log-console");
     argv.push_back(TESTDATADIR "/loopback.json");
 
-    auto argc = static_cast<int>(argv.size());
+    int argc = static_cast<int>(argv.size());
 
     parser.parse(argc, const_cast<char **>(argv.data()), nullptr);
 
@@ -54,4 +54,3 @@ int main(int argc, char *argv[]) {
 
   return RUN_ALL_TESTS();
 }
-

@@ -1,15 +1,15 @@
-// Copyright 2026 Prakash Kumar
-
 #include "base_test.h"
 
-#include <signal.h>
-#include <stdlib.h>
+#include <grpcpp/grpcpp.h>
+#include <google/rpc/code.pb.h>
 
-#include <chrono>
-#include <memory>
-#include <thread>
+#include <fstream>
+#include <streambuf>
+#include <vector>
 
-#include <gtest/gtest.h>
+#include <bm/bm_sim/options_parse.h>
+
+#include "switch_runner.h"
 
 namespace p4v1 = ::p4::v1;
 
@@ -29,7 +29,8 @@ SimpleSwitchGrpcBaseTest::SimpleSwitchGrpcBaseTest(
   p4info = parse_p4info(p4info_proto_txt_path);
 }
 
-void SimpleSwitchGrpcBaseTest::SetUp() {
+void
+SimpleSwitchGrpcBaseTest::SetUp() {
   stream = p4runtime_stub->StreamChannel(&stream_context);
 
   p4v1::StreamMessageRequest request;
@@ -50,18 +51,19 @@ void SimpleSwitchGrpcBaseTest::SetUp() {
             ::google::rpc::Code::OK);
 }
 
-void SimpleSwitchGrpcBaseTest::TearDown() {
+void
+SimpleSwitchGrpcBaseTest::TearDown() {
   stream->WritesDone();
 
   p4v1::StreamMessageResponse response;
-  while (stream->Read(&response)) {
-  }
+  while (stream->Read(&response)) {}
 
   auto status = stream->Finish();
   EXPECT_TRUE(status.ok());
 }
 
-void SimpleSwitchGrpcBaseTest::update_json(const char *json_path) {
+void
+SimpleSwitchGrpcBaseTest::update_json(const char *json_path) {
   p4v1::SetForwardingPipelineConfigRequest request;
   request.set_device_id(device_id);
   request.set_action(
@@ -83,23 +85,23 @@ void SimpleSwitchGrpcBaseTest::update_json(const char *json_path) {
 
   config->set_allocated_p4info(&p4info);
 
-  auto status =
-      p4runtime_stub->SetForwardingPipelineConfig(&context, request, &rep);
+  auto status = p4runtime_stub->SetForwardingPipelineConfig(
+      &context, request, &rep);
 
   config->release_p4info();
 
   ASSERT_TRUE(status.ok());
 }
 
-void SimpleSwitchGrpcBaseTest::set_election_id(
-    p4v1::Uint128 *election_id) const {
+void
+SimpleSwitchGrpcBaseTest::set_election_id(p4v1::Uint128 *election_id) const {
   election_id->set_high(0);
   election_id->set_low(1);
 }
 
-grpc::Status SimpleSwitchGrpcBaseTest::write(
-    const p4v1::Entity &entity,
-    p4v1::Update::Type type) const {
+grpc::Status
+SimpleSwitchGrpcBaseTest::write(const p4v1::Entity &entity,
+                                p4v1::Update::Type type) const {
   p4v1::WriteRequest request;
   request.set_device_id(device_id);
 
@@ -113,24 +115,24 @@ grpc::Status SimpleSwitchGrpcBaseTest::write(
   return Write(&context, request, &rep);
 }
 
-grpc::Status SimpleSwitchGrpcBaseTest::insert(
-    const p4v1::Entity &entity) const {
+grpc::Status
+SimpleSwitchGrpcBaseTest::insert(const p4v1::Entity &entity) const {
   return write(entity, p4v1::Update::INSERT);
 }
 
-grpc::Status SimpleSwitchGrpcBaseTest::modify(
-    const p4v1::Entity &entity) const {
+grpc::Status
+SimpleSwitchGrpcBaseTest::modify(const p4v1::Entity &entity) const {
   return write(entity, p4v1::Update::MODIFY);
 }
 
-grpc::Status SimpleSwitchGrpcBaseTest::remove(
-    const p4v1::Entity &entity) const {
+grpc::Status
+SimpleSwitchGrpcBaseTest::remove(const p4v1::Entity &entity) const {
   return write(entity, p4v1::Update::DELETE);
 }
 
-grpc::Status SimpleSwitchGrpcBaseTest::read(
-    const p4v1::Entity &entity,
-    p4v1::ReadResponse *rep) const {
+grpc::Status
+SimpleSwitchGrpcBaseTest::read(const p4v1::Entity &entity,
+                               p4v1::ReadResponse *rep) const {
   p4v1::ReadRequest request;
   request.set_device_id(device_id);
   request.add_entities()->CopyFrom(entity);
@@ -145,10 +147,10 @@ grpc::Status SimpleSwitchGrpcBaseTest::read(
   return reader->Finish();
 }
 
-grpc::Status SimpleSwitchGrpcBaseTest::Write(
-    grpc::ClientContext *context,
-    p4v1::WriteRequest &request,
-    p4v1::WriteResponse *response) const {
+grpc::Status
+SimpleSwitchGrpcBaseTest::Write(grpc::ClientContext *context,
+                                p4v1::WriteRequest &request,
+                                p4v1::WriteResponse *response) const {
   request.set_device_id(device_id);
   set_election_id(request.mutable_election_id());
 
