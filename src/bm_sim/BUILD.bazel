@@ -1,0 +1,24 @@
+genrule(
+    name = "version_cpp",
+    srcs = ["version.cpp.in"],
+    outs = ["version.cpp"],
+    cmd = "sed 's/@BM_VERSION@/1.15.0-bazel/' $< > $@",
+)
+
+cc_library(
+    name = "bmsim",
+    srcs = glob(["*.cpp", "*.c", "*.h", "core/*.cpp"]) + [":version_cpp"],
+    copts = ["-Isrc/bm_sim"],
+    linkopts = ["-ldl"],
+    deps = [
+        "//:bm_headers",
+        "//src/BMI:bmi",
+        "//third_party:jsoncpp",
+        "//third_party:spdlog",
+        "@system_libs//:boost_thread",
+        "@system_libs//:gmp",
+        "@system_libs//:nanomsg",
+        "@system_libs//:pcap",
+    ],
+    visibility = ["//visibility:public"],
+)
