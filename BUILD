@@ -43,7 +43,7 @@ cc_library(
         "@protobuf//:protobuf",
         "//third_party/gmp:gmp",
         "//third_party/jsoncpp:jsoncpp",
-        "//third_party/PI:PI",
+        "@pi//:pi",
         "@grpc//:grpc++",
         "@boost.thread//:boost.thread",
         "@boost.filesystem//:boost.filesystem",
