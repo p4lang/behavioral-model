@@ -1,0 +1,17 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "bmi",
+    srcs = [
+        "bmi_interface.c",
+        "bmi_port.c",
+    ],
+    hdrs = [
+        "BMI/bmi_port.h",
+        "bmi_interface.h",
+    ],
+    includes = ["."],
+    local_defines = ["WITH_PCAP_FIX"],
+    visibility = ["//visibility:public"],
+    deps = ["@ubuntu2204//:pcap"],
+)

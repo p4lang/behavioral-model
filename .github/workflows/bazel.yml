@@ -1,0 +1,42 @@
+name: "Bazel Build"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install system dependencies
+        run: sudo bash install_deps_ubuntu_22.04.sh
+
+      - name: Setup Buildifier
+        run: |
+          sudo curl -L https://github.com/bazelbuild/buildtools/releases/download/v8.5.1/buildifier-linux-amd64 -o /usr/bin/buildifier --fail
+          sudo chmod +x /usr/bin/buildifier
+
+      - name: Run Buildifier
+        run: |
+          BZL_FILES=$(find . -name *BUILD* -o -name '*bzl' -o -name '*.bazel')
+          if ! buildifier --mode=check $BZL_FILES; then
+            echo "::error::Buildifier formatting issues found."
+            echo "::group::Buildifier Diff"
+            buildifier --mode=diff $BZL_FILES
+            echo "::endgroup::"
+            exit 1
+          else
+            echo "All files are formatted correctly."
+          fi
+
+      - name: Build
+        run: bazel build //targets/simple_switch_grpc:simple_switch_grpc
+
+      - name: Test
+        run: bazel test //targets/simple_switch_grpc/tests/...

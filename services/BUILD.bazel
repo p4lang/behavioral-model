@@ -1,0 +1,28 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+genrule(
+    name = "dataplane_interface_codegen",
+    srcs = ["p4/bm/dataplane_interface.proto"],
+    outs = [
+        "p4/bm/dataplane_interface.pb.h",
+        "p4/bm/dataplane_interface.pb.cc",
+        "p4/bm/dataplane_interface.grpc.pb.h",
+        "p4/bm/dataplane_interface.grpc.pb.cc",
+    ],
+    cmd = "protoc -Iservices --cpp_out=$(RULEDIR) --grpc_out=$(RULEDIR) --plugin=protoc-gen-grpc=$$(which grpc_cpp_plugin) $(location p4/bm/dataplane_interface.proto)",
+)
+
+cc_library(
+    name = "bm_grpc_dataplane",
+    srcs = [
+        "p4/bm/dataplane_interface.grpc.pb.cc",
+        "p4/bm/dataplane_interface.pb.cc",
+    ],
+    hdrs = [
+        "p4/bm/dataplane_interface.grpc.pb.h",
+        "p4/bm/dataplane_interface.pb.h",
+    ],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+    deps = ["@ubuntu2204//:grpc"],
+)
