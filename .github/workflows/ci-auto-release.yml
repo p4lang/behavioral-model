@@ -102,7 +102,7 @@ jobs:
         with:
           base: main
           add-paths: VERSION
-          reviewers: fruffy, jafingerhut, jnfoster
+          reviewers: fruffy, jafingerhut
           commit-message: ${{ steps.message.outputs.content }}
           signoff: false
           branch: release/${{ env.VERSION }}
