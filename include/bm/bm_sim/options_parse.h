@@ -90,6 +90,10 @@ class OptionsParser {
   Logger::LogLevel log_level{Logger::LogLevel::TRACE};
   // by default file logs are not "force-flushed" to disk
   bool log_flush{false};
+  // max size of a single log file (in bytes) before rotation
+  size_t log_max_size{1024 * 1024 * 5};
+  // number of rotated backup log files to keep
+  size_t log_max_files{3};
   std::string notifications_addr{};
   bool debugger{false};
   std::string debugger_addr{};
