@@ -28,6 +28,8 @@
 
 #include <cassert>
 
+#include <bm/bm_sim/logger.h>
+
 namespace bm {
 
 //! This acts as a recipient for the packet data. A PacketBuffer instance will
@@ -87,6 +89,8 @@ class PacketBuffer {
   char *end() const { return buffer.get() + size; }
 
   char *push(size_t bytes) {
+    BMLOG_TRACE("Pushing {} bytes to packet buffer (data size before push: {}) - Allocated size for the buffer is {}", 
+                bytes, data_size, size);
     assert(data_size + bytes <= size);
     data_size += bytes;
     head -= bytes;
@@ -94,6 +98,8 @@ class PacketBuffer {
   }
 
   char *pop(size_t bytes) {
+    BMLOG_TRACE("Popping {} bytes from packet buffer (data size before pop: {}) - Current size of the buffer is {}", 
+                bytes, data_size, size);
     assert(bytes <= data_size);
     data_size -= bytes;
     head += bytes;
