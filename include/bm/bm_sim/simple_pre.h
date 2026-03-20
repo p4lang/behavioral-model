@@ -88,7 +88,13 @@ class McSimplePre {
   static constexpr size_t LAG_MAP_SIZE = 512;
   using LagMap = McPre::Set<LAG_MAP_SIZE>;
 
-  McSimplePre() {}
+  explicit McSimplePre(
+      int mgid_table_size = DEFAULT_MGID_TABLE_SIZE,
+      int l1_max_entries = DEFAULT_L1_MAX_ENTRIES,
+      int l2_max_entries = DEFAULT_L2_MAX_ENTRIES)
+      : mgid_table_size(mgid_table_size),
+        l1_max_entries(l1_max_entries),
+        l2_max_entries(l2_max_entries) {}
   McReturnCode mc_mgrp_create(const mgrp_t, mgrp_hdl_t *);
   McReturnCode mc_mgrp_destroy(const mgrp_hdl_t);
   McReturnCode mc_node_create(const rid_t,
@@ -139,9 +145,13 @@ class McSimplePre {
   McSimplePre &operator=(McSimplePre &&other) = delete;
 
  protected:
-  static constexpr int MGID_TABLE_SIZE = 4096;
-  static constexpr int L1_MAX_ENTRIES = 4096;
-  static constexpr int L2_MAX_ENTRIES = 8192;
+  static constexpr int DEFAULT_MGID_TABLE_SIZE = 4096;
+  static constexpr int DEFAULT_L1_MAX_ENTRIES = 4096;
+  static constexpr int DEFAULT_L2_MAX_ENTRIES = 8192;
+
+  int mgid_table_size;
+  int l1_max_entries;
+  int l2_max_entries;
 
   struct MgidEntry {
     mgrp_t mgid{};

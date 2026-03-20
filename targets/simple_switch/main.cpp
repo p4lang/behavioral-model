@@ -49,6 +49,15 @@ main(int argc, char* argv[]) {
   simple_switch_parser.add_uint_option(
       "priority-queues",
       "Number of priority queues (default is 1)");
+  simple_switch_parser.add_uint_option(
+      "max-mc-groups",
+      "Maximum number of multicast groups (default is 4096)");
+  simple_switch_parser.add_uint_option(
+      "max-l1-entries",
+      "Maximum number of L1 multicast entries (default is 4096)");
+  simple_switch_parser.add_uint_option(
+      "max-l2-entries",
+      "Maximum number of L2 multicast entries (default is 8192)");
 
   bm::OptionsParser parser;
   parser.parse(argc, argv, &simple_switch_parser);
@@ -78,8 +87,40 @@ main(int argc, char* argv[]) {
       std::exit(1);
   }
 
+  uint32_t mgid_table_size = 0xffffffff;
+  {
+    auto rc = simple_switch_parser.get_uint_option(
+        "max-mc-groups", &mgid_table_size);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      mgid_table_size = SimpleSwitch::default_mgid_table_size;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+  }
+
+  uint32_t l1_max_entries = 0xffffffff;
+  {
+    auto rc = simple_switch_parser.get_uint_option(
+        "max-l1-entries", &l1_max_entries);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      l1_max_entries = SimpleSwitch::default_l1_max_entries;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+  }
+
+  uint32_t l2_max_entries = 0xffffffff;
+  {
+    auto rc = simple_switch_parser.get_uint_option(
+        "max-l2-entries", &l2_max_entries);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      l2_max_entries = SimpleSwitch::default_l2_max_entries;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+  }
+
   simple_switch = new SimpleSwitch(enable_swap_flag, drop_port,
-                                   priority_queues);
+                                   priority_queues,
+                                   mgid_table_size, l1_max_entries,
+                                   l2_max_entries);
 
   int status = simple_switch->init_from_options_parser(parser);
   if (status != 0) std::exit(status);

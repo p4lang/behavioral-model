@@ -53,6 +53,9 @@ class SimpleSwitchGrpcRunner {
  public:
   static constexpr bm::DevMgrIface::port_t default_drop_port = 511;
   static constexpr size_t default_nb_queues_per_port = 1;
+  static constexpr int default_mgid_table_size = 4096;
+  static constexpr int default_l1_max_entries = 4096;
+  static constexpr int default_l2_max_entries = 8192;
 
   // there is no real need for a singleton here, except for the fact that we use
   // PIGrpcServerRunAddr, ... which uses static state
@@ -63,10 +66,14 @@ class SimpleSwitchGrpcRunner {
       std::string dp_grpc_server_addr = "",
       bm::DevMgrIface::port_t drop_port = default_drop_port,
       std::shared_ptr<SSLOptions> ssl_options = nullptr,
-      size_t nb_queues_per_port = default_nb_queues_per_port) {
+      size_t nb_queues_per_port = default_nb_queues_per_port,
+      int mgid_table_size = default_mgid_table_size,
+      int l1_max_entries = default_l1_max_entries,
+      int l2_max_entries = default_l2_max_entries) {
     static SimpleSwitchGrpcRunner instance(
         enable_swap, grpc_server_addr, cpu_port, dp_grpc_server_addr,
-        drop_port, ssl_options, nb_queues_per_port);
+        drop_port, ssl_options, nb_queues_per_port,
+        mgid_table_size, l1_max_entries, l2_max_entries);
     return instance;
   }
 
@@ -87,7 +94,10 @@ class SimpleSwitchGrpcRunner {
                          bm::DevMgrIface::port_t drop_port = default_drop_port,
                          std::shared_ptr<SSLOptions> ssl_options = nullptr,
                          size_t nb_queues_per_port =
-                             default_nb_queues_per_port);
+                             default_nb_queues_per_port,
+                         int mgid_table_size = default_mgid_table_size,
+                         int l1_max_entries = default_l1_max_entries,
+                         int l2_max_entries = default_l2_max_entries);
   ~SimpleSwitchGrpcRunner();
 
   void port_status_cb(bm::DevMgrIface::port_t port,

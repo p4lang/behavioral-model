@@ -39,6 +39,12 @@ class McSimplePreLAG : public McSimplePre {
   static constexpr int LAG_MAX_ENTRIES = 256;
   using lag_id_t = uint16_t;
 
+  explicit McSimplePreLAG(
+      int mgid_table_size = McSimplePre::DEFAULT_MGID_TABLE_SIZE,
+      int l1_max_entries = McSimplePre::DEFAULT_L1_MAX_ENTRIES,
+      int l2_max_entries = McSimplePre::DEFAULT_L2_MAX_ENTRIES)
+      : McSimplePre(mgid_table_size, l1_max_entries, l2_max_entries) {}
+
   McReturnCode mc_node_create(const rid_t rid,
                               const PortMap &port_map,
                               const LagMap &lag_map,

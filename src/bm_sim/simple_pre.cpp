@@ -35,7 +35,7 @@ McSimplePre::McReturnCode
 McSimplePre::mc_mgrp_create(const mgrp_t mgid, mgrp_hdl_t *mgrp_hdl) {
   boost::unique_lock<boost::shared_mutex> lock(mutex);
   size_t num_entries = mgid_entries.size();
-  if (num_entries >= MGID_TABLE_SIZE) {
+  if (num_entries >= static_cast<size_t>(mgid_table_size)) {
     Logger::get()->error("mgrp create failed, mgid table full");
     return TABLE_FULL;
   }
@@ -62,11 +62,11 @@ McSimplePre::mc_node_create(const rid_t rid,
   l2_hdl_t l2_hdl;
   size_t num_l1_entries = l1_entries.size();
   size_t num_l2_entries = l2_entries.size();
-  if (num_l1_entries >= L1_MAX_ENTRIES) {
+  if (num_l1_entries >= static_cast<size_t>(l1_max_entries)) {
     Logger::get()->error("node create failed, l1 table full");
     return TABLE_FULL;
   }
-  if (num_l2_entries >= L2_MAX_ENTRIES) {
+  if (num_l2_entries >= static_cast<size_t>(l2_max_entries)) {
     Logger::get()->error("node create failed, l2 table full");
     return TABLE_FULL;
   }

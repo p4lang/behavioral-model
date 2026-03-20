@@ -199,7 +199,10 @@ class SimpleSwitch::InputBuffer {
 };
 
 SimpleSwitch::SimpleSwitch(bool enable_swap, port_t drop_port,
-                           size_t nb_queues_per_port)
+                           size_t nb_queues_per_port,
+                           int mgid_table_size,
+                           int l1_max_entries,
+                           int l2_max_entries)
   : Switch(enable_swap),
     drop_port(drop_port),
     input_buffer(new InputBuffer(
@@ -216,7 +219,7 @@ SimpleSwitch::SimpleSwitch(bool enable_swap, port_t drop_port,
         _BM_UNUSED(pkt_id);
         this->transmit_fn(port_num, buffer, len);
     }),
-    pre(new McSimplePreLAG()),
+    pre(new McSimplePreLAG(mgid_table_size, l1_max_entries, l2_max_entries)),
     start(clock::now()),
     mirroring_sessions(new MirroringSessions()) {
   add_component<McSimplePreLAG>(pre);
