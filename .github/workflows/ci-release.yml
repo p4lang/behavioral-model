@@ -1,0 +1,54 @@
+name: GitHub Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "VERSION"
+      - ".github/workflows/ci-release.yml"
+
+# Cancel any preceding run on the pull request.
+concurrency:
+  group: release-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  build:
+    if: ${{ github.repository == 'p4lang/behavioral-model' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Get version
+        run: |
+          VERSION="$(cat VERSION)"
+          TAG="$(cat VERSION)"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          TAG="${{ env.TAG }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping release creation."
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag $TAG does not exist."
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Release
+        if: steps.check_tag.outputs.tag_exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

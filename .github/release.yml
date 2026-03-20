@@ -1,0 +1,44 @@
+# .github/release.yml
+
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+  categories:
+    - title: Breaking Changes
+      labels:
+        - breaking-change
+    - title: Bug Fixes
+      labels:
+        - bug
+    - title: Enhancements
+      labels:
+        - enhancement
+    - title: Core Simulator Changes
+      labels:
+        - core
+    - title: Target Changes
+      labels:
+        - simple_switch
+        - psa_switch
+        - pna_nic
+    - title: gRPC / Control Plane
+      labels:
+        - grpc
+        - control-plane
+    - title: Build System
+      labels:
+        - cmake
+        - autoconf
+    - title: Dependencies
+      labels:
+        - dependencies
+    - title: CI/Infrastructure
+      labels:
+        - github_actions
+    - title: Documentation
+      labels:
+        - documentation
+    - title: Other Changes
+      labels:
+        - "*"
