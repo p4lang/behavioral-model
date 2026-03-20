@@ -128,6 +128,11 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
        "'trace', 'debug', 'info', 'warn', 'error', off'; default is 'trace'")
       ("log-flush", "If used with '--log-file', the logger will flush to disk "
        "after every log message")
+      ("log-file-max-size", po::value<size_t>(),
+       "Maximum size of a single log file (in bytes) before rotation; "
+       "default is 5242880 (5 MB)")
+      ("log-file-max-files", po::value<size_t>(),
+       "Maximum number of rotated backup log files to keep; default is 3")
 #ifdef BM_NANOMSG_ON
       ("notifications-addr", po::value<std::string>(),
        "Specify the nanomsg address to use for notifications "
@@ -326,6 +331,28 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
                 << "not specified\n";
     } else {
       log_flush = true;
+    }
+  }
+
+  if (vm.count("log-file-max-size")) {
+    if (!vm.count("log-file")) {
+      outstream << "Ignoring --log-file-max-size option because --log-file "
+                << "not specified\n";
+    } else {
+      log_max_size = vm["log-file-max-size"].as<size_t>();
+      if (log_max_size == 0) {
+        outstream << "Error: --log-file-max-size must be greater than 0\n";
+        exit(1);
+      }
+    }
+  }
+
+  if (vm.count("log-file-max-files")) {
+    if (!vm.count("log-file")) {
+      outstream << "Ignoring --log-file-max-files option because --log-file "
+                << "not specified\n";
+    } else {
+      log_max_files = vm["log-file-max-files"].as<size_t>();
     }
   }
 

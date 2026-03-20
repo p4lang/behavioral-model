@@ -89,9 +89,13 @@ class Logger {
   static void set_logger_console();
 
   //! Log all messages to the given file. If \p force_flush is true, the logger
-  //! will flush to disk after every log message.
+  //! will flush to disk after every log message. \p max_size is the maximum
+  //! size of a single log file in bytes before rotation. \p max_files is the
+  //! number of rotated backup files to keep.
   static void set_logger_file(const std::string &filename,
-                              bool force_flush = false);
+                              bool force_flush = false,
+                              size_t max_size = 1024 * 1024 * 5,
+                              size_t max_files = 3);
 
   //! Log all messages to the given output stream. Mostly used for testing.
   // NOLINTNEXTLINE(runtime/references)
