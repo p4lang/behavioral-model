@@ -81,6 +81,7 @@ class PacketBuffer {
       data_size(0),
       buffer(std::unique_ptr<char[]>(new char[size])),
       head(buffer.get() + size) {
+    BMLOG_TRACE("Constructor: Initializing packet buffer...");
     std::copy(data, data + data_size, push(data_size));
     BMLOG_TRACE("Constructor: Initialized packet buffer with {} bytes capacity with {} bytes of data", size, data_size);
   }

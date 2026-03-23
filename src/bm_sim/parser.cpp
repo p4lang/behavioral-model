@@ -292,6 +292,7 @@ struct ParserOpExtract : ParserOp {
     auto &hdr = phv->get_header(header);
     BMLOG_DEBUG_PKT(*pkt, "Extracting header '{}'", hdr.get_name());
     extract_fixed(&hdr, pkt, data, bytes_parsed);
+    BMLOG_TRACE("Header extracted with value {0:x}", data);
   }
 };
 
