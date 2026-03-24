@@ -22,12 +22,12 @@
 
 #include <bm/config.h>
 
-#include <climits>
-
 #include <bm/SimpleSwitch.h>
 #include <bm/bm_runtime/bm_runtime.h>
 #include <bm/bm_sim/options_parse.h>
 #include <bm/bm_sim/target_parser.h>
+
+#include <climits>
 
 #include "simple_switch.h"
 
