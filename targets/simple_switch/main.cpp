@@ -22,6 +22,8 @@
 
 #include <bm/config.h>
 
+#include <climits>
+
 #include <bm/SimpleSwitch.h>
 #include <bm/bm_runtime/bm_runtime.h>
 #include <bm/bm_sim/options_parse.h>
@@ -95,6 +97,11 @@ main(int argc, char* argv[]) {
       mgid_table_size = SimpleSwitch::default_mgid_table_size;
     else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
       std::exit(1);
+    if (mgid_table_size == 0 || mgid_table_size > INT_MAX) {
+      std::cerr << "max-mc-groups must be between 1 and "
+                << INT_MAX << std::endl;
+      std::exit(1);
+    }
   }
 
   uint32_t l1_max_entries = 0xffffffff;
@@ -105,6 +112,11 @@ main(int argc, char* argv[]) {
       l1_max_entries = SimpleSwitch::default_l1_max_entries;
     else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
       std::exit(1);
+    if (l1_max_entries == 0 || l1_max_entries > INT_MAX) {
+      std::cerr << "max-l1-entries must be between 1 and "
+                << INT_MAX << std::endl;
+      std::exit(1);
+    }
   }
 
   uint32_t l2_max_entries = 0xffffffff;
@@ -115,6 +127,11 @@ main(int argc, char* argv[]) {
       l2_max_entries = SimpleSwitch::default_l2_max_entries;
     else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
       std::exit(1);
+    if (l2_max_entries == 0 || l2_max_entries > INT_MAX) {
+      std::cerr << "max-l2-entries must be between 1 and "
+                << INT_MAX << std::endl;
+      std::exit(1);
+    }
   }
 
   simple_switch = new SimpleSwitch(enable_swap_flag, drop_port,
