@@ -91,8 +91,7 @@ class PacketBuffer {
   char *end() const { return buffer.get() + size; }
 
   char *push(size_t bytes) {
-    BMLOG_TRACE("Pushing {} bytes to packet buffer (data size before push: {}) - Buffer size before push is {}", 
-                bytes, data_size, size);
+    BMLOG_TRACE("Pushing {} bytes to packet buffer (data size before push: {}) - Buffer size is {}", bytes, data_size, size);
     assert(data_size + bytes <= size);
     data_size += bytes;
     head -= bytes;
@@ -101,8 +100,7 @@ class PacketBuffer {
   }
 
   char *pop(size_t bytes) {
-    BMLOG_TRACE("Popping {} bytes from packet buffer (data size before pop: {}) - Buffer size before pop is {}", 
-                bytes, data_size, size);
+    BMLOG_TRACE("Popping {} bytes from packet buffer (data size before pop: {}) - Buffer size is {}",bytes, data_size, size);
     assert(bytes <= data_size);
     data_size -= bytes;
     head += bytes;

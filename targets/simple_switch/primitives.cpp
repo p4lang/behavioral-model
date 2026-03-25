@@ -421,6 +421,9 @@ class register_read
     BMLOG_TRACE_PKT(get_packet(),
                     "Read register '{}' at index {} read value {}",
                     src.get_name(), i, src[i]);
+    std::string reg_bytes = src[i].get_string();
+    BMLOG_TRACE_PKT(get_packet(), "HEX value: {}",
+            bm::ByteContainer(reg_bytes.data(), reg_bytes.size()).to_hex());
   }
 };
 
@@ -444,6 +447,9 @@ class register_write
     BMLOG_TRACE_PKT(get_packet(),
                     "Wrote register '{}' at index {} with value {}",
                     dst.get_name(), i, dst[i]);
+    std::string reg_bytes = dst[i].get_string();
+    BMLOG_TRACE_PKT(get_packet(), "HEX value: {}",
+            bm::ByteContainer(reg_bytes.data(), reg_bytes.size()).to_hex());
   }
 };
 

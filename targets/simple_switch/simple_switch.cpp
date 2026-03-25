@@ -132,7 +132,10 @@ class SimpleSwitch::InputBuffer {
   };
 
   InputBuffer(size_t capacity_hi, size_t capacity_lo)
-      : capacity_hi(capacity_hi), capacity_lo(capacity_lo) { }
+      : capacity_hi(capacity_hi), capacity_lo(capacity_lo) {
+    BMLOG_TRACE("InputBuffer created with high priority capacity {} and low priority capacity {}",
+                capacity_hi, capacity_lo);
+  }
 
   int push_front(PacketType packet_type, std::unique_ptr<Packet> &&item) {
     switch (packet_type) {
