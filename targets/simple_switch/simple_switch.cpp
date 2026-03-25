@@ -270,6 +270,7 @@ SimpleSwitch::receive_(port_t port_num, const char *buffer, int len) {
 
   input_buffer->push_front(
       InputBuffer::PacketType::NORMAL, std::move(packet));
+  BMLOG_TRACE("PacketBuffer pushed to InputBuffer");
   return 0;
 }
 
