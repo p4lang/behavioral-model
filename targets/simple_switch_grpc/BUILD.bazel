@@ -1,0 +1,44 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+
+PI_AND_GRPC_LINKOPTS = [
+    "-L/usr/local/lib",
+    "-Wl,-rpath=/usr/local/lib",
+    "-lpigrpcserver", "-lpifeproto", "-lpiprotogrpc", "-lpiprotobuf",
+    "-lpifecpp", "-lpiconvertproto", "-lpi", "-lpip4info", "-lpifegeneric",
+    "-lgrpc++_reflection", "-lgrpc++", "-lgrpc", "-lprotobuf", "-lgpr",
+    "-labsl_cord", "-labsl_strings", "-labsl_base",
+    "-labsl_synchronization", "-labsl_status",
+    "-labsl_statusor", "-labsl_time",
+    "-lre2", "-lcares", "-lupb",
+]
+
+cc_library(
+    name = "simple_switch_grpc_runner",
+    srcs = ["switch_runner.cpp"],
+    hdrs = ["switch_runner.h"],
+    includes = ["."],
+    deps = [
+        "//targets/simple_switch:simple_switch_base",
+        "//PI:bmpi_frontend",
+        "//services:dataplane_grpc_interface",
+    ],
+    linkopts = PI_AND_GRPC_LINKOPTS,
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "simple_switch_grpc_app",
+    srcs = ["main.cpp"],
+    deps = [
+        ":simple_switch_grpc_runner",
+        "//targets/simple_switch:simple_switch_base",
+    ],
+    linkopts = PI_AND_GRPC_LINKOPTS,
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "simple_switch_grpc",
+    actual = ":simple_switch_grpc_app",
+    visibility = ["//visibility:public"],
+)

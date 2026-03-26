@@ -1,0 +1,23 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "simple_switch_base",
+    srcs = glob(["*.cpp"], exclude = ["main.cpp"]),
+    hdrs = glob([
+        "*.h",
+        "bm/**/*.h"
+    ]),
+    includes = ["."],
+    deps = [
+        "//include:bmv2_headers",
+        "//src/bm_sim:bmv2_core_engine",
+        "//src/BMI:bmi_lib",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "headers",
+    actual = ":simple_switch_base",
+    visibility = ["//visibility:public"],
+)

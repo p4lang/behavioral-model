@@ -1,0 +1,2 @@
+# Expose VERSION file for the code generation
+exports_files(["VERSION"])
