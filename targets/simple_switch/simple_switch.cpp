@@ -390,6 +390,7 @@ SimpleSwitch::transmit_thread() {
   while (1) {
     std::unique_ptr<Packet> packet;
     output_buffer.pop_back(&packet);
+    BMLOG_TRACE_PKT(*packet, "Popped packet from output buffer");
     if (packet == nullptr) break;
     BMELOG(packet_out, *packet);
     BMLOG_DEBUG_PKT(*packet, "Transmitting packet of size {} out of port {}",
@@ -422,7 +423,7 @@ SimpleSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
       phv->get_field("queueing_metadata.enq_qdepth")
           .set(egress_buffers.size(egress_port, priority));
     }
-
+    BMLOG_TRACE_PKT(*packet, "Enqueuing packet to output buffer");
     egress_buffers.push_front(
         egress_port, priority,
         std::move(packet));
@@ -486,6 +487,7 @@ SimpleSwitch::ingress_thread() {
   while (1) {
     std::unique_ptr<Packet> packet;
     input_buffer->pop_back(&packet);
+    BMLOG_TRACE_PKT(*packet, "Popped Packet from InputBuffer");
     if (packet == nullptr) break;
 
     // TODO(antonin): only update these if swapping actually happened?
@@ -654,6 +656,7 @@ SimpleSwitch::egress_thread(size_t worker_id) {
     size_t port;
     size_t priority;
     egress_buffers.pop_back(worker_id, &port, &priority, &packet);
+    BMLOG_TRACE_PKT(*packet, "Popped packet from egress buffer");
     if (packet == nullptr) break;
 
     Deparser *deparser = this->get_deparser("deparser");
@@ -769,6 +772,7 @@ SimpleSwitch::egress_thread(size_t worker_id) {
       continue;
     }
 
+    BMLOG_TRACE_PKT(*packet, "Enqueuing packet to output buffer");
     output_buffer.push_front(std::move(packet));
   }
 }
