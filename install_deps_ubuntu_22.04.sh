@@ -34,6 +34,9 @@ apt-get install -qq --no-install-recommends \
     pkg-config \
     protobuf-compiler \
     protobuf-compiler-grpc \
+    python3-all \
+    python3-six \
+    python3-thrift \
     thrift-compiler \
     libreadline-dev \
     p4lang-pi
