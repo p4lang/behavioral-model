@@ -6,10 +6,6 @@ PI_AND_GRPC_LINKOPTS = [
     "-lpigrpcserver", "-lpifeproto", "-lpiprotogrpc", "-lpiprotobuf",
     "-lpifecpp", "-lpiconvertproto", "-lpi", "-lpip4info", "-lpifegeneric",
     "-lgrpc++_reflection", "-lgrpc++", "-lgrpc", "-lprotobuf", "-lgpr",
-    "-labsl_cord", "-labsl_strings", "-labsl_base",
-    "-labsl_synchronization", "-labsl_status",
-    "-labsl_statusor", "-labsl_time",
-    "-lre2", "-lcares", "-lupb",
 ]
 
 cc_library(

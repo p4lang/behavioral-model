@@ -14,8 +14,6 @@ apt-get install -qq --no-install-recommends \
     cmake \
     git \
     g++ \
-    libabsl-dev \
-    libc-ares-dev \
     libboost-dev \
     libboost-filesystem-dev \
     libboost-program-options-dev \
@@ -29,12 +27,10 @@ apt-get install -qq --no-install-recommends \
     libpcap-dev \
     libprotobuf-dev \
     libprotoc-dev \
-    libre2-dev \
     libssl-dev \
     libthrift-0.16.0 \
     libthrift-dev \
     libtool \
-    libupb-dev \
     pkg-config \
     protobuf-compiler \
     protobuf-compiler-grpc \
