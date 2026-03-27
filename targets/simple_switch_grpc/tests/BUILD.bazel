@@ -1,10 +1,15 @@
 load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
 
-PI_LINKOPTS = [
+PI_AND_GRPC_LINKOPTS = [
     "-L/usr/local/lib",
     "-Wl,-rpath=/usr/local/lib",
     "-lpigrpcserver", "-lpifeproto", "-lpiprotogrpc", "-lpiprotobuf",
     "-lpifecpp", "-lpiconvertproto", "-lpi", "-lpip4info", "-lpifegeneric",
+    "-lgrpc++_reflection", "-lgrpc++", "-lgrpc", "-lprotobuf", "-lgpr",
+    "-labsl_cord", "-labsl_strings", "-labsl_base",
+    "-labsl_synchronization", "-labsl_status",
+    "-labsl_statusor", "-labsl_time",
+    "-lre2", "-lcares", "-lupb",
 ]
 
 cc_library(
@@ -22,9 +27,8 @@ cc_library(
         "//targets/simple_switch:simple_switch_base",
         "//services:dataplane_grpc_interface",
         "@googletest//:gtest",
-        "@grpc//:grpc++",
     ],
-    linkopts = PI_LINKOPTS,
+    linkopts = PI_AND_GRPC_LINKOPTS,
     defines = ["TESTDATADIR=\\\"targets/simple_switch_grpc/tests/testdata\\\""],
     copts = [
         "-Wno-error=unused-result",
@@ -43,7 +47,7 @@ TEST_MODULES = [
     srcs = [t + ".cpp", "main.cpp"],
     deps = [":bmv2_test_utilities", "@googletest//:gtest"],
     data = glob(["testdata/**"]),
-    linkopts = PI_LINKOPTS,
+    linkopts = PI_AND_GRPC_LINKOPTS,
     linkstatic = True,
     tags = ["exclusive"],
 ) for t in TEST_MODULES]

@@ -6,5 +6,4 @@ module(
 bazel_dep(name = "rules_cc", version = "0.1.1")
 bazel_dep(name = "googletest", version = "1.17.0")
 bazel_dep(name = "rules_proto", version = "7.1.0")
-bazel_dep(name = "grpc", version = "1.78.0")
-bazel_dep(name = "protobuf", version = "31.1")
+# gRPC and Protobuf are provided by the Ubuntu system to maintain ABI compatibility with PI.
