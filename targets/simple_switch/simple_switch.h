@@ -75,9 +75,12 @@ class SimpleSwitch : public Switch {
 
   static constexpr port_t default_drop_port = 511;
   static constexpr size_t default_nb_queues_per_port = 1;
-  static constexpr int default_mgid_table_size = 4096;
-  static constexpr int default_l1_max_entries = 4096;
-  static constexpr int default_l2_max_entries = 8192;
+  static constexpr int default_mgid_table_size =
+      bm::McSimplePre::DEFAULT_MGID_TABLE_SIZE;
+  static constexpr int default_l1_max_entries =
+      bm::McSimplePre::DEFAULT_L1_MAX_ENTRIES;
+  static constexpr int default_l2_max_entries =
+      bm::McSimplePre::DEFAULT_L2_MAX_ENTRIES;
 
  private:
   using clock = std::chrono::high_resolution_clock;

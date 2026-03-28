@@ -28,6 +28,7 @@
 #include <bm/bm_sim/target_parser.h>
 
 #include <climits>
+#include <string>
 
 #include "simple_switch.h"
 
@@ -53,13 +54,16 @@ main(int argc, char* argv[]) {
       "Number of priority queues (default is 1)");
   simple_switch_parser.add_uint_option(
       "max-mc-groups",
-      "Maximum number of multicast groups (default is 4096)");
+      "Maximum number of multicast groups (default is "
+      + std::to_string(SimpleSwitch::default_mgid_table_size) + ")");
   simple_switch_parser.add_uint_option(
       "max-l1-entries",
-      "Maximum number of L1 multicast entries (default is 4096)");
+      "Maximum number of L1 multicast entries (default is "
+      + std::to_string(SimpleSwitch::default_l1_max_entries) + ")");
   simple_switch_parser.add_uint_option(
       "max-l2-entries",
-      "Maximum number of L2 multicast entries (default is 8192)");
+      "Maximum number of L2 multicast entries (default is "
+      + std::to_string(SimpleSwitch::default_l2_max_entries) + ")");
 
   bm::OptionsParser parser;
   parser.parse(argc, argv, &simple_switch_parser);

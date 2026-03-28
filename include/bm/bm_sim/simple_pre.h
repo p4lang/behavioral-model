@@ -82,6 +82,10 @@ class McSimplePre {
   };
 
  public:
+  static constexpr int DEFAULT_MGID_TABLE_SIZE = 4096;
+  static constexpr int DEFAULT_L1_MAX_ENTRIES = 4096;
+  static constexpr int DEFAULT_L2_MAX_ENTRIES = 8192;
+
   static constexpr size_t PORT_MAP_SIZE = 512;
   using PortMap = McPre::Set<PORT_MAP_SIZE>;
 
@@ -145,10 +149,6 @@ class McSimplePre {
   McSimplePre &operator=(McSimplePre &&other) = delete;
 
  protected:
-  static constexpr int DEFAULT_MGID_TABLE_SIZE = 4096;
-  static constexpr int DEFAULT_L1_MAX_ENTRIES = 4096;
-  static constexpr int DEFAULT_L2_MAX_ENTRIES = 8192;
-
   int mgid_table_size;
   int l1_max_entries;
   int l2_max_entries;

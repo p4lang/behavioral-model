@@ -22,6 +22,7 @@
 #define SIMPLE_SWITCH_GRPC_SWITCH_RUNNER_H_
 
 #include <bm/bm_sim/dev_mgr.h>
+#include <bm/bm_sim/simple_pre.h>
 
 #include <grpcpp/server.h>
 
@@ -53,9 +54,12 @@ class SimpleSwitchGrpcRunner {
  public:
   static constexpr bm::DevMgrIface::port_t default_drop_port = 511;
   static constexpr size_t default_nb_queues_per_port = 1;
-  static constexpr int default_mgid_table_size = 4096;
-  static constexpr int default_l1_max_entries = 4096;
-  static constexpr int default_l2_max_entries = 8192;
+  static constexpr int default_mgid_table_size =
+      bm::McSimplePre::DEFAULT_MGID_TABLE_SIZE;
+  static constexpr int default_l1_max_entries =
+      bm::McSimplePre::DEFAULT_L1_MAX_ENTRIES;
+  static constexpr int default_l2_max_entries =
+      bm::McSimplePre::DEFAULT_L2_MAX_ENTRIES;
 
   // there is no real need for a singleton here, except for the fact that we use
   // PIGrpcServerRunAddr, ... which uses static state
