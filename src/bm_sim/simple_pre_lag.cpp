@@ -38,11 +38,11 @@ McSimplePreLAG::mc_node_create(const rid_t rid,
   l2_hdl_t l2_hdl;
   size_t num_l1_entries = l1_entries.size();
   size_t num_l2_entries = l2_entries.size();
-  if (num_l1_entries >= L1_MAX_ENTRIES) {
+  if (num_l1_entries >= static_cast<size_t>(l1_max_entries)) {
     Logger::get()->error("node create failed, l1 table full");
     return TABLE_FULL;
   }
-  if (num_l2_entries >= L2_MAX_ENTRIES) {
+  if (num_l2_entries >= static_cast<size_t>(l2_max_entries)) {
     Logger::get()->error("node create failed, l2 table full");
     return TABLE_FULL;
   }

@@ -501,9 +501,14 @@ SimpleSwitchGrpcRunner::SimpleSwitchGrpcRunner(
     std::string dp_grpc_server_addr,
     bm::DevMgrIface::port_t drop_port,
     std::shared_ptr<SSLOptions> ssl_options,
-    size_t nb_queues_per_port)
+    size_t nb_queues_per_port,
+    int mgid_table_size,
+    int l1_max_entries,
+    int l2_max_entries)
     : simple_switch(new SimpleSwitch(enable_swap, drop_port,
-                                     nb_queues_per_port)),
+                                     nb_queues_per_port,
+                                     mgid_table_size, l1_max_entries,
+                                     l2_max_entries)),
       grpc_server_addr(grpc_server_addr), cpu_port(cpu_port),
       dp_grpc_server_addr(dp_grpc_server_addr),
       dp_service(nullptr),
