@@ -113,8 +113,8 @@ sudo dpkg -i /path/to/package.deb
     ```
 
     To use the CLI, you will need to install the
-    [nnpy](https://github.com/nanomsg/nnpy) Python package. Feel free to use
-    `ci/install-nnpy.sh`.
+    [pynng](https://github.com/codypiersall/pynng) Python package. Feel free to use
+    `ci/install-pynng.sh`.
 
     To make your life easier, we provide the *install_deps.sh* script, which will
     install all the dependencies needed on Ubuntu 20.04.
