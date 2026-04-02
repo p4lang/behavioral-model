@@ -1,0 +1,8 @@
+build --jobs=2
+build --local_resources=memory=4096
+build --local_resources=cpu=2
+build --sandbox_add_mount_pair=/opt/homebrew/opt/gmp
+build --sandbox_add_mount_pair=/opt/homebrew/opt/libpcap
+build --copt=-DNDEBUG
+build --cxxopt=-DNDEBUG
+build --copt=-Wno-implicit-function-declaration

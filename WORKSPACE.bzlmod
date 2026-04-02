@@ -1,0 +1,2 @@
+# Intentionally empty.
+# Enables bzlmod mode — Bazel will use MODULE.bazel instead of WORKSPACE.bazel.
