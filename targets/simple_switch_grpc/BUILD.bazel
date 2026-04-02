@@ -1,0 +1,34 @@
+load("//:pkgconfig_grpc.bzl", "get_grpc_linkopts")
+
+_PI_LINKOPTS = [
+    "-lpigrpcserver",
+    "-lpifeproto",
+    "-lpiprotogrpc",
+    "-lpiprotobuf",
+    "-lpi",
+    "-lpip4info",
+] + get_grpc_linkopts()
+
+cc_library(
+    name = "simpleswitchgrpc",
+    srcs = ["switch_runner.cpp"],
+    hdrs = ["switch_runner.h"],
+    includes = ["."],
+    linkopts = _PI_LINKOPTS,
+    deps = [
+        "//:bm_headers",
+        "//PI:bmpi",
+        "//services:bm_grpc_dataplane",
+        "//targets/simple_switch:simpleswitch",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "simple_switch_grpc",
+    srcs = ["main.cpp"],
+    deps = [
+        ":simpleswitchgrpc",
+        "//:bm_headers",
+    ],
+)

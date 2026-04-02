@@ -1,0 +1,44 @@
+name: "Bazel (simple_switch_grpc)"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Cache apt packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt
+          key: apt-${{ hashFiles('install_deps_ubuntu_22.04.sh') }}
+
+      - name: Install system dependencies
+        run: sudo bash install_deps_ubuntu_22.04.sh
+
+      - name: Restore Bazel cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/bazel
+          key: ${{ runner.os }}-bazel-${{ hashFiles('**/*.bazel', '**/*.bzl', 'MODULE.bazel', '.bazelrc') }}
+          restore-keys: ${{ runner.os }}-bazel-
+
+      - name: Build
+        run: bazel build //targets/simple_switch_grpc:simple_switch_grpc
+
+      - name: Test
+        run: bazel test //targets/simple_switch_grpc/tests/...
+
+      - name: Save Bazel cache
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: ~/.cache/bazel
+          key: ${{ runner.os }}-bazel-${{ hashFiles('**/*.bazel', '**/*.bzl', 'MODULE.bazel', '.bazelrc') }}-${{ github.run_id }}

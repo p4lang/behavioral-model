@@ -1,0 +1,23 @@
+# C++17 standard (required by BMv2)
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+
+# Position-independent code (CMAKE_POSITION_INDEPENDENT_CODE ON)
+build --copt=-fPIC
+
+# Compiler warnings (add_compile_options(-Wall -Wextra))
+build --copt=-Wall
+build --copt=-Wextra
+
+# Suppress warnings from external BCR dependencies (grpc, protobuf, etc.)
+build --per_file_copt=external/.*@-Wno-error
+
+# System libraries installed to /usr/local (p4lang-pi, etc.)
+build --linkopt=-L/usr/local/lib
+build --linkopt=-Wl,-rpath,/usr/local/lib
+
+# Disk cache (speeds up repeated builds locally and in CI)
+build --disk_cache=~/.cache/bazel-disk
+
+# Show test output on failure
+test --test_output=errors

@@ -1,0 +1,41 @@
+# Root BUILD file for behavioral-model Bazel build.
+# See targets/simple_switch_grpc/ for the main build targets.
+
+# Generate config.h for the Bazel build (cmake generates this during configure).
+# Settings: PI=ON, nanomsg=ON, thrift=OFF (matching install_deps_ubuntu_22.04.sh).
+genrule(
+    name = "config_h",
+    srcs = ["include/bm/config.h.in"],
+    outs = ["include/bm/config.h"],
+    cmd = """python3 -c "
+import re, sys
+enabled = {
+    'BM_ELOG_ON', 'BM_ENABLE_MODULES',
+    'BM_HAVE_ALGORITHM', 'BM_HAVE_ARRAY', 'BM_HAVE_CASSERT', 'BM_HAVE_CMATH',
+    'BM_HAVE_CSTDIO', 'BM_HAVE_CTIME', 'BM_HAVE_DLFCN_H', 'BM_HAVE_DLOPEN',
+    'BM_HAVE_QUEUE', 'BM_HAVE_STRING', 'BM_HAVE_SYS_STAT_H',
+    'BM_HAVE_SYS_TYPES_H', 'BM_HAVE_TUPLE', 'BM_HAVE_UNISTD_H',
+    'BM_HAVE_UNORDERED_MAP', 'BM_HAVE_UTILITY', 'BM_HAVE_VECTOR',
+    'BM_LOG_DEBUG_ON', 'BM_LOG_TRACE_ON', 'BM_NANOMSG_ON', 'BM_WP4_16_STACKS',
+}
+with open('$(SRCS)') as f, open('$(OUTS)', 'w') as out:
+    for line in f:
+        m = re.match(r'#cmakedefine (\\w+) @\\w+@', line)
+        if m:
+            macro = m.group(1)
+            if macro in enabled:
+                out.write('#define {} 1\\n'.format(macro))
+            else:
+                out.write('/* #undef {} */\\n'.format(macro))
+        else:
+            out.write(line)
+"
+""",
+)
+
+cc_library(
+    name = "bm_headers",
+    hdrs = glob(["include/bm/**/*.h"]) + [":config_h"],
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+)
