@@ -1,0 +1,16 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+genrule(
+    name = "cmake_config_header_gen",
+    srcs = ["bm/config.h.in"],
+    outs = ["bm/config.h"],
+    cmd = "sed -e 's/#cmakedefine/#undef/g' $(location bm/config.h.in) > $@",
+    message = "Generating bm/config.h from CMake template...",
+)
+
+cc_library(
+    name = "bmv2_headers",
+    hdrs = glob(["bm/**/*.h"]) + [":cmake_config_header_gen"],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+)

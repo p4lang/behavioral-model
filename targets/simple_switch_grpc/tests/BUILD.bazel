@@ -1,0 +1,55 @@
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+
+PI_AND_GRPC_LINKOPTS = [
+    "-L/usr/local/lib",
+    "-Wl,-rpath=/usr/local/lib",
+    "-lpigrpcserver", "-lpifeproto", "-lpiprotogrpc", "-lpiprotobuf",
+    "-lpifecpp", "-lpiconvertproto", "-lpi", "-lpip4info", "-lpifegeneric",
+    "-lgrpc++_reflection", "-lgrpc++", "-lgrpc", "-lprotobuf", "-lgpr",
+]
+
+cc_library(
+    name = "bmv2_test_utilities",
+    srcs = [
+        "base_test.cpp",
+        "utils.cpp",
+    ],
+    hdrs = [
+        "base_test.h",
+        "utils.h",
+    ],
+    deps = [
+        "//targets/simple_switch_grpc:simple_switch_grpc_runner",
+        "//targets/simple_switch:simple_switch_base",
+        "//services:dataplane_grpc_interface",
+        "@googletest//:gtest",
+    ],
+    linkopts = PI_AND_GRPC_LINKOPTS,
+    defines = ["TESTDATADIR=\\\"targets/simple_switch_grpc/tests/testdata\\\""],
+    copts = [
+        "-Wno-error=unused-result",
+        "-Wno-error=deprecated-declarations"
+    ],
+)
+
+TEST_MODULES = [
+    "test_basic", "test_grpc_dp", "test_packet_io", "test_counter",
+    "test_meter", "test_ternary", "test_pre", "test_digest",
+    "test_idle_timeout", "test_action_profile", "test_optional"
+]
+
+[cc_test(
+    name = t,
+    srcs = [t + ".cpp", "main.cpp"],
+    deps = [":bmv2_test_utilities", "@googletest//:gtest"],
+    data = glob(["testdata/**"]),
+    linkopts = PI_AND_GRPC_LINKOPTS,
+    linkstatic = True,
+    tags = ["exclusive"],
+) for t in TEST_MODULES]
+
+# Provide a single alias to run all tests
+test_suite(
+    name = "all_tests",
+    tests = [":{}".format(t) for t in TEST_MODULES],
+)

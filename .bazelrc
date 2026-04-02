@@ -1,0 +1,18 @@
+# C++17 enforce for BMv2
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+
+# Shared libraries and PIC
+build --copt=-fPIC
+
+# Build configurations and features (analogous to CMake defaults)
+build --copt=-DLOG_DEBUG_ON
+build --copt=-DLOG_TRACE_ON
+build --copt=-DWP4_16_STACKS
+
+# Strict warnings for our code but not for third-party
+build --copt=-Wall
+build --copt=-Wextra
+build --per_file_copt=external/.*@-Wno-error
+
+

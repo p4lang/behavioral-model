@@ -1,0 +1,2 @@
+# Define this directory as a Bazel package so bzl files can be loaded using //tools/bazel:bmv2_macros.bzl
+exports_files(["bmv2_macros.bzl"])
