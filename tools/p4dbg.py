@@ -19,7 +19,7 @@
 #
 #
 
-import nnpy
+import pynng
 import struct
 import sys
 import json
@@ -35,8 +35,8 @@ try:
 except:
     with_runtime_CLI = False
 
-parser = argparse.ArgumentParser(description='BM nanomsg debugger')
-parser.add_argument('--socket', help='Nanomsg socket to which to subscribe',
+parser = argparse.ArgumentParser(description='BM NNG debugger')
+parser.add_argument('--socket', help='NNG socket to which to connect',
                     action="store", required=False)
 parser.add_argument('--thrift-port', help='Thrift server port for table updates',
                     type=int, action="store", default=9090)
@@ -564,10 +564,11 @@ class DebuggerAPI(cmd.Cmd):
     def __init__(self, addr, standard_client=None, json_cfg=None):
         cmd.Cmd.__init__(self)
         self.addr = addr
-        self.sok = nnpy.Socket(nnpy.AF_SP, nnpy.REQ)
+        self.sok = pynng.Req0()
         try:
-            self.sok.connect(self.addr)
-            self.sok.setsockopt(nnpy.SOL_SOCKET, nnpy.RCVTIMEO, 500)
+            self.sok.recv_timeout = 500
+            self.sok.send_timeout = 500
+            self.sok.dial(self.addr)
         except:
             print("Impossible to connect to provided socket (bad format?)")
             sys.exit(1)
@@ -638,8 +639,8 @@ class DebuggerAPI(cmd.Cmd):
 
     def say_bye(self):
         # This whole function is kind of hacky
-        self.sok.setsockopt(nnpy.SOL_SOCKET, nnpy.RCVTIMEO, 500)
-        self.sok.setsockopt(nnpy.SOL_SOCKET, nnpy.SNDTIMEO, 500)
+        self.sok.recv_timeout = 500
+        self.sok.send_timeout = 500
 
         req = Msg_Detach(switch_id = 0, req_id = self.get_req_id())
         status = self.sok.send(req.generate())
