@@ -1,0 +1,14 @@
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+
+build --copt=-fPIC
+
+build --copt=-Wall
+build --copt=-Wextra
+
+build --per_file_copt=external/.*@-Wno-error
+
+build --linkopt=-L/usr/local/lib
+build --linkopt=-Wl,-rpath,/usr/local/lib
+
+test --test_output=errors

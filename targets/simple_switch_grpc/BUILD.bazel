@@ -1,0 +1,32 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "simpleswitchgrpc",
+    srcs = ["switch_runner.cpp"],
+    hdrs = ["switch_runner.h"],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:bm_headers",
+        "//PI:bmpi",
+        "//services:bm_grpc_dataplane",
+        "//targets/simple_switch:simpleswitch",
+        "@ubuntu2204//:grpc",
+        "@ubuntu2204//:pi",
+        "@ubuntu2204//:pifeproto",
+        "@ubuntu2204//:pigrpcserver",
+        "@ubuntu2204//:pip4info",
+        "@ubuntu2204//:piprotobuf",
+        "@ubuntu2204//:piprotogrpc",
+    ],
+)
+
+cc_binary(
+    name = "simple_switch_grpc",
+    srcs = ["main.cpp"],
+    deps = [
+        ":simpleswitchgrpc",
+        "//:bm_headers",
+    ],
+)
