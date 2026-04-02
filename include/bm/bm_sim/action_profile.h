@@ -165,6 +165,12 @@ class ActionProfile : public NamedP4Object {
   void serialize(std::ostream *out) const;
   void deserialize(std::istream *in, const P4Objects &objs);
 
+  void set_selector_fanout();
+
+  std::vector<mbr_hdl_t> get_all_mbrs_from_grp(const grp_hdl_t &grp) const;
+  std::vector<const ActionEntry*>
+  get_entries_with_mbrs(const std::vector<mbr_hdl_t> &mbrs) const;
+
  private:
   using ReadLock = boost::shared_lock<boost::shared_mutex>;
   using WriteLock = boost::unique_lock<boost::shared_mutex>;
@@ -291,6 +297,10 @@ class ActionProfile : public NamedP4Object {
 
   bool group_is_empty(grp_hdl_t grp) const;
 
+  bool is_selector_fanout_enabled() const {
+    return selector_fanout_enabled;
+  }
+
   const ActionEntry &lookup(const Packet &pkt,
                             const IndirectIndex &index) const;
 
@@ -307,6 +317,7 @@ class ActionProfile : public NamedP4Object {
   std::shared_ptr<GroupSelectionIface> grp_selector_{nullptr};
   GroupSelectionIface *grp_selector{&grp_mgr};
   std::unique_ptr<Calculation> hash{nullptr};
+  bool selector_fanout_enabled{false};
 };
 
 }  // namespace bm

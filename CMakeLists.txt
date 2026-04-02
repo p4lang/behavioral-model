@@ -51,6 +51,7 @@ option(ENABLE_MODULES "Allow loading third-party modules at runtime" ON)
 option(REQUIRE_MODULES "Require support for loading third-party modules at runtime" OFF)
 option(ENABLE_UNDETERMINISTIC_TESTS "Run undeterministic tests (e.g. queueing) when running tests" ON)
 option(ENABLE_WERROR "Make all compiler warnings fatal" OFF)
+option(ENABLE_PKT_FANOUT "Enable action selector packet fanout support" OFF)
 option(ENABLE_WP4_16_STACKS "Implement stacks strictly as per the P4_16 specification" ON)
 
 # Set compiler flags
@@ -142,6 +143,10 @@ endif()
 
 if(ENABLE_LOGGING_MACROS)
   add_definitions(-DLOG_DEBUG_ON -DLOG_TRACE_ON)
+endif()
+
+if(ENABLE_PKT_FANOUT)
+  add_definitions(-DPKT_FANOUT_ON)
 endif()
 
 if(ENABLE_WP4_16_STACKS)
