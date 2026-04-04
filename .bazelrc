@@ -1,0 +1,16 @@
+# C++17 standard (required by BMv2)
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+
+# Position-independent code (required for shared libs)
+build --copt=-fPIC
+
+# Compiler warnings (match CMake config)
+build --copt=-Wall
+build --copt=-Wextra
+
+# Feature flags (match CMake defaults)
+build --copt=-DLOG_DEBUG_ON
+build --copt=-DLOG_TRACE_ON
+build --copt=-DWP4_16_STACKS
+build --per_file_copt=external/.*@-Wno-error

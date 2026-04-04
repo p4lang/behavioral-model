@@ -1,0 +1,24 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# Generate version.cpp from template
+genrule(
+    name = "version_cpp",
+    srcs = ["version.cpp.in", "//:VERSION"],
+    outs = ["version.cpp"],
+    cmd = "sed 's/@BM_VERSION@/1.13.0/g' $(location version.cpp.in) > $@",
+)
+
+cc_library(
+    name = "bmsim",
+    srcs = glob(["*.cpp", "*.c", "core/*.cpp"]) + [":version_cpp"],
+    hdrs = glob(["*.h"]),
+    includes = ["."],
+    deps = [
+        "//include:bm_headers",
+        "//third_party:jsoncpp",
+        "//third_party:spdlog",
+        "//src/BMI:bmi",
+    ],
+    linkopts = ["-lgmp", "-lpcap", "-lnanomsg", "-lpthread", "-ldl", "-lboost_program_options", "-lboost_system", "-lboost_filesystem", "-lboost_thread"],
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,16 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "jsoncpp",
+    srcs = ["jsoncpp/src/jsoncpp.cpp"],
+    hdrs = ["jsoncpp/include/jsoncpp/json.h"],
+    includes = ["jsoncpp/include"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "spdlog",
+    hdrs = glob(["spdlog/bm/spdlog/**/*.h", "spdlog/bm/spdlog/**/*.cc"]),
+    includes = ["spdlog"],
+    visibility = ["//visibility:public"],
+)

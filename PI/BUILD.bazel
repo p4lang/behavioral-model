@@ -1,0 +1,21 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "bmpi",
+    srcs = glob([
+        "src/*.cpp",
+    ]),
+    hdrs = glob([
+        "src/*.h",
+        "bm/PI/*.h",
+    ]),
+    includes = [".", "../targets/simple_switch"],
+    defines = ["WITH_SIMPLE_SWITCH"],
+    deps = [
+        "//include:bm_headers",
+        "//src/bm_sim:bmsim",
+        "//targets/simple_switch:simpleswitch_headers",
+    ],
+    alwayslink = True,
+    visibility = ["//visibility:public"],
+)

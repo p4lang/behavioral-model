@@ -1,0 +1,43 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("//:pkgconfig_grpc.bzl", "get_grpc_linkopts")
+
+_PI_LINKOPTS = [
+    "-L/usr/local/lib",
+    "-Wl,-rpath=/usr/local/lib",
+    "-lpigrpcserver",
+    "-lpifeproto",
+    "-lpiprotogrpc",
+    "-lpiprotobuf",
+    "-lpifecpp",
+    "-lpiconvertproto",
+    "-lpi",
+    "-lpip4info",
+    "-lpifegeneric",
+] + get_grpc_linkopts() + ["-lgrpc++_reflection"]
+
+# Library for starting the gRPC server attached to the switch
+cc_library(
+    name = "switch_runner",
+    srcs = ["switch_runner.cpp"],
+    hdrs = ["switch_runner.h"],
+    includes = ["."],
+    deps = [
+        "//targets/simple_switch:simpleswitch",
+        "//PI:bmpi",
+        "//services:bm_grpc_dataplane",
+    ],
+    linkopts = _PI_LINKOPTS,
+    visibility = ["//visibility:public"],
+)
+
+# The main executable target
+cc_binary(
+    name = "simple_switch_grpc",
+    srcs = ["main.cpp"],
+    deps = [
+        ":switch_runner",
+        "//targets/simple_switch:simpleswitch",
+    ],
+    linkopts = _PI_LINKOPTS,
+    visibility = ["//visibility:public"],
+)

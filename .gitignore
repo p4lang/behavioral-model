@@ -104,3 +104,7 @@ VERSION-build
 
 core
 vgcore*
+
+# Bazel
+bazel-*
+*.lock

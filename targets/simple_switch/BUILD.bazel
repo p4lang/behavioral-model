@@ -1,0 +1,22 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "simpleswitch",
+    srcs = glob(["*.cpp"], exclude=["main.cpp"]),
+    hdrs = glob(["*.h", "bm/**/*.h"]),
+    includes = ["."],
+    deps = [
+        "//include:bm_headers",
+        "//src/bm_sim:bmsim",
+        "//src/BMI:bmi",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# Also expose headers as a separate target for PI, or just let PI depend on simpleswitch.
+# PI depends on simpleswitch_headers, so let's keep it or alias it.
+alias(
+    name = "simpleswitch_headers",
+    actual = ":simpleswitch",
+    visibility = ["//visibility:public"],
+)

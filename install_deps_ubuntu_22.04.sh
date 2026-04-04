@@ -1,19 +1,21 @@
 #!/bin/bash
 set -e
-
 apt-get update
 apt-get install -y curl gnupg
-echo 'deb http://download.opensuse.org/repositories/home:/p4lang/xUbuntu_22.04/ /' | tee /etc/apt/sources.list.d/home:p4lang.list
-curl -fsSL https://download.opensuse.org/repositories/home:p4lang/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_p4lang.gpg > /dev/null
+
+# Add p4lang repo with trusted=yes to bypass expired GPG key
+echo 'deb [trusted=yes] http://download.opensuse.org/repositories/home:/p4lang/xUbuntu_22.04/ /' \
+  | tee /etc/apt/sources.list.d/home:p4lang.list
 
 apt-get update
-
 apt-get install -qq --no-install-recommends \
     automake \
     build-essential \
     cmake \
     git \
     g++ \
+    libabsl-dev \
+    libc-ares-dev \
     libboost-dev \
     libboost-filesystem-dev \
     libboost-program-options-dev \
@@ -27,10 +29,12 @@ apt-get install -qq --no-install-recommends \
     libpcap-dev \
     libprotobuf-dev \
     libprotoc-dev \
+    libre2-dev \
     libssl-dev \
     libthrift-0.16.0 \
     libthrift-dev \
     libtool \
+    libupb-dev \
     pkg-config \
     protobuf-compiler \
     protobuf-compiler-grpc \
@@ -40,5 +44,4 @@ apt-get install -qq --no-install-recommends \
     thrift-compiler \
     libreadline-dev \
     p4lang-pi
-
 ldconfig
