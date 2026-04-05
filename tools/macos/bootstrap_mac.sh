@@ -55,6 +55,6 @@ brew install nanomsg
 pip install scapy
 
 # pynng
-/usr/local/bin/pip install pynng
+/usr/local/bin/pip install pynng==0.9.0
 
 /usr/local/bin/pip install PyYAML

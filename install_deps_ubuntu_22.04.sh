@@ -43,4 +43,4 @@ apt-get install -qq --no-install-recommends \
 
 ldconfig
 
-python3 -m pip install --upgrade pynng
+python3 -m pip install --upgrade pynng==0.9.0

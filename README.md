@@ -113,7 +113,7 @@ sudo dpkg -i /path/to/package.deb
     ```
 
     To use the CLI, you will need to install the
-    [pynng](https://github.com/codypiersall/pynng) Python package. Feel free to use
+    [pynng](https://github.com/codypiersall/pynng) Python package (`0.9.0`). Feel free to use
     `ci/install-pynng.sh`.
 
     To make your life easier, we provide the *install_deps.sh* script, which will
