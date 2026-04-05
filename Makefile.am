@@ -37,10 +37,10 @@ autogen.sh
 
 # 'ci' files, used by install_deps.sh to install some dependencies
 EXTRA_DIST += \
-ci/check-nnpy.py \
+ ci/check-pynng.py \
 ci/common.sh \
 ci/install-nanomsg.sh \
-ci/install-nnpy.sh \
+ ci/install-pynng.sh \
 ci/install-thrift.sh
 
 # mininet directory

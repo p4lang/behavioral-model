@@ -42,3 +42,5 @@ apt-get install -qq --no-install-recommends \
     p4lang-pi
 
 ldconfig
+
+python3 -m pip install --upgrade pynng==0.9.0

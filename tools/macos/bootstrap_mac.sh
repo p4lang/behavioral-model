@@ -54,8 +54,7 @@ brew install nanomsg
 # # scapy
 pip install scapy
 
-# nnpy
-/usr/local/bin/pip install pycparser
-brew install ${brews_dir}/nnpy.rb
+# pynng
+/usr/local/bin/pip install pynng==0.9.0
 
 /usr/local/bin/pip install PyYAML

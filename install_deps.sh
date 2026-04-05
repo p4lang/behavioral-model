@@ -30,7 +30,7 @@ cd $tmpdir
 bash ../ci/install-thrift.sh
 bash ../ci/install-nanomsg.sh
 sudo ldconfig
-bash ../ci/install-nnpy.sh
+bash ../ci/install-pynng.sh
 
 cd ..
 sudo rm -rf $tmpdir
