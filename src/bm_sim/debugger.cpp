@@ -28,7 +28,7 @@
 // temporary deps?
 #include <bm/bm_sim/bytecontainer.h>
 #include <bm/bm_sim/logger.h>
-#include <nanomsg/reqrep.h>
+#include <nng/compat/nanomsg/reqrep.h>
 
 #include <chrono>
 #include <memory>

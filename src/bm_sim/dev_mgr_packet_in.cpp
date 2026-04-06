@@ -26,7 +26,7 @@
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/nn.h>
 
-#include <nanomsg/pair.h>
+#include <nng/compat/nanomsg/pair.h>
 
 #include <atomic>
 #include <thread>

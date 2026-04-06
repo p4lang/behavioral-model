@@ -20,7 +20,7 @@
 
 #include <bm/bm_apps/packet_pipe.h>
 
-#include <nanomsg/pair.h>
+#include <nng/compat/nanomsg/pair.h>
 
 #include <string>
 #include <thread>
