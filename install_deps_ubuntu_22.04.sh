@@ -23,7 +23,7 @@ apt-get install -qq --no-install-recommends \
     libgrpc++-dev \
     libgrpc-dev \
     libopenmpi-dev \
-    libnanomsg-dev \
+    libnng-dev \
     libpcap-dev \
     libprotobuf-dev \
     libprotoc-dev \

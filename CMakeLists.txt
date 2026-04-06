@@ -128,7 +128,7 @@ find_library(GMP_LIBRARY gmp REQUIRED)
 find_library(PCAP_LIBRARY pcap REQUIRED)
 
 if(WITH_NNG)
-  find_library(NNG_LIBRARY nng REQUIRED)
+  find_package(nng REQUIRED)
   add_definitions(-DNNG_ON)
 
   if(ENABLE_ELOGGER)
