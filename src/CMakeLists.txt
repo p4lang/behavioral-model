@@ -6,7 +6,7 @@ if(WITH_THRIFT)
   add_subdirectory(bm_runtime)
 endif()
 
-if(WITH_NANOMSG)
+if(WITH_NNG)
   add_subdirectory(bm_apps)
 endif()
 
@@ -38,9 +38,9 @@ install(TARGETS bmall
   ARCHIVE DESTINATION lib
 )
 
-# Create apps library if nanomsg is enabled
+# Create apps library if nanomsg-nng is enabled
 # FIXME: do we need bmp4apps?
-##if(WITH_NANOMSG)
+##if(WITH_NNG)
 ##  add_library(bmp4apps SHARED)
 ##  target_link_libraries(bmp4apps
 ##    PUBLIC

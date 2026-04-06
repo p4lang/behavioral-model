@@ -1,6 +1,6 @@
-# Should only be built if compiling with nanomsg
-if(NOT WITH_NANOMSG)
-  message(SEND_ERROR "bm_apps compilation requires NANOMSG")
+# Should only be built if compiling with nanomsg-nng
+if(NOT WITH_NNG)
+  message(SEND_ERROR "bm_apps compilation requires nanomsg-nng")
 endif()
 
 add_subdirectory(examples)
@@ -14,7 +14,7 @@ add_library(bmapps STATIC
 # Link libraries
 target_link_libraries(bmapps PUBLIC
   ${CMAKE_THREAD_LIBS_INIT}
-  ${NANOMSG_LIBRARY}
+  ${NNG_LIBRARY}
 )
 
 if(WITH_THRIFT)

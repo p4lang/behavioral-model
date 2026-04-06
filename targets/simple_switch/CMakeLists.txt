@@ -152,8 +152,8 @@ if(WITH_THRIFT)
   )
 endif()
 
-# Add tests if nanomsg is enabled
-if(WITH_NANOMSG)
+# Add tests if nanomsg-nng is enabled
+if(WITH_NNG)
   add_subdirectory(tests)
 endif()
 

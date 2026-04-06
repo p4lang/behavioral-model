@@ -80,6 +80,6 @@ target_link_libraries(bmsim PUBLIC
   Boost::thread
 )
 
-if(WITH_NANOMSG)
-  target_link_libraries(bmsim PUBLIC ${NANOMSG_LIBRARY})
+if(WITH_NNG)
+  target_link_libraries(bmsim PUBLIC ${NNG_LIBRARY})
 endif()

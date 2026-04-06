@@ -22,8 +22,8 @@ if(WITH_THRIFT)
   )
 endif()
 
-# Add Nanomsg-related scripts
-if(WITH_NANOMSG)
+# Add Nanomsg-nng-related scripts
+if(WITH_NNG)
   list(APPEND PYTHON_SCRIPTS
     p4dbg.py
     nanomsg_client.py

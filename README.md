@@ -182,8 +182,8 @@ sudo dpkg -i /path/to/package.deb
     The following options can be specified during the configuration step:
 
     ```bash
-    # Disable Nanomsg support
-    cmake -DWITH_NANOMSG=OFF ..
+    # Disable Nanomsg-nng support
+    cmake -DWITH_NNG=OFF ..
 
     # Disable Thrift support
     cmake -DWITH_THRIFT=OFF ..
@@ -247,7 +247,7 @@ To run the unit tests, simply do:
 
     make check
 
-**If you get a nanomsg error when running the tests (make check), try running
+**If you get a nanomsg-nng error when running the tests (make check), try running
   them as sudo**
 
 ### cmake-based build
@@ -425,8 +425,8 @@ directory. You can also browse this documentation
   32-bit fields) and **variable-length fields are now supported**.
 - We finally have unit tests!
 - While it is still incomplete, we provide a convenient 'event-logger' built on
-  top of nanomsg. Every time a 'significant' event happens (e.g. table hit,
-  parser transition,...) a message is broadcast on a nanomsg channel and any
+  top of nanomsg-nng. Every time a 'significant' event happens (e.g. table hit,
+  parser transition,...) a message is broadcast on a nanomsg-nng channel and any
   client can consume it.
 
 ### Are all features supported yet?

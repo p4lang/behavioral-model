@@ -20,7 +20,7 @@
 
 #include <bm/config.h>
 
-#ifdef BM_NANOMSG_ON
+#ifdef BM_NNG_ON
 
 #include <bm/bm_sim/dev_mgr.h>
 #include <bm/bm_sim/logger.h>
@@ -327,4 +327,4 @@ DevMgr::set_dev_mgr_packet_in(
 
 }  // namespace bm
 
-#endif  // BM_NANOMSG_ON
+#endif  // BM_NNG_ON

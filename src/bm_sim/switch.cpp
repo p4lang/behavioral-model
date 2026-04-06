@@ -226,7 +226,7 @@ SwitchWContexts::init_from_options_parser(
 
   auto transport = my_transport;
   if (transport == nullptr) {
-#ifdef BM_NANOMSG_ON
+#ifdef BM_NNG_ON
     notifications_addr = parser.notifications_addr;
     transport = std::shared_ptr<TransportIface>(
         TransportIface::make_nanomsg(notifications_addr));
@@ -268,7 +268,7 @@ SwitchWContexts::init_from_options_parser(
     set_dev_mgr(std::move(my_dev_mgr));
   else if (parser.use_files)
     set_dev_mgr_files(parser.wait_time);
-#ifdef BM_NANOMSG_ON
+#ifdef BM_NNG_ON
   else if (parser.packet_in)
     set_dev_mgr_packet_in(device_id, parser.packet_in_addr, transport);
 #endif

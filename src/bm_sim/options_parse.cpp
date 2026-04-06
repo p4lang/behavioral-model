@@ -105,7 +105,7 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
        "(interface X corresponds to two files X_in.pcap and X_out.pcap). "
        "Argument is the time to wait (in seconds) before starting to process "
        "the packet files.")
-#ifdef BM_NANOMSG_ON
+#ifdef BM_NNG_ON
       ("packet-in", po::value<std::string>(),
        "Enable receiving packet on this (nanomsg) socket. "
        "The --interface options will be ignored.")
@@ -133,7 +133,7 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
        "default is 5242880 (5 MB)")
       ("log-file-max-files", po::value<size_t>(),
        "Maximum number of rotated backup log files to keep; default is 3")
-#ifdef BM_NANOMSG_ON
+#ifdef BM_NNG_ON
       ("notifications-addr", po::value<std::string>(),
        "Specify the nanomsg address to use for notifications "
        "(e.g. learning, ageing, ...); "
@@ -258,7 +258,7 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
     device_id = vm["device-id"].as<device_id_t>();
   }
 
-#ifdef BM_NANOMSG_ON
+#ifdef BM_NNG_ON
   if (vm.count("notifications-addr")) {
     notifications_addr = vm["notifications-addr"].as<std::string>();
   } else {
@@ -389,7 +389,7 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
       wait_time = 0;
   }
 
-#ifdef BM_NANOMSG_ON
+#ifdef BM_NNG_ON
   if (vm.count("packet-in")) {
     packet_in = true;
     packet_in_addr = vm["packet-in"].as<std::string>();
