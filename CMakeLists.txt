@@ -128,7 +128,15 @@ find_library(GMP_LIBRARY gmp REQUIRED)
 find_library(PCAP_LIBRARY pcap REQUIRED)
 
 if(WITH_NNG)
-  find_package(nng REQUIRED)
+  find_library(NNG_LIBRARY NAMES nng)
+
+  # Check if the library was found
+  if(NNG_LIBRARY)
+    message(STATUS "Found nng: ${NNG_LIBRARY}")
+  else()
+    message(FATAL_ERROR "Could not find nng library")
+  endif()
+
   add_definitions(-DNNG_ON)
 
   if(ENABLE_ELOGGER)
