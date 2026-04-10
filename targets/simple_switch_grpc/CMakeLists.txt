@@ -60,7 +60,6 @@ target_link_libraries(simple_switch_grpc PRIVATE
 )
 
 if(WITH_THRIFT)
-  add_definitions(-DWITH_THRIFT)
   target_link_libraries(simple_switch_grpc PRIVATE
          thrift
          simpleswitch_thrift
