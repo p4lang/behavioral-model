@@ -59,6 +59,14 @@ target_link_libraries(simple_switch_grpc PRIVATE
   ${GRPCPP_LIBRARIES}
 )
 
+if(WITH_THRIFT)
+  add_definitions(-DWITH_THRIFT)
+  target_link_libraries(simple_switch_grpc PRIVATE
+         thrift
+         simpleswitch_thrift
+  )
+endif()
+
 # We follow this tutorial to link with grpc++_reflection:
 # https://github.com/grpc/grpc/blob/master/doc/server_reflection_tutorial.md
 #target_link_options(simple_switch_grpc PRIVATE
