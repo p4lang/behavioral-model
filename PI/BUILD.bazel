@@ -1,0 +1,14 @@
+cc_library(
+    name = "bmpi",
+    srcs = glob(["src/*.cpp", "src/*.h"]),
+    hdrs = ["bm/PI/pi.h"],
+    includes = ["."],
+    copts = ["-Wno-error=redundant-move"],
+    local_defines = ["WITH_SIMPLE_SWITCH"],
+    alwayslink = True,
+    deps = [
+        "//:bm_headers",
+        "//targets/simple_switch:simpleswitch",
+    ],
+    visibility = ["//visibility:public"],
+)

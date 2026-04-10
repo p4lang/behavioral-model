@@ -3,8 +3,7 @@ set -e
 
 apt-get update
 apt-get install -y curl gnupg
-echo 'deb http://download.opensuse.org/repositories/home:/p4lang/xUbuntu_22.04/ /' | tee /etc/apt/sources.list.d/home:p4lang.list
-curl -fsSL https://download.opensuse.org/repositories/home:p4lang/xUbuntu_22.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_p4lang.gpg > /dev/null
+echo 'deb [trusted=yes] http://download.opensuse.org/repositories/home:/p4lang/xUbuntu_22.04/ /' | tee /etc/apt/sources.list.d/home:p4lang.list
 
 apt-get update
 

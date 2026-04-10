@@ -1,0 +1,17 @@
+module(
+    name = "behavioral-model",
+    version = "1.0.0",
+    bazel_compatibility = [">=8.5.0"],
+)
+
+# Testing
+bazel_dep(name = "googletest", version = "1.17.0")
+
+# System-installed libraries:
+#   p4lang/PI  (pi, pifeproto, pigrpcserver, pip4info, piprotogrpc, piprotobuf)
+#   gRPC, protobuf (grpc++, grpc, protobuf, etc.) — via pkgconfig_grpc.bzl linkopts
+#   Boost      (program_options, filesystem, thread, system)
+#   GMP, PCAP, nanomsg
+# Installed via install_deps_ubuntu_22.04.sh
+system_libs = use_extension("//bazel:system_libs.bzl", "system_libs")
+use_repo(system_libs, "system_libs")

@@ -1,0 +1,21 @@
+cc_library(
+    name = "simpleswitch",
+    srcs = [
+        "primitives.cpp",
+        "simple_switch.cpp",
+    ],
+    hdrs = [
+        "register_access.h",
+        "simple_switch.h",
+    ],
+    includes = ["."],
+    deps = [
+        "//:bm_headers",
+        "//src/BMI:bmi",
+        "//src/bm_sim:bmsim",
+        "//third_party:jsoncpp",
+        "@system_libs//:boost_filesystem",
+        "@system_libs//:boost_program_options",
+    ],
+    visibility = ["//visibility:public"],
+)

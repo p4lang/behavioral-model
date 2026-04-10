@@ -104,3 +104,10 @@ VERSION-build
 
 core
 vgcore*
+
+# Bazel build outputs
+/bazel-bin
+/bazel-out
+/bazel-testlogs
+/bazel-workspace
+MODULE.bazel.lock
