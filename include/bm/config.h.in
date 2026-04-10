@@ -76,7 +76,7 @@
 #cmakedefine BM_LOG_TRACE_ON @BM_LOG_TRACE_ON@
 
 /* Enable Nanomsg support */
-#cmakedefine BM_NANOMSG_ON @BM_NANOMSG_ON@
+#cmakedefine BM_NNG_ON @BM_NNG_ON@
 
 /* Enable Thrift support */
 #cmakedefine BM_THRIFT_ON @BM_THRIFT_ON@

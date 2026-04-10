@@ -1,4 +1,4 @@
-if(WITH_NANOMSG)
+if(WITH_NNG)
   add_subdirectory(tests)
 endif()
 

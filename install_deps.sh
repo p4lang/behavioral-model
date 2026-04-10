@@ -28,7 +28,7 @@ tmpdir=`mktemp -d -p .`
 cd $tmpdir
 
 bash ../ci/install-thrift.sh
-bash ../ci/install-nanomsg.sh
+bash ../ci/install-nng.sh
 sudo ldconfig
 bash ../ci/install-pynng.sh
 

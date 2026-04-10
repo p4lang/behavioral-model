@@ -23,7 +23,7 @@
 #ifndef NN_HPP_INCLUDED
 #define NN_HPP_INCLUDED
 
-#include <nanomsg/nn.h>
+#include <nng/compat/nanomsg/nn.h>
 
 #include <cassert>
 #include <cstring>

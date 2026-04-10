@@ -1,5 +1,5 @@
 # Translate some variables for use by config.h
-if (WITH_NANOMSG AND ENABLE_ELOGGER)
+if (WITH_NNG AND ENABLE_ELOGGER)
   set (BM_ELOG_ON 1)
 endif()
 if (HAVE_DLFCN_H)
@@ -11,15 +11,15 @@ endif()
 if (HAVE_THRIFT_STDCXX_H)
   set (BM_HAVE_THRIFT_STDCXX_H 1)
 endif()
-if (WITH_NANOMSG AND ENABLE_DEBUGGER)
+if (WITH_NNG AND ENABLE_DEBUGGER)
   set(BM_DEBUG_ON 1)
 endif()
 if (ENABLE_LOGGING_MACROS)
   set(BM_LOG_DEBUG_ON 1)
   set(BM_LOG_TRACE_ON 1)
 endif()
-if (WITH_NANOMSG)
-  set(BM_NANOMSG_ON 1)
+if (WITH_NNG)
+  set(BM_NNG_ON 1)
 endif()
 if (WITH_THRIFT)
   set(BM_THRIFT_ON 1)
@@ -74,8 +74,8 @@ if(WITH_THRIFT)
   )
 endif()
 
-# Install bm_apps headers if nanomsg is enabled
-if(WITH_NANOMSG)
+# Install bm_apps headers if nanomsg-nng is enabled
+if(WITH_NNG)
   set(BM_APPS_HEADERS
     bm/bm_apps/notifications.h
     bm/bm_apps/packet_pipe.h

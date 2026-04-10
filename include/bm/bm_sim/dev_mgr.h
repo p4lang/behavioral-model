@@ -174,7 +174,7 @@ class DevMgr : public PacketDispatcherIface {
   // wait before starting to process packets.
   void set_dev_mgr_files(unsigned wait_time_in_seconds);
 
-#ifdef BM_NANOMSG_ON
+#ifdef BM_NNG_ON
   // if enforce ports is set to true, packets coming in on un-registered ports
   // are dropped
   void set_dev_mgr_packet_in(

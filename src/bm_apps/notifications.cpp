@@ -20,7 +20,7 @@
 
 #include <bm/bm_apps/notifications.h>
 
-#include <nanomsg/pubsub.h>
+#include <nng/compat/nanomsg/pubsub.h>
 
 #include <string>
 #include <thread>
