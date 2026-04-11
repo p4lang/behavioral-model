@@ -1,0 +1,31 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+genrule(
+    name = "version_cpp",
+    srcs = ["version.cpp.in"],
+    outs = ["version.cpp"],
+    cmd = "sed 's/@BM_VERSION@/1.15.0/' $< > $@",
+)
+
+cc_library(
+    name = "bmsim",
+    srcs = glob([
+        "*.cpp",
+        "*.c",
+        "*.h",
+        "core/*.cpp",
+    ]) + [":version_cpp"],
+    copts = ["-Isrc/bm_sim"],
+    linkopts = ["-ldl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:bm_headers",
+        "//src/BMI:bmi",
+        "//third_party:jsoncpp",
+        "//third_party:spdlog",
+        "@ubuntu2204//:boost_thread",
+        "@ubuntu2204//:gmp",
+        "@ubuntu2204//:nanomsg",
+        "@ubuntu2204//:pcap",
+    ],
+)
