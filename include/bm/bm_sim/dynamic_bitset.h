@@ -48,6 +48,10 @@ inline int find_lowest_bit<uint64_t>(uint64_t v) {
       find_lowest_bit<uint32_t>(sw);
 }
 
+template<>
+inline int find_lowest_bit<unsigned long>(unsigned long v) {
+  return find_lowest_bit<uint64_t>(static_cast<uint64_t>(v));
+}
 class DynamicBitset {
  public:
   using Block = unsigned long;  // NOLINT(runtime/int)
