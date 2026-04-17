@@ -1,0 +1,22 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "bmpi_frontend",
+    srcs = glob(["src/*.cpp"]),
+    hdrs = glob([
+        "src/*.h",
+        "bm/PI/*.h",
+    ]),
+    includes = [
+        ".",
+        "../targets/simple_switch",
+    ],
+    defines = ["WITH_SIMPLE_SWITCH"],
+    deps = [
+        "//include:bmv2_headers",
+        "//src/bm_sim:bmv2_core_engine",
+        "//targets/simple_switch:headers",
+    ],
+    alwayslink = True,
+    visibility = ["//visibility:public"],
+)

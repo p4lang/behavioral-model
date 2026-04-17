@@ -1,0 +1,38 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+genrule(
+    name = "generate_version_file",
+    srcs = ["version.cpp.in", "//:VERSION"],
+    outs = ["version.cpp"],
+    cmd = "sed 's/@BM_VERSION@/1.13.0/g' $(location version.cpp.in) > $@",
+    message = "Injecting BMv2 Version Information...",
+)
+
+cc_library(
+    name = "bmv2_core_engine",
+    srcs = glob([
+        "*.cpp",
+        "*.c",
+        "core/*.cpp",
+    ]) + [":generate_version_file"],
+    hdrs = glob(["*.h"]),
+    includes = ["."],
+    linkopts = [
+        "-lgmp",
+        "-lpcap",
+        "-lnanomsg",
+        "-lpthread",
+        "-ldl",
+        "-lboost_program_options",
+        "-lboost_system",
+        "-lboost_filesystem",
+        "-lboost_thread",
+    ],
+    deps = [
+        "//include:bmv2_headers",
+        "//src/BMI:bmi_lib",
+        "//third_party:jsoncpp_external",
+        "//third_party:spdlog_external",
+    ],
+    visibility = ["//visibility:public"],
+)

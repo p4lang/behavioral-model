@@ -1,0 +1,10 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "bmi_lib",
+    srcs = ["bmi_interface.c", "bmi_port.c"],
+    hdrs = glob(["*.h", "BMI/*.h"]),
+    includes = ["."],
+    linkopts = ["-lpcap"],
+    visibility = ["//visibility:public"],
+)
