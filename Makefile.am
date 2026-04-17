@@ -20,7 +20,9 @@ if COND_PI
     MAYBE_PI = PI services
 endif
 
-# simple_switch depends on libbmpi so PI needs to appear first
+# The targets directory (simple_switch, etc.) depends on libbmpi (from PI) and
+# gtest (from third_party), so those must appear before MAYBE_TARGETS in this
+# list.
 SUBDIRS = $(MAYBE_THRIFT) third_party src include \
 $(MAYBE_TESTS) $(MAYBE_PI) $(MAYBE_TARGETS) tools $(MAYBE_PDFIXED)
 
