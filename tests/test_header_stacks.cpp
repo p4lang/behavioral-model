@@ -56,28 +56,18 @@ class HeaderStackP4_16 : public detail::StackP4_16<Header> {
     this->set_next_element(hdr);
   }
 
-  template <bool B = PushValid>
-  typename std::enable_if<B, size_t>::type push_front() {
+  size_t push_front() {
     auto s = detail::StackP4_16<Header>::push_front();
-    this->at(0).mark_valid();
+    if constexpr (PushValid) this->at(0).mark_valid();
     return s;
   }
 
-  template <bool B = PushValid>
-  typename std::enable_if<B, size_t>::type push_front(size_t num) {
+  size_t push_front(size_t num) {
     auto s = detail::StackP4_16<Header>::push_front(num);
-    for (size_t i = 0; i < s; i++) this->at(i).mark_valid();
+    if constexpr (PushValid) {
+      for (size_t i = 0; i < s; i++) this->at(i).mark_valid();
+    }
     return s;
-  }
-
-  template <bool B = PushValid>
-  typename std::enable_if<!B, size_t>::type push_front() {
-    return detail::StackP4_16<Header>::push_front();
-  }
-
-  template <bool B = PushValid>
-  typename std::enable_if<!B, size_t>::type push_front(size_t num) {
-    return detail::StackP4_16<Header>::push_front(num);
   }
 };
 
