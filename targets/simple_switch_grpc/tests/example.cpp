@@ -98,7 +98,8 @@ test() {
     auto status = pi_stub_->SetForwardingPipelineConfig(
         &context, request, &rep);
     assert(status.ok());
-    config->release_p4info();
+    auto *released_p4info = config->release_p4info();
+    assert(released_p4info == &p4info);
   }
 
   auto t_id = get_table_id(p4info, "ipv4_lpm");
@@ -141,7 +142,8 @@ test() {
     p4v1::WriteResponse rep;
     auto status = pi_stub_->Write(&context, request, &rep);
     assert(status.ok());
-    update->release_entity();
+    auto *released_entity = update->release_entity();
+    assert(released_entity == &entity);
   }
 
   auto read_one = [&dev_id, &pi_stub_, &table_entry] () {
@@ -156,7 +158,8 @@ test() {
     reader->Read(&rep);
     auto status = reader->Finish();
     assert(status.ok());
-    entity->release_table_entry();
+    auto *released_table_entry = entity->release_table_entry();
+    assert(released_table_entry == table_entry);
     return rep;
   };
 
@@ -179,7 +182,8 @@ test() {
     p4v1::WriteResponse rep;
     auto status = pi_stub_->Write(&context, request, &rep);
     assert(status.ok());
-    update->release_entity();
+    auto *released_entity = update->release_entity();
+    assert(released_entity == &entity);
   }
 
   // check entry is indeed gone
