@@ -272,7 +272,7 @@ TEST_F(CalculationTest, Extra) {
 
   Calculation calc(builder, "identity");
 
-  unsigned char pkt_buf[128];  // dummy, not used
+  unsigned char pkt_buf[128] = {};  // dummy, not used
   Packet pkt = get_pkt((const char *) pkt_buf, sizeof(pkt_buf));
   PHV *phv = pkt.get_phv();
   auto &hdr = phv->get_header(testHeader3);
