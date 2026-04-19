@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CCACHE_DIR: ~/.cache/ccache
     strategy:
       matrix:
         config:
@@ -34,17 +36,30 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Restore ccache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ccache
+        key: ccache-cmake-build-${{ hashFiles('CMakeLists.txt', '.github/workflows/cmake.yml', 'install_deps.sh') }}
+        restore-keys: |
+          ccache-cmake-build-
+
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y automake cmake libgmp-dev \
           libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
           libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
-          libevent-dev libtool flex bison pkg-config g++ libssl-dev
+          libevent-dev libtool flex bison pkg-config g++ libssl-dev ccache
         bash ./ci/install-thrift.sh
         bash ./ci/install-nanomsg.sh
         bash ./ci/install-pynng.sh
         sudo ldconfig
+
+    - name: Configure ccache
+      run: |
+        ccache --set-config=max_size=2G
+        ccache -z
 
     - name: Configure CMake
       run: |
@@ -62,14 +77,28 @@ jobs:
         cd build
         ctest --output-on-failure
 
+    - name: Show ccache stats
+      if: ${{ always() }}
+      run: ccache -s
+
   install:
     runs-on: ubuntu-latest
     name: "Build and install"
+    env:
+      CCACHE_DIR: ~/.cache/ccache
 
     steps:
     - uses: actions/checkout@v6
       with:
         submodules: recursive
+
+    - name: Restore ccache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ccache
+        key: ccache-cmake-install-${{ hashFiles('CMakeLists.txt', '.github/workflows/cmake.yml', 'install_deps.sh') }}
+        restore-keys: |
+          ccache-cmake-install-
 
     - name: Install dependencies
       run: |
@@ -77,11 +106,16 @@ jobs:
         sudo apt-get install -y automake cmake libgmp-dev \
           libpcap-dev libboost-dev libboost-test-dev libboost-program-options-dev \
           libboost-system-dev libboost-filesystem-dev libboost-thread-dev \
-          libevent-dev libtool flex bison pkg-config g++ libssl-dev
+          libevent-dev libtool flex bison pkg-config g++ libssl-dev ccache
         bash ./ci/install-thrift.sh
         bash ./ci/install-nanomsg.sh
         bash ./ci/install-pynng.sh
         sudo ldconfig
+
+    - name: Configure ccache
+      run: |
+        ccache --set-config=max_size=2G
+        ccache -z
 
     - name: Configure CMake
       run: |
@@ -98,3 +132,7 @@ jobs:
       run: |
         cd build
         sudo cmake --build . --target install
+
+    - name: Show ccache stats
+      if: ${{ always() }}
+      run: ccache -s

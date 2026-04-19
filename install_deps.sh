@@ -6,6 +6,7 @@ sudo apt-get install -y \
     automake \
     bison \
     build-essential \
+    ccache \
     cmake \
     flex \
     git \
