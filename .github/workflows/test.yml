@@ -141,7 +141,7 @@ jobs:
             run_install: true
           - os: ubuntu-24.04
             name: without-thrift
-            options: -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON -DWITH_THRIFT=OFF
+            options: -DWITH_PDFIXED=OFF -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON -DWITH_THRIFT=OFF
             run_install: false
     steps:
     - uses: actions/checkout@v6
