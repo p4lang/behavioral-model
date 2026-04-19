@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-ARG PARENT_VERSION=latest
+ARG PARENT_VERSION=latest-24
 FROM p4lang/pi:${PARENT_VERSION}
 LABEL maintainer="P4 Developers <p4-dev@lists.p4.org>"
 
@@ -20,8 +20,7 @@ ARG sswitch_grpc=yes
 
 ENV BM_DEPS automake \
             build-essential \
-            clang-8 \
-            clang-10 \
+            clang \
             cmake \
             curl \
             git \
@@ -37,13 +36,12 @@ ENV BM_DEPS automake \
             libtool \
             libxxhash-dev \
             pkg-config
-ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
-                    libboost-system1.71.0 \
-                    libboost-filesystem1.71.0 \
-                    libboost-thread1.71.0 \
+ENV BM_RUNTIME_DEPS libboost-program-options1.74.0 \
+                    libboost-system1.74.0 \
+                    libboost-filesystem1.74.0 \
+                    libboost-thread1.74.0 \
                     libgmp10 \
-                    libjsoncpp1 \
-                    libpcap0.8 \
+                    libpcap0.8t64 \
                     libxxhash0 \
                     python3 \
                     python-is-python3
