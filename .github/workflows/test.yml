@@ -57,25 +57,14 @@ jobs:
     - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
-    - name: Restore ccache
-      uses: actions/cache@v4
+    - name: Setup native CI
+      uses: ./.github/actions/setup-native-ci
       with:
-        path: ~/.cache/ccache
-        key: ccache-${{ matrix.os }}-${{ matrix.cc }}-${{ hashFiles('configure.ac', 'Makefile.am', '.github/workflows/test.yml', 'install_deps.sh') }}
-        restore-keys: |
+        cache-key: ccache-${{ matrix.os }}-${{ matrix.cc }}-${{ hashFiles('configure.ac', 'Makefile.am', '.github/workflows/test.yml', 'install_deps.sh') }}
+        cache-restore-keys: |
           ccache-${{ matrix.os }}-${{ matrix.cc }}-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo ./install_deps.sh
-        sudo apt-get install -y lcov
-        if [ "${{ matrix.cc }}" = "clang" ]; then
-          sudo apt-get install -y clang
-        fi
-    - name: Configure ccache
-      run: |
-        ccache --set-config=max_size=2G
-        ccache -z
+        install-lcov: true
+        install-clang: ${{ matrix.cc == 'clang' }}
     - name: Run tests
       env:
         CC: ccache ${{ matrix.cc }}
@@ -110,28 +99,18 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-22.04
           - ubuntu-24.04
     steps:
     - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
-    - name: Restore ccache
-      uses: actions/cache@v4
+    - name: Setup native CI
+      uses: ./.github/actions/setup-native-ci
       with:
-        path: ~/.cache/ccache
-        key: ccache-${{ matrix.os }}-no-pi-${{ hashFiles('configure.ac', 'Makefile.am', '.github/workflows/test.yml', 'install_deps.sh') }}
-        restore-keys: |
+        cache-key: ccache-${{ matrix.os }}-no-pi-${{ hashFiles('configure.ac', 'Makefile.am', '.github/workflows/test.yml', 'install_deps.sh') }}
+        cache-restore-keys: |
           ccache-${{ matrix.os }}-no-pi-
           ccache-${{ matrix.os }}-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo ./install_deps.sh
-    - name: Configure ccache
-      run: |
-        ccache --set-config=max_size=2G
-        ccache -z
     - name: Run tests
       env:
         CC: ccache gcc
@@ -149,43 +128,44 @@ jobs:
     needs: check-changes
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
     runs-on: ${{ matrix.os }}
-    name: test-cmake (${{ matrix.os }})
+    name: test-cmake (${{ matrix.os }}, ${{ matrix.name }})
     env:
       CCACHE_DIR: ~/.cache/ccache
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-22.04
-          - ubuntu-24.04
+        include:
+          - os: ubuntu-24.04
+            name: default
+            options: -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON
+            run_install: true
+          - os: ubuntu-24.04
+            name: without-thrift
+            options: -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON -DWITH_THRIFT=OFF
+            run_install: false
     steps:
     - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
-    - name: Restore ccache
-      uses: actions/cache@v4
+    - name: Setup native CI
+      uses: ./.github/actions/setup-native-ci
       with:
-        path: ~/.cache/ccache
-        key: ccache-${{ matrix.os }}-cmake-${{ hashFiles('CMakeLists.txt', '.github/workflows/test.yml', 'install_deps.sh') }}
-        restore-keys: |
+        cache-key: ccache-${{ matrix.os }}-cmake-${{ matrix.name }}-${{ hashFiles('CMakeLists.txt', '.github/workflows/test.yml', 'install_deps.sh') }}
+        cache-restore-keys: |
+          ccache-${{ matrix.os }}-cmake-${{ matrix.name }}-
           ccache-${{ matrix.os }}-cmake-
           ccache-${{ matrix.os }}-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo ./install_deps.sh
-    - name: Configure ccache
-      run: |
-        ccache --set-config=max_size=2G
-        ccache -z
     - name: Build BMv2
       run: |
         mkdir -p build
         cd build
-        cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..
+        cmake ${{ matrix.options }} ..
         make -j$(nproc)
     - name: Run tests
-      run: cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure
+      run: cd build && ctest -j$(nproc) --output-on-failure
+    - name: Install
+      if: ${{ matrix.run_install }}
+      run: cd build && sudo cmake --build . --target install
     - name: Show ccache stats
       if: ${{ always() }}
       run: ccache -s
