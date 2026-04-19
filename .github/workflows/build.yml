@@ -1,16 +1,13 @@
 name: Build and push latest image
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
       - stable
-  schedule:
-    # We run it every 4 hours, starting at 03:15.
-    # Note that this will only update the 'latest' tag (not the 'stable' tag).
-    # Ideally, we would update the image every time the base image (p4lang/pi)
-    # is updated, but we deem this good enough.
-    - cron: '15 3-23/4 * * *' # "At minute 15 past every 4th hour from 3 through 23."
 
 jobs:
   build:
@@ -24,15 +21,7 @@ jobs:
       id: get-tag
       shell: bash
       run: |
-        TAG=""
-        if [[ "$GITHUB_REF" =~ "main" ]]; then
-            TAG="latest"
-        elif [[ "$GITHUB_REF" =~ "stable" ]]; then
-            TAG="stable"
-        else
-            echo "Invalid Github ref $GITHUB_REF"
-            exit 1
-        fi
+        TAG="latest-24"
         echo "Tag is $TAG"
         echo "tag=$TAG" >> $GITHUB_OUTPUT
     - name: Set up Docker Buildx
