@@ -24,33 +24,55 @@ jobs:
   test:
     needs: check-changes
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    name: test (${{ matrix.os }}, ${{ matrix.cc }})
     strategy:
       matrix:
         include:
-        - cxx: g++
+        - os: ubuntu-22.04
+          cxx: g++
           cc: gcc
-        - cxx: clang++-8
-          cc: clang-8
-        - cxx: clang++-10
-          cc: clang-10
+          gcov: gcov
+        - os: ubuntu-22.04
+          cxx: clang++
+          cc: clang
+          gcov: ""
+        - os: ubuntu-24.04
+          cxx: g++
+          cc: gcc
+          gcov: gcov
+        - os: ubuntu-24.04
+          cxx: clang++
+          cc: clang
+          gcov: ""
     steps:
     - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
-    - name: Build test Docker image
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo ./install_deps.sh
+        sudo apt-get install -y lcov
+        if [ "${{ matrix.cc }}" = "clang" ]; then
+          sudo apt-get install -y clang
+        fi
+    - name: Run tests
       env:
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
+        GCOV: ${{ matrix.gcov }}
       run: |
-        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV --build-arg BUILDER=autoconf .
-    - name: Run tests
-      run: |
-        ci_env=`bash <(curl -s https://codecov.io/env)`
-        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c \
-          "make check -j$(nproc) && ./ci/codecov.sh"
-        # FIXME: replace the command above with the following when switching to cmake
-        #  "cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure && cd .. && ./ci/codecov.sh"
+        ./autogen.sh
+        CONFIG_FLAGS="--with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror"
+        if [ -n "$GCOV" ]; then
+          ./configure $CONFIG_FLAGS --enable-coverage
+        else
+          ./configure $CONFIG_FLAGS
+        fi
+        make -j$(nproc)
+        make check -j$(nproc)
+        ./ci/codecov.sh
     - name: Check style
       run: |
         ./tools/check_style.sh
@@ -58,28 +80,46 @@ jobs:
   test-no-pi:
     needs: check-changes
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v6
-      with:
-        submodules: 'recursive'
-    - name: Build Dockerfile.noPI image
-      run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
-    - name: Run tests
-      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make check -j$(nproc)"
-      # FIXME: replace the command above with the following when switching to cmake
-      # "cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure"
-
-  test-ubuntu22:
-    needs: check-changes
-    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    name: test-no-pi (${{ matrix.os }})
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
     steps:
     - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
     - name: Install dependencies
-      run: sudo ./install_deps_ubuntu_22.04.sh
+      run: |
+        sudo apt-get update
+        sudo ./install_deps.sh
+    - name: Run tests
+      run: |
+        ./autogen.sh
+        ./configure --enable-debugger --enable-Werror
+        make -j$(nproc)
+        make check -j$(nproc)
+
+  test-cmake:
+    needs: check-changes
+    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
+    runs-on: ${{ matrix.os }}
+    name: test-cmake (${{ matrix.os }})
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'recursive'
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo ./install_deps.sh
     - name: Build BMv2
       run: |
         mkdir -p build
