@@ -1,0 +1,19 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "bmpi",
+    srcs = glob([
+        "src/*.cpp",
+        "src/*.h",
+    ]),
+    hdrs = ["bm/PI/pi.h"],
+    copts = ["-Wno-error=redundant-move"],
+    includes = ["."],
+    local_defines = ["WITH_SIMPLE_SWITCH"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:bm_headers",
+        "//targets/simple_switch:simpleswitch",
+    ],
+    alwayslink = True,
+)

@@ -1,0 +1,23 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "simpleswitch",
+    srcs = [
+        "primitives.cpp",
+        "simple_switch.cpp",
+    ],
+    hdrs = [
+        "register_access.h",
+        "simple_switch.h",
+    ],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:bm_headers",
+        "//src/BMI:bmi",
+        "//src/bm_sim:bmsim",
+        "//third_party:jsoncpp",
+        "@ubuntu2204//:boost_filesystem",
+        "@ubuntu2204//:boost_program_options",
+    ],
+)

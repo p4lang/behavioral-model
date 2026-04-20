@@ -1,0 +1,55 @@
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+
+_COMMON_SRCS = [
+    "base_test.cpp",
+    "base_test.h",
+    "main.cpp",
+    "utils.cpp",
+    "utils.h",
+]
+
+_COMMON_DEPS = [
+    "//targets/simple_switch_grpc:simpleswitchgrpc",
+    "//targets/simple_switch:simpleswitch",
+    "//services:bm_grpc_dataplane",
+    "@googletest//:gtest",
+    "@ubuntu2204//:grpc",
+    "@ubuntu2204//:pi",
+    "@ubuntu2204//:pifeproto",
+    "@ubuntu2204//:pigrpcserver",
+    "@ubuntu2204//:pip4info",
+    "@ubuntu2204//:piprotobuf",
+    "@ubuntu2204//:piprotogrpc",
+]
+
+_COMMON_COPTS = [
+    "-Wno-error=unused-result",
+    "-Wno-error=deprecated-declarations",
+]
+
+_TESTS = [
+    "test_basic",
+    "test_grpc_dp",
+    "test_packet_io",
+    "test_counter",
+    "test_meter",
+    "test_ternary",
+    "test_pre",
+    "test_digest",
+    "test_idle_timeout",
+    "test_action_profile",
+    "test_optional",
+]
+
+[
+    cc_test(
+        name = test,
+        srcs = _COMMON_SRCS + [test + ".cpp"],
+        copts = _COMMON_COPTS,
+        data = glob(["testdata/**"]),
+        defines = ["TESTDATADIR=\\\"" + package_name() + "/testdata\\\""],
+        tags = ["exclusive"],  # tests share a gRPC port; must not run in parallel
+        deps = _COMMON_DEPS,
+    )
+    for test in _TESTS
+]

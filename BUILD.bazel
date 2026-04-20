@@ -1,0 +1,50 @@
+load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+expand_template(
+    name = "config_h",
+    out = "include/bm/config.h",
+    substitutions = {
+        # disabled
+        "#cmakedefine BM_DEBUG_ON @BM_DEBUG_ON@": "/* #undef BM_DEBUG_ON */",
+        # enabled
+        "#cmakedefine BM_ELOG_ON @BM_ELOG_ON@": "#define BM_ELOG_ON 1",
+        "#cmakedefine BM_ENABLE_MODULES @BM_ENABLE_MODULES@": "#define BM_ENABLE_MODULES 1",
+        "#cmakedefine BM_HAVE_ALGORITHM @BM_HAVE_ALGORITHM@": "#define BM_HAVE_ALGORITHM 1",
+        "#cmakedefine BM_HAVE_ARRAY @BM_HAVE_ARRAY@": "#define BM_HAVE_ARRAY 1",
+        "#cmakedefine BM_HAVE_CASSERT @BM_HAVE_CASSERT@": "#define BM_HAVE_CASSERT 1",
+        "#cmakedefine BM_HAVE_CMATH @BM_HAVE_CMATH@": "#define BM_HAVE_CMATH 1",
+        "#cmakedefine BM_HAVE_CSTDIO @BM_HAVE_CSTDIO@": "#define BM_HAVE_CSTDIO 1",
+        "#cmakedefine BM_HAVE_CTIME @BM_HAVE_CTIME@": "#define BM_HAVE_CTIME 1",
+        "#cmakedefine BM_HAVE_DLFCN_H @BM_HAVE_DLFCN_H@": "#define BM_HAVE_DLFCN_H 1",
+        "#cmakedefine BM_HAVE_DLOPEN @BM_HAVE_DLOPEN@": "#define BM_HAVE_DLOPEN 1",
+        "#cmakedefine BM_HAVE_QUEUE @BM_HAVE_QUEUE@": "#define BM_HAVE_QUEUE 1",
+        "#cmakedefine BM_HAVE_STRING @BM_HAVE_STRING@": "#define BM_HAVE_STRING 1",
+        "#cmakedefine BM_HAVE_SYS_STAT_H @BM_HAVE_SYS_STAT_H@": "#define BM_HAVE_SYS_STAT_H 1",
+        "#cmakedefine BM_HAVE_SYS_TYPES_H @BM_HAVE_SYS_TYPES_H@": "#define BM_HAVE_SYS_TYPES_H 1",
+        # disabled
+        "#cmakedefine BM_HAVE_THRIFT_STDCXX_H @BM_HAVE_THRIFT_STDCXX_H@": "/* #undef BM_HAVE_THRIFT_STDCXX_H */",
+        # enabled
+        "#cmakedefine BM_HAVE_TUPLE @BM_HAVE_TUPLE@": "#define BM_HAVE_TUPLE 1",
+        "#cmakedefine BM_HAVE_UNISTD_H @BM_HAVE_UNISTD_H@": "#define BM_HAVE_UNISTD_H 1",
+        "#cmakedefine BM_HAVE_UNORDERED_MAP @BM_HAVE_UNORDERED_MAP@": "#define BM_HAVE_UNORDERED_MAP 1",
+        "#cmakedefine BM_HAVE_UTILITY @BM_HAVE_UTILITY@": "#define BM_HAVE_UTILITY 1",
+        "#cmakedefine BM_HAVE_VECTOR @BM_HAVE_VECTOR@": "#define BM_HAVE_VECTOR 1",
+        "#cmakedefine BM_LOG_DEBUG_ON @BM_LOG_DEBUG_ON@": "#define BM_LOG_DEBUG_ON 1",
+        "#cmakedefine BM_LOG_TRACE_ON @BM_LOG_TRACE_ON@": "#define BM_LOG_TRACE_ON 1",
+        "#cmakedefine BM_NANOMSG_ON @BM_NANOMSG_ON@": "#define BM_NANOMSG_ON 1",
+        # disabled
+        "#cmakedefine BM_THRIFT_ON @BM_THRIFT_ON@": "/* #undef BM_THRIFT_ON */",
+        "#cmakedefine BM_THRIFT_VERSION @BM_THRIFT_VERSION@": "/* #undef BM_THRIFT_VERSION */",
+        # enabled
+        "#cmakedefine BM_WP4_16_STACKS @BM_WP4_16_STACKS@": "#define BM_WP4_16_STACKS 1",
+    },
+    template = "include/bm/config.h.in",
+)
+
+cc_library(
+    name = "bm_headers",
+    hdrs = glob(["include/bm/**/*.h"]) + [":config_h"],
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+)
