@@ -53,6 +53,16 @@ option(ENABLE_UNDETERMINISTIC_TESTS "Run undeterministic tests (e.g. queueing) w
 option(ENABLE_WERROR "Make all compiler warnings fatal" OFF)
 option(ENABLE_WP4_16_STACKS "Implement stacks strictly as per the P4_16 specification" ON)
 
+if(WITH_PDFIXED AND NOT WITH_THRIFT)
+  message(WARNING "WITH_PDFIXED requires WITH_THRIFT=ON; disabling WITH_PDFIXED")
+  set(WITH_PDFIXED OFF CACHE BOOL "Build pdfixed for bmv2" FORCE)
+endif()
+
+if(WITH_PDFIXED AND NOT WITH_TARGETS)
+  message(WARNING "WITH_PDFIXED requires WITH_TARGETS=ON; disabling WITH_PDFIXED")
+  set(WITH_PDFIXED OFF CACHE BOOL "Build pdfixed for bmv2" FORCE)
+endif()
+
 # Set compiler flags
 add_compile_options(-Wall -Wextra)
 if(ENABLE_WERROR)

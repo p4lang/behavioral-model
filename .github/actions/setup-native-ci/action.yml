@@ -1,0 +1,54 @@
+name: Setup native CI environment
+description: Restore ccache, install dependencies, and initialize ccache
+
+inputs:
+  cache-key:
+    description: Cache key for ccache
+    required: true
+  cache-restore-keys:
+    description: Restore keys for ccache
+    required: true
+  install-clang:
+    description: Whether to install clang
+    required: false
+    default: "false"
+  install-lcov:
+    description: Whether to install lcov
+    required: false
+    default: "false"
+  ccache-max-size:
+    description: Max ccache size
+    required: false
+    default: "2G"
+
+runs:
+  using: composite
+  steps:
+    - name: Restore ccache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ccache
+        key: ${{ inputs.cache-key }}
+        restore-keys: ${{ inputs.cache-restore-keys }}
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo ./install_deps.sh
+
+    - name: Install lcov
+      if: ${{ inputs.install-lcov == 'true' }}
+      shell: bash
+      run: sudo apt-get install -y lcov
+
+    - name: Install clang
+      if: ${{ inputs.install-clang == 'true' }}
+      shell: bash
+      run: sudo apt-get install -y clang
+
+    - name: Configure ccache
+      shell: bash
+      run: |
+        ccache --set-config=max_size=${{ inputs.ccache-max-size }}
+        ccache -z

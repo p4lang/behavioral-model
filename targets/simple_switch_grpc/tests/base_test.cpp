@@ -88,7 +88,8 @@ SimpleSwitchGrpcBaseTest::update_json(const char *json_path) {
   config->set_allocated_p4info(&p4info);
   auto status = p4runtime_stub->SetForwardingPipelineConfig(
       &context, request, &rep);
-  config->release_p4info();
+  auto *released_p4info = config->release_p4info();
+  ASSERT_EQ(released_p4info, &p4info);
   ASSERT_TRUE(status.ok());
 }
 

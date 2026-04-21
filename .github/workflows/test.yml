@@ -8,6 +8,11 @@ on:
     branches:
       - main
 
+# Cancel any preceding run on the pull request.
+concurrency:
+  group: test-bmv2-ubuntu-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   check-changes:
     name: Check whether tests need to be run based on diff
@@ -24,33 +29,61 @@ jobs:
   test:
     needs: check-changes
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    name: test (${{ matrix.os }}, ${{ matrix.cc }})
+    env:
+      CCACHE_DIR: ~/.cache/ccache
     strategy:
+      fail-fast: false
       matrix:
         include:
-        - cxx: g++
+        - os: ubuntu-22.04
+          cxx: g++
           cc: gcc
-        - cxx: clang++-8
-          cc: clang-8
-        - cxx: clang++-10
-          cc: clang-10
+          gcov: gcov
+        - os: ubuntu-22.04
+          cxx: clang++
+          cc: clang
+          gcov: ""
+        - os: ubuntu-24.04
+          cxx: g++
+          cc: gcc
+          gcov: gcov
+        - os: ubuntu-24.04
+          cxx: clang++
+          cc: clang
+          gcov: ""
     steps:
     - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
-    - name: Build test Docker image
-      env:
-        CC: ${{ matrix.cc }}
-        CXX: ${{ matrix.cxx }}
-      run: |
-        docker build -t bm --build-arg IMAGE_TYPE=test --build-arg CC=$CC --build-arg CXX=$CXX --build-arg GCOV=$GCOV --build-arg BUILDER=autoconf .
+    - name: Setup native CI
+      uses: ./.github/actions/setup-native-ci
+      with:
+        cache-key: ccache-${{ matrix.os }}-${{ matrix.cc }}-${{ hashFiles('configure.ac', 'Makefile.am', '.github/workflows/test.yml', 'install_deps.sh') }}
+        cache-restore-keys: |
+          ccache-${{ matrix.os }}-${{ matrix.cc }}-
+        install-lcov: true
+        install-clang: ${{ matrix.cc == 'clang' }}
     - name: Run tests
+      env:
+        CC: ccache ${{ matrix.cc }}
+        CXX: ccache ${{ matrix.cxx }}
+        GCOV: ${{ matrix.gcov }}
       run: |
-        ci_env=`bash <(curl -s https://codecov.io/env)`
-        docker run --rm $ci_env --env GCOV -w /behavioral-model bm /bin/bash -c \
-          "make check -j$(nproc) && ./ci/codecov.sh"
-        # FIXME: replace the command above with the following when switching to cmake
-        #  "cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure && cd .. && ./ci/codecov.sh"
+        ./autogen.sh
+        CONFIG_FLAGS="--with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror"
+        if [ -n "$GCOV" ]; then
+          ./configure $CONFIG_FLAGS --enable-coverage
+        else
+          ./configure $CONFIG_FLAGS
+        fi
+        make -j$(nproc)
+        make check -j$(nproc)
+        ./ci/codecov.sh
+    - name: Show ccache stats
+      if: ${{ always() }}
+      run: ccache -s
     - name: Check style
       run: |
         ./tools/check_style.sh
@@ -58,33 +91,81 @@ jobs:
   test-no-pi:
     needs: check-changes
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    name: test-no-pi (${{ matrix.os }})
+    env:
+      CCACHE_DIR: ~/.cache/ccache
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
     steps:
     - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
-    - name: Build Dockerfile.noPI image
-      run: docker build -t bm-no-pi --build-arg IMAGE_TYPE=test -f Dockerfile.noPI .
+    - name: Setup native CI
+      uses: ./.github/actions/setup-native-ci
+      with:
+        cache-key: ccache-${{ matrix.os }}-no-pi-${{ hashFiles('configure.ac', 'Makefile.am', '.github/workflows/test.yml', 'install_deps.sh') }}
+        cache-restore-keys: |
+          ccache-${{ matrix.os }}-no-pi-
+          ccache-${{ matrix.os }}-
     - name: Run tests
-      run: docker run --rm -w /behavioral-model bm-no-pi /bin/bash -c "make check -j$(nproc)"
-      # FIXME: replace the command above with the following when switching to cmake
-      # "cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure"
+      env:
+        CC: ccache gcc
+        CXX: ccache g++
+      run: |
+        ./autogen.sh
+        ./configure --enable-debugger --enable-Werror
+        make -j$(nproc)
+        make check -j$(nproc)
+    - name: Show ccache stats
+      if: ${{ always() }}
+      run: ccache -s
 
-  test-ubuntu22:
+  test-cmake:
     needs: check-changes
     if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    name: test-cmake (${{ matrix.os }}, ${{ matrix.name }})
+    env:
+      CCACHE_DIR: ~/.cache/ccache
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            name: default
+            options: -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON
+            run_install: true
+          - os: ubuntu-24.04
+            name: without-thrift
+            options: -DWITH_PDFIXED=OFF -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON -DWITH_THRIFT=OFF
+            run_install: false
     steps:
     - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
-    - name: Install dependencies
-      run: sudo ./install_deps_ubuntu_22.04.sh
+    - name: Setup native CI
+      uses: ./.github/actions/setup-native-ci
+      with:
+        cache-key: ccache-${{ matrix.os }}-cmake-${{ matrix.name }}-${{ hashFiles('CMakeLists.txt', '.github/workflows/test.yml', 'install_deps.sh') }}
+        cache-restore-keys: |
+          ccache-${{ matrix.os }}-cmake-${{ matrix.name }}-
+          ccache-${{ matrix.os }}-cmake-
+          ccache-${{ matrix.os }}-
     - name: Build BMv2
       run: |
         mkdir -p build
         cd build
-        cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..
+        cmake ${{ matrix.options }} ..
         make -j$(nproc)
     - name: Run tests
-      run: cd build && make -j$(nproc) && ctest -j$(nproc) --output-on-failure
+      run: cd build && ctest -j$(nproc) --output-on-failure
+    - name: Install
+      if: ${{ matrix.run_install }}
+      run: cd build && sudo cmake --build . --target install
+    - name: Show ccache stats
+      if: ${{ always() }}
+      run: ccache -s
