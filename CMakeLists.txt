@@ -151,7 +151,7 @@ endif()
 if(WITH_THRIFT)
   # Find Thrift
   find_package(Thrift REQUIRED)
-  add_definitions(-DTHRIFT_ON)
+  add_definitions(-DWITH_THRIFT)
 endif()
 
 if(WITH_PI)
