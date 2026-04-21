@@ -1,4 +1,4 @@
-FROM p4lang/third-party:latest
+FROM p4lang/third-party:latest-24
 LABEL maintainer="P4 Developers <p4-dev@lists.p4.org>"
 LABEL description="This Docker image does not have any dependency on PI or P4 \
 Runtime, it only builds bmv2 simple_switch."
@@ -24,12 +24,13 @@ ENV BM_DEPS automake \
             libboost-filesystem-dev \
             libboost-thread-dev \
             libtool
-ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
-                    libboost-system1.71.0 \
-                    libboost-filesystem1.71.0 \
-                    libboost-thread1.71.0 \
+ENV BM_RUNTIME_DEPS libboost-program-options1.74.0 \
+                    libboost-system1.74.0 \
+                    libboost-iostreams1.74.0 \
+                    libboost-filesystem1.74.0 \
+                    libboost-thread1.74.0 \
                     libgmp10 \
-                    libpcap0.8 \
+                    libpcap0.8t64 \
                     python3 \
                     python-is-python3
 
