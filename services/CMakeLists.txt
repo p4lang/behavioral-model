@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Do we have grpc python support
 find_program(GRPC_PYTHON_PLUGIN grpc_python_plugin)
 

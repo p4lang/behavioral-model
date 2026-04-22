@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2018 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 if COND_NANOMSG
 MAYBE_TESTS = tests
 endif

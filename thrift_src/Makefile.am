@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Anirudh Sivaraman
+#
+# SPDX-License-Identifier: Apache-2.0
+
 standard_thrift_py_files = \
 gen-py/bm_runtime/standard/constants.py \
 gen-py/bm_runtime/standard/__init__.py \

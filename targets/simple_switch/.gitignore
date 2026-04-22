@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 /simple_switch
 sswitch_runtime
 simple_switch_CLI

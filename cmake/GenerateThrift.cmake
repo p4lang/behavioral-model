@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Generate files from an IDL file via Thrift
 #
 # By default, the output is placed in ${$CMAKE_CURRENT_BINARY_DIR}/gen-*

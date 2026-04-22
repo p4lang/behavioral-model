@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Anirudh Sivaraman
+#
+# SPDX-License-Identifier: Apache-2.0
+
 MAYBE_SECONDARY_TARGETS =
 
 if COND_THRIFT

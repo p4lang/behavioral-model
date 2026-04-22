@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 cmake_minimum_required(VERSION 3.10)
 
 # Use ccache if it is installed

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # BMv2 JSON input format
 
 All bmv2 target switches take as input a JSON file, whose format is essentially

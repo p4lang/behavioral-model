@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Create l2_switch executable
 add_executable(learn_client
   learn_client.cpp

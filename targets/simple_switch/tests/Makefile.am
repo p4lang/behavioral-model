@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 if COND_THRIFT
 MAYBE_CLI_TESTS = CLI_tests
 endif
