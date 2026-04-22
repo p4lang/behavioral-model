@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2017 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 m4/ltoptions.m4
 m4/ltsugar.m4
 m4/ltversion.m4

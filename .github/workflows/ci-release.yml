@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Anamika Aggarwal
+#
+# SPDX-License-Identifier: Apache-2.0
+
 name: GitHub Release
 
 on:

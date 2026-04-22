@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Marvell Technology, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 if COND_NANOMSG
 MAYBE_TESTS = tests
 endif

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2019 Barefoot Networks, Inc.
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Performance of bmv2
 
 **bmv2 is not meant to be a production-grade software switch**. It is meant to

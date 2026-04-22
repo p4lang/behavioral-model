@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2017 Barefoot Networks, Inc.
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 You can fork the repo and submit a pull request in Github. For more information
 send us an email (p4-dev@lists.p4.org).
 

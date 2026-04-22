@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Anirudh Sivaraman
+#
+# SPDX-License-Identifier: Apache-2.0
+
 noinst_PROGRAMS = simple_router
 simple_router_SOURCES = simple_router.cpp primitives.cpp
 simple_router_LDADD = \

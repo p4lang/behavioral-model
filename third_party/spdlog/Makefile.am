@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Antonin Bas
+#
+# SPDX-License-Identifier: Apache-2.0
+
 nobase_include_HEADERS =\
 bm/spdlog/async_logger.h \
 bm/spdlog/common.h \

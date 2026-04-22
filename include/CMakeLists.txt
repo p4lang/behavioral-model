@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Translate some variables for use by config.h
 if (WITH_NANOMSG AND ENABLE_ELOGGER)
   set (BM_ELOG_ON 1)

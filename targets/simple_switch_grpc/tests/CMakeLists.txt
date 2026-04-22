@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Include directories
 include_directories(SYSTEM
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/gtest/include
