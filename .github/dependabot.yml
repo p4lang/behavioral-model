@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Antonin Bas
+#
+# SPDX-License-Identifier: Apache-2.0
+
 version: 2
 updates:
   - package-ecosystem: "github-actions"
