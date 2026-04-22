@@ -238,7 +238,9 @@ if(WITH_PDFIXED)
 endif()
 
 # Installation rules
-install(FILES LICENSES README.md
+install(FILES README.md
+  DESTINATION share/doc/behavioral-model)
+install(DIRECTORY LICENSES
   DESTINATION share/doc/behavioral-model)
 
 # Print configuration summary
