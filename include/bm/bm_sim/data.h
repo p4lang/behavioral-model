@@ -446,8 +446,31 @@ class Data {
   Data &operator=(Data &&other) = default;
 
  protected:
-  Bignum value{0};
   bool arith{true};
+
+  //! Get the internal value as a constant Bignum
+  const Bignum &get_value() const {
+    return value;
+  }
+
+  //! Get the internal value as a Bignum that can be modified.
+  //! (nc = non-const)
+  //! Could have named it get_value(), but wanted to avoid accidental
+  //! modification of the value when someone intended to call the const
+  //! version of get_value()
+  Bignum &get_nc_value()
+  {
+    return value;
+  }
+
+  //! Set the internal value from a Bignum. This is used
+  //! by derived classes that need to modify the value.
+  void set_value(const Bignum &v) {
+    value = v;
+  }
+
+ private:
+  Bignum value{0};
 };
 
 }  // namespace bm

@@ -54,7 +54,8 @@ Field::reserve_VL(size_t max_bytes) {
 void
 Field::swap_values(Field *other) {
   // do not swap arith!
-  std::swap(value, other->value);
+  // FIXME: review correctness after adding validity support
+  std::swap(get_nc_value(), other->get_nc_value());
   std::swap(bytes, other->bytes);
   if (VL) {
     std::swap(nbits, other->nbits);
@@ -132,7 +133,7 @@ void
 Field::copy_value(const Field &src) {
   // it's important to have a way of copying a field value without the
   // packet_id pointer. This is used by PHV::copy_headers().
-  value = src.value;
+  set_value(src.get_value());
   bytes = src.bytes;
   if (VL) {
     nbits = src.nbits;
