@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2017 Antonin Bas
+#
+# SPDX-License-Identifier: Apache-2.0
+
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 
 SUBDIRS = . tests

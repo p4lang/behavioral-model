@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2017 Antonin Bas
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # SimpleSwitchGrpc - a version of SimpleSwitch with P4Runtime support
 
 This is an alternative version of the simple_switch target, which does not use
