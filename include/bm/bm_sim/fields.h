@@ -67,6 +67,7 @@ class Field : public Data {
   }
 
   void sync_value() {
+    auto &value = get_nc_value();
     bignum::import_bytes(&value, bytes.data(), nbytes);
     if (is_signed && bignum::test_bit(value, nbits - 1)) {
       bignum::clear_bit(&value, nbits - 1);
@@ -103,6 +104,7 @@ class Field : public Data {
   void export_bytes() override {
     std::fill(bytes.begin(), bytes.end(), 0);  // very important !
 
+    auto value = get_value();
     if (is_saturating) {
       if (value < min) value = min;
       else if (value > max) value = max;
@@ -125,6 +127,10 @@ class Field : public Data {
         // bignum representation of 1000 0001, which is what we wanted
         bignum::export_bytes(bytes.data(), nbytes, value - min - min);
       }
+    }
+    // Write the value back if it changed
+    if (value != get_value()) {
+      set_value(value);
     }
     written_to = true;
     DEBUGGER_NOTIFY_UPDATE(*packet_id, my_id, bytes.data(), nbits);
