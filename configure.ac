@@ -305,6 +305,7 @@ AM_CONDITIONAL([HAVE_GRPC_PY_PLUGIN], [test "x$GRPC_PY_PLUGIN" != x])
 AC_CONFIG_FILES([Makefile
 		thrift_src/Makefile
 		third_party/Makefile
+		third_party/gmock/Makefile
 		third_party/gtest/Makefile
 		third_party/jsoncpp/Makefile
 		third_party/spdlog/Makefile
