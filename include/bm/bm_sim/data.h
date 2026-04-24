@@ -96,7 +96,7 @@ class Data {
 
   //! Returns a value less than zero if Data is negative, a value greater than
   //! zero if Data is positive, and zero if Data is zero.
-  int sign() const { return value.sign(); }
+  int sign() const { return get_value().sign(); }
 
   // TODO(Antonin): need to figure out what to do with signed values
   //! Set the value of Data from any integral type
@@ -123,12 +123,12 @@ class Data {
 
   //! Set the value of Data from another data instance
   void set(const Data &data) {
-    value = data.value;
+    value = data.get_value();
     export_bytes();
   }
 
   void set(Data &&data) {
-    value = std::move(data.value);
+    value = std::move(data.get_value());
     export_bytes();
   }
 
@@ -185,58 +185,60 @@ class Data {
            typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
   T get() const {
     assert(arith);
-    return value.convert_to<typename std::remove_const<T>::type>();
+    return get_value().convert_to<typename std::remove_const<T>::type>();
   }
 
   //! Get the value of Data has an unsigned integer
   unsigned int get_uint() const {
     assert(arith);
-    return value.convert_to<unsigned int>();
+    return get_value().convert_to<unsigned int>();
   }
 
   //! Get the value of Data has a `uint64_t`
   uint64_t get_uint64() const {
     assert(arith);
-    return value.convert_to<uint64_t>();
+    return get_value().convert_to<uint64_t>();
   }
 
   //! get the value of Data has an integer
   int get_int() const {
     assert(arith);
-    return value.convert_to<int>();
+    return get_value().convert_to<int>();
   }
 
   //! get the binary representation of Data has a string. There is no sign
   //! support.
   std::string get_string() const {
     assert(arith);
-    const size_t export_size = bignum::export_size_in_bytes(value);
+    const size_t export_size = bignum::export_size_in_bytes(get_value());
     std::string s(export_size, '\x00');
     // this is not technically correct, but works for all compilers
-    bignum::export_bytes(&s[0], export_size, value);
+    bignum::export_bytes(&s[0], export_size, get_value());
     return s;
   }
 
   std::string get_string_repr() const {
     assert(arith);
-    return value.convert_to<std::string>();
+    return get_value().convert_to<std::string>();
   }
 
   bool get_arith() const { return arith; }
+
+  virtual bool is_valid() const { return true; }
 
   // TODO(antonin): overload operators for those ?
 
   //! NC
   void add(const Data &src1, const Data &src2) {
     assert(src1.arith && src2.arith);
-    value = src1.value + src2.value;
+    value = src1.get_value() + src2.get_value();
     export_bytes();
   }
 
   //! NC
   void sub(const Data &src1, const Data &src2) {
     assert(src1.arith && src2.arith);
-    value = src1.value - src2.value;
+    value = src1.get_value() - src2.get_value();
     export_bytes();
   }
 
@@ -244,8 +246,8 @@ class Data {
   //! and \p src2 > 0.
   void mod(const Data &src1, const Data &src2) {
     assert(src1.arith && src2.arith);
-    assert(src1.value >= 0 && src2.value > 0);
-    value = src1.value % src2.value;
+    assert(src1.get_value() >= 0 && src2.get_value() > 0);
+    value = src1.get_value() % src2.get_value();
     export_bytes();
   }
 
@@ -253,73 +255,73 @@ class Data {
   //! 0 and \p src2 > 0.
   void divide(const Data &src1, const Data &src2) {
     assert(src1.arith && src2.arith);
-    assert(src1.value >= 0 && src2.value > 0);
-    value = src1.value / src2.value;
+    assert(src1.get_value() >= 0 && src2.get_value() > 0);
+    value = src1.get_value() / src2.get_value();
     export_bytes();
   }
 
   //! NC
   void multiply(const Data &src1, const Data &src2) {
     assert(src1.arith && src2.arith);
-    value = src1.value * src2.value;
+    value = src1.get_value() * src2.get_value();
     export_bytes();
   }
 
   //! NC
   void shift_left(const Data &src1, const Data &src2) {
     assert(src1.arith && src2.arith);
-    assert(src2.value >= 0);
-    value = src1.value << (src2.get_uint());
+    assert(src2.get_value() >= 0);
+    value = src1.get_value() << (src2.get_uint());
     export_bytes();
   }
 
   //! NC
   void shift_right(const Data &src1, const Data &src2) {
     assert(src1.arith && src2.arith);
-    assert(src2.value >= 0);
-    value = src1.value >> (src2.get_uint());
+    assert(src2.get_value() >= 0);
+    value = src1.get_value() >> (src2.get_uint());
     export_bytes();
   }
 
   //! NC
   void shift_left(const Data &src1, unsigned int src2) {
     assert(src1.arith);
-    value = src1.value << src2;
+    value = src1.get_value() << src2;
     export_bytes();
   }
 
   //! NC
   void shift_right(const Data &src1, unsigned int src2) {
     assert(src1.arith);
-    value = src1.value >> src2;
+    value = src1.get_value() >> src2;
     export_bytes();
   }
 
   //! NC
   void bit_and(const Data &src1, const Data &src2) {
     assert(src1.arith && src2.arith);
-    value = src1.value & src2.value;
+    value = src1.get_value() & src2.get_value();
     export_bytes();
   }
 
   //! NC
   void bit_or(const Data &src1, const Data &src2) {
     assert(src1.arith && src2.arith);
-    value = src1.value | src2.value;
+    value = src1.get_value() | src2.get_value();
     export_bytes();
   }
 
   //! NC
   void bit_xor(const Data &src1, const Data &src2) {
     assert(src1.arith && src2.arith);
-    value = src1.value ^ src2.value;
+    value = src1.get_value() ^ src2.get_value();
     export_bytes();
   }
 
   //! NC
   void bit_neg(const Data &src) {
     assert(src.arith);
-    value = ~src.value;
+    value = ~src.get_value();
     export_bytes();
   }
 
@@ -331,12 +333,12 @@ class Data {
     Bignum mask = (one << uwidth) - 1;
     Bignum max = (one << (uwidth - 1)) - 1;
     Bignum min = -(one << (uwidth - 1));
-    if (src.value < min || src.value > max) {
-      value = src.value & mask;
+    if (src.get_value() < min || src.get_value() > max) {
+      value = src.get_value() & mask;
       if (value > max)
         value -= (one << uwidth);
     } else {
-      value = src.value;
+      value = src.get_value();
     }
     export_bytes();
   }
@@ -348,12 +350,12 @@ class Data {
     static const Bignum one(1);
     unsigned int uwidth = width.get_uint();
     Bignum max = (one << uwidth) - 1;
-    if (src.value > max)
+    if (src.get_value() > max)
       value = max;
-    else if (src.value < 0)
+    else if (src.get_value() < 0)
       value = 0;
     else
-      value = src.value;
+      value = src.get_value();
     export_bytes();
   }
 
@@ -365,12 +367,12 @@ class Data {
     unsigned int uwidth = width.get_uint();
     Bignum max = (one << (uwidth - 1)) - 1;
     Bignum min = -(one << (uwidth - 1));
-    if (src.value > max)
+    if (src.get_value() > max)
       value = max;
-    else if (src.value < min)
+    else if (src.get_value() < min)
       value = min;
     else
-      value = src.value;
+      value = src.get_value();
     export_bytes();
   }
 
@@ -378,13 +380,13 @@ class Data {
   template<typename T,
            typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
   bool test_eq(T i) const {
-    return (value == i);
+    return (get_value() == i);
   }
 
   //! NC
   friend bool operator==(const Data &lhs, const Data &rhs) {
     assert(lhs.arith && rhs.arith);
-    return lhs.value == rhs.value;
+    return lhs.get_value() == rhs.get_value();
   }
 
   //! NC
@@ -396,31 +398,31 @@ class Data {
   //! NC
   friend bool operator>(const Data &lhs, const Data &rhs) {
     assert(lhs.arith && rhs.arith);
-    return lhs.value > rhs.value;
+    return lhs.get_value() > rhs.get_value();
   }
 
   //! NC
   friend bool operator>=(const Data &lhs, const Data &rhs) {
     assert(lhs.arith && rhs.arith);
-    return lhs.value >= rhs.value;
+    return lhs.get_value() >= rhs.get_value();
   }
 
   //! NC
   friend bool operator<(const Data &lhs, const Data &rhs) {
     assert(lhs.arith && rhs.arith);
-    return lhs.value < rhs.value;
+    return lhs.get_value() < rhs.get_value();
   }
 
   //! NC
   friend bool operator<=(const Data &lhs, const Data &rhs) {
     assert(lhs.arith && rhs.arith);
-    return lhs.value <= rhs.value;
+    return lhs.get_value() <= rhs.get_value();
   }
 
   //! NC
   friend std::ostream& operator<<(std::ostream &out, const Data &d) {
     assert(d.arith);
-    out << d.value;
+    out << d.get_value();
     return out;
   }
 
@@ -428,7 +430,7 @@ class Data {
   //! NC
   Data(const Data &other)
     : arith(other.arith) {
-    if (other.arith) value = other.value;
+    if (other.arith) value = other.get_value();
   }
 
   // Copy assignment operator
@@ -446,8 +448,31 @@ class Data {
   Data &operator=(Data &&other) = default;
 
  protected:
-  Bignum value{0};
   bool arith{true};
+
+  //! Get the internal value as a constant Bignum
+  virtual const Bignum &get_value() const {
+    return value;
+  }
+
+  //! Get the internal value as a Bignum that can be modified.
+  //! (nc = non-const)
+  //! Could have named it get_value(), but wanted to avoid accidental
+  //! modification of the value when someone intended to call the const
+  //! version of get_value()
+  Bignum &get_nc_value()
+  {
+    return value;
+  }
+
+  //! Set the internal value from a Bignum. This is used
+  //! by derived classes that need to modify the value.
+  void set_value(const Bignum &v) {
+    value = v;
+  }
+
+ private:
+  Bignum value{0};
 };
 
 }  // namespace bm

@@ -1,6 +1,7 @@
 # Include directories
 include_directories(SYSTEM
   ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/gtest/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/gmock/include
 )
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -102,6 +103,10 @@ foreach(TEST_NAME ${TESTS})
   add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endforeach()
 
+target_link_libraries(test_fields
+  gmock
+)
+
 # Create test_all executable
 add_executable(test_all 
   ${COMMON_SOURCES}
@@ -147,6 +152,7 @@ add_executable(test_all
 
 target_link_libraries(test_all
   gtest
+  gmock
   bmruntime
   bmapps
   bmsim
