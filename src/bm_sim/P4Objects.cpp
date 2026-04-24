@@ -22,6 +22,8 @@
 #include <bm/bm_sim/P4Objects.h>
 #include <bm/bm_sim/phv.h>
 #include <bm/bm_sim/actions.h>
+#include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/fanout_pkt_mgr.h>
 
 #include <iostream>
 #include <istream>
@@ -1655,8 +1657,13 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
       std::unique_ptr<ActionProfile> action_profile(
           new ActionProfile(act_prof_name, act_prof_id, with_selection));
       if (with_selection) {
-        auto calc = process_cfg_selector(cfg_act_prof["selector"]);
-        action_profile->set_hash(std::move(calc));
+        if (is_selector_fanout(cfg_act_prof["selector"])) {
+          action_profile->set_selector_fanout();
+          FanoutPktMgr::instance().act_profs.push_back(action_profile.get());
+        } else {
+          auto calc = process_cfg_selector(cfg_act_prof["selector"]);
+          action_profile->set_hash(std::move(calc));
+        }
       }
       add_action_profile(act_prof_name, std::move(action_profile));
     }
@@ -2497,6 +2504,16 @@ P4Objects::check_hash(const std::string &name) const {
   }
   throw json_exception(EFormat() << "Unknown hash algorithm: " << name);
   return nullptr;
+}
+
+bool P4Objects::is_selector_fanout(const Json::Value &cfg_selector) const {
+  bool is_fanout = cfg_selector.isMember("algo") &&
+         cfg_selector["algo"].asString() == "selector_fanout";
+  if (is_fanout && !FanoutPktMgr::pkt_fanout_on) {
+    throw std::runtime_error("Selector fanout is not enabled, but"
+                             " found selector_fanout mode used");
+  }
+  return is_fanout;
 }
 
 std::unique_ptr<Calculation>
