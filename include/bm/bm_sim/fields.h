@@ -172,6 +172,8 @@ class Field : public Data {
     return VL;
   }
 
+  bool is_valid() const override;
+
   //! Set the value of the written_to flag for the field. This flag can be
   //! queried at any time using get_written_to() and is used to check whether
   //! the field has been modified since written_to was last set to `false`.
@@ -184,6 +186,25 @@ class Field : public Data {
   bool get_written_to() const {
     return written_to;
   }
+
+  static void set_warn_on_uninit_read(bool warn) {
+    warn_on_uninit_read = warn;
+    handle_uninit_read = warn_on_uninit_read || ret_zero_on_uninit_read;
+  }
+
+  static void set_ret_zero_on_uninit_read(bool ret_zero) {
+    ret_zero_on_uninit_read = ret_zero;
+    handle_uninit_read = warn_on_uninit_read || ret_zero_on_uninit_read;
+  }
+
+ protected:
+   static bool warn_on_uninit_read;
+   static bool ret_zero_on_uninit_read;
+   static bool handle_uninit_read;
+
+   static Bignum zero;
+
+   const Bignum &get_value() const override;
 
  private:
   int nbits;

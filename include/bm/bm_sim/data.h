@@ -224,6 +224,8 @@ class Data {
 
   bool get_arith() const { return arith; }
 
+  virtual bool is_valid() const { return true; }
+
   // TODO(antonin): overload operators for those ?
 
   //! NC
@@ -449,7 +451,7 @@ class Data {
   bool arith{true};
 
   //! Get the internal value as a constant Bignum
-  const Bignum &get_value() const {
+  virtual const Bignum &get_value() const {
     return value;
   }
 
