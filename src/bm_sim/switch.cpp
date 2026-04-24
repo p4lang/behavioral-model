@@ -24,6 +24,7 @@
 #include <bm/bm_sim/_assert.h>
 #include <bm/bm_sim/debugger.h>
 #include <bm/bm_sim/event_logger.h>
+#include <bm/bm_sim/fields.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/options_parse.h>
 #include <bm/bm_sim/packet.h>
@@ -321,6 +322,9 @@ SwitchWContexts::init_from_options_parser(
   dump_packet_data = parser.dump_packet_data;
 
   max_port_count = parser.max_port_count;
+
+  Field::set_warn_on_uninit_read(parser.warn_on_uninit_read);
+  Field::set_ret_zero_on_uninit_read(parser.ret_zero_on_uninit_read);
 
   // TODO(unknown): is this the right place to do this?
   set_packet_handler(packet_handler, static_cast<void *>(this));

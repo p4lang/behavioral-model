@@ -20,11 +20,18 @@
 
 #include <bm/bm_sim/fields.h>
 #include <bm/bm_sim/headers.h>
+#include <bm/bm_sim/logger.h>
 
 #include <algorithm>  // for std::swap
 #include "extract.h"
 
 namespace bm {
+
+bool Field::warn_on_uninit_read = false;
+bool Field::ret_zero_on_uninit_read = false;
+bool Field::handle_uninit_read = false;
+
+Bignum Field::zero{0};
 
 Field::Field(int nbits, Header *parent_hdr, bool arith_flag, bool is_signed,
              bool hidden, bool VL, bool is_saturating)
@@ -142,6 +149,27 @@ Field::copy_value(const Field &src) {
     min = src.min;
     max = src.max;
   }
+}
+
+bool
+Field::is_valid() const {
+  // Hidden fields assumed always valid. Needed for header validity bit.
+  return hidden || !parent_hdr || parent_hdr->is_valid();
+}
+
+const Bignum &
+Field::get_value() const {
+  if (handle_uninit_read && !is_valid()) {
+    if (warn_on_uninit_read) {
+      assert(parent_hdr);
+      Logger::get()->warn("Reading an invalid field (header: {}, field offset: {})",
+                          parent_hdr->get_name(), parent_hdr->get_field_offset(this));
+    }
+    if (ret_zero_on_uninit_read) {
+      return zero;
+    }
+  }
+  return Data::get_value();
 }
 
 }  // namespace bm

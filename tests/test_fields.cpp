@@ -19,8 +19,11 @@
  */
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include <bm/bm_sim/fields.h>
+#include <bm/bm_sim/phv.h>
+#include <bm/bm_sim/logger.h>
 
 #include <string>
 #include <vector>
@@ -29,6 +32,9 @@
 using bm::ByteContainer;
 using bm::Data;
 using bm::Field;
+using bm::HeaderType;
+using bm::PHV;
+using bm::PHVFactory;
 
 using ::testing::TestWithParam;
 using ::testing::Range;
@@ -301,3 +307,204 @@ TEST(FieldTest, ExportBytesVLLarge) {
   f.export_bytes();
   EXPECT_NE(0u, f.get<uint64_t>());
 }
+
+class FieldValidityTest : public ::testing::TestWithParam<std::tuple<bool, bool>>
+{
+protected:
+  PHVFactory phv_factory;
+  std::unique_ptr<PHV> phv;
+
+  HeaderType testHeaderType;
+  bm::header_id_t testHeader0{0}, testHeader1{1};
+
+  bool warn_on_uninit_read{false};
+  bool ret_zero_on_uninit_read{false};
+
+  std::stringstream ss;
+
+  FieldValidityTest()
+      : testHeaderType("test_t", 0) {
+    testHeaderType.push_back_field("f16", 16);
+    testHeaderType.push_back_field("f48", 48);
+    phv_factory.push_back_header("test0", testHeader0, testHeaderType);
+    phv_factory.push_back_header("test1", testHeader1, testHeaderType);
+
+    // Capture the logger output to verify warnings about invalid field reads
+    bm::Logger::set_logger_ostream(ss);
+  }
+
+  ~FieldValidityTest() {
+    // Unset the logger
+    bm::Logger::unset_logger();
+  }
+
+  void SetUp() override {
+    warn_on_uninit_read = std::get<0>(GetParam());
+    ret_zero_on_uninit_read = std::get<1>(GetParam());
+
+    Field::set_warn_on_uninit_read(warn_on_uninit_read);
+    Field::set_ret_zero_on_uninit_read(ret_zero_on_uninit_read);
+
+    phv = phv_factory.create();
+  }
+
+  void TearDown() override {
+    // Reset the uninit read mode in Field to default values for other tests
+    Field::set_warn_on_uninit_read(false);
+    Field::set_ret_zero_on_uninit_read(false);
+  }
+};
+
+TEST_P(FieldValidityTest, UninitReadHandling) {
+  auto &f0 = phv->get_field(testHeader0, 0);
+  auto &f1 = phv->get_field(testHeader1, 0);
+
+  int f0_exp = 0;
+  int f1_exp = 0;
+
+  std::string warn_substr0 = "Reading an invalid field (header: test0, field offset: 0)";
+  std::string warn_substr1 = "Reading an invalid field (header: test1, field offset: 0)";
+
+  // Initially, both headers should be invalid
+  EXPECT_FALSE(f0.is_valid());
+  EXPECT_FALSE(f1.is_valid());
+
+  // Expect zero before first write
+  f0_exp = 0;
+  f1_exp = 0;
+
+  EXPECT_EQ(f0.get_int(), f0_exp);
+  if (warn_on_uninit_read) {
+    EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr0));
+  } else {
+    EXPECT_EQ(ss.str(), "");
+  }
+  ss.str("");
+
+  EXPECT_EQ(f1.get_int(), f1_exp);
+  if (warn_on_uninit_read) {
+    EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr1));
+  } else {
+    EXPECT_EQ(ss.str(), "");
+  }
+  ss.str("");
+
+  // Mark header 0 as valid, then write into f0 and verify that the reads are as expected
+  f0_exp = 42;
+
+  phv->get_header(testHeader0).mark_valid();
+
+  EXPECT_TRUE(f0.is_valid());
+  EXPECT_FALSE(f1.is_valid());
+
+  f0.set(42);
+
+  EXPECT_EQ(f0.get_int(), f0_exp);
+  EXPECT_EQ(ss.str(), "");
+  ss.str("");
+
+  EXPECT_EQ(f1.get_int(), f1_exp);
+  if (warn_on_uninit_read) {
+    EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr1));
+  } else {
+    EXPECT_EQ(ss.str(), "");
+  }
+  ss.str("");
+
+  // Mark header 1 as valid and copy fields from header 0,
+  // then verify that the reads are as expected
+  f0_exp = 42;
+  f1_exp = 42;
+
+  phv->get_header(testHeader1).mark_valid();
+  phv->get_header(testHeader1).copy_fields(phv->get_header(testHeader0));
+
+  EXPECT_EQ(f0.get_int(), f0_exp);
+  EXPECT_EQ(ss.str(), "");
+  ss.str("");
+
+  EXPECT_EQ(f1.get_int(), f1_exp);
+  EXPECT_EQ(ss.str(), "");
+  ss.str("");
+
+  // Mark header 0 as invalid and verify fields are as expected
+  f0_exp = ret_zero_on_uninit_read ? 0 : 42;
+  f1_exp = 42;
+
+  phv->get_header(testHeader0).mark_invalid();
+
+  EXPECT_FALSE(f0.is_valid());
+  EXPECT_TRUE(f1.is_valid());
+
+  EXPECT_EQ(f0.get_int(), f0_exp);
+  if (warn_on_uninit_read) {
+    EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr0));
+  } else {
+    EXPECT_EQ(ss.str(), "");
+  }
+  ss.str("");
+
+  EXPECT_EQ(f1.get_int(), f1_exp);
+  EXPECT_EQ(ss.str(), "");
+  ss.str("");
+
+  // Mark header 1 as invalid and verify fields are as expected
+  f0_exp = ret_zero_on_uninit_read ? 0 : 42;
+  f1_exp = ret_zero_on_uninit_read ? 0 : 42;
+
+  phv->get_header(testHeader1).mark_invalid();
+
+  EXPECT_FALSE(f0.is_valid());
+  EXPECT_FALSE(f1.is_valid());
+
+  EXPECT_EQ(f0.get_int(), f0_exp);
+  if (warn_on_uninit_read) {
+    EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr0));
+  } else {
+    EXPECT_EQ(ss.str(), "");
+  }
+  ss.str("");
+
+  EXPECT_EQ(f1.get_int(), f1_exp);
+  if (warn_on_uninit_read) {
+    EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr1));
+  } else {
+    EXPECT_EQ(ss.str(), "");
+  }
+  ss.str("");
+
+  // Copy from invalid header to valid header
+  // Write into f0 without marking valid
+  f0_exp = ret_zero_on_uninit_read ? 0 : 43;
+  f1_exp = ret_zero_on_uninit_read ? 0 : 43;
+
+  f0.set(43);
+  phv->get_header(testHeader1).mark_valid();
+  phv->get_header(testHeader1).copy_fields(phv->get_header(testHeader0));
+  if (warn_on_uninit_read) {
+    EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr0));
+  } else {
+    EXPECT_EQ(ss.str(), "");
+  }
+  ss.str("");
+
+  EXPECT_EQ(f0.get_int(), f0_exp);
+  if (warn_on_uninit_read) {
+    EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr0));
+  } else {
+    EXPECT_EQ(ss.str(), "");
+  }
+  ss.str("");
+
+  EXPECT_EQ(f1.get_int(), f1_exp);
+  EXPECT_EQ(ss.str(), "");
+  ss.str("");
+}
+
+INSTANTIATE_TEST_SUITE_P(UninitReadHandlingTest,
+                         FieldValidityTest,
+                         ::testing::Combine(
+                          ::testing::Bool(),  // warn_on_uninit_read
+                          ::testing::Bool()   // ret_zero_on_uninit_read
+                         )
+                        );
