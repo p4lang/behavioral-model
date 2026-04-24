@@ -1,4 +1,4 @@
-// Copyright 2005, Google Inc.
+// Copyright 2008, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,51 +27,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// The Google C++ Testing and Mocking Framework (Google Test)
 //
-// This file defines the AssertionResult type.
+// Google C++ Mocking Framework (Google Mock)
+//
+// This file #includes all Google Mock implementation .cc files.  The
+// purpose is to allow a user to build Google Mock by compiling this
+// file alone.
 
-#include "gtest/gtest-assertion-result.h"
+// This line ensures that gmock.h can be compiled on its own, even
+// when it's fused.
+#include "gmock/gmock.h"
 
-#include <string>
-#include <utility>
-
-#include "gtest/gtest-message.h"
-
-namespace testing {
-
-// AssertionResult constructors.
-// Used in EXPECT_TRUE/FALSE(assertion_result).
-AssertionResult::AssertionResult(const AssertionResult& other)
-    : success_(other.success_),
-      message_(other.message_ != nullptr
-                   ? new ::std::string(*other.message_)
-                   : static_cast< ::std::string*>(nullptr)) {}
-
-// Swaps two AssertionResults.
-void AssertionResult::swap(AssertionResult& other) {
-  using std::swap;
-  swap(success_, other.success_);
-  swap(message_, other.message_);
-}
-
-// Returns the assertion's negation. Used with EXPECT/ASSERT_FALSE.
-AssertionResult AssertionResult::operator!() const {
-  AssertionResult negation(!success_);
-  if (message_ != nullptr) negation << *message_;
-  return negation;
-}
-
-// Makes a successful assertion result.
-AssertionResult AssertionSuccess() { return AssertionResult(true); }
-
-// Makes a failed assertion result.
-AssertionResult AssertionFailure() { return AssertionResult(false); }
-
-// Makes a failed assertion result with the given failure message.
-// Deprecated; use AssertionFailure() << message.
-AssertionResult AssertionFailure(const Message& message) {
-  return AssertionFailure() << message;
-}
-
-}  // namespace testing
+// The following lines pull in the real gmock *.cc files.
+#include "src/gmock-cardinalities.cc"
+#include "src/gmock-internal-utils.cc"
+#include "src/gmock-matchers.cc"
+#include "src/gmock-spec-builders.cc"
+#include "src/gmock.cc"

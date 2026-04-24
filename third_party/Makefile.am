@@ -1,1 +1,1 @@
-SUBDIRS = gtest jsoncpp spdlog
+SUBDIRS = gmock gtest jsoncpp spdlog

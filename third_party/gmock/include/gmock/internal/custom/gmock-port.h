@@ -1,4 +1,4 @@
-// Copyright 2005, Google Inc.
+// Copyright 2015, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,51 +27,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// The Google C++ Testing and Mocking Framework (Google Test)
+// Injection point for custom user configurations. See README for details
 //
-// This file defines the AssertionResult type.
+// ** Custom implementation starts here **
 
-#include "gtest/gtest-assertion-result.h"
+// IWYU pragma: private, include "gmock/gmock.h"
+// IWYU pragma: friend gmock/.*
 
-#include <string>
-#include <utility>
+#ifndef GOOGLEMOCK_INCLUDE_GMOCK_INTERNAL_CUSTOM_GMOCK_PORT_H_
+#define GOOGLEMOCK_INCLUDE_GMOCK_INTERNAL_CUSTOM_GMOCK_PORT_H_
 
-#include "gtest/gtest-message.h"
-
-namespace testing {
-
-// AssertionResult constructors.
-// Used in EXPECT_TRUE/FALSE(assertion_result).
-AssertionResult::AssertionResult(const AssertionResult& other)
-    : success_(other.success_),
-      message_(other.message_ != nullptr
-                   ? new ::std::string(*other.message_)
-                   : static_cast< ::std::string*>(nullptr)) {}
-
-// Swaps two AssertionResults.
-void AssertionResult::swap(AssertionResult& other) {
-  using std::swap;
-  swap(success_, other.success_);
-  swap(message_, other.message_);
-}
-
-// Returns the assertion's negation. Used with EXPECT/ASSERT_FALSE.
-AssertionResult AssertionResult::operator!() const {
-  AssertionResult negation(!success_);
-  if (message_ != nullptr) negation << *message_;
-  return negation;
-}
-
-// Makes a successful assertion result.
-AssertionResult AssertionSuccess() { return AssertionResult(true); }
-
-// Makes a failed assertion result.
-AssertionResult AssertionFailure() { return AssertionResult(false); }
-
-// Makes a failed assertion result with the given failure message.
-// Deprecated; use AssertionFailure() << message.
-AssertionResult AssertionFailure(const Message& message) {
-  return AssertionFailure() << message;
-}
-
-}  // namespace testing
+#endif  // GOOGLEMOCK_INCLUDE_GMOCK_INTERNAL_CUSTOM_GMOCK_PORT_H_
