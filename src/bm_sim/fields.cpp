@@ -153,6 +153,9 @@ Field::copy_value(const Field &src) {
 
 bool
 Field::is_valid() const {
+  // FIXME: Consider using the written_to flag in the evalutation. Would
+  // need to make sure this is cleared whenever the header is marked invalid.
+
   // Hidden fields assumed always valid. Needed for header validity bit.
   return hidden || !parent_hdr || parent_hdr->is_valid();
 }
