@@ -105,6 +105,7 @@ class Field : public Data {
     std::fill(bytes.begin(), bytes.end(), 0);  // very important !
 
     auto value = get_value();
+    auto value_orig = value;
     if (is_saturating) {
       if (value < min) value = min;
       else if (value > max) value = max;
@@ -129,7 +130,7 @@ class Field : public Data {
       }
     }
     // Write the value back if it changed
-    if (value != get_value()) {
+    if (value != value_orig) {
       set_value(value);
     }
     written_to = true;
