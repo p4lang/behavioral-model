@@ -460,8 +460,7 @@ class Data {
   //! Could have named it get_value(), but wanted to avoid accidental
   //! modification of the value when someone intended to call the const
   //! version of get_value()
-  Bignum &get_nc_value()
-  {
+  Bignum &get_nc_value() {
     return value;
   }
 

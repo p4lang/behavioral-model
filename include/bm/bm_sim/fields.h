@@ -189,22 +189,24 @@ class Field : public Data {
 
   static void set_warn_on_invalid_hdr_read(bool warn) {
     warn_on_invalid_hdr_read = warn;
-    handle_invalid_hdr_read = warn_on_invalid_hdr_read || ret_zero_on_invalid_hdr_read;
+    handle_invalid_hdr_read =
+        warn_on_invalid_hdr_read || ret_zero_on_invalid_hdr_read;
   }
 
   static void set_ret_zero_on_invalid_hdr_read(bool ret_zero) {
     ret_zero_on_invalid_hdr_read = ret_zero;
-    handle_invalid_hdr_read = warn_on_invalid_hdr_read || ret_zero_on_invalid_hdr_read;
+    handle_invalid_hdr_read =
+        warn_on_invalid_hdr_read || ret_zero_on_invalid_hdr_read;
   }
 
  protected:
-   static bool warn_on_invalid_hdr_read;
-   static bool ret_zero_on_invalid_hdr_read;
-   static bool handle_invalid_hdr_read;
+  static bool warn_on_invalid_hdr_read;
+  static bool ret_zero_on_invalid_hdr_read;
+  static bool handle_invalid_hdr_read;
 
-   static Bignum zero;
+  static Bignum zero;
 
-   const Bignum &get_value() const override;
+  const Bignum &get_value() const override;
 
  private:
   int nbits;

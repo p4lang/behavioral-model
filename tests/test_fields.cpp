@@ -308,9 +308,9 @@ TEST(FieldTest, ExportBytesVLLarge) {
   EXPECT_NE(0u, f.get<uint64_t>());
 }
 
-class FieldValidityTest : public ::testing::TestWithParam<std::tuple<bool, bool>>
-{
-protected:
+class FieldValidityTest :
+    public ::testing::TestWithParam<std::tuple<bool, bool>> {
+ protected:
   PHVFactory phv_factory;
   std::unique_ptr<PHV> phv;
 
@@ -349,7 +349,8 @@ protected:
   }
 
   void TearDown() override {
-    // Reset the invalid header read mode in Field to default values for other tests
+    // Reset the invalid header read mode in Field
+    // to default values for other tests
     Field::set_warn_on_invalid_hdr_read(false);
     Field::set_ret_zero_on_invalid_hdr_read(false);
   }
@@ -362,8 +363,10 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
   int f0_exp = 0;
   int f1_exp = 0;
 
-  std::string warn_substr0 = "Reading an invalid field (header: test0, field offset: 0)";
-  std::string warn_substr1 = "Reading an invalid field (header: test1, field offset: 0)";
+  std::string warn_substr0 =
+      "Reading an invalid field (header: test0, field offset: 0)";
+  std::string warn_substr1 =
+      "Reading an invalid field (header: test1, field offset: 0)";
 
   // Initially, both headers should be invalid
   EXPECT_FALSE(f0.is_valid());
@@ -389,7 +392,8 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
   }
   ss.str("");
 
-  // Mark header 0 as valid, then write into f0 and verify that the reads are as expected
+  // Mark header 0 as valid, then write into f0
+  // and verify that the reads are as expected
   f0_exp = 42;
 
   phv->get_header(testHeader0).mark_valid();
@@ -504,7 +508,5 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
 INSTANTIATE_TEST_SUITE_P(UninitReadHandlingTest,
                          FieldValidityTest,
                          ::testing::Combine(
-                          ::testing::Bool(),  // warn_on_invalid_hdr_read
-                          ::testing::Bool()   // ret_zero_on_invalid_hdr_read
-                         )
-                        );
+                          ::testing::Bool(),    // warn_on_invalid_hdr_read
+                          ::testing::Bool()));  // ret_zero_on_invalid_hdr_read

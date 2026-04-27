@@ -165,8 +165,9 @@ Field::get_value() const {
   if (handle_invalid_hdr_read && !is_valid()) {
     if (warn_on_invalid_hdr_read) {
       assert(parent_hdr);
-      Logger::get()->warn("Reading an invalid field (header: {}, field offset: {})",
-                          parent_hdr->get_name(), parent_hdr->get_field_offset(this));
+      Logger::get()->warn(
+          "Reading an invalid field (header: {}, field offset: {})",
+          parent_hdr->get_name(), parent_hdr->get_field_offset(this));
     }
     if (ret_zero_on_invalid_hdr_read) {
       return zero;
