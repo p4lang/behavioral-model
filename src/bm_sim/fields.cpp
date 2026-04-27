@@ -61,7 +61,6 @@ Field::reserve_VL(size_t max_bytes) {
 void
 Field::swap_values(Field *other) {
   // do not swap arith!
-  // FIXME: review correctness after adding validity support
   std::swap(get_nc_value(), other->get_nc_value());
   std::swap(bytes, other->bytes);
   if (VL) {
