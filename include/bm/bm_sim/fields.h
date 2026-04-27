@@ -187,20 +187,20 @@ class Field : public Data {
     return written_to;
   }
 
-  static void set_warn_on_uninit_read(bool warn) {
-    warn_on_uninit_read = warn;
-    handle_uninit_read = warn_on_uninit_read || ret_zero_on_uninit_read;
+  static void set_warn_on_invalid_hdr_read(bool warn) {
+    warn_on_invalid_hdr_read = warn;
+    handle_invalid_hdr_read = warn_on_invalid_hdr_read || ret_zero_on_invalid_hdr_read;
   }
 
-  static void set_ret_zero_on_uninit_read(bool ret_zero) {
-    ret_zero_on_uninit_read = ret_zero;
-    handle_uninit_read = warn_on_uninit_read || ret_zero_on_uninit_read;
+  static void set_ret_zero_on_invalid_hdr_read(bool ret_zero) {
+    ret_zero_on_invalid_hdr_read = ret_zero;
+    handle_invalid_hdr_read = warn_on_invalid_hdr_read || ret_zero_on_invalid_hdr_read;
   }
 
  protected:
-   static bool warn_on_uninit_read;
-   static bool ret_zero_on_uninit_read;
-   static bool handle_uninit_read;
+   static bool warn_on_invalid_hdr_read;
+   static bool ret_zero_on_invalid_hdr_read;
+   static bool handle_invalid_hdr_read;
 
    static Bignum zero;
 

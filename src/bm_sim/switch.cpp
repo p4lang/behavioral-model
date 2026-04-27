@@ -323,8 +323,8 @@ SwitchWContexts::init_from_options_parser(
 
   max_port_count = parser.max_port_count;
 
-  Field::set_warn_on_uninit_read(parser.warn_on_uninit_read);
-  Field::set_ret_zero_on_uninit_read(parser.ret_zero_on_uninit_read);
+  Field::set_warn_on_invalid_hdr_read(parser.warn_on_invalid_hdr_read);
+  Field::set_ret_zero_on_invalid_hdr_read(parser.ret_zero_on_invalid_hdr_read);
 
   // TODO(unknown): is this the right place to do this?
   set_packet_handler(packet_handler, static_cast<void *>(this));

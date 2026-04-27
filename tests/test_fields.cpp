@@ -317,8 +317,8 @@ protected:
   HeaderType testHeaderType;
   bm::header_id_t testHeader0{0}, testHeader1{1};
 
-  bool warn_on_uninit_read{false};
-  bool ret_zero_on_uninit_read{false};
+  bool warn_on_invalid_hdr_read{false};
+  bool ret_zero_on_invalid_hdr_read{false};
 
   std::stringstream ss;
 
@@ -339,19 +339,19 @@ protected:
   }
 
   void SetUp() override {
-    warn_on_uninit_read = std::get<0>(GetParam());
-    ret_zero_on_uninit_read = std::get<1>(GetParam());
+    warn_on_invalid_hdr_read = std::get<0>(GetParam());
+    ret_zero_on_invalid_hdr_read = std::get<1>(GetParam());
 
-    Field::set_warn_on_uninit_read(warn_on_uninit_read);
-    Field::set_ret_zero_on_uninit_read(ret_zero_on_uninit_read);
+    Field::set_warn_on_invalid_hdr_read(warn_on_invalid_hdr_read);
+    Field::set_ret_zero_on_invalid_hdr_read(ret_zero_on_invalid_hdr_read);
 
     phv = phv_factory.create();
   }
 
   void TearDown() override {
-    // Reset the uninit read mode in Field to default values for other tests
-    Field::set_warn_on_uninit_read(false);
-    Field::set_ret_zero_on_uninit_read(false);
+    // Reset the invalid header read mode in Field to default values for other tests
+    Field::set_warn_on_invalid_hdr_read(false);
+    Field::set_ret_zero_on_invalid_hdr_read(false);
   }
 };
 
@@ -374,7 +374,7 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
   f1_exp = 0;
 
   EXPECT_EQ(f0.get_int(), f0_exp);
-  if (warn_on_uninit_read) {
+  if (warn_on_invalid_hdr_read) {
     EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr0));
   } else {
     EXPECT_EQ(ss.str(), "");
@@ -382,7 +382,7 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
   ss.str("");
 
   EXPECT_EQ(f1.get_int(), f1_exp);
-  if (warn_on_uninit_read) {
+  if (warn_on_invalid_hdr_read) {
     EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr1));
   } else {
     EXPECT_EQ(ss.str(), "");
@@ -404,7 +404,7 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
   ss.str("");
 
   EXPECT_EQ(f1.get_int(), f1_exp);
-  if (warn_on_uninit_read) {
+  if (warn_on_invalid_hdr_read) {
     EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr1));
   } else {
     EXPECT_EQ(ss.str(), "");
@@ -428,7 +428,7 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
   ss.str("");
 
   // Mark header 0 as invalid and verify fields are as expected
-  f0_exp = ret_zero_on_uninit_read ? 0 : 42;
+  f0_exp = ret_zero_on_invalid_hdr_read ? 0 : 42;
   f1_exp = 42;
 
   phv->get_header(testHeader0).mark_invalid();
@@ -437,7 +437,7 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
   EXPECT_TRUE(f1.is_valid());
 
   EXPECT_EQ(f0.get_int(), f0_exp);
-  if (warn_on_uninit_read) {
+  if (warn_on_invalid_hdr_read) {
     EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr0));
   } else {
     EXPECT_EQ(ss.str(), "");
@@ -449,8 +449,8 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
   ss.str("");
 
   // Mark header 1 as invalid and verify fields are as expected
-  f0_exp = ret_zero_on_uninit_read ? 0 : 42;
-  f1_exp = ret_zero_on_uninit_read ? 0 : 42;
+  f0_exp = ret_zero_on_invalid_hdr_read ? 0 : 42;
+  f1_exp = ret_zero_on_invalid_hdr_read ? 0 : 42;
 
   phv->get_header(testHeader1).mark_invalid();
 
@@ -458,7 +458,7 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
   EXPECT_FALSE(f1.is_valid());
 
   EXPECT_EQ(f0.get_int(), f0_exp);
-  if (warn_on_uninit_read) {
+  if (warn_on_invalid_hdr_read) {
     EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr0));
   } else {
     EXPECT_EQ(ss.str(), "");
@@ -466,7 +466,7 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
   ss.str("");
 
   EXPECT_EQ(f1.get_int(), f1_exp);
-  if (warn_on_uninit_read) {
+  if (warn_on_invalid_hdr_read) {
     EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr1));
   } else {
     EXPECT_EQ(ss.str(), "");
@@ -475,13 +475,13 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
 
   // Copy from invalid header to valid header
   // Write into f0 without marking valid
-  f0_exp = ret_zero_on_uninit_read ? 0 : 43;
-  f1_exp = ret_zero_on_uninit_read ? 0 : 43;
+  f0_exp = ret_zero_on_invalid_hdr_read ? 0 : 43;
+  f1_exp = ret_zero_on_invalid_hdr_read ? 0 : 43;
 
   f0.set(43);
   phv->get_header(testHeader1).mark_valid();
   phv->get_header(testHeader1).copy_fields(phv->get_header(testHeader0));
-  if (warn_on_uninit_read) {
+  if (warn_on_invalid_hdr_read) {
     EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr0));
   } else {
     EXPECT_EQ(ss.str(), "");
@@ -489,7 +489,7 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
   ss.str("");
 
   EXPECT_EQ(f0.get_int(), f0_exp);
-  if (warn_on_uninit_read) {
+  if (warn_on_invalid_hdr_read) {
     EXPECT_THAT(ss.str(), ::testing::HasSubstr(warn_substr0));
   } else {
     EXPECT_EQ(ss.str(), "");
@@ -504,7 +504,7 @@ TEST_P(FieldValidityTest, UninitReadHandling) {
 INSTANTIATE_TEST_SUITE_P(UninitReadHandlingTest,
                          FieldValidityTest,
                          ::testing::Combine(
-                          ::testing::Bool(),  // warn_on_uninit_read
-                          ::testing::Bool()   // ret_zero_on_uninit_read
+                          ::testing::Bool(),  // warn_on_invalid_hdr_read
+                          ::testing::Bool()   // ret_zero_on_invalid_hdr_read
                          )
                         );

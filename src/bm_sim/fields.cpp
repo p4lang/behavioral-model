@@ -27,9 +27,9 @@
 
 namespace bm {
 
-bool Field::warn_on_uninit_read = false;
-bool Field::ret_zero_on_uninit_read = false;
-bool Field::handle_uninit_read = false;
+bool Field::warn_on_invalid_hdr_read = false;
+bool Field::ret_zero_on_invalid_hdr_read = false;
+bool Field::handle_invalid_hdr_read = false;
 
 Bignum Field::zero{0};
 
@@ -162,13 +162,13 @@ Field::is_valid() const {
 
 const Bignum &
 Field::get_value() const {
-  if (handle_uninit_read && !is_valid()) {
-    if (warn_on_uninit_read) {
+  if (handle_invalid_hdr_read && !is_valid()) {
+    if (warn_on_invalid_hdr_read) {
       assert(parent_hdr);
       Logger::get()->warn("Reading an invalid field (header: {}, field offset: {})",
                           parent_hdr->get_name(), parent_hdr->get_field_offset(this));
     }
-    if (ret_zero_on_uninit_read) {
+    if (ret_zero_on_invalid_hdr_read) {
       return zero;
     }
   }

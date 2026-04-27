@@ -442,8 +442,8 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
     }
   }
 
-  warn_on_uninit_read = vm.count("warn-on-uninit-read") > 0;
-  ret_zero_on_uninit_read = vm.count("ret-zero-on-uninit-read") > 0;
+  warn_on_invalid_hdr_read = vm.count("warn-on-invalid-hdr-read") > 0;
+  ret_zero_on_invalid_hdr_read = vm.count("ret-zero-on-invalid-hdr-read") > 0;
 }
 
 void
