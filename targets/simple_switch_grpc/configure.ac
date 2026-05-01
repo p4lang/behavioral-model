@@ -72,9 +72,6 @@ PKG_CHECK_MODULES([GRPC], [grpc++ >= 1.3.0 grpc >= 3.0.0])
 AC_SUBST([GRPC_CFLAGS])
 AC_SUBST([GRPC_LIBS])
 
-AC_CHECK_HEADER([boost/optional.hpp], [],
-                [AC_MSG_ERROR([Boost optional header not found])])
-
 AC_ARG_WITH([sysrepo],
     AS_HELP_STRING([--with-sysrepo],
                    [Use sysrepo gNMI service implementation @<:@default=no@:>@]),
