@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Anirudh Sivaraman
+#
+# SPDX-License-Identifier: Apache-2.0
+
 if COND_STRESS_TESTS
     MAYBE_STRESS_TESTS = stress_tests
 endif

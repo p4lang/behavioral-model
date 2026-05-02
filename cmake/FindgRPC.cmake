@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Find gRPC
 # This module defines
 #  GRPC_INCLUDE_DIRS - where to find grpc headers

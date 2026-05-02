@@ -1,4 +1,9 @@
 #!/bin/sh
+
+# SPDX-FileCopyrightText: 2026 Fabian Ruffy
+#
+# SPDX-License-Identifier: Apache-2.0
+
 set -e
 
 git clone --depth 1 https://github.com/p4lang/PI.git

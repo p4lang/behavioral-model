@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# SPDX-FileCopyrightText: 2018 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Overrides the default build command with one that sets PARENT_VERSION arg to
 # the appropriate value. behavioral-model:latest will be built from pi:latest,
 # while behavioral-model:stable will be built from pi:stable. Thanks to this we

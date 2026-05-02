@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # FIXME: Makefile.am contains references to WITH_SYSREPO. How is this set?
 
 # Include directories

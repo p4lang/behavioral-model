@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Anirudh Sivaraman
+#
+# SPDX-License-Identifier: Apache-2.0
+
 AM_CPPFLAGS += \
 -I$(top_builddir)/thrift_src/gen-cpp
 

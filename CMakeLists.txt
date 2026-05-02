@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 cmake_minimum_required(VERSION 3.10)
 
 # Use ccache if it is installed
@@ -238,7 +242,9 @@ if(WITH_PDFIXED)
 endif()
 
 # Installation rules
-install(FILES LICENSE README.md
+install(FILES README.md
+  DESTINATION share/doc/behavioral-model)
+install(DIRECTORY LICENSES
   DESTINATION share/doc/behavioral-model)
 
 # Print configuration summary

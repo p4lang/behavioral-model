@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Create jsoncpp library
 add_library(jsoncpp STATIC
   src/jsoncpp.cpp

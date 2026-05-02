@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Configure version.cpp
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp.in

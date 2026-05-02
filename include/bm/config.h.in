@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Glen Gibb
+//
+// SPDX-License-Identifier: Apache-2.0
+
 #ifndef _INCLUDE_BM_CONFIG_H
 #define _INCLUDE_BM_CONFIG_H 1
 

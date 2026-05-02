@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2019 Hemant Singh
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 Most of the commands in here are common to runtime_CLI and
 simple_switch_CLI, but a few exist only in simple_switch_CLI.  Those
 are marked [simple_switch_CLI only].

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Identify Thrift files
 file(GLOB THRIFT_FILES "${CMAKE_CURRENT_SOURCE_DIR}/thrift/*.thrift")
 

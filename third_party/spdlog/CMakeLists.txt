@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # spdlog is a header-only library, so we just need to install the headers
 file(GLOB_RECURSE SPDLOG_HEADERS "bm/spdlog/*.h" "bm/spdlog/*.cc")
 

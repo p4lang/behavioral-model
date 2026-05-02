@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 include "res.thrift"
 
 namespace py conn_mgr_pd_rpc

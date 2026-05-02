@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2017 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 FROM p4lang/third-party:latest
 LABEL maintainer="P4 Developers <p4-dev@lists.p4.org>"
 LABEL description="This Docker image does not have any dependency on PI or P4 \
