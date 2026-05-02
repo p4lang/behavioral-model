@@ -198,6 +198,19 @@ class Header : public NamedP4Object {
     return fields.at(field_offset);
   }
 
+  //! Get the field offset of a Field, or -1 if it can't be found
+  int get_field_offset(const Field *field) const {
+    for (size_t res = 0; res < fields.size(); res++) {
+      if (&fields[res] == field) return res;
+    }
+    return -1;
+  }
+
+  //! Get the field offset of a Field, or -1 if it can't be found
+  int get_field_offset(const Field &field) const {
+    return get_field_offset(&field);
+  }
+
   const HeaderType &get_header_type() const { return header_type; }
 
   //! Returns an integral id which represents the header type of the

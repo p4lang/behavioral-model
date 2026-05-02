@@ -93,6 +93,8 @@ class OptionsParser {
   size_t dump_packet_data{0};
   int max_port_count{default_max_port_count};
   std::unordered_set<std::string> options_provided{};
+  bool warn_on_invalid_hdr_read{false};
+  bool ret_zero_on_invalid_hdr_read{false};
 };
 
 }  // namespace bm

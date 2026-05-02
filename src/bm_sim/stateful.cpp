@@ -23,6 +23,7 @@ Register::Register(int nbits, const RegisterArray *register_array)
 
 void
 Register::export_bytes() {
+  auto &value = get_nc_value();
   value &= mask;
   register_array->notify(*this);
 }

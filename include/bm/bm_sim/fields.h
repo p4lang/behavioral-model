@@ -59,6 +59,7 @@ class Field : public Data {
   }
 
   void sync_value() {
+    auto &value = get_nc_value();
     bignum::import_bytes(&value, bytes.data(), nbytes);
     if (is_signed && bignum::test_bit(value, nbits - 1)) {
       bignum::clear_bit(&value, nbits - 1);
@@ -95,6 +96,8 @@ class Field : public Data {
   void export_bytes() override {
     std::fill(bytes.begin(), bytes.end(), 0);  // very important !
 
+    auto value = get_value();
+    auto value_orig = value;
     if (is_saturating) {
       if (value < min) value = min;
       else if (value > max) value = max;
@@ -117,6 +120,10 @@ class Field : public Data {
         // bignum representation of 1000 0001, which is what we wanted
         bignum::export_bytes(bytes.data(), nbytes, value - min - min);
       }
+    }
+    // Write the value back if it changed
+    if (value != value_orig) {
+      set_value(value);
     }
     written_to = true;
     DEBUGGER_NOTIFY_UPDATE(*packet_id, my_id, bytes.data(), nbits);
@@ -157,6 +164,8 @@ class Field : public Data {
     return VL;
   }
 
+  bool is_valid() const override;
+
   //! Set the value of the written_to flag for the field. This flag can be
   //! queried at any time using get_written_to() and is used to check whether
   //! the field has been modified since written_to was last set to `false`.
@@ -169,6 +178,27 @@ class Field : public Data {
   bool get_written_to() const {
     return written_to;
   }
+
+  static void set_warn_on_invalid_hdr_read(bool warn) {
+    warn_on_invalid_hdr_read = warn;
+    handle_invalid_hdr_read =
+        warn_on_invalid_hdr_read || ret_zero_on_invalid_hdr_read;
+  }
+
+  static void set_ret_zero_on_invalid_hdr_read(bool ret_zero) {
+    ret_zero_on_invalid_hdr_read = ret_zero;
+    handle_invalid_hdr_read =
+        warn_on_invalid_hdr_read || ret_zero_on_invalid_hdr_read;
+  }
+
+ protected:
+  static bool warn_on_invalid_hdr_read;
+  static bool ret_zero_on_invalid_hdr_read;
+  static bool handle_invalid_hdr_read;
+
+  static Bignum zero;
+
+  const Bignum &get_value() const override;
 
  private:
   int nbits;

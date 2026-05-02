@@ -10,11 +10,18 @@
 
 #include <bm/bm_sim/fields.h>
 #include <bm/bm_sim/headers.h>
+#include <bm/bm_sim/logger.h>
 
 #include <algorithm>  // for std::swap
 #include "extract.h"
 
 namespace bm {
+
+bool Field::warn_on_invalid_hdr_read = false;
+bool Field::ret_zero_on_invalid_hdr_read = false;
+bool Field::handle_invalid_hdr_read = false;
+
+Bignum Field::zero{0};
 
 Field::Field(int nbits, Header *parent_hdr, bool arith_flag, bool is_signed,
              bool hidden, bool VL, bool is_saturating)
@@ -44,7 +51,7 @@ Field::reserve_VL(size_t max_bytes) {
 void
 Field::swap_values(Field *other) {
   // do not swap arith!
-  std::swap(value, other->value);
+  std::swap(get_nc_value(), other->get_nc_value());
   std::swap(bytes, other->bytes);
   if (VL) {
     std::swap(nbits, other->nbits);
@@ -122,7 +129,7 @@ void
 Field::copy_value(const Field &src) {
   // it's important to have a way of copying a field value without the
   // packet_id pointer. This is used by PHV::copy_headers().
-  value = src.value;
+  set_value(src.get_value());
   bytes = src.bytes;
   if (VL) {
     nbits = src.nbits;
@@ -131,6 +138,31 @@ Field::copy_value(const Field &src) {
     min = src.min;
     max = src.max;
   }
+}
+
+bool
+Field::is_valid() const {
+  // FIXME: Consider using the written_to flag in the evalutation. Would
+  // need to make sure this is cleared whenever the header is marked invalid.
+
+  // Hidden fields assumed always valid. Needed for header validity bit.
+  return hidden || !parent_hdr || parent_hdr->is_valid();
+}
+
+const Bignum &
+Field::get_value() const {
+  if (handle_invalid_hdr_read && !is_valid()) {
+    if (warn_on_invalid_hdr_read) {
+      assert(parent_hdr);
+      Logger::get()->warn(
+          "Reading an invalid field (header: {}, field offset: {})",
+          parent_hdr->get_name(), parent_hdr->get_field_offset(this));
+    }
+    if (ret_zero_on_invalid_hdr_read) {
+      return zero;
+    }
+  }
+  return Data::get_value();
 }
 
 }  // namespace bm
