@@ -23,13 +23,13 @@
 #ifndef BM_BM_SIM_FIELD_LISTS_H_
 #define BM_BM_SIM_FIELD_LISTS_H_
 
-#include <utility>  // for pair<>
-#include <vector>
-#include <unordered_set>
 #include <string>
+#include <unordered_set>
+#include <utility>  // for pair<>
+#include <variant>
+#include <vector>
 
 #include <boost/functional/hash.hpp>
-#include <boost/variant.hpp>
 
 #include "phv_forward.h"
 #include "bytecontainer.h"
@@ -66,7 +66,7 @@ class FieldList {
     }
   };
 
-  struct FieldListVisitor : boost::static_visitor<> {
+  struct FieldListVisitor {
     void operator()(const field_t &) { }
     void operator()(const constant_t &) { }
   };
@@ -95,7 +95,9 @@ class FieldList {
   void visit(T &visitor) {
     static_assert(std::is_base_of<FieldListVisitor, T>::value,
                   "Invalid visitor, must inherit from from FieldListVisitor");
-    std::for_each(fields.begin(), fields.end(), boost::apply_visitor(visitor));
+    for (const auto &field : fields) {
+      std::visit(visitor, field);
+    }
   }
 
   void copy_fields_between_phvs(PHV *dst, const PHV *src) {
@@ -117,7 +119,7 @@ class FieldList {
   }
 
  private:
-  using field_list_member_t = boost::variant<field_t, constant_t>;
+  using field_list_member_t = std::variant<field_t, constant_t>;
 
   struct FieldKeyHash {
     std::size_t operator()(const field_t& f) const {
