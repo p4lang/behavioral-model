@@ -441,6 +441,9 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
       outstream << "Target parser returned an error\n";
     }
   }
+
+  warn_on_invalid_hdr_read = vm.count("warn-on-invalid-hdr-read") > 0;
+  ret_zero_on_invalid_hdr_read = vm.count("ret-zero-on-invalid-hdr-read") > 0;
 }
 
 void
