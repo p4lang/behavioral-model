@@ -11,7 +11,6 @@ target_link_libraries(test_parse_pna
   gtest
   test_utils
   bmapps
-  Boost::filesystem
 )
 
 target_include_directories(test_parse_pna PRIVATE

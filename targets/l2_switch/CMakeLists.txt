@@ -15,7 +15,6 @@ target_link_libraries(l2_switch
   bmi
   jsoncpp
   Boost::program_options
-  Boost::filesystem
   ${THRIFT_LIBRARIES}
 )
 

@@ -20,7 +20,6 @@ target_link_libraries(bmall
   PUBLIC
     jsoncpp
     Boost::program_options
-    Boost::filesystem
 )
 
 if(WITH_THRIFT)

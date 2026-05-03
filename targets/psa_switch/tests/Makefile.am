@@ -7,8 +7,7 @@ AM_CPPFLAGS += \
 -DTESTDATADIR=\"$(srcdir)/testdata\"
 LDADD = $(builddir)/../libpsaswitch.la \
 $(top_builddir)/third_party/gtest/libgtest.la \
-$(top_builddir)/src/bm_apps/libbmapps.la \
--lboost_filesystem
+$(top_builddir)/src/bm_apps/libbmapps.la
 
 # Define unit tests
 common_source = main.cpp

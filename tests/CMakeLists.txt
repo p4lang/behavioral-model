@@ -95,7 +95,6 @@ foreach(TEST_NAME ${TESTS})
     jsoncpp
     testutils
     ${THRIFT_LIBRARIES}
-    Boost::filesystem
     Boost::program_options
   )
   target_compile_options(${TEST_NAME} PRIVATE "-Wno-error=overloaded-virtual")
@@ -160,7 +159,6 @@ target_link_libraries(test_all
   jsoncpp
   testutils
   ${THRIFT_LIBRARIES}
-  Boost::filesystem
   Boost::program_options
 )
 

@@ -12,7 +12,6 @@ sudo apt-get install -y \
     git \
     g++ \
     libboost-dev \
-    libboost-filesystem-dev \
     libboost-program-options-dev \
     libboost-system-dev \
     libboost-test-dev \
