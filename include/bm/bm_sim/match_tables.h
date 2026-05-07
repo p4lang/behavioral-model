@@ -25,20 +25,19 @@
 #include <iosfwd>
 #include <iterator>
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
 
-// shared_mutex will only be available in C++-14, so for now I'm using boost
-#include <boost/thread/shared_mutex.hpp>
-
-#include "match_units.h"
+#include "action_entry.h"
+#include "action_profile.h"
 #include "actions.h"
 #include "control_flow.h"
 #include "lookup_structures.h"
-#include "action_entry.h"
-#include "action_profile.h"
+#include "match_units.h"
 
 namespace bm {
 
@@ -204,8 +203,8 @@ class MatchTableAbstract : public NamedP4Object {
   MatchTableAbstract &operator=(MatchTableAbstract &&other) = delete;
 
  protected:
-  using ReadLock = boost::shared_lock<boost::shared_mutex>;
-  using WriteLock = boost::unique_lock<boost::shared_mutex>;
+  using ReadLock = std::shared_lock<std::shared_mutex>;
+  using WriteLock = std::unique_lock<std::shared_mutex>;
 
  protected:
   const ControlFlowNode *get_next_node(p4object_id_t action_id) const;
@@ -286,7 +285,7 @@ class MatchTableAbstract : public NamedP4Object {
   std::string dump_entry_string_(entry_handle_t handle) const;
 
  private:
-  mutable boost::shared_mutex t_mutex{};
+  mutable std::shared_mutex t_mutex{};
   MatchUnitAbstract_ *match_unit_{nullptr};
 };
 

@@ -246,10 +246,6 @@ AM_CONDITIONAL([ENABLE_MODULES], [test "x$modules_enabled" == "xyes"])
 # so use headers to check
 AC_CHECK_HEADER([boost/thread.hpp], [], [AC_MSG_ERROR([Boost threading headers not found])])
 # need to check at least for the libboost_thread since it is -mt.so
-AX_CXX_CHECK_LIB([boost_thread], [boost::thread], [],
-                 [AX_CXX_CHECK_LIB([boost_thread-mt], [boost::thread],
-                                   [LIBS="-lboost_thread-mt $LIBS"],
-                                   [AC_MSG_ERROR([Missing boost thread library])])])
 AC_CHECK_HEADER([boost/multiprecision/gmp.hpp], [], [AC_MSG_ERROR([Missing boost Multiprecision headers])])
 AC_CHECK_HEADER([boost/program_options.hpp], [], [AC_MSG_ERROR([Missing boost program options header])])
 AC_CHECK_HEADER([boost/functional/hash.hpp], [], [AC_MSG_ERROR([Missing boost functional hash header])])

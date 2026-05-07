@@ -77,7 +77,6 @@ target_link_libraries(bmsim PUBLIC
   ${CMAKE_THREAD_LIBS_INIT}
   ${GMP_LIBRARY}
   ${PCAP_LIBRARY}
-  Boost::thread
 )
 
 if(WITH_NANOMSG)

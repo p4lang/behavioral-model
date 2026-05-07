@@ -54,6 +54,7 @@
 #include <memory>
 #include <mutex>
 #include <set>
+#include <shared_mutex>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
@@ -62,25 +63,25 @@
 
 #include "P4Objects.h"
 #include "action_profile.h"
+#include "device_id.h"
+#include "lookup_structures.h"
 #include "match_tables.h"
 #include "runtime_interface.h"
-#include "lookup_structures.h"
-#include "device_id.h"
 
 namespace bm {
 
 //! Provides safe access to an extern instance for control plane calls.
 class ExternSafeAccess {
  public:
-  ExternSafeAccess(boost::shared_lock<boost::shared_mutex> &&lock,
-                   ExternType *instance)
-      : lock(std::move(lock)), instance(instance) { }
+  ExternSafeAccess(std::shared_lock<std::shared_mutex>&& lock,
+                   ExternType* instance)
+      : lock(std::move(lock)), instance(instance) {}
 
   //! Get a pointer to the extern instance itself.
   ExternType *get() const { return instance; }
 
  private:
-  boost::shared_lock<boost::shared_mutex> lock;
+  std::shared_lock<std::shared_mutex> lock;
   ExternType *instance;
 };
 
@@ -515,7 +516,7 @@ class Context final {
 
   std::shared_ptr<TransportIface> notifications_transport{nullptr};
 
-  mutable boost::shared_mutex request_mutex{};
+  mutable std::shared_mutex request_mutex{};
 
   std::atomic<bool> swap_ordered{false};
 

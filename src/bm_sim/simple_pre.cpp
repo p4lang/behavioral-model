@@ -20,12 +20,14 @@
  */
 
 #include <bm/bm_sim/_assert.h>
-#include <bm/bm_sim/simple_pre.h>
 #include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/simple_pre.h>
 
+#include <mutex>
+#include <shared_mutex>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
 
 #include "jsoncpp/json.h"
 
@@ -33,7 +35,7 @@ namespace bm {
 
 McSimplePre::McReturnCode
 McSimplePre::mc_mgrp_create(const mgrp_t mgid, mgrp_hdl_t *mgrp_hdl) {
-  boost::unique_lock<boost::shared_mutex> lock(mutex);
+  std::unique_lock<std::shared_mutex> lock(mutex);
   size_t num_entries = mgid_entries.size();
   if (num_entries >= static_cast<size_t>(mgid_table_size)) {
     Logger::get()->error("mgrp create failed, mgid table full");
@@ -48,7 +50,7 @@ McSimplePre::mc_mgrp_create(const mgrp_t mgid, mgrp_hdl_t *mgrp_hdl) {
 
 McSimplePre::McReturnCode
 McSimplePre::mc_mgrp_destroy(mgrp_hdl_t mgrp_hdl) {
-  boost::unique_lock<boost::shared_mutex> lock(mutex);
+  std::unique_lock<std::shared_mutex> lock(mutex);
   mgid_entries.erase(mgrp_hdl);
   Logger::get()->debug("mgrp node deleted for mgid {}", mgrp_hdl);
   return SUCCESS;
@@ -58,7 +60,7 @@ McSimplePre::McReturnCode
 McSimplePre::mc_node_create(const rid_t rid,
                             const PortMap &portmap,
                             l1_hdl_t *l1_hdl) {
-  boost::unique_lock<boost::shared_mutex> lock(mutex);
+  std::unique_lock<std::shared_mutex> lock(mutex);
   l2_hdl_t l2_hdl;
   size_t num_l1_entries = l1_entries.size();
   size_t num_l2_entries = l2_entries.size();
@@ -89,7 +91,7 @@ McSimplePre::mc_node_create(const rid_t rid,
 McSimplePre::McReturnCode
 McSimplePre::mc_node_associate(const mgrp_hdl_t mgrp_hdl,
                                const l1_hdl_t l1_hdl) {
-  boost::unique_lock<boost::shared_mutex> lock(mutex);
+  std::unique_lock<std::shared_mutex> lock(mutex);
   if (!l1_handles.valid_handle(l1_hdl)) {
     Logger::get()->error("node associate failed, invalid l1 handle");
     return INVALID_L1_HANDLE;
@@ -115,7 +117,7 @@ McSimplePre::mc_node_associate(const mgrp_hdl_t mgrp_hdl,
 McSimplePre::McReturnCode
 McSimplePre::mc_node_dissociate(const mgrp_hdl_t mgrp_hdl,
                                 const l1_hdl_t l1_hdl) {
-  boost::unique_lock<boost::shared_mutex> lock(mutex);
+  std::unique_lock<std::shared_mutex> lock(mutex);
   if (!l1_handles.valid_handle(l1_hdl)) {
     Logger::get()->error("node dissociate failed, invalid l1 handle");
     return INVALID_L1_HANDLE;
@@ -140,7 +142,7 @@ McSimplePre::mc_node_dissociate(const mgrp_hdl_t mgrp_hdl,
 
 McSimplePre::McReturnCode
 McSimplePre::mc_node_destroy(const l1_hdl_t l1_hdl) {
-  boost::unique_lock<boost::shared_mutex> lock(mutex);
+  std::unique_lock<std::shared_mutex> lock(mutex);
   rid_t rid;
   if (!l1_handles.valid_handle(l1_hdl)) {
     Logger::get()->error("node destroy failed, invalid l1 handle");
@@ -168,7 +170,7 @@ McSimplePre::mc_node_destroy(const l1_hdl_t l1_hdl) {
 McSimplePre::McReturnCode
 McSimplePre::mc_node_update(const l1_hdl_t l1_hdl,
                             const PortMap &port_map) {
-  boost::unique_lock<boost::shared_mutex> lock(mutex);
+  std::unique_lock<std::shared_mutex> lock(mutex);
   if (!l1_handles.valid_handle(l1_hdl)) {
     Logger::get()->error("node update failed, invalid l1 handle");
     return INVALID_L1_HANDLE;
@@ -240,7 +242,7 @@ McSimplePre::mc_get_entries() const {
   Json::Value root(Json::objectValue);
 
   {
-    boost::unique_lock<boost::shared_mutex> lock(mutex);
+    std::unique_lock<std::shared_mutex> lock(mutex);
     get_entries_common(&root);
   }
 
@@ -261,7 +263,7 @@ McSimplePre::reset_state_() {
 void
 McSimplePre::reset_state() {
   Logger::get()->debug("resetting PRE state");
-  boost::unique_lock<boost::shared_mutex> lock(mutex);
+  std::unique_lock<std::shared_mutex> lock(mutex);
   reset_state_();
 }
 
@@ -270,7 +272,7 @@ McSimplePre::replicate(const McSimplePre::McIn ingress_info) const {
   std::vector<McSimplePre::McOut> egress_info_list;
   egress_port_t port_id;
   McSimplePre::McOut egress_info;
-  boost::shared_lock<boost::shared_mutex> lock(mutex);
+  std::shared_lock<std::shared_mutex> lock(mutex);
   auto mgid_it = mgid_entries.find(ingress_info.mgid);
   if (mgid_it == mgid_entries.end()) {
     Logger::get()->warn("Replication requested for mgid {}, which is not known "
