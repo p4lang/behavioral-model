@@ -61,7 +61,7 @@ BufBuilder::append_payload() {
   with_payload = true;
 }
 
-struct BufBuilder::Deparse : public boost::static_visitor<> {
+struct BufBuilder::Deparse {
   Deparse(const PHV &phv, ByteContainer *buf, int init_offset = 0)
       : phv(phv), buf(buf), nbits(init_offset) { }
 
@@ -116,8 +116,9 @@ BufBuilder::operator()(const Packet &pkt, ByteContainer *buf) const {
   buf->clear();
   const PHV *phv = pkt.get_phv();
   Deparse visitor(*phv, buf);
-  std::for_each(entries.begin(), entries.end(),
-                boost::apply_visitor(visitor));
+  for (const auto &entry : entries) {
+    std::visit(visitor, entry);
+  }
   if (with_payload) {
     size_t curr = buf->size();
     size_t psize = pkt.get_data_size();
