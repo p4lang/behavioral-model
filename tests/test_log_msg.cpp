@@ -13,21 +13,19 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-
 #include <bm/bm_sim/P4Objects.h>
 #include <bm/bm_sim/actions.h>
 #include <bm/bm_sim/core/primitives.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/packet.h>
 #include <bm/bm_sim/phv.h>
+#include <gtest/gtest.h>
 
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include <boost/filesystem.hpp>
 
 #include "jsoncpp/json.h"
 
@@ -43,7 +41,7 @@ using bm::Packet;
 using bm::P4Objects;
 using bm::LookupStructureFactory;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 class LogMessageTest : public ::testing::Test {
  protected:

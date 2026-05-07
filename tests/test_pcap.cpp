@@ -13,19 +13,15 @@
  * limitations under the License.
  */
 
+#include <bm/bm_sim/pcap_file.h>
 #include <gtest/gtest.h>
 
-#include <bm/bm_sim/pcap_file.h>
-
+#include <filesystem>  // for some
 #include <string>
-// TODO(unknown): is this still needed?
-#include <cstdio>
-
-#include <boost/filesystem.hpp>
 
 using namespace bm;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 #ifndef TESTDATADIR
 #define TESTDATADIR "testdata"
@@ -41,10 +37,7 @@ class PcapTest : public ::testing::Test {
 
   virtual void SetUp() {}
 
-  virtual void TearDown() {
-    std::string tmpfile = getTmpFile();
-    remove(tmpfile.c_str());
-  }
+  virtual void TearDown() { fs::remove(getTmpFile()); }
 
   std::string getFile1() {
     fs::path path = fs::path(testDataFolder) / fs::path(testfile1);

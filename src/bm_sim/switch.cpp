@@ -18,8 +18,6 @@
  *
  */
 
-#include <bm/bm_sim/switch.h>
-
 #include <bm/bm_sim/P4Objects.h>
 #include <bm/bm_sim/_assert.h>
 #include <bm/bm_sim/debugger.h>
@@ -29,20 +27,20 @@
 #include <bm/bm_sim/options_parse.h>
 #include <bm/bm_sim/packet.h>
 #include <bm/bm_sim/periodic_task.h>
+#include <bm/bm_sim/switch.h>
 #include <bm/config.h>
 
 #include <cassert>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <streambuf>
 #include <string>
 #include <vector>
 
-#include <boost/filesystem.hpp>
-
 #include "md5.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace bm {
 

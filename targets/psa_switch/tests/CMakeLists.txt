@@ -13,7 +13,6 @@ foreach(TEST_NAME ${TESTS})
     psaswitch
     gtest
     bmapps
-    Boost::filesystem
   )
   if(WITH_THRIFT)
     target_link_libraries(${TEST_NAME}
@@ -39,7 +38,6 @@ target_link_libraries(psa_switch_test_all
   #psaswitch_thrift
   gtest
   bmapps
-  Boost::filesystem
 )
 if(WITH_THRIFT)
   target_link_libraries(psa_switch_test_all

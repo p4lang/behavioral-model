@@ -25,7 +25,6 @@ target_link_libraries(psaswitch
   bmi
   jsoncpp
   Boost::program_options
-  Boost::filesystem
   ${THRIFT_LIBRARIES}
 )
 

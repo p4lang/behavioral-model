@@ -18,18 +18,16 @@
  *
  */
 
-#include <gtest/gtest.h>
-
 #include <bm/bm_sim/_assert.h>
 #include <bm/bm_sim/switch.h>
+#include <gtest/gtest.h>
 
+#include <filesystem>
 #include <string>
-
-#include <boost/filesystem.hpp>
 
 using namespace::bm;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 class SwitchTest : public Switch {
  public:

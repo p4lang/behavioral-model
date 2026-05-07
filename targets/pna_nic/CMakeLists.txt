@@ -25,7 +25,6 @@ target_link_libraries(pnanic
   bmi
   jsoncpp
   Boost::program_options
-  Boost::filesystem
   ${THRIFT_LIBRARIES}
 )
 
