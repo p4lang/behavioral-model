@@ -34,6 +34,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <mutex>
+#include <shared_mutex>
 #include <streambuf>
 #include <string>
 #include <vector>
@@ -450,7 +452,7 @@ SwitchWContexts::swap_requested() {
 
 void
 SwitchWContexts::block_until_no_more_packets() {
-  boost::unique_lock<boost::shared_mutex> lock(process_packet_mutex);
+  std::unique_lock<std::shared_mutex> lock(process_packet_mutex);
   for (cxt_id_t cxt_id = 0; cxt_id < nb_cxts; cxt_id++) {
     // Wait until no more packets exist for this context
     while (phv_source->phvs_in_use(cxt_id) > 0) {
@@ -463,7 +465,7 @@ int
 SwitchWContexts::do_swap() {
   int rc = 1;
   if (!enable_swap || !swap_requested()) return rc;
-  boost::unique_lock<boost::shared_mutex> lock(process_packet_mutex);
+  std::unique_lock<std::shared_mutex> lock(process_packet_mutex);
   for (cxt_id_t cxt_id = 0; cxt_id < nb_cxts; cxt_id++) {
     auto &cxt = contexts[cxt_id];
     if (!cxt.swap_requested()) continue;
@@ -542,7 +544,7 @@ SwitchWContexts::new_packet_ptr(cxt_id_t cxt_id, port_t ingress_port,
                                 packet_id_t id, int ingress_length,
                                 // NOLINTNEXTLINE(whitespace/operators)
                                 PacketBuffer &&buffer) {
-  boost::shared_lock<boost::shared_mutex> lock(process_packet_mutex);
+  std::shared_lock<std::shared_mutex> lock(process_packet_mutex);
   return std::unique_ptr<Packet>(new Packet(
       cxt_id, ingress_port, id, 0u, ingress_length, std::move(buffer),
       phv_source.get()));
@@ -553,7 +555,7 @@ SwitchWContexts::new_packet(cxt_id_t cxt_id, port_t ingress_port,
                             packet_id_t id, int ingress_length,
                             // NOLINTNEXTLINE(whitespace/operators)
                             PacketBuffer &&buffer) {
-  boost::shared_lock<boost::shared_mutex> lock(process_packet_mutex);
+  std::shared_lock<std::shared_mutex> lock(process_packet_mutex);
   return Packet(cxt_id, ingress_port, id, 0u, ingress_length,
                 std::move(buffer), phv_source.get());
 }

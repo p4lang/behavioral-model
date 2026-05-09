@@ -13,8 +13,6 @@ sudo apt-get install -y \
     g++ \
     libboost-dev \
     libboost-program-options-dev \
-    libboost-system-dev \
-    libboost-test-dev \
     libboost-thread-dev \
     libevent-dev \
     libffi-dev \
