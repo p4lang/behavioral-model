@@ -136,6 +136,7 @@ endforeach()
 # Check for libraries
 find_library(GMP_LIBRARY gmp REQUIRED)
 find_library(PCAP_LIBRARY pcap REQUIRED)
+find_library(XXHASH_LIBRARY xxhash REQUIRED)
 
 if(WITH_NANOMSG)
   find_library(NANOMSG_LIBRARY nanomsg REQUIRED)

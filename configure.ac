@@ -189,6 +189,7 @@ AX_PTHREAD([], [AC_MSG_ERROR([Missing pthread library])])
 AC_CHECK_LIB([gmp], [__gmpz_init], [], [AC_MSG_ERROR([Missing libgmp])])
 AC_CHECK_LIB([pcap], [pcap_create], [], [AC_MSG_ERROR([Missing libpcap])])
 AC_CHECK_LIB([pcap], [pcap_set_immediate_mode], [pcap_fix=yes], [pcap_fix=no])
+AC_CHECK_LIB([xxhash], [XXH64], [], [AC_MSG_ERROR([Missing libxxhash])])
 if test -n "$COVERAGE_FLAGS"; then
     AC_CHECK_LIB([gcov], [__gcov_init], [], [AC_MSG_ERROR([Missing gcov library])])
 fi

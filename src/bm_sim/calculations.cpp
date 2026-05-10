@@ -23,8 +23,8 @@
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/packet.h>
 #include <bm/bm_sim/phv.h>
-
 #include <netinet/in.h>
+#include <xxhash.h>
 
 #include <algorithm>
 #include <mutex>
@@ -32,7 +32,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "xxhash.h"
 #include "crc_tables.h"
 #include "extract.h"
 
