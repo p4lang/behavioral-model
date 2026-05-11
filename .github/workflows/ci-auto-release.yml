@@ -3,8 +3,7 @@ name: Automated Release
 on:
   workflow_dispatch:
   schedule:
-    # Temporarily change to day-of-month 8 for faster feedback on other changes
-    - cron: "17 12 8 * *" # At 12:17 on day-of-month 1 (avoid top-of-hour load)
+    - cron: "17 12 1 * *" # At 12:17 on day-of-month 1 (avoid top-of-hour load)
 
 permissions:
   contents: write
