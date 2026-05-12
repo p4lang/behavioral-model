@@ -108,7 +108,7 @@ jobs:
           add-paths: VERSION
           reviewers: fruffy, jafingerhut
           commit-message: ${{ steps.message.outputs.content }}
-          signoff: false
+          signoff: true
           branch: release/${{ env.VERSION }}
           delete-branch: true
           title: Automated Release ${{ env.VERSION }}

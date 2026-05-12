@@ -8,19 +8,18 @@
  *
  */
 
-#include <vector>
-#include <string>
+#include <filesystem>
 #include <iostream>
 #include <memory>
-
-#include <boost/filesystem.hpp>
+#include <string>
+#include <vector>
 
 #include "stress_utils.h"
 
 using ::stress_tests_utils::SwitchTest;
 using ::stress_tests_utils::TestChrono;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 int main(int argc, char* argv[]) {
   size_t num_repeats = 1000;

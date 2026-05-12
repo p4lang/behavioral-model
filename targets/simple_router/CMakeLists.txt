@@ -20,7 +20,6 @@ target_link_libraries(simple_router
   runtimestubs
   jsoncpp
   Boost::program_options
-  Boost::filesystem
   ${THRIFT_LIBRARIES}
 )
 

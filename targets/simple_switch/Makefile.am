@@ -37,7 +37,7 @@ libsimpleswitch_la_LIBADD = \
 $(top_builddir)/src/bm_sim/libbmsim.la \
 $(top_builddir)/src/BMI/libbmi.la \
 $(top_builddir)/third_party/jsoncpp/libjson.la \
-$(THRIFT_LIB) -lboost_program_options -lboost_filesystem
+$(THRIFT_LIB) -lboost_program_options
 
 libsimpleswitch_runner_la_LIBADD = \
 $(PI_LIB) \

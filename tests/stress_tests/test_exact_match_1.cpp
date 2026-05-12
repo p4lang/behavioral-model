@@ -10,14 +10,12 @@
 
 #include <netinet/in.h>
 
-#include <vector>
-#include <string>
+#include <cassert>
+#include <filesystem>
 #include <iostream>
 #include <memory>
-
-#include <cassert>
-
-#include <boost/filesystem.hpp>
+#include <string>
+#include <vector>
 
 #include "stress_utils.h"
 
@@ -25,7 +23,7 @@ using ::stress_tests_utils::SwitchTest;
 using ::stress_tests_utils::TestChrono;
 using ::stress_tests_utils::RandomGen;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace {
 

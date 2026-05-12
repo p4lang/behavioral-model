@@ -10,11 +10,10 @@
 
 #include <bm/bm_sim/packet.h>
 #include <bm/bm_sim/phv.h>
+#include <xxhash.h>
 
 #include <algorithm>  // for swap
 #include <atomic>
-
-#include "xxhash.h"
 
 namespace bm {
 

@@ -101,7 +101,7 @@ include_directories(
 
 # Find required packages
 find_package(Threads REQUIRED)
-find_package(Boost REQUIRED COMPONENTS thread program_options filesystem)
+find_package(Boost REQUIRED COMPONENTS thread program_options)
 
 # Check for the presence of an include file and report an error if not found
 #
@@ -140,6 +140,7 @@ endforeach()
 # Check for libraries
 find_library(GMP_LIBRARY gmp REQUIRED)
 find_library(PCAP_LIBRARY pcap REQUIRED)
+find_library(XXHASH_LIBRARY xxhash REQUIRED)
 
 if(WITH_NANOMSG)
   find_library(NANOMSG_LIBRARY nanomsg REQUIRED)

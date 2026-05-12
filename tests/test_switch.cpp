@@ -8,25 +8,23 @@
  *
  */
 
+#include <bm/bm_runtime/bm_runtime.h>
+#include <bm/bm_sim/switch.h>
 #include <gtest/gtest.h>
 
-#include <bm/bm_sim/switch.h>
-#include <bm/bm_runtime/bm_runtime.h>
-
+#include <filesystem>
 #include <fstream>
+#include <map>
 #include <sstream>
-#include <vector>
 #include <string>
 #include <thread>
-#include <map>
-
-#include <boost/filesystem.hpp>
+#include <vector>
 
 #include "utils.h"
 
 using namespace bm;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace {
 

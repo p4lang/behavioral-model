@@ -8,25 +8,23 @@
  *
  */
 
-#include <gtest/gtest.h>
-
+#include <bm/bm_sim/P4Objects.h>
 #include <bm/bm_sim/actions.h>
 #include <bm/bm_sim/deparser.h>
 #include <bm/bm_sim/packet.h>
 #include <bm/bm_sim/parser.h>
-#include <bm/bm_sim/phv_source.h>
 #include <bm/bm_sim/phv.h>
-#include <bm/bm_sim/P4Objects.h>
+#include <bm/bm_sim/phv_source.h>
+#include <gtest/gtest.h>
 
 #include <chrono>
+#include <filesystem>
 #include <fstream>
-#include <thread>
 #include <mutex>
-#include <vector>
 #include <string>
+#include <thread>
 #include <utility>  // for std::pair
-
-#include <boost/filesystem.hpp>
+#include <vector>
 
 using namespace bm;
 
@@ -2104,8 +2102,7 @@ TEST_F(HeaderUnionStackParserTest, ParseAndDeparse2Options) {
   ASSERT_EQ(0, memcmp(data.data(), packet.data(), data.size()));
 }
 
-
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 // unsure whether these tests really belong here, or in test_p4objects...
 

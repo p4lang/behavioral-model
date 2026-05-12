@@ -34,7 +34,6 @@ foreach(TEST ${TESTS})
     simpleswitch
     test_utils
     ${THRIFT_LIBRARIES}
-    Boost::filesystem
     Boost::program_options
   )
   set_target_properties(ss_test_${TEST} PROPERTIES

@@ -15,18 +15,18 @@
 #include <bm/config.h>
 
 #include <cassert>
+#include <filesystem>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include "version.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace bm {
 

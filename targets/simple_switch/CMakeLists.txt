@@ -27,7 +27,6 @@ target_link_libraries(simpleswitch
   bmi
   jsoncpp
   Boost::program_options
-  Boost::filesystem
   ${THRIFT_LIBRARIES}
 )
 

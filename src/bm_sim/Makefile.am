@@ -78,9 +78,7 @@ transport.cpp \
 transport_nn.cpp \
 utils.h \
 version.cpp \
-version.h \
-xxhash.c \
-xxhash.h
+version.h
 
 libbmsim_la_SOURCES += \
 core/primitives.cpp

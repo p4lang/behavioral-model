@@ -16,11 +16,10 @@
 #ifndef BM_BM_SIM_SIMPLE_PRE_H_
 #define BM_BM_SIM_SIMPLE_PRE_H_
 
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include <boost/thread/shared_mutex.hpp>
 
 #include "handle_mgr.h"
 #include "pre.h"
@@ -192,7 +191,7 @@ class McSimplePre {
   std::unordered_map<l2_hdl_t, L2Entry> l2_entries{};
   HandleMgr l1_handles{};
   HandleMgr l2_handles{};
-  mutable boost::shared_mutex mutex{};
+  mutable std::shared_mutex mutex{};
 };
 
 }  // namespace bm
