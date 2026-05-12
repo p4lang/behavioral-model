@@ -28,6 +28,7 @@ sudo apt-get install -y \
     libthrift-dev \
     libtool \
     libtool-bin \
+    libxxhash-dev \
     pkg-config \
     protobuf-compiler \
     protobuf-compiler-grpc \
