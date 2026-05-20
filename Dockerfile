@@ -29,6 +29,7 @@ ENV BM_DEPS automake \
             libboost-system-dev \
             libboost-filesystem-dev \
             libboost-thread-dev \
+            libjsoncpp-dev \
             libtool \
             libxxhash-dev \
             pkg-config
@@ -37,6 +38,7 @@ ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
                     libboost-filesystem1.71.0 \
                     libboost-thread1.71.0 \
                     libgmp10 \
+                    libjsoncpp25 \
                     libpcap0.8 \
                     libxxhash0 \
                     python3 \

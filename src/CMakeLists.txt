@@ -18,7 +18,6 @@ add_library(bmall SHARED
 target_link_libraries(bmall
   # FIXME: Is this scope correct?
   PUBLIC
-    jsoncpp
     Boost::program_options
 )
 

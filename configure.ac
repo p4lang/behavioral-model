@@ -190,6 +190,7 @@ AC_CHECK_LIB([gmp], [__gmpz_init], [], [AC_MSG_ERROR([Missing libgmp])])
 AC_CHECK_LIB([pcap], [pcap_create], [], [AC_MSG_ERROR([Missing libpcap])])
 AC_CHECK_LIB([pcap], [pcap_set_immediate_mode], [pcap_fix=yes], [pcap_fix=no])
 AC_CHECK_LIB([xxhash], [XXH64], [], [AC_MSG_ERROR([Missing libxxhash])])
+PKG_CHECK_MODULES([JSONCPP], [jsoncpp], [], [AC_MSG_ERROR([Missing jsoncpp])])
 if test -n "$COVERAGE_FLAGS"; then
     AC_CHECK_LIB([gcov], [__gcov_init], [], [AC_MSG_ERROR([Missing gcov library])])
 fi
@@ -254,7 +255,7 @@ AC_CHECK_HEADER([boost/container/flat_set.hpp], [], [AC_MSG_ERROR([Boost flat_se
 
 AC_SUBST([AM_CPPFLAGS], ["-I\$(top_srcdir)/include \
                           -I\$(top_builddir)/include \
-                          -isystem\$(top_srcdir)/third_party/jsoncpp/include \
+                          \$(JSONCPP_CFLAGS) \
                           -isystem\$(top_srcdir)/third_party/spdlog"])
 AC_SUBST([AM_CFLAGS], ["$PTHREAD_CFLAGS"])
 # Using ax_append_compile_flags requires copying 4 macro definitions from the
@@ -303,7 +304,6 @@ AC_CONFIG_FILES([Makefile
 		third_party/Makefile
 		third_party/gmock/Makefile
 		third_party/gtest/Makefile
-		third_party/jsoncpp/Makefile
 		third_party/spdlog/Makefile
 		include/Makefile
 		src/Makefile

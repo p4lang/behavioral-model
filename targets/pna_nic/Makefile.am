@@ -20,7 +20,7 @@ externs/pna_hash.h externs/pna_hash.cpp
 libpnanic_la_LIBADD = \
 $(top_builddir)/src/bm_sim/libbmsim.la \
 $(top_builddir)/src/BMI/libbmi.la \
-$(top_builddir)/third_party/jsoncpp/libjson.la \
+$(JSONCPP_LIBS) \
 $(THRIFT_LIB) -lboost_program_options
 
 if COND_THRIFT

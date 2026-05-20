@@ -77,6 +77,7 @@ target_link_libraries(bmsim PUBLIC
   ${GMP_LIBRARY}
   ${PCAP_LIBRARY}
   ${XXHASH_LIBRARY}
+  JsonCpp::JsonCpp
 )
 
 if(WITH_NANOMSG)

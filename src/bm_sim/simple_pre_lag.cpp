@@ -21,13 +21,12 @@
 
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/simple_pre_lag.h>
+#include <json/json.h>
 
 #include <mutex>
 #include <shared_mutex>
 #include <string>
 #include <vector>
-
-#include "jsoncpp/json.h"
 
 namespace bm {
 
