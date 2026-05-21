@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 AM_CPPFLAGS += \
 -I$(top_srcdir)/src/BMI \
 -isystem $(top_srcdir)/third_party \

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# SPDX-FileCopyrightText: 2022 Antonin Bas
+#
+# SPDX-License-Identifier: Apache-2.0
+
 if [ "$GCOV" != "" ]; then
    lcov --gcov-tool $GCOV --capture --directory src/bm_sim/.libs/ --output-file coverage.info
    lcov --remove coverage.info '/usr/*' --output-file coverage.info

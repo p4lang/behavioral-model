@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2014 Dan Talayco <dan@barefootnetworks.com>
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # BEHAVIORAL MODEL (bmv2)
 
 ![Build Status](https://github.com/p4lang/behavioral-model/workflows/Test/badge.svg?branch=main)

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 add_library(bmpi STATIC
   src/pi.cpp
   src/pi_imp.cpp

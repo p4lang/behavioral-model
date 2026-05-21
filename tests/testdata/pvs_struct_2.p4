@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2020 Antonin Bas
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 // P4 program originally written by Andy Fingerhut (@jafingerhut) for the
 // p4lang/p4c testsuite, as pvs-struct-2-bmv2.p4.
 

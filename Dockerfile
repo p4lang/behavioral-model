@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2017 Seth Fowler
+#
+# SPDX-License-Identifier: Apache-2.0
+
 ARG PARENT_VERSION=latest
 FROM p4lang/pi:${PARENT_VERSION}
 LABEL maintainer="P4 Developers <p4-dev@lists.p4.org>"

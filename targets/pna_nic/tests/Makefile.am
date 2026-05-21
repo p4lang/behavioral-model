@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Marvell Technology, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 SUBDIRS = .
 
 AM_CPPFLAGS += \

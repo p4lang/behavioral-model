@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2018 Andy Fingerhut
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Behavioral model targets
 
 The targets below are not listed in alphabetical order, but _roughly_

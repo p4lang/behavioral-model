@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 namespace py res_pd_rpc
 namespace cpp res_pd_rpc
 namespace c_glib res_pd_rpc

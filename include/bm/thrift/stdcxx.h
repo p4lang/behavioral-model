@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2017 Jed Liu
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef _BM_STDCXX_H_
 #define _BM_STDCXX_H_
 
