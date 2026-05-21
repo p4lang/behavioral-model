@@ -4,3 +4,4 @@
 
 test*
 !test*.cpp
+!testdata
