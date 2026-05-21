@@ -32,7 +32,7 @@ nobase_include_HEADERS = bm/simple_switch/runner.h
 libsimpleswitch_la_LIBADD = \
 $(top_builddir)/src/bm_sim/libbmsim.la \
 $(top_builddir)/src/BMI/libbmi.la \
-$(top_builddir)/third_party/jsoncpp/libjson.la \
+$(JSONCPP_LIBS) \
 $(THRIFT_LIB) -lboost_program_options
 
 libsimpleswitch_runner_la_LIBADD = \

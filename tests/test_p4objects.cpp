@@ -21,6 +21,7 @@
 #include <bm/bm_sim/P4Objects.h>
 #include <ctype.h>
 #include <gtest/gtest.h>
+#include <json/json.h>
 
 #include <algorithm>  // std::all_of
 #include <filesystem>
@@ -30,8 +31,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "jsoncpp/json.h"
 
 using namespace bm;
 

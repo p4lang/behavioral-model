@@ -22,7 +22,7 @@ foreach(target ${TESTS})
     gtest
     bmapps
     bmsim
-    jsoncpp
+    JsonCpp::JsonCpp
     ${THRIFT_LIBRARIES}
     Boost::program_options
   )

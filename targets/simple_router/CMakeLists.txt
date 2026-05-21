@@ -14,7 +14,7 @@ target_link_libraries(simple_router
   bmsim
   bmi
   runtimestubs
-  jsoncpp
+  JsonCpp::JsonCpp
   Boost::program_options
   ${THRIFT_LIBRARIES}
 )

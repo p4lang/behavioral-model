@@ -20,14 +20,13 @@
 #include <bm/bm_sim/packet.h>
 #include <bm/bm_sim/phv.h>
 #include <gtest/gtest.h>
+#include <json/json.h>
 
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "jsoncpp/json.h"
 
 using bm::PHVFactory;
 using bm::ActionFn;

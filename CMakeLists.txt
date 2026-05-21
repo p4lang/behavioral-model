@@ -91,13 +91,13 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR}/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include
   ${CMAKE_CURRENT_SOURCE_DIR}/third_party/spdlog
 )
 
 # Find required packages
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread program_options)
+find_package(jsoncpp REQUIRED)
 
 # Check for the presence of an include file and report an error if not found
 #

@@ -19,6 +19,7 @@ sudo apt-get install -y \
     libgmp-dev \
     libgrpc++-dev \
     libgrpc-dev \
+    libjsoncpp-dev \
     libnanomsg-dev \
     libpcap-dev \
     libprotobuf-dev \
