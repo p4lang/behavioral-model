@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 AM_CPPFLAGS = -I$(srcdir)/include \
               -isystem $(top_srcdir)/third_party/gtest/include
 AM_CXXFLAGS =
