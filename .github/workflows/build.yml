@@ -17,6 +17,17 @@ on:
     - cron: '15 3-23/4 * * *' # "At minute 15 past every 4th hour from 3 through 23."
 
 jobs:
+  verify-licenses:
+    runs-on: ubuntu-latest
+    name: Validate that all files have copyright and license info
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dev dependencies
+        run: |
+          ./tools/install-uv.sh
+      - name: Validate presence of copyright and license info (python w/reuse)
+        run: |
+          uvx reuse lint
   build:
     if: ${{ github.repository == 'p4lang/behavioral-model' }}
     runs-on: [ubuntu-latest]
