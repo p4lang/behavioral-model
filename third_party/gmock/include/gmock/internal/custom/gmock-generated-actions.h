@@ -1,7 +1,3 @@
-// SPDX-FileCopyrightText: 2015 Google Inc.
-//
-// SPDX-License-Identifier: BSD-3-Clause
-
 // IWYU pragma: private, include "gmock/gmock.h"
 // IWYU pragma: friend gmock/.*
 

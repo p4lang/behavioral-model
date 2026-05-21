@@ -1,9 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2008 Google Inc.
- *
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
 // Copyright 2008, Google Inc.
 // All rights reserved.
 //
