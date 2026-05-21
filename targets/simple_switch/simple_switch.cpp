@@ -423,7 +423,7 @@ SimpleSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
       phv->get_field("queueing_metadata.enq_qdepth")
           .set(egress_buffers.size(egress_port, priority));
     }
-    BMLOG_TRACE_PKT(*packet, "Enqueuing packet to output buffer");
+    BMLOG_TRACE_PKT(*packet, "Enqueuing packet to egress buffer");
     egress_buffers.push_front(
         egress_port, priority,
         std::move(packet));
