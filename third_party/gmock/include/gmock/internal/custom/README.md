@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2018 Google Inc.
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # Customization Points
 
 The custom directory is an injection point for custom user configurations.

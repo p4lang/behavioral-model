@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2018 Google Inc.
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #ifndef GOOGLEMOCK_INCLUDE_GMOCK_INTERNAL_GMOCK_PP_H_
 #define GOOGLEMOCK_INCLUDE_GMOCK_INTERNAL_GMOCK_PP_H_
 
