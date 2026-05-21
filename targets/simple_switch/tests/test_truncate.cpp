@@ -3,21 +3,19 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#include <bm/bm_apps/packet_pipe.h>
 #include <gtest/gtest.h>
 #include <utils.h>
 
-#include <bm/bm_apps/packet_pipe.h>
-
-#include <string>
-#include <memory>
-#include <vector>
 #include <algorithm>  // for std::fill_n
-
-#include <boost/filesystem.hpp>
+#include <filesystem>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "simple_switch.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 using bm::MatchErrorCode;
 using bm::ActionData;

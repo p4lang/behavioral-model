@@ -8,27 +8,23 @@
  *
  */
 
-#include <gtest/gtest.h>
-
 #include <bm/bm_sim/P4Objects.h>
-
 #include <ctype.h>
+#include <gtest/gtest.h>
+#include <json/json.h>
 
 #include <algorithm>  // std::all_of
+#include <filesystem>
 #include <fstream>
 #include <map>
+#include <set>
 #include <sstream>
 #include <string>
-#include <set>
 #include <vector>
-
-#include <boost/filesystem.hpp>
-
-#include "jsoncpp/json.h"
 
 using namespace bm;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 /* I need to find a better way to test the json parser, maybe I could simply
    read from the target files... */

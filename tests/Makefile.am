@@ -18,7 +18,6 @@ AM_CPPFLAGS += \
 -I$(top_srcdir)/src/BMI \
 -isystem $(top_srcdir)/third_party/gmock/include \
 -isystem $(top_srcdir)/third_party/gtest/include \
--isystem $(top_srcdir)/third_party/jsoncpp/include \
 -DTESTDATADIR=\"$(abs_srcdir)/testdata\"
 
 if SKIP_UNDETERMINISTIC_TESTS
@@ -33,9 +32,9 @@ $(top_builddir)/src/bm_apps/libbmapps.la \
 $(top_builddir)/src/bm_sim/libbmsim.la \
 $(top_builddir)/thrift_src/libruntimestubs.la \
 $(THRIFT_LIB) \
-$(top_builddir)/third_party/jsoncpp/libjson.la \
+$(JSONCPP_LIBS) \
 $(builddir)/libtestutils.la \
--lboost_filesystem -lboost_program_options
+-lboost_program_options
 
 # Define unit tests
 common_source = main.cpp bmi_stubs.c primitives.cpp

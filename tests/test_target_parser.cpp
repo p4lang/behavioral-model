@@ -8,19 +8,17 @@
  *
  */
 
-#include <gtest/gtest.h>
-
 #include <bm/bm_sim/options_parse.h>
 #include <bm/bm_sim/target_parser.h>
+#include <gtest/gtest.h>
 
-#include <vector>
+#include <filesystem>
 #include <string>
-
-#include <boost/filesystem.hpp>
+#include <vector>
 
 using namespace bm;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace {
 

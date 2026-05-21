@@ -56,15 +56,15 @@
 #include <condition_variable>
 #include <iosfwd>
 #include <memory>
+#include <mutex>
 #include <set>
+#include <shared_mutex>
 #include <string>
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#include <boost/thread/shared_mutex.hpp>
 
 #include "action_profile.h"
 #include "context.h"
@@ -948,7 +948,7 @@ class SwitchWContexts : public DevMgr, public RuntimeInterface {
   std::string notifications_addr{};
   std::shared_ptr<TransportIface> notifications_transport{nullptr};
 
-  mutable boost::shared_mutex process_packet_mutex{};
+  mutable std::shared_mutex process_packet_mutex{};
 
   std::string current_config{"{}"};  // empty JSON config
   bool config_loaded{false};

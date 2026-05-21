@@ -65,7 +65,6 @@ add_library(bmsim OBJECT
   target_parser.cpp
   transport.cpp
   transport_nn.cpp
-  xxhash.c
   core/primitives.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
 )
@@ -81,7 +80,8 @@ target_link_libraries(bmsim PUBLIC
   ${CMAKE_THREAD_LIBS_INIT}
   ${GMP_LIBRARY}
   ${PCAP_LIBRARY}
-  Boost::thread
+  ${XXHASH_LIBRARY}
+  JsonCpp::JsonCpp
 )
 
 if(WITH_NANOMSG)

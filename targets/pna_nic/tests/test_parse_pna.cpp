@@ -8,13 +8,15 @@
  *  and checks whether the pna_nic target can parse the pna metadata.
  */
 
-#include <gtest/gtest.h>
 #include <bm/bm_apps/packet_pipe.h>
-#include <boost/filesystem.hpp>
+#include <gtest/gtest.h>
 #include <utils.h>
+
+#include <filesystem>
+
 #include "pna_nic.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 using bm::MatchErrorCode;
 using bm::ActionData;

@@ -17,16 +17,14 @@ sudo apt-get install -y \
     git \
     g++ \
     libboost-dev \
-    libboost-filesystem-dev \
     libboost-program-options-dev \
-    libboost-system-dev \
-    libboost-test-dev \
     libboost-thread-dev \
     libevent-dev \
     libffi-dev \
     libgmp-dev \
     libgrpc++-dev \
     libgrpc-dev \
+    libjsoncpp-dev \
     libnanomsg-dev \
     libpcap-dev \
     libprotobuf-dev \
@@ -36,6 +34,7 @@ sudo apt-get install -y \
     libthrift-dev \
     libtool \
     libtool-bin \
+    libxxhash-dev \
     pkg-config \
     protobuf-compiler \
     protobuf-compiler-grpc \

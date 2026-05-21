@@ -2,4 +2,4 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-SUBDIRS = gtest gmock jsoncpp spdlog
+SUBDIRS = gmock gtest spdlog

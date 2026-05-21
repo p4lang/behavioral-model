@@ -27,9 +27,8 @@ add_library(pnanic STATIC
 target_link_libraries(pnanic
   bmsim
   bmi
-  jsoncpp
+  JsonCpp::JsonCpp
   Boost::program_options
-  Boost::filesystem
   ${THRIFT_LIBRARIES}
 )
 

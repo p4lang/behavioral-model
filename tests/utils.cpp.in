@@ -23,9 +23,9 @@
 #include <cassert>
 #include <cstring>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 #define CLI_PATH "@top_srcdir@/tools/runtime_CLI.py"
 #define THRIFT_BINDINGS_DIR "@top_builddir@/thrift_src/gen-py/"

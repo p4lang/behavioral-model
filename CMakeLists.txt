@@ -95,13 +95,13 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR}/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include
   ${CMAKE_CURRENT_SOURCE_DIR}/third_party/spdlog
 )
 
 # Find required packages
 find_package(Threads REQUIRED)
-find_package(Boost REQUIRED COMPONENTS thread program_options filesystem)
+find_package(Boost REQUIRED COMPONENTS thread program_options)
+find_package(jsoncpp REQUIRED)
 
 # Check for the presence of an include file and report an error if not found
 #
@@ -140,6 +140,7 @@ endforeach()
 # Check for libraries
 find_library(GMP_LIBRARY gmp REQUIRED)
 find_library(PCAP_LIBRARY pcap REQUIRED)
+find_library(XXHASH_LIBRARY xxhash REQUIRED)
 
 if(WITH_NANOMSG)
   find_library(NANOMSG_LIBRARY nanomsg REQUIRED)

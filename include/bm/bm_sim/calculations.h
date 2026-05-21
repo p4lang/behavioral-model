@@ -54,9 +54,8 @@
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
+#include <variant>
 #include <vector>
-
-#include "boost/variant.hpp"
 
 #include "bytecontainer.h"
 #include "named_p4object.h"
@@ -248,7 +247,7 @@ class BufBuilder {
 
   struct Deparse;  // defined in calculations.cpp
 
-  std::vector<boost::variant<field_t, constant_t, header_t> > entries{};
+  std::vector<std::variant<field_t, constant_t, header_t>> entries{};
   bool with_payload{false};
 };
 

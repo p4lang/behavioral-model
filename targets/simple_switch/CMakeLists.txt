@@ -25,9 +25,8 @@ add_library(simpleswitch STATIC
 target_link_libraries(simpleswitch
   bmsim
   bmi
-  jsoncpp
+  JsonCpp::JsonCpp
   Boost::program_options
-  Boost::filesystem
   ${THRIFT_LIBRARIES}
 )
 

@@ -27,9 +27,8 @@ add_library(psaswitch STATIC
 target_link_libraries(psaswitch
   bmsim
   bmi
-  jsoncpp
+  JsonCpp::JsonCpp
   Boost::program_options
-  Boost::filesystem
   ${THRIFT_LIBRARIES}
 )
 

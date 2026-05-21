@@ -15,12 +15,11 @@
 
 #include <iosfwd>
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <utility>
 #include <vector>
-
-// shared_mutex will only be available in C++-14, so for now I'm using boost
-#include <boost/thread/shared_mutex.hpp>
 
 #include "action_entry.h"
 #include "calculations.h"
@@ -158,8 +157,8 @@ class ActionProfile : public NamedP4Object {
   void deserialize(std::istream *in, const P4Objects &objs);
 
  private:
-  using ReadLock = boost::shared_lock<boost::shared_mutex>;
-  using WriteLock = boost::unique_lock<boost::shared_mutex>;
+  using ReadLock = std::shared_lock<std::shared_mutex>;
+  using WriteLock = std::unique_lock<std::shared_mutex>;
 
   class IndirectIndexRefCount {
    public:
@@ -287,7 +286,7 @@ class ActionProfile : public NamedP4Object {
                             const IndirectIndex &index) const;
 
  private:
-  mutable boost::shared_mutex t_mutex{};
+  mutable std::shared_mutex t_mutex{};
   bool with_selection;
   std::vector<ActionEntry> action_entries{};
   IndirectIndexRefCount index_ref_count{};

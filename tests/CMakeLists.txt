@@ -11,7 +11,6 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/../src/bm_sim
   ${CMAKE_CURRENT_SOURCE_DIR}/../src/BMI
-  ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/jsoncpp/include
 )
 
 # Skip undeterministic tests if requested
@@ -96,10 +95,9 @@ foreach(TEST_NAME ${TESTS})
     bmapps
     bmsim
     runtimestubs
-    jsoncpp
+    JsonCpp::JsonCpp
     testutils
     ${THRIFT_LIBRARIES}
-    Boost::filesystem
     Boost::program_options
   )
   target_compile_options(${TEST_NAME} PRIVATE "-Wno-error=overloaded-virtual")
@@ -161,10 +159,9 @@ target_link_libraries(test_all
   bmapps
   bmsim
   runtimestubs
-  jsoncpp
+  JsonCpp::JsonCpp
   testutils
   ${THRIFT_LIBRARIES}
-  Boost::filesystem
   Boost::program_options
 )
 

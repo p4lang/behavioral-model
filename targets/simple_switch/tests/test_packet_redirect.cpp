@@ -10,24 +10,22 @@
  *
  */
 
+#include <bm/bm_apps/packet_pipe.h>
+#include <bm/bm_sim/logger.h>
+#include <bm/config.h>
 #include <gtest/gtest.h>
 #include <utils.h>
 
-#include <bm/config.h>
-#include <bm/bm_apps/packet_pipe.h>
-#include <bm/bm_sim/logger.h>
-
+#include <filesystem>
 #include <initializer_list>
+#include <memory>
 #include <set>
 #include <string>
-#include <memory>
 #include <vector>
-
-#include <boost/filesystem.hpp>
 
 #include "simple_switch.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 using bm::MatchErrorCode;
 using bm::ActionData;

@@ -9,13 +9,14 @@
  *
  */
 
-#include <bm/bm_sim/simple_pre_lag.h>
 #include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/simple_pre_lag.h>
+#include <json/json.h>
 
+#include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <vector>
-
-#include "jsoncpp/json.h"
 
 namespace bm {
 
@@ -24,7 +25,7 @@ McSimplePreLAG::mc_node_create(const rid_t rid,
                                const PortMap &port_map,
                                const LagMap &lag_map,
                                l1_hdl_t *l1_hdl) {
-  boost::unique_lock<boost::shared_mutex> lock(mutex);
+  std::unique_lock<std::shared_mutex> lock(mutex);
   l2_hdl_t l2_hdl;
   size_t num_l1_entries = l1_entries.size();
   size_t num_l2_entries = l2_entries.size();
@@ -57,7 +58,7 @@ McSimplePre::McReturnCode
 McSimplePreLAG::mc_node_update(const l1_hdl_t l1_hdl,
                                const PortMap &port_map,
                                const LagMap &lag_map) {
-  boost::unique_lock<boost::shared_mutex> lock(mutex);
+  std::unique_lock<std::shared_mutex> lock(mutex);
   if (!l1_handles.valid_handle(l1_hdl)) {
     Logger::get()->error("node update failed, invalid l1 handle");
     return INVALID_L1_HANDLE;
@@ -74,7 +75,7 @@ McSimplePreLAG::mc_node_update(const l1_hdl_t l1_hdl,
 McSimplePre::McReturnCode
 McSimplePreLAG::mc_set_lag_membership(const lag_id_t lag_index,
                                       const PortMap &port_map) {
-  boost::unique_lock<boost::shared_mutex> lock(mutex);
+  std::unique_lock<std::shared_mutex> lock(mutex);
   uint16_t member_count = 0;
   if (lag_index > LAG_MAX_ENTRIES) {
     Logger::get()->error("lag membership set failed, invalid lag index");
@@ -97,7 +98,7 @@ McSimplePreLAG::mc_get_entries() const {
   Json::Value root(Json::objectValue);
 
   {
-    boost::unique_lock<boost::shared_mutex> lock(mutex);
+    std::unique_lock<std::shared_mutex> lock(mutex);
     get_entries_common(&root);
 
     Json::Value lags(Json::arrayValue);
@@ -126,7 +127,7 @@ McSimplePreLAG::mc_get_entries() const {
 void
 McSimplePreLAG::reset_state() {
   Logger::get()->debug("resetting PRE state");
-  boost::unique_lock<boost::shared_mutex> lock(mutex);
+  std::unique_lock<std::shared_mutex> lock(mutex);
   McSimplePre::reset_state_();
   lag_entries.clear();
 }
@@ -139,7 +140,7 @@ McSimplePreLAG::replicate(const McSimplePre::McIn ingress_info) const {
   int lag_hash = 0xFF;  // TODO(unknown): get lag hash from metadata
   int port_count1 = 0, port_count2 = 0;
   McSimplePre::McOut egress_info;
-  boost::shared_lock<boost::shared_mutex> lock(mutex);
+  std::shared_lock<std::shared_mutex> lock(mutex);
   auto mgid_it = mgid_entries.find(ingress_info.mgid);
   if (mgid_it == mgid_entries.end()) {
     Logger::get()->warn("Replication requested for mgid {}, which is not known "

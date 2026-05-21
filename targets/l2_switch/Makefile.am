@@ -14,5 +14,5 @@ l2_switch_LDADD = $(top_builddir)/src/bm_runtime/libbmruntime.la \
 $(top_builddir)/src/bm_sim/libbmsim.la \
 $(top_builddir)/thrift_src/libruntimestubs.la \
 $(top_builddir)/src/BMI/libbmi.la \
-$(top_builddir)/third_party/jsoncpp/libjson.la \
-$(THRIFT_LIB) -lboost_program_options -lboost_filesystem
+$(JSONCPP_LIBS) \
+$(THRIFT_LIB) -lboost_program_options
