@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # BEHAVIORAL MODEL (bmv2)
 
-![Build Status](https://github.com/p4lang/behavioral-model/workflows/Test/badge.svg?branch=main)
+![Build Status](https://github.com/p4lang/behavioral-model/actions/workflows/test.yml/badge.svg?branch=main)
 
 This is the second version of the reference P4 software switch, nicknamed bmv2
 (for behavioral model version 2). The software switch is written in C++17. It
