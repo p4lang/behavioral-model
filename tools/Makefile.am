@@ -25,7 +25,7 @@ bin_SCRIPTS += bm_CLI
 
 EXTRA_DIST += bm_CLI.in
 
-endif  # COND_THRIF
+endif  # COND_THRIFT
 
 if COND_NANOMSG
 
