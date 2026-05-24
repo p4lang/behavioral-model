@@ -13,7 +13,7 @@
 #ifndef SIMPLE_SWITCH_GRPC_TESTS_UTILS_H_
 #define SIMPLE_SWITCH_GRPC_TESTS_UTILS_H_
 
-#include <p4/config/v1/p4info.grpc.pb.h>
+#include <p4/config/v1/p4info.pb.h>
 
 #include <chrono>
 #include <condition_variable>

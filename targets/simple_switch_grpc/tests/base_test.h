@@ -13,7 +13,7 @@
 #ifndef SIMPLE_SWITCH_GRPC_TESTS_BASE_TEST_H_
 #define SIMPLE_SWITCH_GRPC_TESTS_BASE_TEST_H_
 
-#include <p4/config/v1/p4info.grpc.pb.h>
+#include <p4/config/v1/p4info.pb.h>
 #include <p4/v1/p4runtime.grpc.pb.h>
 
 #include <gtest/gtest.h>
