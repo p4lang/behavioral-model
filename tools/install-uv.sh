@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2026 OpenAI
+# SPDX-FileCopyrightText: 2026 The P4 Language Consortium
 # SPDX-License-Identifier: Apache-2.0
 
 set -eu
