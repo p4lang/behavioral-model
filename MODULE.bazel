@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Yuao Ma
+#
+# SPDX-License-Identifier: Apache-2.0
+
 module(
     name = "behavioral-model",
     version = "1.15.2",
@@ -5,7 +9,6 @@ module(
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
-bazel_dep(name = "boost.filesystem", version = "1.90.0.bcr.1")
 bazel_dep(name = "boost.program_options", version = "1.90.0.bcr.1")
 bazel_dep(name = "boringssl", version = "0.20260508.0")
 bazel_dep(name = "com_github_p4lang_pi", version = "head")

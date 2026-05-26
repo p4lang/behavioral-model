@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Yuao Ma
+#
+# SPDX-License-Identifier: Apache-2.0
+
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 _COMMON_SRCS = [

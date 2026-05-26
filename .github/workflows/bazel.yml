@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Yuao Ma
+#
+# SPDX-License-Identifier: Apache-2.0
+
 name: "Test Bazel Build"
 
 on:

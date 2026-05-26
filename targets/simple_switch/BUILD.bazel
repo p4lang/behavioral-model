@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Yuao Ma
+#
+# SPDX-License-Identifier: Apache-2.0
+
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
@@ -16,8 +20,6 @@ cc_library(
         "//:bm_headers",
         "//src/BMI:bmi",
         "//src/bm_sim:bmsim",
-        "@boost.filesystem",
-        "@boost.program_options",
         "@jsoncpp",
     ],
 )
