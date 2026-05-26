@@ -1,0 +1,13 @@
+# Use Bzlmod (`MODULE.bazel`) instead of `WORKSPACE.bazel`.
+common --enable_bzlmod
+common --noenable_workspace
+
+# In Bazel 9, native C++ rules are no longer injected into the global namespace
+# by default.  Two files in grpc 1.76.0 still use native.cc_*:
+#   bazel/cython_library.bzl      (native.cc_binary)
+#   third_party/address_sorting/address_sorting.bzl  (native.cc_library)
+# Restore the autoload until grpc 1.76.0.bcr.2 lands.  No-op on Bazel 7/8.
+build --incompatible_autoload_externally=+cc_library,+cc_binary
+
+build --conlyopt='-std=gnu11' --cxxopt='-std=c++17'
+build --host_cxxopt='-std=c++17'

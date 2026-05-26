@@ -1,0 +1,38 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+genrule(
+    name = "version_cpp",
+    srcs = [
+        "version.cpp.in",
+        "//:VERSION",
+    ],
+    outs = ["version.cpp"],
+    cmd = "sed \"s/@BM_VERSION@/$$(cat $(rootpath //:VERSION))/\" $(location version.cpp.in) > $@",
+)
+
+cc_library(
+    name = "bmsim",
+    srcs = glob(
+        [
+            "*.cpp",
+            "*.c",
+            "*.h",
+            "core/*.cpp",
+        ],
+        exclude = ["md5.c"],
+    ) + [":version_cpp"],
+    copts = ["-Isrc/bm_sim"],
+    defines = ["HAVE_OPENSSL"],
+    linkopts = ["-ldl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//:bm_headers",
+        "//src/BMI:bmi",
+        "//third_party:spdlog",
+        "@boringssl//:crypto",
+        "@gmp",
+        "@jsoncpp",
+        "@libpcap",
+        "@xxhash",
+    ],
+)
