@@ -1,0 +1,69 @@
+# SPDX-FileCopyrightText: 2026 Contributors to the p4lang/behavioral-model project
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Test macOS bootstrap script
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'tools/macos/bootstrap_mac.sh'
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/macos/bootstrap_mac.sh'
+
+# Cancel any preceding run on the pull request.
+concurrency:
+  group: test-macos-bootstrap-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  check-changes:
+    name: Check whether tests need to be run based on diff
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - uses: antrea-io/has-changes@v2
+      id: check_diff
+      with:
+        paths-ignore: docs/* *.md
+    outputs:
+      has_changes: ${{ steps.check_diff.outputs.has_changes }}
+
+  test-macos-bootstrap:
+    needs: check-changes
+    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
+    runs-on: ${{ matrix.os }}
+    name: test-macos-bootstrap (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-13    # x86_64
+          - macos-14    # arm64 (Apple Silicon)
+          - macos-15    # arm64 (Apple Silicon, latest)
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'recursive'
+
+    - name: Run macOS bootstrap script
+      run: |
+        bash tools/macos/bootstrap_mac.sh
+
+    - name: Verify key dependencies were installed
+      run: |
+        # Verify that the core packages installed by the script are present
+        brew list automake
+        brew list autoconf
+        brew list cmake
+        brew list boost
+        brew list gmp
+        brew list openssl
+        brew list pkg-config
+        python3 --version
+        pip3 --version
