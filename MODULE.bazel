@@ -9,7 +9,11 @@ module(
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "boost.container",       version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.container_hash",  version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.multiprecision",  version = "1.90.0.bcr.1")
 bazel_dep(name = "boost.program_options", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.thread",          version = "1.90.0.bcr.1")
 bazel_dep(name = "boringssl", version = "0.20260508.0")
 bazel_dep(name = "com_github_p4lang_pi", version = "head")
 bazel_dep(name = "gmp", version = "6.3.0.bcr.1")
