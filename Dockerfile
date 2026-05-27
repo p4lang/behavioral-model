@@ -68,8 +68,6 @@ RUN apt-get update -qq && \
     fi && \
     ldconfig && \
     (test "$IMAGE_TYPE" = "build" && \
-      apt-get purge -qq $BM_DEPS && \
-      apt-get autoremove --purge -qq && \
       rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/* && \
       echo 'Build image ready') || \
     (test "$IMAGE_TYPE" = "test" && \
