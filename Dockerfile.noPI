@@ -12,10 +12,7 @@ Runtime, it only builds bmv2 simple_switch."
 # testing; in this case, the source code and build-only dependencies will not be
 # removed from the image.
 ARG IMAGE_TYPE=build
-ARG USE_CMAKE=
-
-ENV BM_DEPS automake \
-            build-essential \
+ENV BM_DEPS build-essential \
             pkg-config \
             cmake \
             curl \
@@ -28,7 +25,6 @@ ENV BM_DEPS automake \
             libboost-filesystem-dev \
             libboost-thread-dev \
             libjsoncpp-dev \
-            libtool \
             libxxhash-dev
 ENV BM_RUNTIME_DEPS libboost-program-options1.74.0 \
                     libboost-system1.74.0 \
@@ -45,19 +41,10 @@ WORKDIR /behavioral-model/
 RUN apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata && \
     apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
-    if [ "$USE_CMAKE" -gt 0 ] ; then \
-        mkdir -p build && cd build && \
-        cmake -DENABLE_DEBUGGER=ON .. ; \
-    else \
-        ./autogen.sh && \
-        ./configure --enable-debugger ; \
-    fi && \
-    make -j$(nproc) && \
-    if [ "$USE_CMAKE" -gt 0 ] ; then \
-        make install && cd .. ; \
-    else \
-        make install-strip ; \
-    fi && \
+    mkdir -p build && cd build && \
+    cmake -DENABLE_DEBUGGER=ON .. && \
+    cmake --build . -j$(nproc) && \
+    cmake --install . && cd .. && \
     ldconfig && \
     (test "$IMAGE_TYPE" = "build" && \
         apt-get purge -qq $BM_DEPS && \
