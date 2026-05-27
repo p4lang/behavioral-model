@@ -41,6 +41,7 @@ ENV BM_RUNTIME_DEPS libboost-program-options1.74.0 \
                     libpcap0.8t64 \
                     libxxhash0 \
                     python3 \
+                    python3-six \
                     python-is-python3
 
 COPY . /behavioral-model/
