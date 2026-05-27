@@ -7,58 +7,53 @@
 set -e
 set -x
 
-# Installation helper.
+# Installation helper: skip already-installed packages.
 brew_install() {
-    echo "\nInstalling $1"
-    if brew list $1 &>/dev/null; then
-        echo "${1} is already installed"
+    if brew list "$1" &>/dev/null; then
+        echo "$1 is already installed, skipping"
     else
-        brew install --ignore-dependencies $1 && echo "$1 is installed"
+        brew install "$1"
     fi
 }
 
 # Check if Homebrew is already installed.
-if ! which brew > /dev/null 2>&1; then
+if ! command -v brew &>/dev/null; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
-# Check if brew shellenv command is already in zprofile.
-if ! grep -q 'brew shellenv' ~/.zprofile; then
-    if [[ $(uname -m) == 'arm64' ]]; then
-        (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> ~/.zprofile
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-    else
-        (echo; echo 'eval "$(/usr/local/bin/brew shellenv)"') >> ~/.zprofile
-        eval "$(/usr/local/bin/brew shellenv)"
-    fi
+# Add Homebrew to PATH for both arm64 (Apple Silicon) and x86_64.
+if [[ $(uname -m) == 'arm64' ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+else
+    eval "$(/usr/local/bin/brew shellenv)"
 fi
-
-# Source zprofile.
-source ~/.zprofile
-
-HOMEBREW_PREFIX=$(brew --prefix)
 
 # Fetch the latest formulae.
 brew update
 
+# Required packages for bmv2.
 REQUIRED_PACKAGES=(
-    autoconf automake cmake libtool
-    boost bison pkg-config
-    libevent openssl coreutils
-    nanomsg thrift
+    autoconf
+    automake
+    cmake
+    libtool
+    boost
+    bison
+    pkg-config
+    libevent
+    openssl
+    coreutils
+    gmp
+    nanomsg
     python3
 )
 
 for package in "${REQUIRED_PACKAGES[@]}"; do
-    brew_install ${package}
+    brew_install "${package}"
 done
 
-# bison needs to be on PATH before system bison.
-if ! grep -q "$(brew --prefix bison)/bin" ~/.bash_profile; then
-    echo 'export PATH="$(brew --prefix bison)/bin:$PATH"' >> ~/.bash_profile
-fi
-
-source ~/.bash_profile
+# bison installed via Homebrew must appear before system bison on PATH.
+export PATH="$(brew --prefix bison)/bin:$PATH"
 
 # Install Python dependencies.
-pip3 install scapy pynng==0.9.0 PyYAML
+pip3 install --user scapy pynng==0.9.0 PyYAML
