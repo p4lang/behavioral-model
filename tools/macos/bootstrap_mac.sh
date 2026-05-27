@@ -56,4 +56,6 @@ done
 export PATH="$(brew --prefix bison)/bin:$PATH"
 
 # Install Python dependencies.
-pip3 install --user scapy pynng==0.9.0 PyYAML
+# --break-system-packages is required on modern macOS (PEP 668) to allow
+# pip to install into the system Python environment.
+pip3 install --user --break-system-packages scapy pynng==0.9.0 PyYAML
