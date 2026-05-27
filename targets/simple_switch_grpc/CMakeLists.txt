@@ -59,6 +59,7 @@ target_link_libraries(simple_switch_grpc PRIVATE
   pigrpcserver
   pi
   pip4info
+  piprotobuf
   ${PROTOBUF_LIBRARIES}
   ${GRPCPP_LIBRARIES}
 )
