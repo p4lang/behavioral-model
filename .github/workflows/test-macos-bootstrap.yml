@@ -43,20 +43,11 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-13    # x86_64
           - macos-15    # arm64 (Apple Silicon, latest)
     steps:
     - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
-
-    - name: Set up Homebrew PATH for arm64
-      if: runner.arch == 'ARM64'
-      run: echo "/opt/homebrew/bin" >> $GITHUB_PATH
-
-    - name: Set up Homebrew PATH for x86_64
-      if: runner.arch == 'X64'
-      run: echo "/usr/local/bin" >> $GITHUB_PATH
 
     - name: Run macOS bootstrap script
       run: |
