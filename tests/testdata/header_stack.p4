@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 header_type hdr_t {
     fields {
         f1 : 16;

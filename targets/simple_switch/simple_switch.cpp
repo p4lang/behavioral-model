@@ -1,18 +1,9 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
- * Copyright 2021 VMware, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+// Copyright 2013-present Barefoot Networks, Inc.
+// Copyright 2021 VMware, Inc.
+// SPDX-FileCopyrightText: 2021 VMware, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 
 /*
  * Antonin Bas
@@ -132,7 +123,10 @@ class SimpleSwitch::InputBuffer {
   };
 
   InputBuffer(size_t capacity_hi, size_t capacity_lo)
-      : capacity_hi(capacity_hi), capacity_lo(capacity_lo) { }
+      : capacity_hi(capacity_hi), capacity_lo(capacity_lo) {
+    BMLOG_TRACE("InputBuffer created with high priority capacity {} and low priority capacity {}",
+                capacity_hi, capacity_lo);
+  }
 
   int push_front(PacketType packet_type, std::unique_ptr<Packet> &&item) {
     switch (packet_type) {
@@ -199,7 +193,10 @@ class SimpleSwitch::InputBuffer {
 };
 
 SimpleSwitch::SimpleSwitch(bool enable_swap, port_t drop_port,
-                           size_t nb_queues_per_port)
+                           size_t nb_queues_per_port,
+                           int mgid_table_size,
+                           int l1_max_entries,
+                           int l2_max_entries)
   : Switch(enable_swap),
     drop_port(drop_port),
     input_buffer(new InputBuffer(
@@ -216,7 +213,7 @@ SimpleSwitch::SimpleSwitch(bool enable_swap, port_t drop_port,
         _BM_UNUSED(pkt_id);
         this->transmit_fn(port_num, buffer, len);
     }),
-    pre(new McSimplePreLAG()),
+    pre(new McSimplePreLAG(mgid_table_size, l1_max_entries, l2_max_entries)),
     start(clock::now()),
     mirroring_sessions(new MirroringSessions()) {
   add_component<McSimplePreLAG>(pre);
@@ -267,6 +264,7 @@ SimpleSwitch::receive_(port_t port_num, const char *buffer, int len) {
 
   input_buffer->push_front(
       InputBuffer::PacketType::NORMAL, std::move(packet));
+  BMLOG_TRACE("PacketBuffer pushed to InputBuffer");
   return 0;
 }
 
@@ -386,6 +384,7 @@ SimpleSwitch::transmit_thread() {
   while (1) {
     std::unique_ptr<Packet> packet;
     output_buffer.pop_back(&packet);
+    BMLOG_TRACE_PKT(*packet, "Popped packet from output buffer");
     if (packet == nullptr) break;
     BMELOG(packet_out, *packet);
     BMLOG_DEBUG_PKT(*packet, "Transmitting packet of size {} out of port {}",
@@ -418,7 +417,7 @@ SimpleSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
       phv->get_field("queueing_metadata.enq_qdepth")
           .set(egress_buffers.size(egress_port, priority));
     }
-
+    BMLOG_TRACE_PKT(*packet, "Enqueuing packet to egress buffer");
     egress_buffers.push_front(
         egress_port, priority,
         std::move(packet));
@@ -482,6 +481,7 @@ SimpleSwitch::ingress_thread() {
   while (1) {
     std::unique_ptr<Packet> packet;
     input_buffer->pop_back(&packet);
+    BMLOG_TRACE_PKT(*packet, "Popped Packet from InputBuffer");
     if (packet == nullptr) break;
 
     // TODO(antonin): only update these if swapping actually happened?
@@ -650,6 +650,7 @@ SimpleSwitch::egress_thread(size_t worker_id) {
     size_t port;
     size_t priority;
     egress_buffers.pop_back(worker_id, &port, &priority, &packet);
+    BMLOG_TRACE_PKT(*packet, "Popped packet from egress buffer");
     if (packet == nullptr) break;
 
     Deparser *deparser = this->get_deparser("deparser");
@@ -765,6 +766,7 @@ SimpleSwitch::egress_thread(size_t worker_id) {
       continue;
     }
 
+    BMLOG_TRACE_PKT(*packet, "Enqueuing packet to output buffer");
     output_buffer.push_front(std::move(packet));
   }
 }

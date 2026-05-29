@@ -1,33 +1,24 @@
 #!/usr/bin/env python3
+
+# SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
 # Copyright 2013-present Barefoot Networks, Inc.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+# SPDX-License-Identifier: Apache-2.0
 
 #
 # Antonin Bas (antonin@barefootnetworks.com)
 #
 #
 
-import nnpy
+import pynng
 import struct
 import sys
 import json
 import argparse
 
 
-parser = argparse.ArgumentParser(description='BM nanomsg event logger client')
-parser.add_argument('--socket', help='Nanomsg socket to which to subscribe',
+parser = argparse.ArgumentParser(description='BM NNG event logger client')
+parser.add_argument('--socket', help='NNG socket to which to subscribe',
                     action="store", required=False)
 parser.add_argument('--json', help='JSON description of P4 program',
                     action="store", required=False)
@@ -462,9 +453,8 @@ def recv_msgs(socket_addr, client):
         type_, = struct.unpack('i', msg[:4])
         return type_
 
-    sub = nnpy.Socket(nnpy.AF_SP, nnpy.SUB)
-    sub.connect(socket_addr)
-    sub.setsockopt(nnpy.SUB, nnpy.SUB_SUBSCRIBE, '')
+    sub = pynng.Sub0(dial=socket_addr)
+    sub.subscribe("")
 
     while True:
         msg = sub.recv()

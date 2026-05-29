@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Anirudh Sivaraman
+#
+# SPDX-License-Identifier: Apache-2.0
+
 if COND_STRESS_TESTS
     MAYBE_STRESS_TESTS = stress_tests
 endif
@@ -12,8 +16,8 @@ libtestutils_la_LIBADD = $(top_builddir)/src/bm_sim/libbmsim.la
 AM_CPPFLAGS += \
 -I$(top_srcdir)/src/bm_sim \
 -I$(top_srcdir)/src/BMI \
+-isystem $(top_srcdir)/third_party/gmock/include \
 -isystem $(top_srcdir)/third_party/gtest/include \
--isystem $(top_srcdir)/third_party/jsoncpp/include \
 -DTESTDATADIR=\"$(abs_srcdir)/testdata\"
 
 if SKIP_UNDETERMINISTIC_TESTS
@@ -22,14 +26,15 @@ endif
 
 LDADD = \
 $(top_builddir)/third_party/gtest/libgtest.la \
+$(top_builddir)/third_party/gmock/libgmock.la \
 $(top_builddir)/src/bm_runtime/libbmruntime.la \
 $(top_builddir)/src/bm_apps/libbmapps.la \
 $(top_builddir)/src/bm_sim/libbmsim.la \
 $(top_builddir)/thrift_src/libruntimestubs.la \
 $(THRIFT_LIB) \
-$(top_builddir)/third_party/jsoncpp/libjson.la \
+$(JSONCPP_LIBS) \
 $(builddir)/libtestutils.la \
--lboost_filesystem -lboost_program_options
+-lboost_program_options
 
 # Define unit tests
 common_source = main.cpp bmi_stubs.c primitives.cpp

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 if COND_THRIFT
 MAYBE_CLI_TESTS = CLI_tests
 endif
@@ -14,8 +18,7 @@ AM_CPPFLAGS += \
 LDADD = $(builddir)/../libsimpleswitch.la \
 $(top_builddir)/third_party/gtest/libgtest.la \
 $(top_builddir)/targets/test_utils/libtargetstestutils.la \
-$(top_builddir)/src/bm_apps/libbmapps.la \
--lboost_filesystem
+$(top_builddir)/src/bm_apps/libbmapps.la
 
 # Define unit tests
 common_source = main.cpp ../../test_utils/utils.cpp ../../test_utils/utils.h

@@ -1,16 +1,8 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
+/*
+ * SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+ * Copyright 2013-present Barefoot Networks, Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /*
@@ -27,6 +19,8 @@
 #include <algorithm>  // for std::copy
 
 #include <cassert>
+
+#include <bm/bm_sim/logger.h>
 
 namespace bm {
 
@@ -79,7 +73,9 @@ class PacketBuffer {
       data_size(0),
       buffer(std::unique_ptr<char[]>(new char[size])),
       head(buffer.get() + size) {
+    BMLOG_TRACE("Constructor: Initializing packet buffer...");
     std::copy(data, data + data_size, push(data_size));
+    BMLOG_TRACE("Constructor: Initialized packet buffer with {} bytes capacity with {} bytes of data", size, data_size);
   }
 
   char *start() const { return head; }
@@ -87,16 +83,20 @@ class PacketBuffer {
   char *end() const { return buffer.get() + size; }
 
   char *push(size_t bytes) {
+    BMLOG_TRACE("Pushing {} bytes to packet buffer (data size before push: {}) - Buffer size is {}", bytes, data_size, size);
     assert(data_size + bytes <= size);
     data_size += bytes;
     head -= bytes;
+    BMLOG_TRACE("Data size after push: {}", data_size);
     return head;
   }
 
   char *pop(size_t bytes) {
+    BMLOG_TRACE("Popping {} bytes from packet buffer (data size before pop: {}) - Buffer size is {}",bytes, data_size, size);
     assert(bytes <= data_size);
     data_size -= bytes;
     head += bytes;
+    BMLOG_TRACE("Data size after pop: {}", data_size);
     return head;
   }
 

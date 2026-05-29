@@ -1,16 +1,8 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
+/*
+ * SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+ * Copyright 2013-present Barefoot Networks, Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /*
@@ -24,11 +16,10 @@
 #ifndef BM_BM_SIM_SIMPLE_PRE_H_
 #define BM_BM_SIM_SIMPLE_PRE_H_
 
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include <boost/thread/shared_mutex.hpp>
 
 #include "handle_mgr.h"
 #include "pre.h"
@@ -82,13 +73,23 @@ class McSimplePre {
   };
 
  public:
+  static constexpr int DEFAULT_MGID_TABLE_SIZE = 4096;
+  static constexpr int DEFAULT_L1_MAX_ENTRIES = 4096;
+  static constexpr int DEFAULT_L2_MAX_ENTRIES = 8192;
+
   static constexpr size_t PORT_MAP_SIZE = 512;
   using PortMap = McPre::Set<PORT_MAP_SIZE>;
 
   static constexpr size_t LAG_MAP_SIZE = 512;
   using LagMap = McPre::Set<LAG_MAP_SIZE>;
 
-  McSimplePre() {}
+  explicit McSimplePre(
+      int mgid_table_size = DEFAULT_MGID_TABLE_SIZE,
+      int l1_max_entries = DEFAULT_L1_MAX_ENTRIES,
+      int l2_max_entries = DEFAULT_L2_MAX_ENTRIES)
+      : mgid_table_size(mgid_table_size),
+        l1_max_entries(l1_max_entries),
+        l2_max_entries(l2_max_entries) {}
   McReturnCode mc_mgrp_create(const mgrp_t, mgrp_hdl_t *);
   McReturnCode mc_mgrp_destroy(const mgrp_hdl_t);
   McReturnCode mc_node_create(const rid_t,
@@ -139,9 +140,9 @@ class McSimplePre {
   McSimplePre &operator=(McSimplePre &&other) = delete;
 
  protected:
-  static constexpr int MGID_TABLE_SIZE = 4096;
-  static constexpr int L1_MAX_ENTRIES = 4096;
-  static constexpr int L2_MAX_ENTRIES = 8192;
+  int mgid_table_size;
+  int l1_max_entries;
+  int l2_max_entries;
 
   struct MgidEntry {
     mgrp_t mgid{};
@@ -190,7 +191,7 @@ class McSimplePre {
   std::unordered_map<l2_hdl_t, L2Entry> l2_entries{};
   HandleMgr l1_handles{};
   HandleMgr l2_handles{};
-  mutable boost::shared_mutex mutex{};
+  mutable std::shared_mutex mutex{};
 };
 
 }  // namespace bm

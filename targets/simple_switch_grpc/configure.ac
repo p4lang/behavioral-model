@@ -6,6 +6,21 @@ AC_INIT([simple-switch-grpc], [0.1], [antonin@barefootnetworks.com])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_HEADERS([config.h])
 
+AH_TOP([
+/*
+ * SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#ifndef SIMPLE_SWITCH_GRPC_CONFIG_H_
+#define SIMPLE_SWITCH_GRPC_CONFIG_H_
+])
+
+AH_BOTTOM([
+#endif  // SIMPLE_SWITCH_GRPC_CONFIG_H_
+])
+
 AC_PROG_CC
 AC_PROG_CXX
 
@@ -47,9 +62,6 @@ AC_SUBST([PROTOBUF_LIBS])
 PKG_CHECK_MODULES([GRPC], [grpc++ >= 1.3.0 grpc >= 3.0.0])
 AC_SUBST([GRPC_CFLAGS])
 AC_SUBST([GRPC_LIBS])
-
-AC_CHECK_HEADER([boost/optional.hpp], [],
-                [AC_MSG_ERROR([Boost optional header not found])])
 
 AC_ARG_WITH([sysrepo],
     AS_HELP_STRING([--with-sysrepo],

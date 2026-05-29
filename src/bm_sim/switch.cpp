@@ -1,47 +1,38 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+// Copyright 2013-present Barefoot Networks, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 
 /*
  * Antonin Bas (antonin@barefootnetworks.com)
  *
  */
 
-#include <bm/bm_sim/switch.h>
-
 #include <bm/bm_sim/P4Objects.h>
 #include <bm/bm_sim/_assert.h>
 #include <bm/bm_sim/debugger.h>
 #include <bm/bm_sim/event_logger.h>
+#include <bm/bm_sim/fields.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/options_parse.h>
 #include <bm/bm_sim/packet.h>
 #include <bm/bm_sim/periodic_task.h>
+#include <bm/bm_sim/switch.h>
 #include <bm/config.h>
 
 #include <cassert>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <mutex>
+#include <shared_mutex>
 #include <streambuf>
 #include <string>
 #include <vector>
 
-#include <boost/filesystem.hpp>
-
 #include "md5.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace bm {
 
@@ -253,7 +244,8 @@ SwitchWContexts::init_from_options_parser(
     Logger::set_logger_console();
 
   if (parser.file_logger != "")
-    Logger::set_logger_file(parser.file_logger, parser.log_flush);
+    Logger::set_logger_file(parser.file_logger, parser.log_flush,
+                            parser.log_max_size, parser.log_max_files);
 
   Logger::set_log_level(parser.log_level);
 
@@ -320,6 +312,9 @@ SwitchWContexts::init_from_options_parser(
   dump_packet_data = parser.dump_packet_data;
 
   max_port_count = parser.max_port_count;
+
+  Field::set_warn_on_invalid_hdr_read(parser.warn_on_invalid_hdr_read);
+  Field::set_ret_zero_on_invalid_hdr_read(parser.ret_zero_on_invalid_hdr_read);
 
   // TODO(unknown): is this the right place to do this?
   set_packet_handler(packet_handler, static_cast<void *>(this));
@@ -447,7 +442,7 @@ SwitchWContexts::swap_requested() {
 
 void
 SwitchWContexts::block_until_no_more_packets() {
-  boost::unique_lock<boost::shared_mutex> lock(process_packet_mutex);
+  std::unique_lock<std::shared_mutex> lock(process_packet_mutex);
   for (cxt_id_t cxt_id = 0; cxt_id < nb_cxts; cxt_id++) {
     // Wait until no more packets exist for this context
     while (phv_source->phvs_in_use(cxt_id) > 0) {
@@ -460,7 +455,7 @@ int
 SwitchWContexts::do_swap() {
   int rc = 1;
   if (!enable_swap || !swap_requested()) return rc;
-  boost::unique_lock<boost::shared_mutex> lock(process_packet_mutex);
+  std::unique_lock<std::shared_mutex> lock(process_packet_mutex);
   for (cxt_id_t cxt_id = 0; cxt_id < nb_cxts; cxt_id++) {
     auto &cxt = contexts[cxt_id];
     if (!cxt.swap_requested()) continue;
@@ -539,7 +534,7 @@ SwitchWContexts::new_packet_ptr(cxt_id_t cxt_id, port_t ingress_port,
                                 packet_id_t id, int ingress_length,
                                 // NOLINTNEXTLINE(whitespace/operators)
                                 PacketBuffer &&buffer) {
-  boost::shared_lock<boost::shared_mutex> lock(process_packet_mutex);
+  std::shared_lock<std::shared_mutex> lock(process_packet_mutex);
   return std::unique_ptr<Packet>(new Packet(
       cxt_id, ingress_port, id, 0u, ingress_length, std::move(buffer),
       phv_source.get()));
@@ -550,7 +545,7 @@ SwitchWContexts::new_packet(cxt_id_t cxt_id, port_t ingress_port,
                             packet_id_t id, int ingress_length,
                             // NOLINTNEXTLINE(whitespace/operators)
                             PacketBuffer &&buffer) {
-  boost::shared_lock<boost::shared_mutex> lock(process_packet_mutex);
+  std::shared_lock<std::shared_mutex> lock(process_packet_mutex);
   return Packet(cxt_id, ingress_port, id, 0u, ingress_length,
                 std::move(buffer), phv_source.get());
 }

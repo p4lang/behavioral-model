@@ -1,16 +1,8 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
+/*
+ * SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+ * Copyright 2013-present Barefoot Networks, Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /*
@@ -54,6 +46,7 @@
 #include <memory>
 #include <mutex>
 #include <set>
+#include <shared_mutex>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
@@ -62,25 +55,25 @@
 
 #include "P4Objects.h"
 #include "action_profile.h"
+#include "device_id.h"
+#include "lookup_structures.h"
 #include "match_tables.h"
 #include "runtime_interface.h"
-#include "lookup_structures.h"
-#include "device_id.h"
 
 namespace bm {
 
 //! Provides safe access to an extern instance for control plane calls.
 class ExternSafeAccess {
  public:
-  ExternSafeAccess(boost::shared_lock<boost::shared_mutex> &&lock,
-                   ExternType *instance)
-      : lock(std::move(lock)), instance(instance) { }
+  ExternSafeAccess(std::shared_lock<std::shared_mutex>&& lock,
+                   ExternType* instance)
+      : lock(std::move(lock)), instance(instance) {}
 
   //! Get a pointer to the extern instance itself.
   ExternType *get() const { return instance; }
 
  private:
-  boost::shared_lock<boost::shared_mutex> lock;
+  std::shared_lock<std::shared_mutex> lock;
   ExternType *instance;
 };
 
@@ -515,7 +508,7 @@ class Context final {
 
   std::shared_ptr<TransportIface> notifications_transport{nullptr};
 
-  mutable boost::shared_mutex request_mutex{};
+  mutable std::shared_mutex request_mutex{};
 
   std::atomic<bool> swap_ordered{false};
 

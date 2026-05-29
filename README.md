@@ -1,6 +1,12 @@
+<!--
+SPDX-FileCopyrightText: 2014 Dan Talayco <dan@barefootnetworks.com>
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # BEHAVIORAL MODEL (bmv2)
 
-![Build Status](https://github.com/p4lang/behavioral-model/workflows/Test/badge.svg?branch=main)
+![Build Status](https://github.com/p4lang/behavioral-model/actions/workflows/test.yml/badge.svg?branch=main)
 
 This is the second version of the reference P4 software switch, nicknamed bmv2
 (for behavioral model version 2). The software switch is written in C++17. It
@@ -113,8 +119,8 @@ sudo dpkg -i /path/to/package.deb
     ```
 
     To use the CLI, you will need to install the
-    [nnpy](https://github.com/nanomsg/nnpy) Python package. Feel free to use
-    `ci/install-nnpy.sh`.
+    [pynng](https://github.com/codypiersall/pynng) Python package (`0.9.0`). Feel free to use
+    `ci/install-pynng.sh`.
 
     To make your life easier, we provide the *install_deps.sh* script, which will
     install all the dependencies needed on Ubuntu 20.04.

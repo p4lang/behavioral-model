@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 cmake_minimum_required(VERSION 3.10)
 
 # Use ccache if it is installed
@@ -53,6 +57,16 @@ option(ENABLE_UNDETERMINISTIC_TESTS "Run undeterministic tests (e.g. queueing) w
 option(ENABLE_WERROR "Make all compiler warnings fatal" OFF)
 option(ENABLE_WP4_16_STACKS "Implement stacks strictly as per the P4_16 specification" ON)
 
+if(WITH_PDFIXED AND NOT WITH_THRIFT)
+  message(WARNING "WITH_PDFIXED requires WITH_THRIFT=ON; disabling WITH_PDFIXED")
+  set(WITH_PDFIXED OFF CACHE BOOL "Build pdfixed for bmv2" FORCE)
+endif()
+
+if(WITH_PDFIXED AND NOT WITH_TARGETS)
+  message(WARNING "WITH_PDFIXED requires WITH_TARGETS=ON; disabling WITH_PDFIXED")
+  set(WITH_PDFIXED OFF CACHE BOOL "Build pdfixed for bmv2" FORCE)
+endif()
+
 # Set compiler flags
 add_compile_options(-Wall -Wextra)
 if(ENABLE_WERROR)
@@ -81,13 +95,13 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_BINARY_DIR}/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include
   ${CMAKE_CURRENT_SOURCE_DIR}/third_party/spdlog
 )
 
 # Find required packages
 find_package(Threads REQUIRED)
-find_package(Boost REQUIRED COMPONENTS thread program_options filesystem)
+find_package(Boost REQUIRED COMPONENTS thread program_options)
+find_package(jsoncpp REQUIRED)
 
 # Check for the presence of an include file and report an error if not found
 #
@@ -126,6 +140,7 @@ endforeach()
 # Check for libraries
 find_library(GMP_LIBRARY gmp REQUIRED)
 find_library(PCAP_LIBRARY pcap REQUIRED)
+find_library(XXHASH_LIBRARY xxhash REQUIRED)
 
 if(WITH_NANOMSG)
   find_library(NANOMSG_LIBRARY nanomsg REQUIRED)
@@ -151,7 +166,7 @@ endif()
 if(WITH_THRIFT)
   # Find Thrift
   find_package(Thrift REQUIRED)
-  add_definitions(-DTHRIFT_ON)
+  add_definitions(-DWITH_THRIFT)
 endif()
 
 if(WITH_PI)
@@ -228,7 +243,9 @@ if(WITH_PDFIXED)
 endif()
 
 # Installation rules
-install(FILES LICENSE README.md
+install(FILES README.md
+  DESTINATION share/doc/behavioral-model)
+install(DIRECTORY LICENSES
   DESTINATION share/doc/behavioral-model)
 
 # Print configuration summary

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 
 EXTRA_DIST = \
@@ -21,7 +25,7 @@ bin_SCRIPTS += bm_CLI
 
 EXTRA_DIST += bm_CLI.in
 
-endif  # COND_THRIF
+endif  # COND_THRIFT
 
 if COND_NANOMSG
 
