@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # - Find Thrift (a cross platform RPC lib/tool)
 # This module defines
 #  THRIFT_VERSION, version string of Thrift if found

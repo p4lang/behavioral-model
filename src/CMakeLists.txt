@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Add subdirectories
 add_subdirectory(BMI)
 add_subdirectory(bm_sim)
@@ -18,9 +22,7 @@ add_library(bmall SHARED
 target_link_libraries(bmall
   # FIXME: Is this scope correct?
   PUBLIC
-    jsoncpp
     Boost::program_options
-    Boost::filesystem
 )
 
 if(WITH_THRIFT)

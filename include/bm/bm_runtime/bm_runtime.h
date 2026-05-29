@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef _BM_RUNTIME_BM_RUNTIME_H_
 #define _BM_RUNTIME_BM_RUNTIME_H_
 

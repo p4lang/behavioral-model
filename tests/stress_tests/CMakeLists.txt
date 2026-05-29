@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Tests to compile
 set(TESTS
   test_parser_deparser_1
@@ -22,9 +26,8 @@ foreach(target ${TESTS})
     gtest
     bmapps
     bmsim
-    jsoncpp
+    JsonCpp::JsonCpp
     ${THRIFT_LIBRARIES}
-    Boost::filesystem
     Boost::program_options
   )
   target_compile_definitions(${target} PUBLIC TESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")

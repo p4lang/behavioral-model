@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Configure version.cpp
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp.in
@@ -61,7 +65,6 @@ add_library(bmsim OBJECT
   target_parser.cpp
   transport.cpp
   transport_nn.cpp
-  xxhash.c
   core/primitives.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
 )
@@ -77,7 +80,8 @@ target_link_libraries(bmsim PUBLIC
   ${CMAKE_THREAD_LIBS_INIT}
   ${GMP_LIBRARY}
   ${PCAP_LIBRARY}
-  Boost::thread
+  ${XXHASH_LIBRARY}
+  JsonCpp::JsonCpp
 )
 
 if(WITH_NANOMSG)

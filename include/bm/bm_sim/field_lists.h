@@ -1,16 +1,8 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
+/*
+ * SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+ * Copyright 2013-present Barefoot Networks, Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /*
@@ -23,13 +15,13 @@
 #ifndef BM_BM_SIM_FIELD_LISTS_H_
 #define BM_BM_SIM_FIELD_LISTS_H_
 
-#include <utility>  // for pair<>
-#include <vector>
-#include <unordered_set>
 #include <string>
+#include <unordered_set>
+#include <utility>  // for pair<>
+#include <variant>
+#include <vector>
 
 #include <boost/functional/hash.hpp>
-#include <boost/variant.hpp>
 
 #include "phv_forward.h"
 #include "bytecontainer.h"
@@ -66,7 +58,7 @@ class FieldList {
     }
   };
 
-  struct FieldListVisitor : boost::static_visitor<> {
+  struct FieldListVisitor {
     void operator()(const field_t &) { }
     void operator()(const constant_t &) { }
   };
@@ -95,7 +87,9 @@ class FieldList {
   void visit(T &visitor) {
     static_assert(std::is_base_of<FieldListVisitor, T>::value,
                   "Invalid visitor, must inherit from from FieldListVisitor");
-    std::for_each(fields.begin(), fields.end(), boost::apply_visitor(visitor));
+    for (const auto &field : fields) {
+      std::visit(visitor, field);
+    }
   }
 
   void copy_fields_between_phvs(PHV *dst, const PHV *src) {
@@ -117,7 +111,7 @@ class FieldList {
   }
 
  private:
-  using field_list_member_t = boost::variant<field_t, constant_t>;
+  using field_list_member_t = std::variant<field_t, constant_t>;
 
   struct FieldKeyHash {
     std::size_t operator()(const field_t& f) const {

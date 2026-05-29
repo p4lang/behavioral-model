@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2018 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 /psa_switch
 pswitch_runtime
 psa_switch_CLI

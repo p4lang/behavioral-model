@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2019 Barefoot Networks, Inc.
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Performance of bmv2
 
 **bmv2 is not meant to be a production-grade software switch**. It is meant to
@@ -12,7 +18,7 @@ and depends on a [variety of factors](#what-impacts-performance).
 
  * which P4 program you are running: the simpler the program (i.e. the fewer the
    number of parsed / deparsed headers, the fewer the number of match-action
-   tables, etc.), the higher the throughput and the lower the laytency.
+   tables, etc.), the higher the throughput and the lower the latency.
  * what P4 compiler you used to compile the P4 program to a BMv2 JSON file with:
    the legacy [p4c-bm](https://github.com/p4lang/p4c-bm) compiler tends to
    produce "faster" JSON files than the reference

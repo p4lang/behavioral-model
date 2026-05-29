@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2022 Bili Dong
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Custom Extern Example
 
 This example demonstrates how to add custom extern functions and objects that could be compiled to and used in the bmv2 software switch (`simple_switch`).

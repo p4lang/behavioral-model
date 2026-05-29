@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 if COND_NANOMSG
 MAYBE_TESTS = tests
 endif
@@ -32,8 +36,8 @@ nobase_include_HEADERS = bm/simple_switch/runner.h
 libsimpleswitch_la_LIBADD = \
 $(top_builddir)/src/bm_sim/libbmsim.la \
 $(top_builddir)/src/BMI/libbmi.la \
-$(top_builddir)/third_party/jsoncpp/libjson.la \
-$(THRIFT_LIB) -lboost_program_options -lboost_filesystem
+$(JSONCPP_LIBS) \
+$(THRIFT_LIB) -lboost_program_options
 
 libsimpleswitch_runner_la_LIBADD = \
 $(PI_LIB) \

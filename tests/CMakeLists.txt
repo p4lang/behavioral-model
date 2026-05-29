@@ -1,12 +1,16 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Include directories
 include_directories(SYSTEM
   ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/gtest/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/gmock/include
 )
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/../src/bm_sim
   ${CMAKE_CURRENT_SOURCE_DIR}/../src/BMI
-  ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/jsoncpp/include
 )
 
 # Skip undeterministic tests if requested
@@ -91,16 +95,19 @@ foreach(TEST_NAME ${TESTS})
     bmapps
     bmsim
     runtimestubs
-    jsoncpp
+    JsonCpp::JsonCpp
     testutils
     ${THRIFT_LIBRARIES}
-    Boost::filesystem
     Boost::program_options
   )
   target_compile_options(${TEST_NAME} PRIVATE "-Wno-error=overloaded-virtual")
   target_compile_definitions(${TEST_NAME} PUBLIC TESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
   add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endforeach()
+
+target_link_libraries(test_fields
+  gmock
+)
 
 # Create test_all executable
 add_executable(test_all 
@@ -147,14 +154,14 @@ add_executable(test_all
 
 target_link_libraries(test_all
   gtest
+  gmock
   bmruntime
   bmapps
   bmsim
   runtimestubs
-  jsoncpp
+  JsonCpp::JsonCpp
   testutils
   ${THRIFT_LIBRARIES}
-  Boost::filesystem
   Boost::program_options
 )
 

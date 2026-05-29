@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 
 AM_CPPFLAGS += \
@@ -74,9 +78,7 @@ transport.cpp \
 transport_nn.cpp \
 utils.h \
 version.cpp \
-version.h \
-xxhash.c \
-xxhash.h
+version.h
 
 libbmsim_la_SOURCES += \
 core/primitives.cpp

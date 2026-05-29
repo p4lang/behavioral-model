@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 if(WITH_NANOMSG)
   add_subdirectory(tests)
 endif()
@@ -23,9 +27,8 @@ add_library(psaswitch STATIC
 target_link_libraries(psaswitch
   bmsim
   bmi
-  jsoncpp
+  JsonCpp::JsonCpp
   Boost::program_options
-  Boost::filesystem
   ${THRIFT_LIBRARIES}
 )
 

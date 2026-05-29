@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2022 Bili Dong
+#
+# SPDX-License-Identifier: Apache-2.0
+
 P4_PROGRAM := example
 P4_JSON = $(P4_PROGRAM).json
 

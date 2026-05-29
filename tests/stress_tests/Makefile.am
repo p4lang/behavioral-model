@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 AM_CPPFLAGS += \
 -I$(top_srcdir)/src/BMI \
 -isystem $(top_srcdir)/third_party \
@@ -6,8 +10,8 @@ LDADD = \
 $(top_builddir)/third_party/gtest/libgtest.la \
 $(top_builddir)/src/bm_apps/libbmapps.la \
 $(top_builddir)/src/bm_sim/libbmsim.la \
-$(top_builddir)/third_party/jsoncpp/libjson.la \
--lboost_filesystem -lboost_program_options
+$(JSONCPP_LIBS) \
+-lboost_program_options
 
 # TODO(antonin): should the traffic.bin files be generated at compile time by
 # running the Python generator (instead of being checked in)?

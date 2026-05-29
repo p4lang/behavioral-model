@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Define test data directory
 add_definitions(-DTESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
@@ -13,7 +17,6 @@ foreach(TEST_NAME ${TESTS})
     psaswitch
     gtest
     bmapps
-    Boost::filesystem
   )
   if(WITH_THRIFT)
     target_link_libraries(${TEST_NAME}
@@ -39,7 +42,6 @@ target_link_libraries(psa_switch_test_all
   #psaswitch_thrift
   gtest
   bmapps
-  Boost::filesystem
 )
 if(WITH_THRIFT)
   target_link_libraries(psa_switch_test_all

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Include directories
 include_directories(SYSTEM
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/gtest/include
@@ -30,7 +34,6 @@ foreach(TEST ${TESTS})
     simpleswitch
     test_utils
     ${THRIFT_LIBRARIES}
-    Boost::filesystem
     Boost::program_options
   )
   set_target_properties(ss_test_${TEST} PROPERTIES

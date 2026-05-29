@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2021 Radostin Stoyanov
+#
+# SPDX-License-Identifier: Apache-2.0
+
 cpp_out
 grpc_out
 py_out

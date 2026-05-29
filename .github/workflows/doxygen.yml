@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2022 Antonin Bas
+#
+# SPDX-License-Identifier: Apache-2.0
+
 name: Doxygen
 
 on:
@@ -12,9 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y doxygen graphviz
     - name: Run Doxygen
       run: |
-        docker run --rm -v $(pwd):/data hrektts/doxygen doxygen
+        doxygen Doxyfile
     - name: Upload to S3
       uses: jakejarvis/s3-sync-action@v0.5.1
       with:

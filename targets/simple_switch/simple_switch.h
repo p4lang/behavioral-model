@@ -1,16 +1,8 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
+/*
+ * SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+ * Copyright 2013-present Barefoot Networks, Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 /*
@@ -75,6 +67,12 @@ class SimpleSwitch : public Switch {
 
   static constexpr port_t default_drop_port = 511;
   static constexpr size_t default_nb_queues_per_port = 1;
+  static constexpr int default_mgid_table_size =
+      bm::McSimplePre::DEFAULT_MGID_TABLE_SIZE;
+  static constexpr int default_l1_max_entries =
+      bm::McSimplePre::DEFAULT_L1_MAX_ENTRIES;
+  static constexpr int default_l2_max_entries =
+      bm::McSimplePre::DEFAULT_L2_MAX_ENTRIES;
 
  private:
   using clock = std::chrono::high_resolution_clock;
@@ -83,7 +81,10 @@ class SimpleSwitch : public Switch {
   // by default, swapping is off
   explicit SimpleSwitch(bool enable_swap = false,
                         port_t drop_port = default_drop_port,
-                        size_t nb_queues_per_port = default_nb_queues_per_port);
+                        size_t nb_queues_per_port = default_nb_queues_per_port,
+                        int mgid_table_size = default_mgid_table_size,
+                        int l1_max_entries = default_l1_max_entries,
+                        int l2_max_entries = default_l2_max_entries);
 
   ~SimpleSwitch();
 
