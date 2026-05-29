@@ -28,6 +28,8 @@
 
 #include <cassert>
 
+#include <bm/bm_sim/logger.h>
+
 namespace bm {
 
 //! This acts as a recipient for the packet data. A PacketBuffer instance will
@@ -79,7 +81,9 @@ class PacketBuffer {
       data_size(0),
       buffer(std::unique_ptr<char[]>(new char[size])),
       head(buffer.get() + size) {
+    BMLOG_TRACE("Constructor: Initializing packet buffer...");
     std::copy(data, data + data_size, push(data_size));
+    BMLOG_TRACE("Constructor: Initialized packet buffer with {} bytes capacity with {} bytes of data", size, data_size);
   }
 
   char *start() const { return head; }
@@ -87,16 +91,20 @@ class PacketBuffer {
   char *end() const { return buffer.get() + size; }
 
   char *push(size_t bytes) {
+    BMLOG_TRACE("Pushing {} bytes to packet buffer (data size before push: {}) - Buffer size is {}", bytes, data_size, size);
     assert(data_size + bytes <= size);
     data_size += bytes;
     head -= bytes;
+    BMLOG_TRACE("Data size after push: {}", data_size);
     return head;
   }
 
   char *pop(size_t bytes) {
+    BMLOG_TRACE("Popping {} bytes from packet buffer (data size before pop: {}) - Buffer size is {}",bytes, data_size, size);
     assert(bytes <= data_size);
     data_size -= bytes;
     head += bytes;
+    BMLOG_TRACE("Data size after pop: {}", data_size);
     return head;
   }
 

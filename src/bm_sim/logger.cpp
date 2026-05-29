@@ -62,7 +62,7 @@ Logger::set_logger_ostream(std::ostream &os) {
 
 void
 Logger::set_pattern() {
-  logger->set_pattern("[%H:%M:%S.%e] [%n] [%L] [thread %t] %v");
+  logger->set_pattern("[%H:%M:%S.%f] [%n] [%L] [thread %t] %v");
 }
 
 void

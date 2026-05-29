@@ -196,8 +196,10 @@ PsaSwitch::receive_(port_t port_num, const char *buffer, int len) {
   // we limit the packet buffer to original size + 512 bytes, which means we
   // cannot add more than 512 bytes of header data to the packet, which should
   // be more than enough
+  // auto packet = new_packet_ptr(port_num, packet_id++, len,
+  //                              bm::PacketBuffer(len + 512, buffer, len));
   auto packet = new_packet_ptr(port_num, packet_id++, len,
-                               bm::PacketBuffer(len + 512, buffer, len));
+                               bm::PacketBuffer(1518, buffer, len));
 
   BMELOG(packet_in, *packet);
   auto *phv = packet->get_phv();
