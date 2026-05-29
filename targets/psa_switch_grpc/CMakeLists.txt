@@ -26,7 +26,7 @@ add_library(psaswitchgrpc STATIC
 
 target_link_libraries(psaswitchgrpc
   psaswitch
-  bmpi
+  bmpi_psa
   bm_grpc_dataplane
   ${PROTOBUF_LIBRARIES}
   ${GRPC_LIBRARIES}

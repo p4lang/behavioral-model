@@ -13,8 +13,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/bmpi.dir/src/pi.cpp.o.d"
   "CMakeFiles/bmpi.dir/src/pi_act_prof_imp.cpp.o"
   "CMakeFiles/bmpi.dir/src/pi_act_prof_imp.cpp.o.d"
-  "CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.o"
-  "CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.o.d"
   "CMakeFiles/bmpi.dir/src/pi_counter_imp.cpp.o"
   "CMakeFiles/bmpi.dir/src/pi_counter_imp.cpp.o.d"
   "CMakeFiles/bmpi.dir/src/pi_imp.cpp.o"

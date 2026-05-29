@@ -93,7 +93,7 @@ simpleswitch_runner_EXTERNAL_OBJECTS =
 targets/simple_switch/libsimpleswitch_runner.so: targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/runner.cpp.o
 targets/simple_switch/libsimpleswitch_runner.so: targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/build.make
 targets/simple_switch/libsimpleswitch_runner.so: targets/simple_switch/libsimpleswitch.a
-targets/simple_switch/libsimpleswitch_runner.so: PI/libbmpi.a
+targets/simple_switch/libsimpleswitch_runner.so: PI/libbmpi_simple.a
 targets/simple_switch/libsimpleswitch_runner.so: /usr/lib/x86_64-linux-gnu/libgmp.so
 targets/simple_switch/libsimpleswitch_runner.so: /usr/lib/x86_64-linux-gnu/libxxhash.so
 targets/simple_switch/libsimpleswitch_runner.so: /usr/lib/x86_64-linux-gnu/libnanomsg.so
@@ -101,6 +101,7 @@ targets/simple_switch/libsimpleswitch_runner.so: /usr/lib/x86_64-linux-gnu/libpc
 targets/simple_switch/libsimpleswitch_runner.so: /usr/lib/x86_64-linux-gnu/libjsoncpp.so.1.9.5
 targets/simple_switch/libsimpleswitch_runner.so: /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.83.0
 targets/simple_switch/libsimpleswitch_runner.so: /usr/local/lib/libthrift.so
+targets/simple_switch/libsimpleswitch_runner.so: PI/libbmpi.a
 targets/simple_switch/libsimpleswitch_runner.so: targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX shared library libsimpleswitch_runner.so"
 	cd /home/p4/src/behavioral-model/targets/simple_switch && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/simpleswitch_runner.dir/link.txt --verbose=$(VERBOSE)

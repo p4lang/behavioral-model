@@ -1,0 +1,2 @@
+/usr/bin/ar qc libbmpi_psa.a CMakeFiles/bmpi_psa.dir/src/pi_clone_imp.cpp.o
+/usr/bin/ranlib libbmpi_psa.a

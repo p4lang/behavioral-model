@@ -165,6 +165,7 @@ targets/psa_switch_grpc/tests/psa_test_digest: /usr/lib/x86_64-linux-gnu/libxxha
 targets/psa_switch_grpc/tests/psa_test_digest: /usr/lib/x86_64-linux-gnu/libnanomsg.so
 targets/psa_switch_grpc/tests/psa_test_digest: /usr/lib/x86_64-linux-gnu/libpcap.so
 targets/psa_switch_grpc/tests/psa_test_digest: /usr/lib/x86_64-linux-gnu/libjsoncpp.so.1.9.5
+targets/psa_switch_grpc/tests/psa_test_digest: PI/libbmpi_psa.a
 targets/psa_switch_grpc/tests/psa_test_digest: PI/libbmpi.a
 targets/psa_switch_grpc/tests/psa_test_digest: services/libbm_grpc_dataplane.a
 targets/psa_switch_grpc/tests/psa_test_digest: /usr/lib/x86_64-linux-gnu/libgrpc++.so

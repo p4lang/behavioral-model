@@ -131,6 +131,8 @@ clean: tools/clean
 
 # Recursive "all" directory target.
 PI/all: PI/CMakeFiles/bmpi.dir/all
+PI/all: PI/CMakeFiles/bmpi_simple.dir/all
+PI/all: PI/CMakeFiles/bmpi_psa.dir/all
 .PHONY : PI/all
 
 # Recursive "preinstall" directory target.
@@ -139,6 +141,8 @@ PI/preinstall:
 
 # Recursive "clean" directory target.
 PI/clean: PI/CMakeFiles/bmpi.dir/clean
+PI/clean: PI/CMakeFiles/bmpi_simple.dir/clean
+PI/clean: PI/CMakeFiles/bmpi_psa.dir/clean
 .PHONY : PI/clean
 
 #=============================================================================
@@ -1538,12 +1542,12 @@ CMakeFiles/ContinuousSubmit.dir/clean:
 thrift_src/CMakeFiles/genthrift_thrift_src.dir/all:
 	$(MAKE) $(MAKESILENT) -f thrift_src/CMakeFiles/genthrift_thrift_src.dir/build.make thrift_src/CMakeFiles/genthrift_thrift_src.dir/depend
 	$(MAKE) $(MAKESILENT) -f thrift_src/CMakeFiles/genthrift_thrift_src.dir/build.make thrift_src/CMakeFiles/genthrift_thrift_src.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target genthrift_thrift_src"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=16 "Built target genthrift_thrift_src"
 .PHONY : thrift_src/CMakeFiles/genthrift_thrift_src.dir/all
 
 # Build rule for subdir invocation for target.
 thrift_src/CMakeFiles/genthrift_thrift_src.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 1
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 thrift_src/CMakeFiles/genthrift_thrift_src.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : thrift_src/CMakeFiles/genthrift_thrift_src.dir/rule
@@ -1569,7 +1573,7 @@ thrift_src/CMakeFiles/runtimestubs.dir/all: thrift_src/CMakeFiles/genthrift_thri
 
 # Build rule for subdir invocation for target.
 thrift_src/CMakeFiles/runtimestubs.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 3
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 thrift_src/CMakeFiles/runtimestubs.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : thrift_src/CMakeFiles/runtimestubs.dir/rule
@@ -1595,7 +1599,7 @@ third_party/gmock/CMakeFiles/gmock.dir/all: third_party/gtest/CMakeFiles/gtest.d
 
 # Build rule for subdir invocation for target.
 third_party/gmock/CMakeFiles/gmock.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 third_party/gmock/CMakeFiles/gmock.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : third_party/gmock/CMakeFiles/gmock.dir/rule
@@ -1616,12 +1620,12 @@ third_party/gmock/CMakeFiles/gmock.dir/clean:
 third_party/gtest/CMakeFiles/gtest.dir/all:
 	$(MAKE) $(MAKESILENT) -f third_party/gtest/CMakeFiles/gtest.dir/build.make third_party/gtest/CMakeFiles/gtest.dir/depend
 	$(MAKE) $(MAKESILENT) -f third_party/gtest/CMakeFiles/gtest.dir/build.make third_party/gtest/CMakeFiles/gtest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=16 "Built target gtest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target gtest"
 .PHONY : third_party/gtest/CMakeFiles/gtest.dir/all
 
 # Build rule for subdir invocation for target.
 third_party/gtest/CMakeFiles/gtest.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 third_party/gtest/CMakeFiles/gtest.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : third_party/gtest/CMakeFiles/gtest.dir/rule
@@ -1650,7 +1654,7 @@ src/CMakeFiles/bmall.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 
 # Build rule for subdir invocation for target.
 src/CMakeFiles/bmall.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 11
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 13
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/CMakeFiles/bmall.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : src/CMakeFiles/bmall.dir/rule
@@ -1697,7 +1701,7 @@ src/BMI/CMakeFiles/bmi.dir/clean:
 src/bm_sim/CMakeFiles/bmsim.dir/all:
 	$(MAKE) $(MAKESILENT) -f src/bm_sim/CMakeFiles/bmsim.dir/build.make src/bm_sim/CMakeFiles/bmsim.dir/depend
 	$(MAKE) $(MAKESILENT) -f src/bm_sim/CMakeFiles/bmsim.dir/build.make src/bm_sim/CMakeFiles/bmsim.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=5,6,7,8,9,10,11,12,13 "Built target bmsim"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=6,7,8,9,10,11,12,13,14 "Built target bmsim"
 .PHONY : src/bm_sim/CMakeFiles/bmsim.dir/all
 
 # Build rule for subdir invocation for target.
@@ -1723,12 +1727,12 @@ src/bm_sim/CMakeFiles/bmsim.dir/clean:
 src/bm_runtime/CMakeFiles/bmruntime.dir/all: thrift_src/CMakeFiles/genthrift_thrift_src.dir/all
 	$(MAKE) $(MAKESILENT) -f src/bm_runtime/CMakeFiles/bmruntime.dir/build.make src/bm_runtime/CMakeFiles/bmruntime.dir/depend
 	$(MAKE) $(MAKESILENT) -f src/bm_runtime/CMakeFiles/bmruntime.dir/build.make src/bm_runtime/CMakeFiles/bmruntime.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target bmruntime"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=5 "Built target bmruntime"
 .PHONY : src/bm_runtime/CMakeFiles/bmruntime.dir/all
 
 # Build rule for subdir invocation for target.
 src/bm_runtime/CMakeFiles/bmruntime.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/bm_runtime/CMakeFiles/bmruntime.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : src/bm_runtime/CMakeFiles/bmruntime.dir/rule
@@ -1754,7 +1758,7 @@ src/bm_apps/CMakeFiles/bmapps.dir/all: thrift_src/CMakeFiles/runtimestubs.dir/al
 
 # Build rule for subdir invocation for target.
 src/bm_apps/CMakeFiles/bmapps.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 4
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/bm_apps/CMakeFiles/bmapps.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : src/bm_apps/CMakeFiles/bmapps.dir/rule
@@ -1781,7 +1785,7 @@ src/bm_apps/examples/CMakeFiles/test_packet_pipe.dir/all: src/bm_apps/CMakeFiles
 
 # Build rule for subdir invocation for target.
 src/bm_apps/examples/CMakeFiles/test_packet_pipe.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 5
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src/bm_apps/examples/CMakeFiles/test_packet_pipe.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : src/bm_apps/examples/CMakeFiles/test_packet_pipe.dir/rule
@@ -1838,7 +1842,7 @@ tests/CMakeFiles/test_actions.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_actions.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_actions.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_actions.dir/rule
@@ -1869,7 +1873,7 @@ tests/CMakeFiles/test_ageing.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_ageing.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_ageing.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_ageing.dir/rule
@@ -1900,7 +1904,7 @@ tests/CMakeFiles/test_assert_assume.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_assert_assume.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_assert_assume.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_assert_assume.dir/rule
@@ -1931,7 +1935,7 @@ tests/CMakeFiles/test_bm_apps.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_bm_apps.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_bm_apps.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_bm_apps.dir/rule
@@ -1957,12 +1961,12 @@ tests/CMakeFiles/test_calculations.dir/all: src/bm_apps/CMakeFiles/bmapps.dir/al
 tests/CMakeFiles/test_calculations.dir/all: tests/CMakeFiles/testutils.dir/all
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_calculations.dir/build.make tests/CMakeFiles/test_calculations.dir/depend
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_calculations.dir/build.make tests/CMakeFiles/test_calculations.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target test_calculations"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=65 "Built target test_calculations"
 .PHONY : tests/CMakeFiles/test_calculations.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_calculations.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_calculations.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_calculations.dir/rule
@@ -1988,12 +1992,12 @@ tests/CMakeFiles/test_checksums.dir/all: src/bm_apps/CMakeFiles/bmapps.dir/all
 tests/CMakeFiles/test_checksums.dir/all: tests/CMakeFiles/testutils.dir/all
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_checksums.dir/build.make tests/CMakeFiles/test_checksums.dir/depend
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_checksums.dir/build.make tests/CMakeFiles/test_checksums.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=65 "Built target test_checksums"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=66 "Built target test_checksums"
 .PHONY : tests/CMakeFiles/test_checksums.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_checksums.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_checksums.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_checksums.dir/rule
@@ -2019,12 +2023,12 @@ tests/CMakeFiles/test_conditionals.dir/all: src/bm_apps/CMakeFiles/bmapps.dir/al
 tests/CMakeFiles/test_conditionals.dir/all: tests/CMakeFiles/testutils.dir/all
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_conditionals.dir/build.make tests/CMakeFiles/test_conditionals.dir/depend
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_conditionals.dir/build.make tests/CMakeFiles/test_conditionals.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=66 "Built target test_conditionals"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=67 "Built target test_conditionals"
 .PHONY : tests/CMakeFiles/test_conditionals.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_conditionals.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_conditionals.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_conditionals.dir/rule
@@ -2050,7 +2054,7 @@ tests/CMakeFiles/test_control_flow.dir/all: src/bm_apps/CMakeFiles/bmapps.dir/al
 tests/CMakeFiles/test_control_flow.dir/all: tests/CMakeFiles/testutils.dir/all
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_control_flow.dir/build.make tests/CMakeFiles/test_control_flow.dir/depend
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_control_flow.dir/build.make tests/CMakeFiles/test_control_flow.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=67 "Built target test_control_flow"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target test_control_flow"
 .PHONY : tests/CMakeFiles/test_control_flow.dir/all
 
 # Build rule for subdir invocation for target.
@@ -2086,7 +2090,7 @@ tests/CMakeFiles/test_core_primitives.dir/all: tests/CMakeFiles/testutils.dir/al
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_core_primitives.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_core_primitives.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_core_primitives.dir/rule
@@ -2117,7 +2121,7 @@ tests/CMakeFiles/test_counters.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_counters.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_counters.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_counters.dir/rule
@@ -2148,7 +2152,7 @@ tests/CMakeFiles/test_data.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_data.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_data.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_data.dir/rule
@@ -2179,7 +2183,7 @@ tests/CMakeFiles/test_devmgr.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_devmgr.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_devmgr.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_devmgr.dir/rule
@@ -2210,7 +2214,7 @@ tests/CMakeFiles/test_enums.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_enums.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_enums.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_enums.dir/rule
@@ -2241,7 +2245,7 @@ tests/CMakeFiles/test_expressions.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_expressions.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_expressions.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_expressions.dir/rule
@@ -2272,7 +2276,7 @@ tests/CMakeFiles/test_extern.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_extern.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_extern.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_extern.dir/rule
@@ -2304,7 +2308,7 @@ tests/CMakeFiles/test_fields.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_fields.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_fields.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_fields.dir/rule
@@ -2335,7 +2339,7 @@ tests/CMakeFiles/test_handle_mgr.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_handle_mgr.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_handle_mgr.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_handle_mgr.dir/rule
@@ -2366,7 +2370,7 @@ tests/CMakeFiles/test_header_stacks.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_header_stacks.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_header_stacks.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_header_stacks.dir/rule
@@ -2397,7 +2401,7 @@ tests/CMakeFiles/test_header_unions.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_header_unions.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_header_unions.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_header_unions.dir/rule
@@ -2428,7 +2432,7 @@ tests/CMakeFiles/test_headers.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_headers.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_headers.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_headers.dir/rule
@@ -2459,7 +2463,7 @@ tests/CMakeFiles/test_learning.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_learning.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_learning.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_learning.dir/rule
@@ -2490,7 +2494,7 @@ tests/CMakeFiles/test_log_msg.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_log_msg.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_log_msg.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_log_msg.dir/rule
@@ -2521,7 +2525,7 @@ tests/CMakeFiles/test_meters.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_meters.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_meters.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_meters.dir/rule
@@ -2552,7 +2556,7 @@ tests/CMakeFiles/test_p4objects.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_p4objects.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_p4objects.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_p4objects.dir/rule
@@ -2583,7 +2587,7 @@ tests/CMakeFiles/test_packet.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_packet.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_packet.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_packet.dir/rule
@@ -2609,7 +2613,7 @@ tests/CMakeFiles/test_parser.dir/all: src/bm_apps/CMakeFiles/bmapps.dir/all
 tests/CMakeFiles/test_parser.dir/all: tests/CMakeFiles/testutils.dir/all
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_parser.dir/build.make tests/CMakeFiles/test_parser.dir/depend
 	$(MAKE) $(MAKESILENT) -f tests/CMakeFiles/test_parser.dir/build.make tests/CMakeFiles/test_parser.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=87 "Built target test_parser"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target test_parser"
 .PHONY : tests/CMakeFiles/test_parser.dir/all
 
 # Build rule for subdir invocation for target.
@@ -2645,7 +2649,7 @@ tests/CMakeFiles/test_pcap.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_pcap.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_pcap.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_pcap.dir/rule
@@ -2676,7 +2680,7 @@ tests/CMakeFiles/test_periodic_tasks.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_periodic_tasks.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_periodic_tasks.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_periodic_tasks.dir/rule
@@ -2707,7 +2711,7 @@ tests/CMakeFiles/test_phv.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_phv.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_phv.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_phv.dir/rule
@@ -2738,7 +2742,7 @@ tests/CMakeFiles/test_pre.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_pre.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_pre.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_pre.dir/rule
@@ -2769,7 +2773,7 @@ tests/CMakeFiles/test_queue.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_queue.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_queue.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_queue.dir/rule
@@ -2800,7 +2804,7 @@ tests/CMakeFiles/test_queueing.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_queueing.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_queueing.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_queueing.dir/rule
@@ -2831,7 +2835,7 @@ tests/CMakeFiles/test_ras.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_ras.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_ras.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_ras.dir/rule
@@ -2862,7 +2866,7 @@ tests/CMakeFiles/test_runtime_iface.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_runtime_iface.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_runtime_iface.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_runtime_iface.dir/rule
@@ -2893,7 +2897,7 @@ tests/CMakeFiles/test_stateful.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_stateful.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_stateful.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_stateful.dir/rule
@@ -2924,7 +2928,7 @@ tests/CMakeFiles/test_switch.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_switch.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_switch.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_switch.dir/rule
@@ -2955,7 +2959,7 @@ tests/CMakeFiles/test_tables.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_tables.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_tables.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_tables.dir/rule
@@ -2986,7 +2990,7 @@ tests/CMakeFiles/test_target_parser.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_target_parser.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_target_parser.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_target_parser.dir/rule
@@ -3018,7 +3022,7 @@ tests/CMakeFiles/test_all.dir/all: tests/CMakeFiles/testutils.dir/all
 
 # Build rule for subdir invocation for target.
 tests/CMakeFiles/test_all.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 21
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 22
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests/CMakeFiles/test_all.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : tests/CMakeFiles/test_all.dir/rule
@@ -3039,12 +3043,12 @@ tests/CMakeFiles/test_all.dir/clean:
 PI/CMakeFiles/bmpi.dir/all:
 	$(MAKE) $(MAKESILENT) -f PI/CMakeFiles/bmpi.dir/build.make PI/CMakeFiles/bmpi.dir/depend
 	$(MAKE) $(MAKESILENT) -f PI/CMakeFiles/bmpi.dir/build.make PI/CMakeFiles/bmpi.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=2,3,4 "Built target bmpi"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=2,3 "Built target bmpi"
 .PHONY : PI/CMakeFiles/bmpi.dir/all
 
 # Build rule for subdir invocation for target.
 PI/CMakeFiles/bmpi.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 PI/CMakeFiles/bmpi.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : PI/CMakeFiles/bmpi.dir/rule
@@ -3059,18 +3063,70 @@ PI/CMakeFiles/bmpi.dir/clean:
 .PHONY : PI/CMakeFiles/bmpi.dir/clean
 
 #=============================================================================
+# Target rules for target PI/CMakeFiles/bmpi_simple.dir
+
+# All Build rule for target.
+PI/CMakeFiles/bmpi_simple.dir/all: PI/CMakeFiles/bmpi.dir/all
+	$(MAKE) $(MAKESILENT) -f PI/CMakeFiles/bmpi_simple.dir/build.make PI/CMakeFiles/bmpi_simple.dir/depend
+	$(MAKE) $(MAKESILENT) -f PI/CMakeFiles/bmpi_simple.dir/build.make PI/CMakeFiles/bmpi_simple.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target bmpi_simple"
+.PHONY : PI/CMakeFiles/bmpi_simple.dir/all
+
+# Build rule for subdir invocation for target.
+PI/CMakeFiles/bmpi_simple.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 PI/CMakeFiles/bmpi_simple.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
+.PHONY : PI/CMakeFiles/bmpi_simple.dir/rule
+
+# Convenience name for target.
+bmpi_simple: PI/CMakeFiles/bmpi_simple.dir/rule
+.PHONY : bmpi_simple
+
+# clean rule for target.
+PI/CMakeFiles/bmpi_simple.dir/clean:
+	$(MAKE) $(MAKESILENT) -f PI/CMakeFiles/bmpi_simple.dir/build.make PI/CMakeFiles/bmpi_simple.dir/clean
+.PHONY : PI/CMakeFiles/bmpi_simple.dir/clean
+
+#=============================================================================
+# Target rules for target PI/CMakeFiles/bmpi_psa.dir
+
+# All Build rule for target.
+PI/CMakeFiles/bmpi_psa.dir/all: PI/CMakeFiles/bmpi.dir/all
+	$(MAKE) $(MAKESILENT) -f PI/CMakeFiles/bmpi_psa.dir/build.make PI/CMakeFiles/bmpi_psa.dir/depend
+	$(MAKE) $(MAKESILENT) -f PI/CMakeFiles/bmpi_psa.dir/build.make PI/CMakeFiles/bmpi_psa.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=4 "Built target bmpi_psa"
+.PHONY : PI/CMakeFiles/bmpi_psa.dir/all
+
+# Build rule for subdir invocation for target.
+PI/CMakeFiles/bmpi_psa.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 3
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 PI/CMakeFiles/bmpi_psa.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
+.PHONY : PI/CMakeFiles/bmpi_psa.dir/rule
+
+# Convenience name for target.
+bmpi_psa: PI/CMakeFiles/bmpi_psa.dir/rule
+.PHONY : bmpi_psa
+
+# clean rule for target.
+PI/CMakeFiles/bmpi_psa.dir/clean:
+	$(MAKE) $(MAKESILENT) -f PI/CMakeFiles/bmpi_psa.dir/build.make PI/CMakeFiles/bmpi_psa.dir/clean
+.PHONY : PI/CMakeFiles/bmpi_psa.dir/clean
+
+#=============================================================================
 # Target rules for target services/CMakeFiles/gengrpc_services.dir
 
 # All Build rule for target.
 services/CMakeFiles/gengrpc_services.dir/all:
 	$(MAKE) $(MAKESILENT) -f services/CMakeFiles/gengrpc_services.dir/build.make services/CMakeFiles/gengrpc_services.dir/depend
 	$(MAKE) $(MAKESILENT) -f services/CMakeFiles/gengrpc_services.dir/build.make services/CMakeFiles/gengrpc_services.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target gengrpc_services"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=15 "Built target gengrpc_services"
 .PHONY : services/CMakeFiles/gengrpc_services.dir/all
 
 # Build rule for subdir invocation for target.
 services/CMakeFiles/gengrpc_services.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 1
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 services/CMakeFiles/gengrpc_services.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : services/CMakeFiles/gengrpc_services.dir/rule
@@ -3097,7 +3153,7 @@ services/CMakeFiles/bm_grpc_dataplane.dir/all: services/CMakeFiles/gengrpc_py_se
 
 # Build rule for subdir invocation for target.
 services/CMakeFiles/bm_grpc_dataplane.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 1
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 services/CMakeFiles/bm_grpc_dataplane.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : services/CMakeFiles/bm_grpc_dataplane.dir/rule
@@ -3172,7 +3228,7 @@ targets/simple_switch/CMakeFiles/simpleswitch.dir/all: src/bm_sim/CMakeFiles/bms
 targets/simple_switch/CMakeFiles/simpleswitch.dir/all: targets/simple_switch/CMakeFiles/genthrift_simpleswitch.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/CMakeFiles/simpleswitch.dir/build.make targets/simple_switch/CMakeFiles/simpleswitch.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/CMakeFiles/simpleswitch.dir/build.make targets/simple_switch/CMakeFiles/simpleswitch.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target simpleswitch"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=29 "Built target simpleswitch"
 .PHONY : targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3198,15 +3254,16 @@ targets/simple_switch/CMakeFiles/simpleswitch.dir/clean:
 targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/all: src/BMI/CMakeFiles/bmi.dir/all
 targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/build.make targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/build.make targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=29 "Built target simpleswitch_runner"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target simpleswitch_runner"
 .PHONY : targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 12
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/rule
@@ -3227,12 +3284,12 @@ targets/simple_switch/CMakeFiles/simpleswitch_runner.dir/clean:
 targets/simple_switch/CMakeFiles/genthrift_simpleswitch.dir/all:
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/CMakeFiles/genthrift_simpleswitch.dir/build.make targets/simple_switch/CMakeFiles/genthrift_simpleswitch.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/CMakeFiles/genthrift_simpleswitch.dir/build.make targets/simple_switch/CMakeFiles/genthrift_simpleswitch.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=15 "Built target genthrift_simpleswitch"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target genthrift_simpleswitch"
 .PHONY : targets/simple_switch/CMakeFiles/genthrift_simpleswitch.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch/CMakeFiles/genthrift_simpleswitch.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch/CMakeFiles/genthrift_simpleswitch.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch/CMakeFiles/genthrift_simpleswitch.dir/rule
@@ -3253,7 +3310,7 @@ targets/simple_switch/CMakeFiles/genthrift_simpleswitch.dir/clean:
 targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all: targets/simple_switch/CMakeFiles/genthrift_simpleswitch.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/build.make targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/build.make targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target simpleswitch_thrift"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=30 "Built target simpleswitch_thrift"
 .PHONY : targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3284,12 +3341,12 @@ targets/simple_switch/CMakeFiles/simple_switch.dir/all: targets/simple_switch/CM
 targets/simple_switch/CMakeFiles/simple_switch.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/CMakeFiles/simple_switch.dir/build.make targets/simple_switch/CMakeFiles/simple_switch.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/CMakeFiles/simple_switch.dir/build.make targets/simple_switch/CMakeFiles/simple_switch.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target simple_switch"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=28 "Built target simple_switch"
 .PHONY : targets/simple_switch/CMakeFiles/simple_switch.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch/CMakeFiles/simple_switch.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 12
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch/CMakeFiles/simple_switch.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch/CMakeFiles/simple_switch.dir/rule
@@ -3316,12 +3373,12 @@ targets/simple_switch/tests/CMakeFiles/ss_test_test_packet_redirect.dir/all: tar
 targets/simple_switch/tests/CMakeFiles/ss_test_test_packet_redirect.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/tests/CMakeFiles/ss_test_test_packet_redirect.dir/build.make targets/simple_switch/tests/CMakeFiles/ss_test_test_packet_redirect.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/tests/CMakeFiles/ss_test_test_packet_redirect.dir/build.make targets/simple_switch/tests/CMakeFiles/ss_test_test_packet_redirect.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target ss_test_test_packet_redirect"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=31 "Built target ss_test_test_packet_redirect"
 .PHONY : targets/simple_switch/tests/CMakeFiles/ss_test_test_packet_redirect.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch/tests/CMakeFiles/ss_test_test_packet_redirect.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch/tests/CMakeFiles/ss_test_test_packet_redirect.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch/tests/CMakeFiles/ss_test_test_packet_redirect.dir/rule
@@ -3380,12 +3437,12 @@ targets/simple_switch/tests/CMakeFiles/ss_test_test_swap.dir/all: targets/test_u
 targets/simple_switch/tests/CMakeFiles/ss_test_test_swap.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/tests/CMakeFiles/ss_test_test_swap.dir/build.make targets/simple_switch/tests/CMakeFiles/ss_test_test_swap.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/tests/CMakeFiles/ss_test_test_swap.dir/build.make targets/simple_switch/tests/CMakeFiles/ss_test_test_swap.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=33 "Built target ss_test_test_swap"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target ss_test_test_swap"
 .PHONY : targets/simple_switch/tests/CMakeFiles/ss_test_test_swap.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch/tests/CMakeFiles/ss_test_test_swap.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 14
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch/tests/CMakeFiles/ss_test_test_swap.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch/tests/CMakeFiles/ss_test_test_swap.dir/rule
@@ -3444,12 +3501,12 @@ targets/simple_switch/tests/CMakeFiles/ss_test_test_recirc.dir/all: targets/test
 targets/simple_switch/tests/CMakeFiles/ss_test_test_recirc.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/tests/CMakeFiles/ss_test_test_recirc.dir/build.make targets/simple_switch/tests/CMakeFiles/ss_test_test_recirc.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/tests/CMakeFiles/ss_test_test_recirc.dir/build.make targets/simple_switch/tests/CMakeFiles/ss_test_test_recirc.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target ss_test_test_recirc"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=33 "Built target ss_test_test_recirc"
 .PHONY : targets/simple_switch/tests/CMakeFiles/ss_test_test_recirc.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch/tests/CMakeFiles/ss_test_test_recirc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch/tests/CMakeFiles/ss_test_test_recirc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch/tests/CMakeFiles/ss_test_test_recirc.dir/rule
@@ -3476,12 +3533,12 @@ targets/simple_switch/tests/CMakeFiles/ss_test_test_parser_error.dir/all: target
 targets/simple_switch/tests/CMakeFiles/ss_test_test_parser_error.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/tests/CMakeFiles/ss_test_test_parser_error.dir/build.make targets/simple_switch/tests/CMakeFiles/ss_test_test_parser_error.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch/tests/CMakeFiles/ss_test_test_parser_error.dir/build.make targets/simple_switch/tests/CMakeFiles/ss_test_test_parser_error.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=31 "Built target ss_test_test_parser_error"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target ss_test_test_parser_error"
 .PHONY : targets/simple_switch/tests/CMakeFiles/ss_test_test_parser_error.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch/tests/CMakeFiles/ss_test_test_parser_error.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 14
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch/tests/CMakeFiles/ss_test_test_parser_error.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch/tests/CMakeFiles/ss_test_test_parser_error.dir/rule
@@ -3504,12 +3561,12 @@ targets/psa_switch/CMakeFiles/psaswitch.dir/all: src/bm_sim/CMakeFiles/bmsim.dir
 targets/psa_switch/CMakeFiles/psaswitch.dir/all: targets/psa_switch/CMakeFiles/genthrift_psaswitch.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch/CMakeFiles/psaswitch.dir/build.make targets/psa_switch/CMakeFiles/psaswitch.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch/CMakeFiles/psaswitch.dir/build.make targets/psa_switch/CMakeFiles/psaswitch.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=23 "Built target psaswitch"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=23,24 "Built target psaswitch"
 .PHONY : targets/psa_switch/CMakeFiles/psaswitch.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch/CMakeFiles/psaswitch.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 10
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 11
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch/CMakeFiles/psaswitch.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch/CMakeFiles/psaswitch.dir/rule
@@ -3535,12 +3592,12 @@ targets/psa_switch/CMakeFiles/psa_switch.dir/all: targets/psa_switch/CMakeFiles/
 targets/psa_switch/CMakeFiles/psa_switch.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch/CMakeFiles/psa_switch.dir/build.make targets/psa_switch/CMakeFiles/psa_switch.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch/CMakeFiles/psa_switch.dir/build.make targets/psa_switch/CMakeFiles/psa_switch.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target psa_switch"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=21 "Built target psa_switch"
 .PHONY : targets/psa_switch/CMakeFiles/psa_switch.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch/CMakeFiles/psa_switch.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 13
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch/CMakeFiles/psa_switch.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch/CMakeFiles/psa_switch.dir/rule
@@ -3587,12 +3644,12 @@ targets/psa_switch/CMakeFiles/genthrift_psaswitch.dir/clean:
 targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all: targets/psa_switch/CMakeFiles/genthrift_psaswitch.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/build.make targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/build.make targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=24 "Built target psaswitch_thrift"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target psaswitch_thrift"
 .PHONY : targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/rule
@@ -3711,12 +3768,12 @@ targets/pna_nic/CMakeFiles/pnanic.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/pna_nic/CMakeFiles/pnanic.dir/all: targets/pna_nic/CMakeFiles/genthrift_pnanic.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/pna_nic/CMakeFiles/pnanic.dir/build.make targets/pna_nic/CMakeFiles/pnanic.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/pna_nic/CMakeFiles/pnanic.dir/build.make targets/pna_nic/CMakeFiles/pnanic.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=18,19 "Built target pnanic"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=19 "Built target pnanic"
 .PHONY : targets/pna_nic/CMakeFiles/pnanic.dir/all
 
 # Build rule for subdir invocation for target.
 targets/pna_nic/CMakeFiles/pnanic.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 11
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 10
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/pna_nic/CMakeFiles/pnanic.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/pna_nic/CMakeFiles/pnanic.dir/rule
@@ -3742,12 +3799,12 @@ targets/pna_nic/CMakeFiles/pna_nic.dir/all: targets/pna_nic/CMakeFiles/pnanic.di
 targets/pna_nic/CMakeFiles/pna_nic.dir/all: targets/pna_nic/CMakeFiles/pnanic_thrift.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/pna_nic/CMakeFiles/pna_nic.dir/build.make targets/pna_nic/CMakeFiles/pna_nic.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/pna_nic/CMakeFiles/pna_nic.dir/build.make targets/pna_nic/CMakeFiles/pna_nic.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target pna_nic"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=18 "Built target pna_nic"
 .PHONY : targets/pna_nic/CMakeFiles/pna_nic.dir/all
 
 # Build rule for subdir invocation for target.
 targets/pna_nic/CMakeFiles/pna_nic.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 13
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/pna_nic/CMakeFiles/pna_nic.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/pna_nic/CMakeFiles/pna_nic.dir/rule
@@ -3794,12 +3851,12 @@ targets/pna_nic/CMakeFiles/genthrift_pnanic.dir/clean:
 targets/pna_nic/CMakeFiles/pnanic_thrift.dir/all: targets/pna_nic/CMakeFiles/genthrift_pnanic.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/pna_nic/CMakeFiles/pnanic_thrift.dir/build.make targets/pna_nic/CMakeFiles/pnanic_thrift.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/pna_nic/CMakeFiles/pnanic_thrift.dir/build.make targets/pna_nic/CMakeFiles/pnanic_thrift.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target pnanic_thrift"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=20 "Built target pnanic_thrift"
 .PHONY : targets/pna_nic/CMakeFiles/pnanic_thrift.dir/all
 
 # Build rule for subdir invocation for target.
 targets/pna_nic/CMakeFiles/pnanic_thrift.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 1
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/pna_nic/CMakeFiles/pnanic_thrift.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/pna_nic/CMakeFiles/pnanic_thrift.dir/rule
@@ -3826,7 +3883,7 @@ targets/pna_nic/tests/CMakeFiles/test_parse_pna.dir/all: targets/test_utils/CMak
 targets/pna_nic/tests/CMakeFiles/test_parse_pna.dir/all: targets/pna_nic/CMakeFiles/pnanic.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/pna_nic/tests/CMakeFiles/test_parse_pna.dir/build.make targets/pna_nic/tests/CMakeFiles/test_parse_pna.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/pna_nic/tests/CMakeFiles/test_parse_pna.dir/build.make targets/pna_nic/tests/CMakeFiles/test_parse_pna.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target test_parse_pna"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=87 "Built target test_parse_pna"
 .PHONY : targets/pna_nic/tests/CMakeFiles/test_parse_pna.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3860,7 +3917,7 @@ targets/simple_router/CMakeFiles/simple_router.dir/all: src/bm_runtime/CMakeFile
 
 # Build rule for subdir invocation for target.
 targets/simple_router/CMakeFiles/simple_router.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 11
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 13
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_router/CMakeFiles/simple_router.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_router/CMakeFiles/simple_router.dir/rule
@@ -3884,12 +3941,12 @@ targets/l2_switch/CMakeFiles/l2_switch.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/
 targets/l2_switch/CMakeFiles/l2_switch.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/l2_switch/CMakeFiles/l2_switch.dir/build.make targets/l2_switch/CMakeFiles/l2_switch.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/l2_switch/CMakeFiles/l2_switch.dir/build.make targets/l2_switch/CMakeFiles/l2_switch.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target l2_switch"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=17 "Built target l2_switch"
 .PHONY : targets/l2_switch/CMakeFiles/l2_switch.dir/all
 
 # Build rule for subdir invocation for target.
 targets/l2_switch/CMakeFiles/l2_switch.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 11
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 14
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/l2_switch/CMakeFiles/l2_switch.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/l2_switch/CMakeFiles/l2_switch.dir/rule
@@ -3911,7 +3968,7 @@ targets/l2_switch/learn_client/CMakeFiles/learn_client.dir/all: thrift_src/CMake
 targets/l2_switch/learn_client/CMakeFiles/learn_client.dir/all: src/bm_apps/CMakeFiles/bmapps.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/l2_switch/learn_client/CMakeFiles/learn_client.dir/build.make targets/l2_switch/learn_client/CMakeFiles/learn_client.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/l2_switch/learn_client/CMakeFiles/learn_client.dir/build.make targets/l2_switch/learn_client/CMakeFiles/learn_client.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=17 "Built target learn_client"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target learn_client"
 .PHONY : targets/l2_switch/learn_client/CMakeFiles/learn_client.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3939,17 +3996,18 @@ targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all: src/BMI/CMakeFil
 targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/build.make targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/build.make targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=30 "Built target simpleswitchgrpc"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target simpleswitchgrpc"
 .PHONY : targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 16
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 18
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/rule
@@ -3972,18 +4030,19 @@ targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/all: src/BMI/CMakeF
 targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
 targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/all: targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/build.make targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/build.make targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=28 "Built target simple_switch_grpc"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target simple_switch_grpc"
 .PHONY : targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 17
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 18
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch_grpc/CMakeFiles/simple_switch_grpc.dir/rule
@@ -4007,6 +4066,7 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_basic.dir/all: src/BMI
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_basic.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_basic.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_basic.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_basic.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_basic.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_basic.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_basic.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
@@ -4018,7 +4078,7 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_basic.dir/all: targets
 
 # Build rule for subdir invocation for target.
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_basic.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 18
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_basic.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_basic.dir/rule
@@ -4042,13 +4102,14 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/all: src/B
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/all: targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/build.make targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/build.make targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=48 "Built target ssg_test_test_grpc_dp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target ssg_test_test_grpc_dp"
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_grpc_dp.dir/all
 
 # Build rule for subdir invocation for target.
@@ -4077,13 +4138,14 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/all: src
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/all: targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/build.make targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/build.make targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=51 "Built target ssg_test_test_packet_io"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target ssg_test_test_packet_io"
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_packet_io.dir/all
 
 # Build rule for subdir invocation for target.
@@ -4112,18 +4174,19 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/all: src/B
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/all: targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/build.make targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/build.make targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target ssg_test_test_counter"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=47 "Built target ssg_test_test_counter"
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 17
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_counter.dir/rule
@@ -4147,6 +4210,7 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_meter.dir/all: src/BMI
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_meter.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_meter.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_meter.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_meter.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_meter.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_meter.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_meter.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
@@ -4158,7 +4222,7 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_meter.dir/all: targets
 
 # Build rule for subdir invocation for target.
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_meter.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 18
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_meter.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_meter.dir/rule
@@ -4182,6 +4246,7 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_ternary.dir/all: src/B
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_ternary.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_ternary.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_ternary.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_ternary.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_ternary.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_ternary.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_ternary.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
@@ -4193,7 +4258,7 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_ternary.dir/all: targe
 
 # Build rule for subdir invocation for target.
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_ternary.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 18
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_ternary.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_ternary.dir/rule
@@ -4217,6 +4282,7 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_pre.dir/all: src/BMI/C
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_pre.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_pre.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_pre.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_pre.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_pre.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_pre.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_pre.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
@@ -4228,7 +4294,7 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_pre.dir/all: targets/s
 
 # Build rule for subdir invocation for target.
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_pre.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 18
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_pre.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_pre.dir/rule
@@ -4252,18 +4318,19 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/all: src/BM
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/all: targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/build.make targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/build.make targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=47 "Built target ssg_test_test_digest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=48 "Built target ssg_test_test_digest"
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 18
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_digest.dir/rule
@@ -4287,6 +4354,7 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_idle_timeout.dir/all: 
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_idle_timeout.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_idle_timeout.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_idle_timeout.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_idle_timeout.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_idle_timeout.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_idle_timeout.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_idle_timeout.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
@@ -4298,7 +4366,7 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_idle_timeout.dir/all: 
 
 # Build rule for subdir invocation for target.
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_idle_timeout.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 18
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_idle_timeout.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_idle_timeout.dir/rule
@@ -4322,6 +4390,7 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_action_profile.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_action_profile.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_action_profile.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_action_profile.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_action_profile.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_action_profile.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_action_profile.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_action_profile.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
@@ -4333,7 +4402,7 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_action_profile.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_action_profile.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 18
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_action_profile.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_action_profile.dir/rule
@@ -4357,18 +4426,19 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/all: src/
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/all: PI/CMakeFiles/bmpi_simple.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/all: targets/simple_switch/CMakeFiles/simpleswitch.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/all: targets/simple_switch/CMakeFiles/simpleswitch_thrift.dir/all
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/all: targets/simple_switch_grpc/CMakeFiles/simpleswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/build.make targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/build.make targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target ssg_test_test_optional"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=51 "Built target ssg_test_test_optional"
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 17
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/rule
@@ -4389,12 +4459,12 @@ targets/simple_switch_grpc/tests/CMakeFiles/ssg_test_test_optional.dir/clean:
 targets/simple_switch_grpc/tests/CMakeFiles/example.dir/all:
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/tests/CMakeFiles/example.dir/build.make targets/simple_switch_grpc/tests/CMakeFiles/example.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/simple_switch_grpc/tests/CMakeFiles/example.dir/build.make targets/simple_switch_grpc/tests/CMakeFiles/example.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=14 "Built target example"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target example"
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/example.dir/all
 
 # Build rule for subdir invocation for target.
 targets/simple_switch_grpc/tests/CMakeFiles/example.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/simple_switch_grpc/tests/CMakeFiles/example.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/simple_switch_grpc/tests/CMakeFiles/example.dir/rule
@@ -4417,6 +4487,7 @@ targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all: src/BMI/CMakeFiles/bmi
 targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
@@ -4427,7 +4498,7 @@ targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all: targets/psa_switch/CMa
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 17
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 20
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/rule
@@ -4450,18 +4521,19 @@ targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/all: src/BMI/CMakeFiles/b
 targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
 targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/all: targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/build.make targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/build.make targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=21 "Built target psa_switch_grpc"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target psa_switch_grpc"
 .PHONY : targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 18
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 20
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/CMakeFiles/psa_switch_grpc.dir/rule
@@ -4485,18 +4557,19 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/all: sr
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/all: targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target ssg_psa_test_psa_test_basic"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=36 "Built target ssg_psa_test_psa_test_basic"
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 18
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 21
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_basic.dir/rule
@@ -4520,18 +4593,19 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/all: 
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/all: targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=38 "Built target ssg_psa_test_psa_test_grpc_dp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=39 "Built target ssg_psa_test_psa_test_grpc_dp"
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 21
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_grpc_dp.dir/rule
@@ -4555,6 +4629,7 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_packet_io.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_packet_io.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_packet_io.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_packet_io.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_packet_io.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_packet_io.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_packet_io.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_packet_io.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
@@ -4566,7 +4641,7 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_packet_io.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_packet_io.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 21
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_packet_io.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_packet_io.dir/rule
@@ -4590,18 +4665,19 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/all: 
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/all: targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=36 "Built target ssg_psa_test_psa_test_counter"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=37 "Built target ssg_psa_test_psa_test_counter"
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 21
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_counter.dir/rule
@@ -4625,18 +4701,19 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/all: sr
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/all: targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=40 "Built target ssg_psa_test_psa_test_meter"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=41 "Built target ssg_psa_test_psa_test_meter"
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 21
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_meter.dir/rule
@@ -4660,6 +4737,7 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_ternary.dir/all: 
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_ternary.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_ternary.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_ternary.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_ternary.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_ternary.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_ternary.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_ternary.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
@@ -4671,7 +4749,7 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_ternary.dir/all: 
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_ternary.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 21
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_ternary.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_ternary.dir/rule
@@ -4695,6 +4773,7 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_pre.dir/all: src/
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_pre.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_pre.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_pre.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_pre.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_pre.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_pre.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_pre.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
@@ -4706,7 +4785,7 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_pre.dir/all: targ
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_pre.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 21
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_pre.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_pre.dir/rule
@@ -4730,18 +4809,19 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/all: s
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/all: targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=37 "Built target ssg_psa_test_psa_test_digest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=38 "Built target ssg_psa_test_psa_test_digest"
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 21
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_digest.dir/rule
@@ -4765,18 +4845,19 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/all: targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=39 "Built target ssg_psa_test_psa_test_idle_timeout"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=40 "Built target ssg_psa_test_psa_test_idle_timeout"
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 21
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_idle_timeout.dir/rule
@@ -4800,6 +4881,7 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_action_profile.di
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_action_profile.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_action_profile.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_action_profile.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_action_profile.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_action_profile.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_action_profile.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_action_profile.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
@@ -4811,7 +4893,7 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_action_profile.di
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_action_profile.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 21
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_action_profile.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_action_profile.dir/rule
@@ -4835,18 +4917,19 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/all:
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/all: src/bm_sim/CMakeFiles/bmsim.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/all: src/bm_runtime/CMakeFiles/bmruntime.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/all: PI/CMakeFiles/bmpi.dir/all
+targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/all: PI/CMakeFiles/bmpi_psa.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/all: services/CMakeFiles/bm_grpc_dataplane.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/all: targets/psa_switch/CMakeFiles/psaswitch.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/all: targets/psa_switch/CMakeFiles/psaswitch_thrift.dir/all
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/all: targets/psa_switch_grpc/CMakeFiles/psaswitchgrpc.dir/all
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=41 "Built target ssg_psa_test_psa_test_optional"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target ssg_psa_test_psa_test_optional"
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 20
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/rule
@@ -4867,12 +4950,12 @@ targets/psa_switch_grpc/tests/CMakeFiles/ssg_psa_test_psa_test_optional.dir/clea
 targets/psa_switch_grpc/tests/CMakeFiles/psa_example.dir/all:
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/psa_example.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/psa_example.dir/depend
 	$(MAKE) $(MAKESILENT) -f targets/psa_switch_grpc/tests/CMakeFiles/psa_example.dir/build.make targets/psa_switch_grpc/tests/CMakeFiles/psa_example.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=20 "Built target psa_example"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num= "Built target psa_example"
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/psa_example.dir/all
 
 # Build rule for subdir invocation for target.
 targets/psa_switch_grpc/tests/CMakeFiles/psa_example.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 targets/psa_switch_grpc/tests/CMakeFiles/psa_example.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/p4/src/behavioral-model/CMakeFiles 0
 .PHONY : targets/psa_switch_grpc/tests/CMakeFiles/psa_example.dir/rule

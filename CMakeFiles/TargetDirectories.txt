@@ -175,6 +175,8 @@
 /home/p4/src/behavioral-model/tests/CMakeFiles/install/local.dir
 /home/p4/src/behavioral-model/tests/CMakeFiles/install/strip.dir
 /home/p4/src/behavioral-model/PI/CMakeFiles/bmpi.dir
+/home/p4/src/behavioral-model/PI/CMakeFiles/bmpi_simple.dir
+/home/p4/src/behavioral-model/PI/CMakeFiles/bmpi_psa.dir
 /home/p4/src/behavioral-model/PI/CMakeFiles/test.dir
 /home/p4/src/behavioral-model/PI/CMakeFiles/edit_cache.dir
 /home/p4/src/behavioral-model/PI/CMakeFiles/rebuild_cache.dir

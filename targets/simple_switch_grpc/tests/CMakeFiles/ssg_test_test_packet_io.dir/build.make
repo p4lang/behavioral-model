@@ -149,6 +149,7 @@ targets/simple_switch_grpc/tests/test_packet_io: /usr/lib/x86_64-linux-gnu/libxx
 targets/simple_switch_grpc/tests/test_packet_io: /usr/lib/x86_64-linux-gnu/libnanomsg.so
 targets/simple_switch_grpc/tests/test_packet_io: /usr/lib/x86_64-linux-gnu/libpcap.so
 targets/simple_switch_grpc/tests/test_packet_io: /usr/lib/x86_64-linux-gnu/libjsoncpp.so.1.9.5
+targets/simple_switch_grpc/tests/test_packet_io: PI/libbmpi_simple.a
 targets/simple_switch_grpc/tests/test_packet_io: PI/libbmpi.a
 targets/simple_switch_grpc/tests/test_packet_io: services/libbm_grpc_dataplane.a
 targets/simple_switch_grpc/tests/test_packet_io: /usr/lib/x86_64-linux-gnu/libgrpc++.so

@@ -404,6 +404,12 @@ bmall_LIB_DEPENDS:STATIC=general;Boost::program_options;general;bmruntime;genera
 bmapps_LIB_DEPENDS:STATIC=general;/usr/lib/x86_64-linux-gnu/libnanomsg.so;general;runtimestubs;general;/usr/local/lib/libthrift.so;
 
 //Dependencies for the target
+bmpi_psa_LIB_DEPENDS:STATIC=general;bmpi;
+
+//Dependencies for the target
+bmpi_simple_LIB_DEPENDS:STATIC=general;bmpi;
+
+//Dependencies for the target
 bmruntime_LIB_DEPENDS:STATIC=general;Boost::program_options;
 
 //The directory containing a CMake configuration file for boost_atomic.
@@ -602,7 +608,7 @@ pnanic_LIB_DEPENDS:STATIC=general;Boost::program_options;general;/usr/local/lib/
 psaswitch_LIB_DEPENDS:STATIC=general;Boost::program_options;general;/usr/local/lib/libthrift.so;
 
 //Dependencies for the target
-psaswitchgrpc_LIB_DEPENDS:STATIC=general;psaswitch;general;bmpi;general;bm_grpc_dataplane;general;/usr/lib/x86_64-linux-gnu/libprotobuf.so;general;/usr/lib/x86_64-linux-gnu/libgrpc++.so;general;/usr/lib/x86_64-linux-gnu/libgrpc.so;general;bmruntime;general;runtimestubs;general;psaswitch_thrift;
+psaswitchgrpc_LIB_DEPENDS:STATIC=general;psaswitch;general;bmpi_psa;general;bm_grpc_dataplane;general;/usr/lib/x86_64-linux-gnu/libprotobuf.so;general;/usr/lib/x86_64-linux-gnu/libgrpc++.so;general;/usr/lib/x86_64-linux-gnu/libgrpc.so;general;bmruntime;general;runtimestubs;general;psaswitch_thrift;
 
 //Dependencies for the target
 runtimestubs_LIB_DEPENDS:STATIC=general;/usr/local/lib/libthrift.so;
@@ -611,10 +617,10 @@ runtimestubs_LIB_DEPENDS:STATIC=general;/usr/local/lib/libthrift.so;
 simpleswitch_LIB_DEPENDS:STATIC=general;Boost::program_options;general;/usr/local/lib/libthrift.so;
 
 //Dependencies for the target
-simpleswitch_runner_LIB_DEPENDS:STATIC=general;simpleswitch;general;bmpi;
+simpleswitch_runner_LIB_DEPENDS:STATIC=general;simpleswitch;general;bmpi_simple;
 
 //Dependencies for the target
-simpleswitchgrpc_LIB_DEPENDS:STATIC=general;simpleswitch;general;bmpi;general;bm_grpc_dataplane;general;/usr/lib/x86_64-linux-gnu/libprotobuf.so;general;/usr/lib/x86_64-linux-gnu/libgrpc++.so;general;/usr/lib/x86_64-linux-gnu/libgrpc.so;general;bmruntime;general;runtimestubs;general;simpleswitch_thrift;
+simpleswitchgrpc_LIB_DEPENDS:STATIC=general;simpleswitch;general;bmpi_simple;general;bm_grpc_dataplane;general;/usr/lib/x86_64-linux-gnu/libprotobuf.so;general;/usr/lib/x86_64-linux-gnu/libgrpc++.so;general;/usr/lib/x86_64-linux-gnu/libgrpc.so;general;bmruntime;general;runtimestubs;general;simpleswitch_thrift;
 
 
 ########################

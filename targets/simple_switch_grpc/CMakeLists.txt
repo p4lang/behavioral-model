@@ -26,7 +26,7 @@ add_library(simpleswitchgrpc STATIC
 
 target_link_libraries(simpleswitchgrpc
   simpleswitch
-  bmpi
+  bmpi_simple
   bm_grpc_dataplane
   ${PROTOBUF_LIBRARIES}
   ${GRPC_LIBRARIES}

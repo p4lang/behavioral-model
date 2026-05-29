@@ -181,24 +181,10 @@ PI/CMakeFiles/bmpi.dir/src/pi_mc_imp.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/bmpi.dir/src/pi_mc_imp.cpp.s"
 	cd /home/p4/src/behavioral-model/PI && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/p4/src/behavioral-model/PI/src/pi_mc_imp.cpp -o CMakeFiles/bmpi.dir/src/pi_mc_imp.cpp.s
 
-PI/CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.o: PI/CMakeFiles/bmpi.dir/flags.make
-PI/CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.o: PI/src/pi_clone_imp.cpp
-PI/CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.o: PI/CMakeFiles/bmpi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object PI/CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.o"
-	cd /home/p4/src/behavioral-model/PI && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT PI/CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.o -MF CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.o.d -o CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.o -c /home/p4/src/behavioral-model/PI/src/pi_clone_imp.cpp
-
-PI/CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.i"
-	cd /home/p4/src/behavioral-model/PI && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/p4/src/behavioral-model/PI/src/pi_clone_imp.cpp > CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.i
-
-PI/CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.s"
-	cd /home/p4/src/behavioral-model/PI && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/p4/src/behavioral-model/PI/src/pi_clone_imp.cpp -o CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.s
-
 PI/CMakeFiles/bmpi.dir/src/common.cpp.o: PI/CMakeFiles/bmpi.dir/flags.make
 PI/CMakeFiles/bmpi.dir/src/common.cpp.o: PI/src/common.cpp
 PI/CMakeFiles/bmpi.dir/src/common.cpp.o: PI/CMakeFiles/bmpi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object PI/CMakeFiles/bmpi.dir/src/common.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object PI/CMakeFiles/bmpi.dir/src/common.cpp.o"
 	cd /home/p4/src/behavioral-model/PI && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT PI/CMakeFiles/bmpi.dir/src/common.cpp.o -MF CMakeFiles/bmpi.dir/src/common.cpp.o.d -o CMakeFiles/bmpi.dir/src/common.cpp.o -c /home/p4/src/behavioral-model/PI/src/common.cpp
 
 PI/CMakeFiles/bmpi.dir/src/common.cpp.i: cmake_force
@@ -212,7 +198,7 @@ PI/CMakeFiles/bmpi.dir/src/common.cpp.s: cmake_force
 PI/CMakeFiles/bmpi.dir/src/action_helpers.cpp.o: PI/CMakeFiles/bmpi.dir/flags.make
 PI/CMakeFiles/bmpi.dir/src/action_helpers.cpp.o: PI/src/action_helpers.cpp
 PI/CMakeFiles/bmpi.dir/src/action_helpers.cpp.o: PI/CMakeFiles/bmpi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object PI/CMakeFiles/bmpi.dir/src/action_helpers.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object PI/CMakeFiles/bmpi.dir/src/action_helpers.cpp.o"
 	cd /home/p4/src/behavioral-model/PI && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT PI/CMakeFiles/bmpi.dir/src/action_helpers.cpp.o -MF CMakeFiles/bmpi.dir/src/action_helpers.cpp.o.d -o CMakeFiles/bmpi.dir/src/action_helpers.cpp.o -c /home/p4/src/behavioral-model/PI/src/action_helpers.cpp
 
 PI/CMakeFiles/bmpi.dir/src/action_helpers.cpp.i: cmake_force
@@ -226,7 +212,7 @@ PI/CMakeFiles/bmpi.dir/src/action_helpers.cpp.s: cmake_force
 PI/CMakeFiles/bmpi.dir/src/direct_res_spec.cpp.o: PI/CMakeFiles/bmpi.dir/flags.make
 PI/CMakeFiles/bmpi.dir/src/direct_res_spec.cpp.o: PI/src/direct_res_spec.cpp
 PI/CMakeFiles/bmpi.dir/src/direct_res_spec.cpp.o: PI/CMakeFiles/bmpi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object PI/CMakeFiles/bmpi.dir/src/direct_res_spec.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object PI/CMakeFiles/bmpi.dir/src/direct_res_spec.cpp.o"
 	cd /home/p4/src/behavioral-model/PI && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT PI/CMakeFiles/bmpi.dir/src/direct_res_spec.cpp.o -MF CMakeFiles/bmpi.dir/src/direct_res_spec.cpp.o.d -o CMakeFiles/bmpi.dir/src/direct_res_spec.cpp.o -c /home/p4/src/behavioral-model/PI/src/direct_res_spec.cpp
 
 PI/CMakeFiles/bmpi.dir/src/direct_res_spec.cpp.i: cmake_force
@@ -240,7 +226,7 @@ PI/CMakeFiles/bmpi.dir/src/direct_res_spec.cpp.s: cmake_force
 PI/CMakeFiles/bmpi.dir/src/group_selection.cpp.o: PI/CMakeFiles/bmpi.dir/flags.make
 PI/CMakeFiles/bmpi.dir/src/group_selection.cpp.o: PI/src/group_selection.cpp
 PI/CMakeFiles/bmpi.dir/src/group_selection.cpp.o: PI/CMakeFiles/bmpi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object PI/CMakeFiles/bmpi.dir/src/group_selection.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object PI/CMakeFiles/bmpi.dir/src/group_selection.cpp.o"
 	cd /home/p4/src/behavioral-model/PI && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT PI/CMakeFiles/bmpi.dir/src/group_selection.cpp.o -MF CMakeFiles/bmpi.dir/src/group_selection.cpp.o.d -o CMakeFiles/bmpi.dir/src/group_selection.cpp.o -c /home/p4/src/behavioral-model/PI/src/group_selection.cpp
 
 PI/CMakeFiles/bmpi.dir/src/group_selection.cpp.i: cmake_force
@@ -254,7 +240,7 @@ PI/CMakeFiles/bmpi.dir/src/group_selection.cpp.s: cmake_force
 PI/CMakeFiles/bmpi.dir/src/device_state.cpp.o: PI/CMakeFiles/bmpi.dir/flags.make
 PI/CMakeFiles/bmpi.dir/src/device_state.cpp.o: PI/src/device_state.cpp
 PI/CMakeFiles/bmpi.dir/src/device_state.cpp.o: PI/CMakeFiles/bmpi.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object PI/CMakeFiles/bmpi.dir/src/device_state.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object PI/CMakeFiles/bmpi.dir/src/device_state.cpp.o"
 	cd /home/p4/src/behavioral-model/PI && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT PI/CMakeFiles/bmpi.dir/src/device_state.cpp.o -MF CMakeFiles/bmpi.dir/src/device_state.cpp.o.d -o CMakeFiles/bmpi.dir/src/device_state.cpp.o -c /home/p4/src/behavioral-model/PI/src/device_state.cpp
 
 PI/CMakeFiles/bmpi.dir/src/device_state.cpp.i: cmake_force
@@ -275,7 +261,6 @@ bmpi_OBJECTS = \
 "CMakeFiles/bmpi.dir/src/pi_meter_imp.cpp.o" \
 "CMakeFiles/bmpi.dir/src/pi_learn_imp.cpp.o" \
 "CMakeFiles/bmpi.dir/src/pi_mc_imp.cpp.o" \
-"CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.o" \
 "CMakeFiles/bmpi.dir/src/common.cpp.o" \
 "CMakeFiles/bmpi.dir/src/action_helpers.cpp.o" \
 "CMakeFiles/bmpi.dir/src/direct_res_spec.cpp.o" \
@@ -293,7 +278,6 @@ PI/libbmpi.a: PI/CMakeFiles/bmpi.dir/src/pi_counter_imp.cpp.o
 PI/libbmpi.a: PI/CMakeFiles/bmpi.dir/src/pi_meter_imp.cpp.o
 PI/libbmpi.a: PI/CMakeFiles/bmpi.dir/src/pi_learn_imp.cpp.o
 PI/libbmpi.a: PI/CMakeFiles/bmpi.dir/src/pi_mc_imp.cpp.o
-PI/libbmpi.a: PI/CMakeFiles/bmpi.dir/src/pi_clone_imp.cpp.o
 PI/libbmpi.a: PI/CMakeFiles/bmpi.dir/src/common.cpp.o
 PI/libbmpi.a: PI/CMakeFiles/bmpi.dir/src/action_helpers.cpp.o
 PI/libbmpi.a: PI/CMakeFiles/bmpi.dir/src/direct_res_spec.cpp.o
@@ -301,7 +285,7 @@ PI/libbmpi.a: PI/CMakeFiles/bmpi.dir/src/group_selection.cpp.o
 PI/libbmpi.a: PI/CMakeFiles/bmpi.dir/src/device_state.cpp.o
 PI/libbmpi.a: PI/CMakeFiles/bmpi.dir/build.make
 PI/libbmpi.a: PI/CMakeFiles/bmpi.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Linking CXX static library libbmpi.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/p4/src/behavioral-model/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Linking CXX static library libbmpi.a"
 	cd /home/p4/src/behavioral-model/PI && $(CMAKE_COMMAND) -P CMakeFiles/bmpi.dir/cmake_clean_target.cmake
 	cd /home/p4/src/behavioral-model/PI && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/bmpi.dir/link.txt --verbose=$(VERBOSE)
 

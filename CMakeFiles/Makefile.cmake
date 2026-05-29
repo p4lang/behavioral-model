@@ -250,6 +250,8 @@ set(CMAKE_DEPEND_INFO_FILES
   "tests/CMakeFiles/test_target_parser.dir/DependInfo.cmake"
   "tests/CMakeFiles/test_all.dir/DependInfo.cmake"
   "PI/CMakeFiles/bmpi.dir/DependInfo.cmake"
+  "PI/CMakeFiles/bmpi_simple.dir/DependInfo.cmake"
+  "PI/CMakeFiles/bmpi_psa.dir/DependInfo.cmake"
   "services/CMakeFiles/gengrpc_services.dir/DependInfo.cmake"
   "services/CMakeFiles/bm_grpc_dataplane.dir/DependInfo.cmake"
   "services/CMakeFiles/gengrpc_py_services.dir/DependInfo.cmake"

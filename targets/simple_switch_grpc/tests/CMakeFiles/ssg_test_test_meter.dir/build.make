@@ -149,6 +149,7 @@ targets/simple_switch_grpc/tests/test_meter: /usr/lib/x86_64-linux-gnu/libxxhash
 targets/simple_switch_grpc/tests/test_meter: /usr/lib/x86_64-linux-gnu/libnanomsg.so
 targets/simple_switch_grpc/tests/test_meter: /usr/lib/x86_64-linux-gnu/libpcap.so
 targets/simple_switch_grpc/tests/test_meter: /usr/lib/x86_64-linux-gnu/libjsoncpp.so.1.9.5
+targets/simple_switch_grpc/tests/test_meter: PI/libbmpi_simple.a
 targets/simple_switch_grpc/tests/test_meter: PI/libbmpi.a
 targets/simple_switch_grpc/tests/test_meter: services/libbm_grpc_dataplane.a
 targets/simple_switch_grpc/tests/test_meter: /usr/lib/x86_64-linux-gnu/libgrpc++.so

@@ -165,6 +165,7 @@ targets/psa_switch_grpc/tests/psa_test_basic: /usr/lib/x86_64-linux-gnu/libxxhas
 targets/psa_switch_grpc/tests/psa_test_basic: /usr/lib/x86_64-linux-gnu/libnanomsg.so
 targets/psa_switch_grpc/tests/psa_test_basic: /usr/lib/x86_64-linux-gnu/libpcap.so
 targets/psa_switch_grpc/tests/psa_test_basic: /usr/lib/x86_64-linux-gnu/libjsoncpp.so.1.9.5
+targets/psa_switch_grpc/tests/psa_test_basic: PI/libbmpi_psa.a
 targets/psa_switch_grpc/tests/psa_test_basic: PI/libbmpi.a
 targets/psa_switch_grpc/tests/psa_test_basic: services/libbm_grpc_dataplane.a
 targets/psa_switch_grpc/tests/psa_test_basic: /usr/lib/x86_64-linux-gnu/libgrpc++.so

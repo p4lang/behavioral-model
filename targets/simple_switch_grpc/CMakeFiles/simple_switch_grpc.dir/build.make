@@ -101,6 +101,7 @@ targets/simple_switch_grpc/simple_switch_grpc: /usr/lib/x86_64-linux-gnu/libxxha
 targets/simple_switch_grpc/simple_switch_grpc: /usr/lib/x86_64-linux-gnu/libnanomsg.so
 targets/simple_switch_grpc/simple_switch_grpc: /usr/lib/x86_64-linux-gnu/libpcap.so
 targets/simple_switch_grpc/simple_switch_grpc: /usr/lib/x86_64-linux-gnu/libjsoncpp.so.1.9.5
+targets/simple_switch_grpc/simple_switch_grpc: PI/libbmpi_simple.a
 targets/simple_switch_grpc/simple_switch_grpc: PI/libbmpi.a
 targets/simple_switch_grpc/simple_switch_grpc: services/libbm_grpc_dataplane.a
 targets/simple_switch_grpc/simple_switch_grpc: /usr/lib/x86_64-linux-gnu/libgrpc++.so
