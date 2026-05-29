@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+@builddir@/../psa_switch_grpc --log-console --no-p4 --device-id 99 &
+switch_PID=$!
+# making sure switch is ready
+echo "Sleeping 10 seconds..."
+sleep 10
+
+@builddir@/example
+test_status=$?
+
+kill $switch_PID
+
+exit $test_status

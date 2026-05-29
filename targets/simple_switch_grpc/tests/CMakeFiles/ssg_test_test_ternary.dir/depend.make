@@ -1,0 +1,2 @@
+# Empty dependencies file for ssg_test_test_ternary.
+# This may be replaced when dependencies are built.

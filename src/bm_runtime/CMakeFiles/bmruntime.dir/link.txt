@@ -1,0 +1,2 @@
+/usr/bin/ar qc libbmruntime.a CMakeFiles/bmruntime.dir/server.cpp.o CMakeFiles/bmruntime.dir/SimplePreLAG_server.cpp.o CMakeFiles/bmruntime.dir/SimplePre_server.cpp.o CMakeFiles/bmruntime.dir/Standard_server.cpp.o
+/usr/bin/ranlib libbmruntime.a

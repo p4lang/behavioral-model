@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/test_packet_pipe.dir/test_packet_pipe.cpp.o CMakeFiles/test_packet_pipe.dir/__/learn.cpp.o -o test_packet_pipe  -Wl,-rpath,/usr/local/lib ../libbmapps.a /usr/lib/x86_64-linux-gnu/libnanomsg.so ../../../thrift_src/libruntimestubs.a /usr/local/lib/libthrift.so 

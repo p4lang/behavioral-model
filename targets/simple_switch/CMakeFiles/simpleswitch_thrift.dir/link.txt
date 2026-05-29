@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsimpleswitch_thrift.a "CMakeFiles/simpleswitch_thrift.dir/gen-cpp/bm/simple_switch_constants.cpp.o" "CMakeFiles/simpleswitch_thrift.dir/gen-cpp/bm/simple_switch_types.cpp.o" "CMakeFiles/simpleswitch_thrift.dir/gen-cpp/bm/SimpleSwitch.cpp.o"
+/usr/bin/ranlib libsimpleswitch_thrift.a

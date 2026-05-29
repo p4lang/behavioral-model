@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/learn_client.dir/learn_client.cpp.o CMakeFiles/learn_client.dir/__/__/__/src/bm_apps/learn.cpp.o -o learn_client  -Wl,-rpath,/usr/local/lib ../../../src/bm_apps/libbmapps.a /usr/lib/x86_64-linux-gnu/libnanomsg.so ../../../thrift_src/libruntimestubs.a /usr/local/lib/libthrift.so 

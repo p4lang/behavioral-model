@@ -337,7 +337,8 @@ AC_CONFIG_FILES([Makefile
 		PI/Makefile])
 
 AS_IF([test "$want_pi" = yes], [
-	AC_CONFIG_SUBDIRS([targets/simple_switch_grpc])
+	AC_CONFIG_SUBDIRS([targets/simple_switch_grpc
+                        targets/psa_switch_grpc])
 ])
 
 # Generate other files
