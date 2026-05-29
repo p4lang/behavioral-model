@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 
 if COND_THRIFT
@@ -26,7 +30,7 @@ nodist_EXTRA_libbmall_la_SOURCES = dummy.cpp
 libbmall_la_LIBADD = \
 $(top_builddir)/src/bm_sim/libbmsim.la \
 $(top_builddir)/src/BMI/libbmi.la \
-$(top_builddir)/third_party/jsoncpp/libjson.la
+$(JSONCPP_LIBS)
 
 if COND_THRIFT
 libbmall_la_LIBADD += \
@@ -35,4 +39,4 @@ $(top_builddir)/thrift_src/libruntimestubs.la
 endif
 
 libbmall_la_LIBADD += \
-$(THRIFT_LIB) -lboost_program_options -lboost_filesystem
+$(THRIFT_LIB) -lboost_program_options

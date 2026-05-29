@@ -1,17 +1,7 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+// Copyright 2013-present Barefoot Networks, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 
 /*
  * Antonin Bas (antonin@barefootnetworks.com)
@@ -98,7 +88,8 @@ test() {
     auto status = pi_stub_->SetForwardingPipelineConfig(
         &context, request, &rep);
     assert(status.ok());
-    config->release_p4info();
+    auto *released_p4info = config->release_p4info();
+    assert(released_p4info == &p4info);
   }
 
   auto t_id = get_table_id(p4info, "ipv4_lpm");
@@ -141,7 +132,8 @@ test() {
     p4v1::WriteResponse rep;
     auto status = pi_stub_->Write(&context, request, &rep);
     assert(status.ok());
-    update->release_entity();
+    auto *released_entity = update->release_entity();
+    assert(released_entity == &entity);
   }
 
   auto read_one = [&dev_id, &pi_stub_, &table_entry] () {
@@ -156,7 +148,8 @@ test() {
     reader->Read(&rep);
     auto status = reader->Finish();
     assert(status.ok());
-    entity->release_table_entry();
+    auto *released_table_entry = entity->release_table_entry();
+    assert(released_table_entry == table_entry);
     return rep;
   };
 
@@ -179,7 +172,8 @@ test() {
     p4v1::WriteResponse rep;
     auto status = pi_stub_->Write(&context, request, &rep);
     assert(status.ok());
-    update->release_entity();
+    auto *released_entity = update->release_entity();
+    assert(released_entity == &entity);
   }
 
   // check entry is indeed gone

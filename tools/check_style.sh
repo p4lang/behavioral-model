@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# SPDX-FileCopyrightText: 2015 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 ROOT_DIR=$THIS_DIR/..
@@ -9,7 +13,7 @@ return_status=0
 function run_cpplint() {
     # $1 is directory
     # $2 is root
-    python3 $THIS_DIR/cpplint.py --root=$2 $( find $1 -name \*.h -or -name \*.cpp )
+    python3 $THIS_DIR/cpplint.py --root=$2 $( find $1 -name \*.h -o -name \*.cpp )
     return_status=$(($return_status || $?))
 }
 

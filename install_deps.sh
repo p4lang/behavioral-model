@@ -1,65 +1,58 @@
 #!/bin/bash
-set -e
-if [ ! -r /etc/os-release ]
-then
-    1>&2 echo "No file /etc/os-release.  Cannot determine what OS this is."
-    exit 1
-fi
-source /etc/os-release
 
-if [ "${ID}" = "ubuntu" ]
-then
-    sudo apt-get install -y \
-         automake \
-         cmake \
-         libgmp-dev \
-         libpcap-dev \
-         libboost-dev \
-         libboost-test-dev \
-         libboost-program-options-dev \
-         libboost-system-dev \
-         libboost-filesystem-dev \
-         libboost-thread-dev \
-         libevent-dev \
-         libtool \
-         flex \
-         bison \
-         pkg-config \
-         g++ \
-         libssl-dev \
-         libffi-dev \
-         python3-dev \
-         python3-pip \
-         wget
-elif [ "${ID}" = "fedora" ]
-then
-    sudo dnf install -y \
-         automake \
-         cmake \
-         gmp-devel \
-         libpcap-devel \
-         boost-devel \
-         boost-system \
-         boost-thread \
-         boost-filesystem \
-         boost-test \
-         boost-static \
-         libevent-devel \
-         libtool \
-         flex \
-         bison \
-         pkg-config \
-         g++ \
-         openssl-devel
-fi
+# SPDX-FileCopyrightText: 2015 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+set -e
+
+sudo apt-get install -y \
+    autoconf \
+    automake \
+    bison \
+    build-essential \
+    ccache \
+    cmake \
+    flex \
+    git \
+    g++ \
+    libboost-dev \
+    libboost-program-options-dev \
+    libboost-thread-dev \
+    libevent-dev \
+    libffi-dev \
+    libgmp-dev \
+    libgrpc++-dev \
+    libgrpc-dev \
+    libjsoncpp-dev \
+    libnanomsg-dev \
+    libpcap-dev \
+    libprotobuf-dev \
+    libprotoc-dev \
+    libreadline-dev \
+    libssl-dev \
+    libthrift-dev \
+    libtool \
+    libtool-bin \
+    libxxhash-dev \
+    pkg-config \
+    protobuf-compiler \
+    protobuf-compiler-grpc \
+    python3-dev \
+    python3-pip \
+    python3-six \
+    python3-thrift \
+    thrift-compiler \
+    wget
 
 tmpdir=`mktemp -d -p .`
 cd $tmpdir
 
 bash ../ci/install-thrift.sh
 bash ../ci/install-nanomsg.sh
+bash ../ci/install-pi.sh
 sudo ldconfig
-bash ../ci/install-nnpy.sh
+bash ../ci/install-pynng.sh
 
 cd ..
 sudo rm -rf $tmpdir

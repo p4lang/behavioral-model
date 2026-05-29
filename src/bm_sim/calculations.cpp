@@ -1,17 +1,7 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+// Copyright 2013-present Barefoot Networks, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 
 /*
  * Antonin Bas (antonin@barefootnetworks.com)
@@ -23,8 +13,8 @@
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/packet.h>
 #include <bm/bm_sim/phv.h>
-
 #include <netinet/in.h>
+#include <xxhash.h>
 
 #include <algorithm>
 #include <mutex>
@@ -32,7 +22,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "xxhash.h"
 #include "crc_tables.h"
 #include "extract.h"
 
@@ -61,7 +50,7 @@ BufBuilder::append_payload() {
   with_payload = true;
 }
 
-struct BufBuilder::Deparse : public boost::static_visitor<> {
+struct BufBuilder::Deparse {
   Deparse(const PHV &phv, ByteContainer *buf, int init_offset = 0)
       : phv(phv), buf(buf), nbits(init_offset) { }
 
@@ -116,8 +105,9 @@ BufBuilder::operator()(const Packet &pkt, ByteContainer *buf) const {
   buf->clear();
   const PHV *phv = pkt.get_phv();
   Deparse visitor(*phv, buf);
-  std::for_each(entries.begin(), entries.end(),
-                boost::apply_visitor(visitor));
+  for (const auto &entry : entries) {
+    std::visit(visitor, entry);
+  }
   if (with_payload) {
     size_t curr = buf->size();
     size_t psize = pkt.get_data_size();

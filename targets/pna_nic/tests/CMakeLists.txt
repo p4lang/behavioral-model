@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Define test data directory
 add_definitions(-DTESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
@@ -11,7 +15,6 @@ target_link_libraries(test_parse_pna
   gtest
   test_utils
   bmapps
-  Boost::filesystem
 )
 
 target_include_directories(test_parse_pna PRIVATE

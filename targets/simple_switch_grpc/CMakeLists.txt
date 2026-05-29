@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # FIXME: Makefile.am contains references to WITH_SYSREPO. How is this set?
 
 # Include directories
@@ -58,6 +62,13 @@ target_link_libraries(simple_switch_grpc PRIVATE
   ${PROTOBUF_LIBRARIES}
   ${GRPCPP_LIBRARIES}
 )
+
+if(WITH_THRIFT)
+  target_link_libraries(simple_switch_grpc PRIVATE
+         thrift
+         simpleswitch_thrift
+  )
+endif()
 
 # We follow this tutorial to link with grpc++_reflection:
 # https://github.com/grpc/grpc/blob/master/doc/server_reflection_tutorial.md

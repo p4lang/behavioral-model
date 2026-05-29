@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2017 Seth Fowler
+#
+# SPDX-License-Identifier: Apache-2.0
+
 ARG PARENT_VERSION=latest
 FROM p4lang/pi:${PARENT_VERSION}
 LABEL maintainer="P4 Developers <p4-dev@lists.p4.org>"
@@ -29,14 +33,18 @@ ENV BM_DEPS automake \
             libboost-system-dev \
             libboost-filesystem-dev \
             libboost-thread-dev \
+            libjsoncpp-dev \
             libtool \
+            libxxhash-dev \
             pkg-config
 ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
                     libboost-system1.71.0 \
                     libboost-filesystem1.71.0 \
                     libboost-thread1.71.0 \
                     libgmp10 \
+                    libjsoncpp1 \
                     libpcap0.8 \
+                    libxxhash0 \
                     python3 \
                     python-is-python3
 

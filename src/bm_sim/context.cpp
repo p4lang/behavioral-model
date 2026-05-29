@@ -1,17 +1,7 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+// Copyright 2013-present Barefoot Networks, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 
 /*
  * Antonin Bas (antonin@barefootnetworks.com)
@@ -22,7 +12,9 @@
 
 #include <cstring>
 #include <iostream>
+#include <mutex>
 #include <set>
+#include <shared_mutex>
 #include <string>
 #include <vector>
 
@@ -38,7 +30,7 @@ Context::Context() {
 MatchErrorCode
 Context::mt_get_num_entries(const std::string &table_name,
                             size_t *num_entries) const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   *num_entries = 0;
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
@@ -49,7 +41,7 @@ Context::mt_get_num_entries(const std::string &table_name,
 MatchErrorCode
 Context::mt_clear_entries(const std::string &table_name,
                           bool reset_default_entry) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   abstract_table->reset_state(reset_default_entry);
@@ -63,7 +55,7 @@ Context::mt_add_entry(const std::string &table_name,
                       ActionData action_data,
                       entry_handle_t *handle,
                       int priority) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   auto table = dynamic_cast<MatchTable *>(abstract_table);
@@ -78,7 +70,7 @@ MatchErrorCode
 Context::mt_set_default_action(const std::string &table_name,
                                const std::string &action_name,
                                ActionData action_data) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   auto table = dynamic_cast<MatchTable *>(abstract_table);
@@ -90,7 +82,7 @@ Context::mt_set_default_action(const std::string &table_name,
 
 MatchErrorCode
 Context::mt_reset_default_entry(const std::string &table_name) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   auto table = dynamic_cast<MatchTable *>(abstract_table);
@@ -101,7 +93,7 @@ Context::mt_reset_default_entry(const std::string &table_name) {
 MatchErrorCode
 Context::mt_delete_entry(const std::string &table_name,
                          entry_handle_t handle) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   auto table = dynamic_cast<MatchTable *>(abstract_table);
@@ -114,7 +106,7 @@ Context::mt_modify_entry(const std::string &table_name,
                          entry_handle_t handle,
                          const std::string &action_name,
                          const ActionData action_data) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   auto table = dynamic_cast<MatchTable *>(abstract_table);
@@ -128,7 +120,7 @@ MatchErrorCode
 Context::mt_set_entry_ttl(const std::string &table_name,
                           entry_handle_t handle,
                           unsigned int ttl_ms) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   return abstract_table->set_entry_ttl(handle, ttl_ms);
@@ -148,7 +140,7 @@ MatchErrorCode
 Context::mt_act_prof_add_member(const std::string &act_prof_name,
                                 const std::string &action_name,
                                 ActionData action_data, mbr_hdl_t *mbr) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto act_prof = p4objects_rt->get_action_profile_rt(act_prof_name);
   if (!act_prof) return MatchErrorCode::INVALID_ACTION_PROFILE_NAME;
   const ActionFn *action = p4objects_rt->get_action_for_action_profile_rt(
@@ -160,7 +152,7 @@ Context::mt_act_prof_add_member(const std::string &act_prof_name,
 MatchErrorCode
 Context::mt_act_prof_delete_member(const std::string &act_prof_name,
                                    mbr_hdl_t mbr) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto act_prof = p4objects_rt->get_action_profile_rt(act_prof_name);
   if (!act_prof) return MatchErrorCode::INVALID_ACTION_PROFILE_NAME;
   return act_prof->delete_member(mbr);
@@ -171,7 +163,7 @@ Context::mt_act_prof_modify_member(const std::string &act_prof_name,
                                    mbr_hdl_t mbr,
                                    const std::string &action_name,
                                    ActionData action_data) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto act_prof = p4objects_rt->get_action_profile_rt(act_prof_name);
   if (!act_prof) return MatchErrorCode::INVALID_ACTION_PROFILE_NAME;
   const ActionFn *action = p4objects_rt->get_action_for_action_profile_rt(
@@ -183,7 +175,7 @@ Context::mt_act_prof_modify_member(const std::string &act_prof_name,
 MatchErrorCode
 Context::mt_act_prof_create_group(const std::string &act_prof_name,
                                   grp_hdl_t *grp) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto act_prof = p4objects_rt->get_action_profile_rt(act_prof_name);
   if (!act_prof) return MatchErrorCode::INVALID_ACTION_PROFILE_NAME;
   return act_prof->create_group(grp);
@@ -192,7 +184,7 @@ Context::mt_act_prof_create_group(const std::string &act_prof_name,
 MatchErrorCode
 Context::mt_act_prof_delete_group(const std::string &act_prof_name,
                                   grp_hdl_t grp) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto act_prof = p4objects_rt->get_action_profile_rt(act_prof_name);
   if (!act_prof) return MatchErrorCode::INVALID_ACTION_PROFILE_NAME;
   return act_prof->delete_group(grp);
@@ -201,7 +193,7 @@ Context::mt_act_prof_delete_group(const std::string &act_prof_name,
 MatchErrorCode
 Context::mt_act_prof_add_member_to_group(const std::string &act_prof_name,
                                          mbr_hdl_t mbr, grp_hdl_t grp) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto act_prof = p4objects_rt->get_action_profile_rt(act_prof_name);
   if (!act_prof) return MatchErrorCode::INVALID_ACTION_PROFILE_NAME;
   return act_prof->add_member_to_group(mbr, grp);
@@ -210,7 +202,7 @@ Context::mt_act_prof_add_member_to_group(const std::string &act_prof_name,
 MatchErrorCode
 Context::mt_act_prof_remove_member_from_group(const std::string &act_prof_name,
                                               mbr_hdl_t mbr, grp_hdl_t grp) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto act_prof = p4objects_rt->get_action_profile_rt(act_prof_name);
   if (!act_prof) return MatchErrorCode::INVALID_ACTION_PROFILE_NAME;
   return act_prof->remove_member_from_group(mbr, grp);
@@ -218,7 +210,7 @@ Context::mt_act_prof_remove_member_from_group(const std::string &act_prof_name,
 
 std::vector<ActionProfile::Member>
 Context::mt_act_prof_get_members(const std::string &act_prof_name) const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto act_prof = p4objects_rt->get_action_profile_rt(act_prof_name);
   if (!act_prof) return {};
   return act_prof->get_members();
@@ -227,7 +219,7 @@ Context::mt_act_prof_get_members(const std::string &act_prof_name) const {
 MatchErrorCode
 Context::mt_act_prof_get_member(const std::string &act_prof_name, grp_hdl_t grp,
                                 ActionProfile::Member *member) const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto act_prof = p4objects_rt->get_action_profile_rt(act_prof_name);
   if (!act_prof) return MatchErrorCode::INVALID_ACTION_PROFILE_NAME;
   return act_prof->get_member(grp, member);
@@ -235,7 +227,7 @@ Context::mt_act_prof_get_member(const std::string &act_prof_name, grp_hdl_t grp,
 
 std::vector<ActionProfile::Group>
 Context::mt_act_prof_get_groups(const std::string &act_prof_name) const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto act_prof = p4objects_rt->get_action_profile_rt(act_prof_name);
   if (!act_prof) return {};
   return act_prof->get_groups();
@@ -244,7 +236,7 @@ Context::mt_act_prof_get_groups(const std::string &act_prof_name) const {
 MatchErrorCode
 Context::mt_act_prof_get_group(const std::string &act_prof_name, grp_hdl_t grp,
                                ActionProfile::Group *group) const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto act_prof = p4objects_rt->get_action_profile_rt(act_prof_name);
   if (!act_prof) return MatchErrorCode::INVALID_ACTION_PROFILE_NAME;
   return act_prof->get_group(grp, group);
@@ -257,7 +249,7 @@ Context::mt_indirect_add_entry(
     mbr_hdl_t mbr, entry_handle_t *handle, int priority) {
   MatchErrorCode rc;
   MatchTableIndirect *table;
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   if ((rc = get_mt_indirect(table_name, &table)) != MatchErrorCode::SUCCESS)
     return rc;
   return table->add_entry(match_key, mbr, handle, priority);
@@ -269,7 +261,7 @@ Context::mt_indirect_modify_entry(const std::string &table_name,
                                   mbr_hdl_t mbr) {
   MatchErrorCode rc;
   MatchTableIndirect *table;
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   if ((rc = get_mt_indirect(table_name, &table)) != MatchErrorCode::SUCCESS)
     return rc;
   return table->modify_entry(handle, mbr);
@@ -280,7 +272,7 @@ Context::mt_indirect_delete_entry(const std::string &table_name,
                                   entry_handle_t handle) {
   MatchErrorCode rc;
   MatchTableIndirect *table;
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   if ((rc = get_mt_indirect(table_name, &table)) != MatchErrorCode::SUCCESS)
     return rc;
   return table->delete_entry(handle);
@@ -290,7 +282,7 @@ MatchErrorCode
 Context::mt_indirect_set_entry_ttl(const std::string &table_name,
                                    entry_handle_t handle,
                                    unsigned int ttl_ms) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   return abstract_table->set_entry_ttl(handle, ttl_ms);
@@ -301,7 +293,7 @@ Context::mt_indirect_set_default_member(const std::string &table_name,
                                         mbr_hdl_t mbr) {
   MatchErrorCode rc;
   MatchTableIndirect *table;
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   if ((rc = get_mt_indirect(table_name, &table)) != MatchErrorCode::SUCCESS)
     return rc;
   return table->set_default_member(mbr);
@@ -311,7 +303,7 @@ MatchErrorCode
 Context::mt_indirect_reset_default_entry(const std::string &table_name) {
   MatchErrorCode rc;
   MatchTableIndirect *table;
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   if ((rc = get_mt_indirect(table_name, &table)) != MatchErrorCode::SUCCESS)
     return rc;
   return table->reset_default_entry();
@@ -334,7 +326,7 @@ Context::mt_indirect_ws_add_entry(
     grp_hdl_t grp, entry_handle_t *handle, int priority) {
   MatchErrorCode rc;
   MatchTableIndirectWS *table;
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   if ((rc = get_mt_indirect_ws(table_name, &table)) != MatchErrorCode::SUCCESS)
     return rc;
   return table->add_entry_ws(match_key, grp, handle, priority);
@@ -346,7 +338,7 @@ Context::mt_indirect_ws_modify_entry(const std::string &table_name,
                                      grp_hdl_t grp) {
   MatchErrorCode rc;
   MatchTableIndirectWS *table;
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   if ((rc = get_mt_indirect_ws(table_name, &table)) != MatchErrorCode::SUCCESS)
     return rc;
   return table->modify_entry_ws(handle, grp);
@@ -357,7 +349,7 @@ Context::mt_indirect_ws_set_default_group(const std::string &table_name,
                                           grp_hdl_t grp) {
   MatchErrorCode rc;
   MatchTableIndirectWS *table;
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   if ((rc = get_mt_indirect_ws(table_name, &table)) != MatchErrorCode::SUCCESS)
     return rc;
   return table->set_default_group(grp);
@@ -368,7 +360,7 @@ Context::mt_read_counters(const std::string &table_name,
                           entry_handle_t handle,
                           MatchTableAbstract::counter_value_t *bytes,
                           MatchTableAbstract::counter_value_t *packets) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   return abstract_table->query_counters(handle, bytes, packets);
@@ -376,7 +368,7 @@ Context::mt_read_counters(const std::string &table_name,
 
 MatchErrorCode
 Context::mt_reset_counters(const std::string &table_name) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   return abstract_table->reset_counters();
@@ -387,7 +379,7 @@ Context::mt_write_counters(const std::string &table_name,
                            entry_handle_t handle,
                            MatchTableAbstract::counter_value_t bytes,
                            MatchTableAbstract::counter_value_t packets) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   return abstract_table->write_counters(handle, bytes, packets);
@@ -397,7 +389,7 @@ MatchErrorCode
 Context::mt_set_meter_rates(const std::string &table_name,
                             entry_handle_t handle,
                             const std::vector<Meter::rate_config_t> &configs) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   return abstract_table->set_meter_rates(handle, configs);
@@ -407,7 +399,7 @@ MatchErrorCode
 Context::mt_get_meter_rates(const std::string &table_name,
                             entry_handle_t handle,
                             std::vector<Meter::rate_config_t> *configs) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   return abstract_table->get_meter_rates(handle, configs);
@@ -416,7 +408,7 @@ Context::mt_get_meter_rates(const std::string &table_name,
 MatchErrorCode
 Context::mt_reset_meter_rates(const std::string &table_name,
                               entry_handle_t handle) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   return abstract_table->reset_meter_rates(handle);
@@ -424,7 +416,7 @@ Context::mt_reset_meter_rates(const std::string &table_name,
 
 MatchTableType
 Context::mt_get_type(const std::string &table_name) const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchTableType::NONE;
   return abstract_table->get_table_type();
@@ -433,7 +425,7 @@ Context::mt_get_type(const std::string &table_name) const {
 template <typename T>
 std::vector<typename T::Entry>
 Context::mt_get_entries(const std::string &table_name) const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return {};
   auto table = dynamic_cast<T *>(abstract_table);
@@ -454,7 +446,7 @@ template <typename T>
 MatchErrorCode
 Context::mt_get_entry(const std::string &table_name,
                       entry_handle_t handle, typename T::Entry *entry) const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   auto table = dynamic_cast<T *>(abstract_table);
@@ -477,7 +469,7 @@ template <typename T>
 MatchErrorCode
 Context::mt_get_default_entry(const std::string &table_name,
                               typename T::Entry *default_entry) const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   auto table = dynamic_cast<T *>(abstract_table);
@@ -502,7 +494,7 @@ Context::mt_get_entry_from_key(const std::string &table_name,
                                const std::vector<MatchKeyParam> &match_key,
                                typename T::Entry *entry,
                                int priority) const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto abstract_table = p4objects_rt->get_abstract_match_table_rt(table_name);
   if (!abstract_table) return MatchErrorCode::INVALID_TABLE_NAME;
   auto table = dynamic_cast<T *>(abstract_table);
@@ -528,7 +520,7 @@ Counter::CounterErrorCode
 Context::read_counters(const std::string &counter_name, size_t idx,
                        MatchTableAbstract::counter_value_t *bytes,
                        MatchTableAbstract::counter_value_t *packets) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   CounterArray *counter_array = p4objects_rt->get_counter_array_rt(
       counter_name);
   if (!counter_array) return Counter::INVALID_COUNTER_NAME;
@@ -538,7 +530,7 @@ Context::read_counters(const std::string &counter_name, size_t idx,
 
 Counter::CounterErrorCode
 Context::reset_counters(const std::string &counter_name) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   CounterArray *counter_array = p4objects_rt->get_counter_array_rt(
       counter_name);
   if (!counter_array) return Counter::INVALID_COUNTER_NAME;
@@ -549,7 +541,7 @@ Counter::CounterErrorCode
 Context::write_counters(const std::string &counter_name, size_t idx,
                         MatchTableAbstract::counter_value_t bytes,
                         MatchTableAbstract::counter_value_t packets) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   CounterArray *counter_array = p4objects_rt->get_counter_array_rt(
       counter_name);
   if (!counter_array) return Counter::INVALID_COUNTER_NAME;
@@ -561,7 +553,7 @@ Context::MeterErrorCode
 Context::meter_array_set_rates(
     const std::string &meter_name,
     const std::vector<Meter::rate_config_t> &configs) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   MeterArray *meter_array = p4objects_rt->get_meter_array_rt(meter_name);
   if (!meter_array) return Meter::INVALID_METER_NAME;
   return meter_array->set_rates(configs);
@@ -571,7 +563,7 @@ Context::MeterErrorCode
 Context::meter_set_rates(
     const std::string &meter_name, size_t idx,
     const std::vector<Meter::rate_config_t> &configs) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   MeterArray *meter_array = p4objects_rt->get_meter_array_rt(meter_name);
   if (!meter_array) return Meter::INVALID_METER_NAME;
   if (idx >= meter_array->size()) return Meter::INVALID_INDEX;
@@ -582,7 +574,7 @@ Context::MeterErrorCode
 Context::meter_get_rates(
     const std::string &meter_name, size_t idx,
     std::vector<Meter::rate_config_t> *configs) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   MeterArray *meter_array = p4objects_rt->get_meter_array_rt(meter_name);
   if (!meter_array) return Meter::INVALID_METER_NAME;
   if (idx >= meter_array->size()) return Meter::INVALID_INDEX;
@@ -592,7 +584,7 @@ Context::meter_get_rates(
 
 Context::MeterErrorCode
 Context::meter_reset_rates(const std::string &meter_name, size_t idx) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   MeterArray *meter_array = p4objects_rt->get_meter_array_rt(meter_name);
   if (!meter_array) return Meter::INVALID_METER_NAME;
   if (idx >= meter_array->size()) return Meter::INVALID_INDEX;
@@ -602,7 +594,7 @@ Context::meter_reset_rates(const std::string &meter_name, size_t idx) {
 Context::RegisterErrorCode
 Context::register_read(const std::string &register_name,
                        const size_t idx, Data *value) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   RegisterArray *register_array = p4objects_rt->get_register_array_rt(
       register_name);
   if (!register_array) return Register::INVALID_REGISTER_NAME;
@@ -614,7 +606,7 @@ Context::register_read(const std::string &register_name,
 
 std::vector<Data>
 Context::register_read_all(const std::string &register_name) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto register_array = p4objects_rt->get_register_array_rt(register_name);
   if (!register_array) return {};
   auto register_lock = register_array->unique_lock();
@@ -627,7 +619,7 @@ Context::register_read_all(const std::string &register_name) {
 Context::RegisterErrorCode
 Context::register_write(const std::string &register_name,
                         const size_t idx, Data value) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   RegisterArray *register_array = p4objects_rt->get_register_array_rt(
       register_name);
   if (!register_array) return Register::INVALID_REGISTER_NAME;
@@ -641,7 +633,7 @@ Context::RegisterErrorCode
 Context::register_write_range(const std::string &register_name,
                               const size_t start, const size_t end,
                               Data value) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   RegisterArray *register_array = p4objects_rt->get_register_array_rt(
       register_name);
   if (!register_array) return Register::INVALID_REGISTER_NAME;
@@ -655,7 +647,7 @@ Context::register_write_range(const std::string &register_name,
 
 Context::RegisterErrorCode
 Context::register_reset(const std::string &register_name) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   RegisterArray *register_array = p4objects_rt->get_register_array_rt(
       register_name);
   if (!register_array) return Register::INVALID_REGISTER_NAME;
@@ -666,7 +658,7 @@ Context::register_reset(const std::string &register_name) {
 ParseVSet::ErrorCode
 Context::parse_vset_add(const std::string &parse_vset_name,
                         const ByteContainer &value) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   ParseVSet *parse_vset = p4objects_rt->get_parse_vset_rt(parse_vset_name);
   if (!parse_vset) return ParseVSet::ErrorCode::INVALID_PARSE_VSET_NAME;
   parse_vset->add(value);
@@ -676,7 +668,7 @@ Context::parse_vset_add(const std::string &parse_vset_name,
 ParseVSet::ErrorCode
 Context::parse_vset_remove(const std::string &parse_vset_name,
                            const ByteContainer &value) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto *parse_vset = p4objects_rt->get_parse_vset_rt(parse_vset_name);
   if (!parse_vset) return ParseVSet::ErrorCode::INVALID_PARSE_VSET_NAME;
   parse_vset->remove(value);
@@ -686,7 +678,7 @@ Context::parse_vset_remove(const std::string &parse_vset_name,
 ParseVSet::ErrorCode
 Context::parse_vset_get(const std::string &parse_vset_name,
                         std::vector<ByteContainer> *values) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto *parse_vset = p4objects_rt->get_parse_vset_rt(parse_vset_name);
   if (!parse_vset) return ParseVSet::ErrorCode::INVALID_PARSE_VSET_NAME;
   *values = parse_vset->get();
@@ -695,7 +687,7 @@ Context::parse_vset_get(const std::string &parse_vset_name,
 
 ParseVSet::ErrorCode
 Context::parse_vset_clear(const std::string &parse_vset_name) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto *parse_vset = p4objects_rt->get_parse_vset_rt(parse_vset_name);
   if (!parse_vset) return ParseVSet::ErrorCode::INVALID_PARSE_VSET_NAME;
   parse_vset->clear();
@@ -706,7 +698,7 @@ P4Objects::IdLookupErrorCode
 Context::p4objects_id_from_name(
     P4Objects::ResourceType type, const std::string &name,
     p4object_id_t *id) const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   return p4objects_rt->id_from_name(type, name, id);
 }
 
@@ -715,7 +707,7 @@ CustomCrcErrorCode
 Context::set_crc_custom_parameters(
     const std::string &calc_name,
     const typename CustomCrcMgr<T>::crc_config_t &crc_config) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto *named_calculation = p4objects_rt->get_named_calculation(calc_name);
   if (!named_calculation) return CustomCrcErrorCode::INVALID_CALCULATION_NAME;
   return CustomCrcMgr<T>::update_config(named_calculation, crc_config);
@@ -732,7 +724,7 @@ ToeplitzErrorCode
 Context::set_toeplitz_key(
     const std::string &calc_name,
     const ToeplitzMgr::key_t &key) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto *named_calculation = p4objects_rt->get_named_calculation(calc_name);
   if (!named_calculation) return ToeplitzErrorCode::INVALID_CALCULATION_NAME;
   return ToeplitzMgr::update_key(named_calculation, key);
@@ -742,7 +734,7 @@ bool
 Context::set_group_selector(
     const std::string &act_prof_name,
     std::shared_ptr<ActionProfile::GroupSelectionIface> selector) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   auto act_prof = p4objects_rt->get_action_profile_rt(act_prof_name);
   if (!act_prof) return false;
   act_prof->set_group_selector(selector);
@@ -768,7 +760,7 @@ Context::get_phv_factory() {
 
 ExternSafeAccess
 Context::get_extern_instance(const std::string &name) {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   return ExternSafeAccess(std::move(lock),
                           p4objects_rt->get_extern_instance_rt(name));
 }
@@ -815,7 +807,7 @@ Context::load_new_config(
     LookupStructureFactory *lookup_factory,
     const std::set<header_field_pair> &required_fields,
     const ForceArith &arith_objects) {
-  boost::unique_lock<boost::shared_mutex> lock(request_mutex);
+  std::unique_lock<std::shared_mutex> lock(request_mutex);
   // check that there is no ongoing config swap
   if (p4objects != p4objects_rt) return ErrorCode::ONGOING_SWAP;
   p4objects_rt = std::make_shared<P4Objects>(std::cout, true);
@@ -826,7 +818,7 @@ Context::load_new_config(
 
 Context::ErrorCode
 Context::swap_configs() {
-  boost::unique_lock<boost::shared_mutex> lock(request_mutex);
+  std::unique_lock<std::shared_mutex> lock(request_mutex);
   // no ongoing swap
   if (p4objects == p4objects_rt) return ErrorCode::NO_ONGOING_SWAP;
   swap_ordered = true;
@@ -836,14 +828,14 @@ Context::swap_configs() {
 
 Context::ErrorCode
 Context::reset_state() {
-  boost::unique_lock<boost::shared_mutex> lock(request_mutex);
+  std::unique_lock<std::shared_mutex> lock(request_mutex);
   p4objects_rt->reset_state();
   return ErrorCode::SUCCESS;
 }
 
 Context::ErrorCode
 Context::serialize(std::ostream *out) {
-  boost::unique_lock<boost::shared_mutex> lock(request_mutex);
+  std::unique_lock<std::shared_mutex> lock(request_mutex);
   p4objects_rt->serialize(out);
   return ErrorCode::SUCCESS;
 }
@@ -852,7 +844,7 @@ Context::serialize(std::ostream *out) {
 // JSON, so no traffic yet
 Context::ErrorCode
 Context::deserialize(std::istream *in) {
-  boost::unique_lock<boost::shared_mutex> lock(request_mutex);
+  std::unique_lock<std::shared_mutex> lock(request_mutex);
   // not really necessary for now (if done before traffic and before RPC server
   // running)
   // p4objects_rt->reset_state();
@@ -863,7 +855,7 @@ Context::deserialize(std::istream *in) {
 int
 Context::do_swap() {
   if (!swap_ordered) return 1;
-  boost::unique_lock<boost::shared_mutex> lock(request_mutex);
+  std::unique_lock<std::shared_mutex> lock(request_mutex);
   p4objects = p4objects_rt;
   swap_ordered = false;
   send_swap_status_notification(SwapStatus::SWAP_COMPLETED);
@@ -872,13 +864,13 @@ Context::do_swap() {
 
 ConfigOptionMap
 Context::get_config_options() const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   return p4objects->get_config_options();
 }
 
 ErrorCodeMap
 Context::get_error_codes() const {
-  boost::shared_lock<boost::shared_mutex> lock(request_mutex);
+  std::shared_lock<std::shared_mutex> lock(request_mutex);
   return p4objects->get_error_codes();
 }
 

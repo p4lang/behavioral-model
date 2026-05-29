@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Anirudh Sivaraman
+#
+# SPDX-License-Identifier: Apache-2.0
+
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 
 if COND_TARGETS
@@ -20,7 +24,9 @@ if COND_PI
     MAYBE_PI = PI services
 endif
 
-# simple_switch depends on libbmpi so PI needs to appear first
+# The targets directory (simple_switch, etc.) depends on libbmpi (from PI) and
+# gtest (from third_party), so those must appear before MAYBE_TARGETS in this
+# list.
 SUBDIRS = $(MAYBE_THRIFT) third_party src include \
 $(MAYBE_TESTS) $(MAYBE_PI) $(MAYBE_TARGETS) tools $(MAYBE_PDFIXED)
 
@@ -37,10 +43,10 @@ autogen.sh
 
 # 'ci' files, used by install_deps.sh to install some dependencies
 EXTRA_DIST += \
-ci/check-nnpy.py \
+ ci/check-pynng.py \
 ci/common.sh \
 ci/install-nanomsg.sh \
-ci/install-nnpy.sh \
+ ci/install-pynng.sh \
 ci/install-thrift.sh
 
 # mininet directory

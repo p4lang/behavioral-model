@@ -1,17 +1,7 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+// Copyright 2013-present Barefoot Networks, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 
 /*
  * Antonin Bas (antonin@barefootnetworks.com)
@@ -27,11 +17,10 @@
 #include <iostream>
 #include <iterator>  // for std::distance
 #include <mutex>
+#include <optional>
 #include <regex>
 #include <string>
 #include <unordered_map>
-
-#include <boost/optional.hpp>
 
 extern "C" {
 #include "sysrepo.h"
@@ -46,20 +35,20 @@ using clock = std::chrono::high_resolution_clock;
 // This struct is used to store the information needed to provide operational
 // state to sysrepo. These YANG nodes are stubbed out in bmv2 so we don't have
 // any bmv2 API to call to retrieve the state.
-// We use boost::optional for leaves that don't have defaults.
+// We use std::optional for leaves that don't have defaults.
 struct PortState {
   // has the interface been created (name node)?
   // useful because we never remove ports from the PortStateMap: leaf values
   // are changed out-of-order so it's better not to make any assumptions
   bool valid{false};
   const std::string type{"iana-if-type:ethernetCsmacd"};
-  boost::optional<uint16_t> mtu;
-  boost::optional<std::string> description;
+  std::optional<uint16_t> mtu;
+  std::optional<std::string> description;
   bool enabled{false};
-  boost::optional<std::string> mac_address;
+  std::optional<std::string> mac_address;
   bool auto_negotiate{true};
-  boost::optional<std::string> duplex_mode;
-  boost::optional<std::string> port_speed;
+  std::optional<std::string> duplex_mode;
+  std::optional<std::string> port_speed;
   bool enable_flow_control{false};
   // We use this for a very naive implementation of carrier transitions and last
   // change. Every time the StateProvider is invoked, we check if the new
@@ -68,7 +57,7 @@ struct PortState {
   // fairly often. An alternative implementation would be to register a status
   // CB with DevMgr / PortMonitor.
   size_t carrier_transitions{0u};
-  boost::optional<std::string> last_oper_status;
+  std::optional<std::string> last_oper_status;
   clock::time_point last_change_tp{clock::now()};
   clock::time_point last_clear_tp{clock::now()};
 

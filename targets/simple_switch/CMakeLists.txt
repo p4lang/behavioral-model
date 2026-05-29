@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Include directories
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -21,9 +25,8 @@ add_library(simpleswitch STATIC
 target_link_libraries(simpleswitch
   bmsim
   bmi
-  jsoncpp
+  JsonCpp::JsonCpp
   Boost::program_options
-  Boost::filesystem
   ${THRIFT_LIBRARIES}
 )
 

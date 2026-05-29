@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Glen Gibb
+#
+# SPDX-License-Identifier: Apache-2.0
+
 if(WITH_NANOMSG)
   add_subdirectory(learn_client)
 endif()
@@ -13,9 +17,8 @@ target_link_libraries(l2_switch
   runtimestubs
   bmsim
   bmi
-  jsoncpp
+  JsonCpp::JsonCpp
   Boost::program_options
-  Boost::filesystem
   ${THRIFT_LIBRARIES}
 )
 

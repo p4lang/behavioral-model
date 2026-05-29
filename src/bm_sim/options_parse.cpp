@@ -1,17 +1,7 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+// Copyright 2013-present Barefoot Networks, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 
 /*
  * Antonin Bas (antonin@barefootnetworks.com)
@@ -25,18 +15,18 @@
 #include <bm/config.h>
 
 #include <cassert>
+#include <filesystem>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include "version.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace bm {
 
@@ -128,6 +118,11 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
        "'trace', 'debug', 'info', 'warn', 'error', off'; default is 'trace'")
       ("log-flush", "If used with '--log-file', the logger will flush to disk "
        "after every log message")
+      ("log-file-max-size", po::value<size_t>(),
+       "Maximum size of a single log file (in bytes) before rotation; "
+       "default is 5242880 (5 MB)")
+      ("log-file-max-files", po::value<size_t>(),
+       "Maximum number of rotated backup log files to keep; default is 3")
 #ifdef BM_NANOMSG_ON
       ("notifications-addr", po::value<std::string>(),
        "Specify the nanomsg address to use for notifications "
@@ -329,6 +324,28 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
     }
   }
 
+  if (vm.count("log-file-max-size")) {
+    if (!vm.count("log-file")) {
+      outstream << "Ignoring --log-file-max-size option because --log-file "
+                << "not specified\n";
+    } else {
+      log_max_size = vm["log-file-max-size"].as<size_t>();
+      if (log_max_size == 0) {
+        outstream << "Error: --log-file-max-size must be greater than 0\n";
+        exit(1);
+      }
+    }
+  }
+
+  if (vm.count("log-file-max-files")) {
+    if (!vm.count("log-file")) {
+      outstream << "Ignoring --log-file-max-files option because --log-file "
+                << "not specified\n";
+    } else {
+      log_max_files = vm["log-file-max-files"].as<size_t>();
+    }
+  }
+
   if (vm.count("dump-packet-data")) {
     dump_packet_data = vm["dump-packet-data"].as<size_t>();
     if (dump_packet_data > 0 && log_level > Logger::LogLevel::INFO) {
@@ -414,6 +431,9 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
       outstream << "Target parser returned an error\n";
     }
   }
+
+  warn_on_invalid_hdr_read = vm.count("warn-on-invalid-hdr-read") > 0;
+  ret_zero_on_invalid_hdr_read = vm.count("ret-zero-on-invalid-hdr-read") > 0;
 }
 
 void

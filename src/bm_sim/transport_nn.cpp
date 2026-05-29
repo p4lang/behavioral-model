@@ -1,17 +1,7 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+// Copyright 2013-present Barefoot Networks, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 
 /*
  * Antonin Bas (antonin@barefootnetworks.com)
@@ -29,6 +19,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace bm {
 
@@ -75,21 +66,19 @@ class TransportNanomsg : public TransportIface {
       const override {
     size_t num_msgs = msgs.size();
     if (num_msgs == 0) return 0;
-    struct nn_msghdr msghdr;
-    std::memset(&msghdr, 0, sizeof(msghdr));
-    struct nn_iovec iov[num_msgs];
-    int i = 0;
+    struct nn_msghdr msghdr{};
+    std::vector<nn_iovec> iov(num_msgs);
+    std::vector<std::vector<char>> payloads;
+    payloads.reserve(num_msgs);
+    size_t i = 0;
     for (const auto &msg : msgs) {
-      // wish I could write this, but string.data() return const char *
-      // iov[i].iov_base = msg.data();
-      std::unique_ptr<char[]> data(new char[msg.size()]);
-      msg.copy(data.get(), msg.size());
-      iov[i].iov_base = data.get();
-      iov[i].iov_len = msg.size();
+      payloads.emplace_back(msg.begin(), msg.end());
+      iov[i].iov_base = payloads.back().data();
+      iov[i].iov_len = payloads.back().size();
       i++;
     }
-    msghdr.msg_iov = iov;
-    msghdr.msg_iovlen = num_msgs;
+    msghdr.msg_iov = iov.data();
+    msghdr.msg_iovlen = static_cast<int>(num_msgs);
     s.sendmsg(&msghdr, 0);
     return 0;
   }
@@ -97,17 +86,16 @@ class TransportNanomsg : public TransportIface {
   int send_msgs_(const std::initializer_list<MsgBuf> &msgs) const override {
     size_t num_msgs = msgs.size();
     if (num_msgs == 0) return 0;
-    struct nn_msghdr msghdr;
-    std::memset(&msghdr, 0, sizeof(msghdr));
-    struct nn_iovec iov[num_msgs];
-    int i = 0;
+    struct nn_msghdr msghdr{};
+    std::vector<nn_iovec> iov(num_msgs);
+    size_t i = 0;
     for (const auto &msg : msgs) {
       iov[i].iov_base = msg.buf;
       iov[i].iov_len = msg.len;
       i++;
     }
-    msghdr.msg_iov = iov;
-    msghdr.msg_iovlen = num_msgs;
+    msghdr.msg_iov = iov.data();
+    msghdr.msg_iovlen = static_cast<int>(num_msgs);
     s.sendmsg(&msghdr, 0);
     return 0;
   }

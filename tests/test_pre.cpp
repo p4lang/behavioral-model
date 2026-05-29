@@ -1,17 +1,7 @@
-/* Copyright 2013-present Barefoot Networks, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+// Copyright 2013-present Barefoot Networks, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
 
 /*
  * Srikrishna Gopu (krishna@barefootnetworks.com)
@@ -434,4 +424,88 @@ TEST(McSimplePreLAG, LAGEmptyMembership) {
   McSimplePre::McIn ingress_info{mgid};
   auto egress_info = pre.replicate(ingress_info);
   ASSERT_EQ(0u, egress_info.size());
+}
+
+TEST(McSimplePre, ConfigurableLimits) {
+  // Create a PRE with very small limits
+  McSimplePre pre(2 /* mgid_table_size */,
+                  2 /* l1_max_entries */,
+                  2 /* l2_max_entries */);
+
+  McSimplePre::mgrp_hdl_t mgrp_hdl1, mgrp_hdl2, mgrp_hdl3;
+  McSimplePre::McReturnCode rc;
+
+  // Create 2 groups - should succeed (limit is 2)
+  rc = pre.mc_mgrp_create(1, &mgrp_hdl1);
+  ASSERT_EQ(rc, McSimplePre::SUCCESS);
+  rc = pre.mc_mgrp_create(2, &mgrp_hdl2);
+  ASSERT_EQ(rc, McSimplePre::SUCCESS);
+
+  // 3rd group should fail with TABLE_FULL
+  rc = pre.mc_mgrp_create(3, &mgrp_hdl3);
+  ASSERT_EQ(rc, McSimplePre::TABLE_FULL);
+
+  // Create 2 nodes - should succeed (l1 limit is 2)
+  McSimplePre::l1_hdl_t l1_hdl1, l1_hdl2, l1_hdl3;
+  McSimplePre::PortMap port_map;
+  port_map[1] = 1;
+
+  rc = pre.mc_node_create(0x100, port_map, &l1_hdl1);
+  ASSERT_EQ(rc, McSimplePre::SUCCESS);
+  rc = pre.mc_node_create(0x101, port_map, &l1_hdl2);
+  ASSERT_EQ(rc, McSimplePre::SUCCESS);
+
+  // 3rd node should fail with TABLE_FULL
+  rc = pre.mc_node_create(0x102, port_map, &l1_hdl3);
+  ASSERT_EQ(rc, McSimplePre::TABLE_FULL);
+}
+
+TEST(McSimplePre, DefaultLimits) {
+  // Default constructor should use the original hardcoded values
+  McSimplePre pre;
+
+  McSimplePre::McReturnCode rc;
+  McSimplePre::mgrp_hdl_t mgrp_hdl;
+
+  // Should be able to create at least one group (limit is 4096 by default)
+  rc = pre.mc_mgrp_create(1, &mgrp_hdl);
+  ASSERT_EQ(rc, McSimplePre::SUCCESS);
+
+  // Clean up
+  rc = pre.mc_mgrp_destroy(mgrp_hdl);
+  ASSERT_EQ(rc, McSimplePre::SUCCESS);
+}
+
+TEST(McSimplePreLAG, ConfigurableLimits) {
+  // Create a PRE LAG with small limits
+  McSimplePreLAG pre(2 /* mgid_table_size */,
+                     2 /* l1_max_entries */,
+                     2 /* l2_max_entries */);
+
+  McSimplePre::mgrp_hdl_t mgrp_hdl1, mgrp_hdl2, mgrp_hdl3;
+  McSimplePre::McReturnCode rc;
+
+  // Create 2 groups - should succeed
+  rc = pre.mc_mgrp_create(1, &mgrp_hdl1);
+  ASSERT_EQ(rc, McSimplePre::SUCCESS);
+  rc = pre.mc_mgrp_create(2, &mgrp_hdl2);
+  ASSERT_EQ(rc, McSimplePre::SUCCESS);
+
+  // 3rd group should fail with TABLE_FULL
+  rc = pre.mc_mgrp_create(3, &mgrp_hdl3);
+  ASSERT_EQ(rc, McSimplePre::TABLE_FULL);
+
+  // Create 2 nodes with LAG - should succeed
+  McSimplePreLAG::l1_hdl_t l1_hdl1, l1_hdl2, l1_hdl3;
+  McSimplePreLAG::LagMap lag_map;
+  lag_map[1] = 1;
+
+  rc = pre.mc_node_create(0x100, {}, lag_map, &l1_hdl1);
+  ASSERT_EQ(rc, McSimplePre::SUCCESS);
+  rc = pre.mc_node_create(0x101, {}, lag_map, &l1_hdl2);
+  ASSERT_EQ(rc, McSimplePre::SUCCESS);
+
+  // 3rd node should fail with TABLE_FULL
+  rc = pre.mc_node_create(0x102, {}, lag_map, &l1_hdl3);
+  ASSERT_EQ(rc, McSimplePre::TABLE_FULL);
 }

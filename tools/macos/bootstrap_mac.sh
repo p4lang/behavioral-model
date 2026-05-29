@@ -1,5 +1,9 @@
 #! /bin/bash
 
+# SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 set -e
 set -x
 
@@ -54,8 +58,7 @@ brew install nanomsg
 # # scapy
 pip install scapy
 
-# nnpy
-/usr/local/bin/pip install pycparser
-brew install ${brews_dir}/nnpy.rb
+# pynng
+/usr/local/bin/pip install pynng==0.9.0
 
 /usr/local/bin/pip install PyYAML

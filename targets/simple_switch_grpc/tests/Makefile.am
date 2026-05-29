@@ -1,7 +1,8 @@
-ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
+# SPDX-FileCopyrightText: 2017 Barefoot Networks, Inc.
+#
+# SPDX-License-Identifier: Apache-2.0
 
-# Ensures that gtest has been built
-SUBDIRS = ../../../third_party
+ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 
 # for deprecated Protobuf fields
 AM_CXXFLAGS += -Wno-error=deprecated-declarations
