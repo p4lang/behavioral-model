@@ -1,5 +1,4 @@
 #! /bin/bash
-
 # SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -45,6 +44,7 @@ REQUIRED_PACKAGES=(
     coreutils
     gmp
     nanomsg
+    thrift
     python3
 )
 
