@@ -64,3 +64,15 @@ jobs:
         brew list pkg-config
         python3 --version
         pip3 --version
+
+    - name: Build BMv2
+      run: |
+        # Ensure Homebrew bison is used instead of system bison
+        export PATH="$(brew --prefix bison)/bin:$PATH"
+        # Ensure Homebrew openssl is visible to the build system
+        export PKG_CONFIG_PATH="$(brew --prefix openssl)/lib/pkgconfig:$PKG_CONFIG_PATH"
+        export LDFLAGS="-L$(brew --prefix openssl)/lib"
+        export CPPFLAGS="-I$(brew --prefix openssl)/include"
+        ./autogen.sh
+        ./configure
+        make -j$(sysctl -n hw.logicalcpu)
