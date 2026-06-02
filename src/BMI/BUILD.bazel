@@ -14,8 +14,8 @@ cc_library(
         "BMI/bmi_port.h",
         "bmi_interface.h",
     ],
-    includes = ["."],
     local_defines = ["WITH_PCAP_FIX"],
+    strip_include_prefix = "",
     visibility = ["//visibility:public"],
     deps = ["@libpcap"],
 )

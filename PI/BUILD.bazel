@@ -11,8 +11,8 @@ cc_library(
         "src/*.h",
     ]),
     hdrs = ["bm/PI/pi.h"],
-    includes = ["."],
     local_defines = ["WITH_SIMPLE_SWITCH"],
+    strip_include_prefix = "",
     visibility = ["//visibility:public"],
     deps = [
         "//:bm_headers",
