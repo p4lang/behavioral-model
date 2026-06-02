@@ -14,7 +14,7 @@ cc_library(
         "register_access.h",
         "simple_switch.h",
     ],
-    strip_include_prefix = "",
+    includes = ["."],
     visibility = ["//visibility:public"],
     deps = [
         "//:bm_headers",

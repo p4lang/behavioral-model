@@ -9,7 +9,7 @@ cc_library(
     name = "simpleswitchgrpc",
     srcs = ["switch_runner.cpp"],
     hdrs = ["switch_runner.h"],
-    strip_include_prefix = "",
+    includes = ["."],
     visibility = ["//visibility:public"],
     deps = [
         "//:bm_headers",

@@ -51,6 +51,6 @@ expand_template(
 cc_library(
     name = "bm_headers",
     hdrs = glob(["include/bm/**/*.h"]) + [":config_h"],
-    strip_include_prefix = "include",
+    includes = ["include"],
     visibility = ["//visibility:public"],
 )
