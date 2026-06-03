@@ -3,9 +3,19 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
+load("@package_metadata//licenses:defs.bzl", "license")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
-exports_files(["VERSION"])
+exports_files([
+    "LICENSE",
+    "VERSION",
+])
+
+license(
+    name = "license",
+    kind = "@package_metadata//licenses/spdx:Apache-2.0",
+    text = "LICENSE",
+)
 
 expand_template(
     name = "config_h",
