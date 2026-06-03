@@ -45,6 +45,7 @@ RUN apt-get update -qq && \
     mkdir -p build && cd build && \
     cmake -DENABLE_DEBUGGER=ON .. && \
     cmake --build . -j$(nproc) && \
+    ctest --output-on-failure && \
     cmake --install . && cd .. && \
     ldconfig && \
     (test "$IMAGE_TYPE" = "build" && \
