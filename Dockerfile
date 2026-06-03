@@ -53,6 +53,7 @@ RUN apt-get update -qq && \
     if [ "$GCOV" != "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_COVERAGE=ON -DENABLE_WERROR=ON ..; fi && \
     if [ "$GCOV" = "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..; fi && \
     cmake --build . -j$(nproc) && \
+    ctest --output-on-failure && \
     cmake --install . && cd .. && \
     ldconfig && \
     (test "$IMAGE_TYPE" = "build" && \
