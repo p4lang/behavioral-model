@@ -45,6 +45,7 @@ REQUIRED_PACKAGES=(
     gmp
     nanomsg
     thrift
+    xxhash
     python3
 )
 
