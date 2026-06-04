@@ -6,16 +6,21 @@ load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("@package_metadata//licenses:defs.bzl", "license")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
-exports_files([
-    "LICENSE",
-    "VERSION",
-])
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:public"],
+)
 
 license(
     name = "license",
     kind = "@package_metadata//licenses/spdx:Apache-2.0",
     text = "LICENSE",
 )
+
+exports_files([
+    "LICENSE",
+    "VERSION",
+])
 
 expand_template(
     name = "config_h",
@@ -62,5 +67,4 @@ cc_library(
     name = "bm_headers",
     hdrs = glob(["include/bm/**/*.h"]) + [":config_h"],
     includes = ["include"],
-    visibility = ["//visibility:public"],
 )

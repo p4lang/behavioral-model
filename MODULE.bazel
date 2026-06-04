@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 module(
-    name = "behavioral-model",
+    name = "behavioral_model",
     version = "1.15.3",
     bazel_compatibility = [">=7.0.0"],
 )

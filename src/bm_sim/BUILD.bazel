@@ -4,6 +4,11 @@
 
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
+package(
+    default_visibility = ["//visibility:public"],
+    licenses = ["notice"],
+)
+
 genrule(
     name = "version_cpp",
     srcs = [
@@ -28,7 +33,6 @@ cc_library(
     copts = ["-Isrc/bm_sim"],
     defines = ["HAVE_OPENSSL"],
     linkopts = ["-ldl"],
-    visibility = ["//visibility:public"],
     deps = [
         "//:bm_headers",
         "//src/BMI:bmi",

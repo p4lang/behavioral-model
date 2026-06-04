@@ -4,6 +4,11 @@
 
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
+package(
+    default_visibility = ["//visibility:public"],
+    licenses = ["notice"],
+)
+
 cc_library(
     name = "bmi",
     srcs = [
@@ -16,6 +21,5 @@ cc_library(
     ],
     includes = ["."],
     local_defines = ["WITH_PCAP_FIX"],
-    visibility = ["//visibility:public"],
     deps = ["@libpcap"],
 )
