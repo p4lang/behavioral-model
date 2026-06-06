@@ -2,55 +2,60 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
-_COMMON_SRCS = [
-    "base_test.cpp",
-    "base_test.h",
-    "main.cpp",
-    "utils.cpp",
-    "utils.h",
-]
-
-_COMMON_DEPS = [
-    "//targets/simple_switch_grpc:simpleswitchgrpc",
-    "//targets/simple_switch:simpleswitch",
-    "//services:bm_grpc_dataplane",
-    "//services:dataplane_interface_cc_proto",
-    "@googletest//:gtest",
-    "@com_github_grpc_grpc//:grpc++",
-    "@com_github_p4lang_pi//:pi",
-    "@com_github_p4lang_pi//:pip4info",
-    "@com_github_p4lang_pi//proto/frontend:pifeproto",
-    "@com_github_p4lang_pi//proto/server:piserver",
-    "@com_google_protobuf//:protobuf",
-    "@com_github_p4lang_p4runtime//proto/p4/v1:p4runtime_cc_grpc",
-    "@com_github_p4lang_p4runtime//proto/p4/config/v1:p4info_cc_proto",
-    "@com_google_googleapis//google/rpc:code_cc_proto",
-]
+cc_library(
+    name = "test_common",
+    srcs = [
+        "base_test.cpp",
+        "main.cpp",
+        "utils.cpp",
+    ],
+    hdrs = [
+        "base_test.h",
+        "utils.h",
+    ],
+    defines = ["TESTDATADIR=\\\"" + package_name() + "/testdata\\\""],
+    deps = [
+        "//services:bm_grpc_dataplane",
+        "//services:dataplane_interface_cc_proto",
+        "//targets/simple_switch:simpleswitch",
+        "//targets/simple_switch_grpc:simpleswitchgrpc",
+        "@com_github_grpc_grpc//:grpc++",
+        "@com_github_p4lang_p4runtime//proto/p4/config/v1:p4info_cc_proto",
+        "@com_github_p4lang_p4runtime//proto/p4/v1:p4runtime_cc_grpc",
+        "@com_github_p4lang_pi//:pi",
+        "@com_github_p4lang_pi//:pip4info",
+        "@com_github_p4lang_pi//proto/frontend:pifeproto",
+        "@com_github_p4lang_pi//proto/server:piserver",
+        "@com_google_googleapis//google/rpc:code_cc_proto",
+        "@com_google_protobuf//:protobuf",
+        "@googletest//:gtest",
+    ],
+)
 
 _TESTS = [
-    "test_basic",
-    "test_grpc_dp",
-    "test_packet_io",
-    "test_counter",
-    "test_meter",
-    "test_ternary",
-    "test_pre",
-    "test_digest",
-    "test_idle_timeout",
     "test_action_profile",
+    "test_basic",
+    "test_counter",
+    "test_digest",
+    "test_grpc_dp",
+    "test_idle_timeout",
+    "test_meter",
     "test_optional",
+    "test_packet_io",
+    "test_pre",
+    "test_ternary",
 ]
 
 [
     cc_test(
         name = test,
-        srcs = _COMMON_SRCS + [test + ".cpp"],
+        srcs = [test + ".cpp"],
         data = glob(["testdata/**"]),
-        defines = ["TESTDATADIR=\\\"" + package_name() + "/testdata\\\""],
         tags = ["exclusive"],  # tests share a gRPC port; must not run in parallel
-        deps = _COMMON_DEPS,
+        deps = [":test_common"],
     )
     for test in _TESTS
 ]
