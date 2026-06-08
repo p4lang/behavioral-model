@@ -68,9 +68,9 @@ jobs:
     - name: Build BMv2
       run: |
         export PATH="$(brew --prefix bison)/bin:$PATH"
-        export PKG_CONFIG_PATH="$(brew --prefix openssl)/lib/pkgconfig:$PKG_CONFIG_PATH"
-        export LDFLAGS="-L$(brew --prefix openssl)/lib -L$(brew --prefix thrift)/lib -L$(brew --prefix nanomsg)/lib -L$(brew --prefix gmp)/lib -L$(brew --prefix xxhash)/lib"
-        export CPPFLAGS="-I$(brew --prefix openssl)/include -I$(brew --prefix thrift)/include -I$(brew --prefix nanomsg)/include -I$(brew --prefix gmp)/include -I$(brew --prefix xxhash)/include"
+         export PKG_CONFIG_PATH="$(brew --prefix openssl)/lib/pkgconfig:$(brew --prefix jsoncpp)/lib/pkgconfig:$PKG_CONFIG_PATH"
+         export LDFLAGS="-L$(brew --prefix openssl)/lib -L$(brew --prefix thrift)/lib -L$(brew --prefix nanomsg)/lib -L$(brew --prefix gmp)/lib -L$(brew --prefix xxhash)/lib -L$(brew --prefix jsoncpp)/lib"
+        export CPPFLAGS="-I$(brew --prefix openssl)/include -I$(brew --prefix thrift)/include -I$(brew --prefix nanomsg)/include -I$(brew --prefix gmp)/include -I$(brew --prefix xxhash)/include -I$(brew --prefix jsoncpp)/include"
         ./autogen.sh
         ./configure
         make -j$(sysctl -n hw.logicalcpu)

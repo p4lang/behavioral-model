@@ -46,6 +46,7 @@ REQUIRED_PACKAGES=(
     nanomsg
     thrift
     xxhash
+    jsoncpp
     python3
 )
 
