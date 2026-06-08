@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2026 Yuao Ma
+#
+# SPDX-License-Identifier: Apache-2.0
+
+module(
+    name = "behavioral_model",
+    version = "1.15.3",
+    bazel_compatibility = [">=7.0.0"],
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.9.0")
+bazel_dep(name = "boost.container", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.container_hash", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.multiprecision", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.program_options", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.thread", version = "1.90.0.bcr.1")
+bazel_dep(name = "boringssl", version = "0.20260508.0")
+bazel_dep(name = "com_github_p4lang_pi", version = "head")
+bazel_dep(name = "gmp", version = "6.3.0.bcr.1")
+bazel_dep(name = "googleapis", version = "0.0.0-20260130-c0fcb356", repo_name = "com_google_googleapis")
+bazel_dep(name = "grpc", version = "1.76.0", repo_name = "com_github_grpc_grpc")
+bazel_dep(name = "jsoncpp", version = "1.9.6.bcr.2")
+bazel_dep(name = "libpcap", version = "1.10.5.bcr.3")
+bazel_dep(name = "p4runtime", version = "1.5.0.bcr.1", repo_name = "com_github_p4lang_p4runtime")
+bazel_dep(name = "package_metadata", version = "0.0.10")
+bazel_dep(name = "protobuf", version = "33.5", repo_name = "com_google_protobuf")
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "xxhash", version = "0.8.3.bcr.1")
+
+bazel_dep(name = "googletest", version = "1.17.0.bcr.2", dev_dependency = True)
+
+git_override(
+    module_name = "com_github_p4lang_pi",
+    commit = "0aa6c69140045b8a74575dbb7818664dd1066504",
+    init_submodules = True,
+    remote = "https://github.com/p4lang/PI.git",
+)
