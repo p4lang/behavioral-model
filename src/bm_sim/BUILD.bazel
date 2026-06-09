@@ -46,6 +46,7 @@ cc_library(
         "@gmp",
         "@jsoncpp",
         "@libpcap",
+        "@nanomsg",
         "@xxhash",
     ],
 )

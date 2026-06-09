@@ -21,6 +21,7 @@ bazel_dep(name = "googleapis", version = "0.0.0-20260130-c0fcb356", repo_name = 
 bazel_dep(name = "grpc", version = "1.76.0", repo_name = "com_github_grpc_grpc")
 bazel_dep(name = "jsoncpp", version = "1.9.6.bcr.2")
 bazel_dep(name = "libpcap", version = "1.10.5.bcr.3")
+bazel_dep(name = "nanomsg", version = "1.2.2")
 bazel_dep(name = "p4runtime", version = "1.5.0.bcr.1", repo_name = "com_github_p4lang_p4runtime")
 bazel_dep(name = "package_metadata", version = "0.0.10")
 bazel_dep(name = "protobuf", version = "33.5", repo_name = "com_google_protobuf")
