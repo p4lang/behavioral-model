@@ -35,6 +35,7 @@ cc_library(
     linkopts = ["-ldl"],
     deps = [
         "//:bm_headers",
+        "//proto:packet_trace_cc_proto",
         "//src/BMI:bmi",
         "//third_party:spdlog",
         "@boost.container",

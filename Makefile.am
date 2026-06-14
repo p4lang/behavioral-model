@@ -27,7 +27,7 @@ endif
 # The targets directory (simple_switch, etc.) depends on libbmpi (from PI) and
 # gtest (from third_party), so those must appear before MAYBE_TARGETS in this
 # list.
-SUBDIRS = $(MAYBE_THRIFT) third_party src include \
+SUBDIRS = $(MAYBE_THRIFT) third_party proto src include \
 $(MAYBE_TESTS) $(MAYBE_PI) $(MAYBE_TARGETS) tools $(MAYBE_PDFIXED)
 
 # I am leaving all style-related files (cpplint) out of dist on purpose, maybe

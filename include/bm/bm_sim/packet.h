@@ -35,6 +35,8 @@
 
 namespace bm {
 
+class PacketTraceContext;
+
 //! Integral type used to identify a given data packet
 using packet_id_t = uint64_t;
 
@@ -122,6 +124,10 @@ class Packet final {
   //! Set the egress_port of the packet, which is the target responsibility.
   void set_egress_port(int port) { egress_port = port; }
   void set_ingress_port(int port) { ingress_port = port; }
+
+  //! Get or set the trace context for structured packet tracing.
+  PacketTraceContext* get_trace_ctx() const { return trace_ctx.get(); }
+  void set_trace_ctx(std::unique_ptr<PacketTraceContext> ctx);
 
   //! Obtains the copy_id of a packet, used to differentiate all the clones
   //! generated from the same incoming data packet. See get_packet_id() for more
@@ -376,6 +382,9 @@ class Packet final {
   ErrorCode error_code{ErrorCode::make_invalid()};
 
   bool checksum_error{false};
+
+  // Per-packet trace context for structured tracing.
+  std::unique_ptr<PacketTraceContext> trace_ctx;
 
  private:
   static CopyIdGenerator *copy_id_gen;

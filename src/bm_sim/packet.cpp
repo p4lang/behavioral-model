@@ -9,6 +9,7 @@
  */
 
 #include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/packet_tracer.h>
 #include <bm/bm_sim/phv.h>
 #include <xxhash.h>
 
@@ -209,6 +210,7 @@ Packet::Packet(Packet &&other) noexcept
   phv_source(other.phv_source), registers(other.registers) {
   buffer = std::move(other.buffer);
   phv = std::move(other.phv);
+  trace_ctx = std::move(other.trace_ctx);
 }
 
 Packet &
@@ -229,8 +231,13 @@ Packet::operator=(Packet &&other) noexcept {
 
   std::swap(buffer, other.buffer);
   std::swap(phv, other.phv);
+  std::swap(trace_ctx, other.trace_ctx);
 
   return *this;
+}
+
+void Packet::set_trace_ctx(std::unique_ptr<PacketTraceContext> ctx) {
+  trace_ctx = std::move(ctx);
 }
 
 Packet
