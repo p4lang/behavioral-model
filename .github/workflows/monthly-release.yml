@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2026 The P4 Language Consortium
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Monthly Release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 12 1 * *" # At 12:17 on day-of-month 1 (avoid top-of-hour load)
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  monthly-release:
+    if: ${{ github.repository == 'p4lang/behavioral-model' }}
+    uses: p4lang/.github/.github/workflows/bump-version.yml@main
+    with:
+      tag_prefix: ""
+      branch_pattern: "release/{version}"
+      reviewers: fruffy, jafingerhut
