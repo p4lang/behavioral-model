@@ -422,8 +422,7 @@ writing some doxygen documentation specifically targetted at programmers who
 want to implement their own switch model using the bmv2 building blocks. You can
 generate this documentation yourself (if you have doxygen installed) by running
 `doxygen Doxyfile`. The output can be found under the `doxygen-out`
-directory. You can also browse this documentation
-[online](http://bmv2.org).
+directory.
 
 ### What else is new in bmv2?
 
