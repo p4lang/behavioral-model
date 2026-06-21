@@ -5,16 +5,13 @@
 name: Build and push latest image
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
       - stable
-  schedule:
-    # We run it every 4 hours, starting at 03:15.
-    # Note that this will only update the 'latest' tag (not the 'stable' tag).
-    # Ideally, we would update the image every time the base image (p4lang/pi)
-    # is updated, but we deem this good enough.
-    - cron: '15 3-23/4 * * *' # "At minute 15 past every 4th hour from 3 through 23."
 
 jobs:
   build:
@@ -28,25 +25,31 @@ jobs:
       id: get-tag
       shell: bash
       run: |
-        TAG=""
-        if [[ "$GITHUB_REF" =~ "main" ]]; then
-            TAG="latest"
-        elif [[ "$GITHUB_REF" =~ "stable" ]]; then
-            TAG="stable"
-        else
-            echo "Invalid Github ref $GITHUB_REF"
-            exit 1
-        fi
+        TAG="latest-24"
         echo "Tag is $TAG"
         echo "tag=$TAG" >> $GITHUB_OUTPUT
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
+    - name: Build Docker image (test mode)
+      uses: docker/build-push-action@v7
+      with:
+        context: .
+        load: true
+        push: false
+        tags: p4lang/behavioral-model:test-build
+        build-args: IMAGE_TYPE=test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    - name: Run tests in Docker image
+      run: |
+        docker run --rm p4lang/behavioral-model:test-build \
+          bash -c "cd /behavioral-model/build && ctest -j\$(nproc) --output-on-failure"
     - name: Login to DockerHub
       uses: docker/login-action@v4
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-    - name: Build and push Docker image to registry
+    - name: Build and push production image
       uses: docker/build-push-action@v7
       with:
         context: .
@@ -64,12 +67,27 @@ jobs:
         submodules: recursive
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
+    - name: Build Docker image (test mode)
+      uses: docker/build-push-action@v7
+      with:
+        context: .
+        file: Dockerfile.noPI
+        load: true
+        push: false
+        tags: p4lang/behavioral-model:test-build-no-pi
+        build-args: IMAGE_TYPE=test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    - name: Run tests in Docker image
+      run: |
+        docker run --rm p4lang/behavioral-model:test-build-no-pi \
+          bash -c "cd /behavioral-model/build && ctest -j\$(nproc) --output-on-failure"
     - name: Login to DockerHub
       uses: docker/login-action@v4
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-    - name: Build and push Docker image to registry
+    - name: Build and push no-PI production image
       uses: docker/build-push-action@v7
       with:
         context: .
