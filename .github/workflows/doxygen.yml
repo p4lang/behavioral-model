@@ -15,7 +15,7 @@ jobs:
     name: Upload bmv2.org Doxygen documentation to S3
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Install dependencies
       run: |
         sudo apt-get update

@@ -22,7 +22,7 @@ jobs:
     name: Check whether tests need to be run based on diff
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: antrea-io/has-changes@v2
       id: check_diff
       with:
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Validate that all files have copyright and license info
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install dev dependencies
         run: |
           ./tools/install-uv.sh
@@ -70,7 +70,7 @@ jobs:
           cc: clang
           gcov: ""
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         submodules: 'recursive'
     - name: Setup native CI
@@ -117,7 +117,7 @@ jobs:
         os:
           - ubuntu-24.04
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         submodules: 'recursive'
     - name: Setup native CI
@@ -160,7 +160,7 @@ jobs:
             options: -DWITH_PDFIXED=OFF -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON -DWITH_THRIFT=OFF
             run_install: false
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         submodules: 'recursive'
     - name: Setup native CI
