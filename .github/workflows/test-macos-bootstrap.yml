@@ -1,0 +1,78 @@
+# SPDX-FileCopyrightText: 2026 Contributors to the p4lang/behavioral-model project
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Test macOS bootstrap script
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'tools/macos/bootstrap_mac.sh'
+  push:
+    branches:
+      - main
+    paths:
+      - 'tools/macos/bootstrap_mac.sh'
+
+# Cancel any preceding run on the pull request.
+concurrency:
+  group: test-macos-bootstrap-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  check-changes:
+    name: Check whether tests need to be run based on diff
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - uses: antrea-io/has-changes@v2
+      id: check_diff
+      with:
+        paths-ignore: docs/* *.md
+    outputs:
+      has_changes: ${{ steps.check_diff.outputs.has_changes }}
+
+  test-macos-bootstrap:
+    needs: check-changes
+    if: ${{ needs.check-changes.outputs.has_changes == 'yes' }}
+    runs-on: ${{ matrix.os }}
+    name: test-macos-bootstrap (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-15    # arm64 (Apple Silicon, latest)
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'recursive'
+
+    - name: Run macOS bootstrap script
+      run: |
+        bash tools/macos/bootstrap_mac.sh
+
+    - name: Verify key dependencies were installed
+      run: |
+        brew list automake
+        brew list autoconf
+        brew list cmake
+        brew list boost
+        brew list gmp
+        brew list openssl
+        brew list pkg-config
+        python3 --version
+        pip3 --version
+
+    - name: Build BMv2
+      run: |
+        export PATH="$(brew --prefix bison)/bin:$PATH"
+        export PKG_CONFIG_PATH="$(brew --prefix openssl)/lib/pkgconfig:$(brew --prefix jsoncpp)/lib/pkgconfig:$PKG_CONFIG_PATH"
+        export LDFLAGS="-L$(brew --prefix openssl)/lib -L$(brew --prefix thrift)/lib -L$(brew --prefix nanomsg)/lib -L$(brew --prefix gmp)/lib -L$(brew --prefix xxhash)/lib -L$(brew --prefix jsoncpp)/lib -L$(brew --prefix boost)/lib"
+        export CPPFLAGS="-I$(brew --prefix openssl)/include -I$(brew --prefix thrift)/include -I$(brew --prefix nanomsg)/include -I$(brew --prefix gmp)/include -I$(brew --prefix xxhash)/include -I$(brew --prefix jsoncpp)/include -I$(brew --prefix boost)/include"
+        ./autogen.sh
+	 mkdir -p build && cd build
+        ../configure
+        make -j$(sysctl -n hw.logicalcpu)
+
