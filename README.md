@@ -158,15 +158,13 @@ sudo dpkg -i /path/to/package.deb
     The new bmv2 debugger can be enabled by passing `--enable-debugger` to
     `configure`.
 
-    #### Experimental: cmake-based build
+    #### CMake-based build
 
-    A cmake-based build process was recently added to the project. Differences
+    A CMake-based build process is available and covered by CI. Differences
     from the autoconf-based system are:
-    - Static vs shared libraries: the cmake build produces a single version of
-      each library (the choice depnds upon the library), while the autoconf
+    - Static vs shared libraries: the CMake build produces a single version of
+      each library (the choice depends upon the library), while the autoconf
       build produces static and shared versions for every library.
-    - bmp4apps library: the cmake build system does produce the bmp4apps
-      library.
 
     ```console
     # Create a build directory
@@ -256,7 +254,7 @@ To run the unit tests, simply do:
 **If you get a nanomsg error when running the tests (make check), try running
   them as sudo**
 
-### cmake-based build
+### CMake-based build
 To run the unit tests, simply do from the build directory:
 
     ctest
