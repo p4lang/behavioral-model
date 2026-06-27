@@ -68,7 +68,7 @@ foreach(TEST ${TESTS})
     OUTPUT_NAME ${TEST}
   )
   # These tests don't play well when run in parallel; add them to a group call run_solo
-  add_test(NAME simple_switch_grpc/${TEST} COMMAND ${TEST}
+  add_test(NAME simple_switch_grpc/${TEST} COMMAND ssg_test_${TEST}
     CONFIGURATIONS run_solo
   )
 endforeach()
