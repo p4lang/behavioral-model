@@ -1,5 +1,4 @@
 #! /bin/bash
-
 # SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -7,58 +6,58 @@
 set -e
 set -x
 
-tools_dir=`dirname $0`
+# Installation helper: skip already-installed packages.
+brew_install() {
+    if brew list "$1" &>/dev/null; then
+        echo "$1 is already installed, skipping"
+    else
+        brew install "$1"
+    fi
+}
 
-# check for brew,
-if [[ -z `which brew` ]]; then
-    # install homebrew
-    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-    # python pip installs in /usr/local/tests
-    sudo mkdir -p /usr/local/tests
-    sudo chown ${USER}:admin /usr/local/tests
+# Check if Homebrew is already installed.
+if ! command -v brew &>/dev/null; then
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
-# check for pip
-if [[ -z `which pip` ]]; then
-    (>&2 echo 'Please install pip by "curl -O https://bootstrap.pypa.io/get-pip.py | sudo python3 get-pip.py"')
-    exit 1
+# Add Homebrew to PATH for both arm64 (Apple Silicon) and x86_64.
+if [[ $(uname -m) == 'arm64' ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+else
+    eval "$(/usr/local/bin/brew shellenv)"
 fi
 
-# check for clang version
-cxx_full_version=`clang++ --version | grep version`
-cxx_version=`echo $cxx_full_version | cut -f 4 -d " "`
-if [[ $cxx_version < "8.0.0" ]]; then
-    echo "Please install Xcode 8 or command line tools v8 or higher."
-    echo "It is a requirement for thread_local support"
-    echo ""
-    echo "You have: $cxx_full_version"
-    exit 1
-fi
-
+# Fetch the latest formulae.
 brew update
 
-# install basic tools
-brew install automake autoconf bison boost clang-format cmake coreutils \
-     doxygen gcc@5 gmp libevent openssl pkg-config wget
-# bison needs a bit more nudging
-brew link --overwrite --force bison
+# Required packages for bmv2.
+REQUIRED_PACKAGES=(
+    autoconf
+    automake
+    cmake
+    libtool
+    boost
+    bison
+    pkg-config
+    libevent
+    openssl
+    coreutils
+    gmp
+    nanomsg
+    thrift
+    xxhash
+    jsoncpp
+    python3
+)
 
-# we need realpath from coreutils
-brews_dir=`realpath $tools_dir`/brews
+for package in "${REQUIRED_PACKAGES[@]}"; do
+    brew_install "${package}"
+done
 
-# thrift
-brew install --HEAD ${brews_dir}/thrift.rb --with-python --with-libevent
+# bison installed via Homebrew must appear before system bison on PATH.
+export PATH="$(brew --prefix bison)/bin:$PATH"
 
-brew install python
-/usr/local/bin/pip install pcapy
-
-# nanomsg
-brew install nanomsg
-
-# # scapy
-pip install scapy
-
-# pynng
-/usr/local/bin/pip install pynng==0.9.0
-
-/usr/local/bin/pip install PyYAML
+# Install Python dependencies.
+# --break-system-packages is required on modern macOS (PEP 668) to allow
+# pip to install into the system Python environment.
+pip3 install --user --break-system-packages scapy pynng==0.9.0 PyYAML
