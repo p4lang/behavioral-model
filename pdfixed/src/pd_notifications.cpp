@@ -144,6 +144,10 @@ NotificationsListener *listeners[NUM_DEVICES];
 int pd_notifications_add_device(int dev_id, const char *notifications_addr,
                                 NotificationCb ageing_cb,
                                 NotificationCb learning_cb) {
+  if (dev_id < 0 || dev_id >= NUM_DEVICES) {
+    std::cerr << "Invalid device id " << dev_id << "\n";
+    return -1;
+  }
   assert(!listeners[dev_id]);
   listeners[dev_id] = new NotificationsListener(dev_id, notifications_addr);
   listeners[dev_id]->register_ageing_cb(ageing_cb);
@@ -153,6 +157,10 @@ int pd_notifications_add_device(int dev_id, const char *notifications_addr,
 }
 
 int pd_notifications_remove_device(int dev_id) {
+  if (dev_id < 0 || dev_id >= NUM_DEVICES) {
+    std::cerr << "Invalid device id " << dev_id << "\n";
+    return -1;
+  }
   assert(listeners[dev_id]);
   delete listeners[dev_id];
   listeners[dev_id] = nullptr;
