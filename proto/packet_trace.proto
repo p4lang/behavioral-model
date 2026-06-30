@@ -86,8 +86,6 @@ message TraceEvent {
     // Packet replication engine (PRE) events.
     CloneEvent clone = 7;
     MulticastEvent multicast = 8;
-    ResubmitEvent resubmit = 9;
-    RecirculateEvent recirculate = 10;
 
     // Deparser events.
     DeparserEmitEvent deparser_emit = 11;
@@ -172,12 +170,6 @@ message MulticastEvent {
   uint32 multicast_group_id = 1;
   uint32 replica_count = 2;
 }
-
-// Fired when a packet is resubmitted (re-enters the ingress pipeline).
-message ResubmitEvent {}
-
-// Fired when a packet is recirculated (deparsed packet loops back to ingress).
-message RecirculateEvent {}
 
 // Fired when the deparser emits a valid header to the output packet buffer.
 message DeparserEmitEvent {
