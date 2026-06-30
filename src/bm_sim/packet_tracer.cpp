@@ -7,8 +7,8 @@
 #include <bm/bm_sim/packet_tracer.h>
 #include <google/protobuf/text_format.h>
 
+#include <filesystem>
 #include <fstream>
-#include <sstream>
 #include <string>
 #include <utility>
 
@@ -40,6 +40,14 @@ PacketTraceContext::PacketTraceContext(
 // ---------- PacketTracer ----------
 
 void PacketTracer::set_output_dir(const std::string& output_dir) {
+  std::error_code ec;
+  std::filesystem::create_directories(output_dir, ec);
+  if (ec) {
+    BMLOG_ERROR("Failed to create trace output directory '{}': {}", output_dir,
+                ec.message());
+    return;
+  }
+
   output_dir_ = output_dir;
   enabled_ = true;
   BMLOG_DEBUG("Packet tracer initialized with output directory: {}",
@@ -52,15 +60,14 @@ void PacketTracer::flush_trace(const p4::bm::PacketTrace& trace) {
   std::string txtpb;
   google::protobuf::TextFormat::PrintToString(trace, &txtpb);
 
-  std::ostringstream filename;
-  filename << output_dir_ << "/trace_" << trace.packet_id() << ".txtpb";
+  auto path = std::filesystem::path(output_dir_) /
+              ("trace_" + std::to_string(trace.packet_id()) + ".txtpb");
 
-  std::ofstream out(filename.str());
+  std::ofstream out(path);
   if (out.is_open()) {
     out << txtpb;
-    out.close();
   } else {
-    BMLOG_ERROR("Failed to write trace to {}", filename.str());
+    BMLOG_ERROR("Failed to write trace to {}", path.string());
   }
 }
 
