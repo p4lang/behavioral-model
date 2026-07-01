@@ -10,6 +10,7 @@
 
 #include <bm/bm_sim/nn.h>
 #include <bm/pdfixed/int/pd_notifications.h>
+#include <bm/pdfixed/pd_common.h>
 
 #include <nanomsg/pubsub.h>
 
@@ -20,8 +21,6 @@
 #include <type_traits>
 #include <functional>
 #include <cstring>
-
-#define NUM_DEVICES 256
 
 namespace {
 
@@ -137,14 +136,14 @@ class NotificationsListener {
   NotificationCb learn_cb{};
 };
 
-NotificationsListener *listeners[NUM_DEVICES];
+NotificationsListener *listeners[PD_MAX_DEVICES];
 
 }  // namespace
 
 int pd_notifications_add_device(int dev_id, const char *notifications_addr,
                                 NotificationCb ageing_cb,
                                 NotificationCb learning_cb) {
-  if (dev_id < 0 || dev_id >= NUM_DEVICES) {
+  if (dev_id < 0 || dev_id >= PD_MAX_DEVICES) {
     std::cerr << "Invalid device id " << dev_id << "\n";
     return -1;
   }
@@ -157,7 +156,7 @@ int pd_notifications_add_device(int dev_id, const char *notifications_addr,
 }
 
 int pd_notifications_remove_device(int dev_id) {
-  if (dev_id < 0 || dev_id >= NUM_DEVICES) {
+  if (dev_id < 0 || dev_id >= PD_MAX_DEVICES) {
     std::cerr << "Invalid device id " << dev_id << "\n";
     return -1;
   }
