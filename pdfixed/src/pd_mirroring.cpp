@@ -52,6 +52,10 @@ int p4_pd_mirror_session_create(p4_pd_sess_hdl_t shdl,
   (void) shdl; (void) type; (void) dir; (void) max_pkt_len; (void) cos;
   (void) c2c; (void) extract_len; (void) timeout_usec; (void) int_hdr;
   (void) int_hdr_len;
+  if (dev_tgt.device_id < 0 || dev_tgt.device_id >= PD_MAX_DEVICES) {
+    std::cerr << "Invalid device id " << dev_tgt.device_id << "\n";
+    return 1;
+  }
   return client(dev_tgt.device_id).c->mirroring_mapping_add(id, egr_port);
 }
 
@@ -72,6 +76,10 @@ int p4_pd_mirror_session_update(p4_pd_sess_hdl_t shdl,
   (void) shdl; (void) type; (void) dir; (void) max_pkt_len; (void) cos;
   (void) c2c; (void) extract_len; (void) timeout_usec; (void) int_hdr;
   (void) int_hdr_len; (void) enable;
+  if (dev_tgt.device_id < 0 || dev_tgt.device_id >= PD_MAX_DEVICES) {
+    std::cerr << "Invalid device id " << dev_tgt.device_id << "\n";
+    return 1;
+  }
   return client(dev_tgt.device_id).c->mirroring_mapping_add(id, egr_port);
 }
 
@@ -85,6 +93,10 @@ int p4_pd_mirror_session_delete(p4_pd_sess_hdl_t shdl,
                                 p4_pd_dev_target_t dev_tgt,
                                 p4_pd_mirror_id_t mirror_id) {
   (void) shdl;
+  if (dev_tgt.device_id < 0 || dev_tgt.device_id >= PD_MAX_DEVICES) {
+    std::cerr << "Invalid device id " << dev_tgt.device_id << "\n";
+    return 1;
+  }
   return client(dev_tgt.device_id).c->mirroring_mapping_delete(mirror_id);
 }
 
