@@ -149,12 +149,15 @@ class Meter {
   //! color is less than the pre-color, the pre-color will be returned instead.
   color_t execute(const Packet &pkt, color_t pre_color = 0);
 
+  //! Overload that takes the current time explicitly. Used to make tests
+  //! deterministic.
+  color_t execute(const Packet &pkt, color_t pre_color, clock::time_point now);
+
   void serialize(std::ostream *out) const;
   void deserialize(std::istream *in);
 
  public:
-  /* This is for testing purposes only, for more accurate tests */
-  static void reset_global_clock();
+  void reset_time_origin(clock::time_point t = clock::now());
 
  private:
   using UniqueLock = std::unique_lock<std::mutex>;
@@ -183,6 +186,7 @@ class Meter {
   // mutable std::mutex m_mutex;
   std::vector<MeterRate> rates;
   bool configured{false};
+  clock::time_point time_init{clock::now()};
 };
 
 using meter_array_id_t = p4object_id_t;

@@ -15,16 +15,12 @@
 #include <bm/bm_sim/phv.h>
 #include <bm/bm_sim/phv_source.h>
 
-#include <thread>
 #include <chrono>
 #include <vector>
 
 using namespace bm;
 
 using std::chrono::milliseconds;
-using std::chrono::duration_cast;
-using std::this_thread::sleep_for;
-using std::this_thread::sleep_until;
 
 // Google Test fixture for meters tests
 class MetersTest : public ::testing::Test {
@@ -72,36 +68,21 @@ TEST_F(MetersTest, trTCM) {
 
   Packet pkt = get_pkt(128);
 
-  Meter::reset_global_clock();
+  // Anchor the meter's time origin at a fixed point and feed it explicit
+  // time_points. No sleeping, no real clock involved.
+  auto t = Meter::clock::time_point{};
+  meter.reset_time_origin(t);
 
-  clock::time_point next_stop = clock::now();
-
-  color_t color;
   for (size_t i = 0; i < 9; i++) {
-    color = meter.execute(pkt);
-    output.push_back(color);
-    next_stop += milliseconds(90);
-    sleep_until(next_stop);
+    output.push_back(meter.execute(pkt, 0, t));
+    t += milliseconds(90);
   }
   for (size_t i = 0; i < 3; i++) {
-    color = meter.execute(pkt);
-    output.push_back(color);
-    next_stop += milliseconds(10);
-    sleep_until(next_stop);
+    output.push_back(meter.execute(pkt, 0, t));
+    t += milliseconds(10);
   }
-  next_stop += milliseconds(200);
-  sleep_until(next_stop);
-  color = meter.execute(pkt);
-  output.push_back(color);
-
-  // I chose a step interval of 90 ms, because I never get to close to multiple
-  // of 100ms, which should make the test somewhat robust. However, the test
-  // still fails when run with Valgrind, which is why when running the tests
-  // with Valgrind, one needs to use the --valgrind flag, which will ensure that
-  // this test is skipped
-  // Maybe in the future, I will not skip the test when Valgrind is used but
-  // instead relax the success conditions (e.g. use bounds on the number of
-  // color occurrences
+  t += milliseconds(200);
+  output.push_back(meter.execute(pkt, 0, t));
 
   // expect output
   // i = 0, t = 0ms, GREEN
