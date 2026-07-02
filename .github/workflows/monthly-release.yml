@@ -16,7 +16,7 @@ permissions:
 jobs:
   monthly-release:
     if: ${{ github.repository == 'p4lang/behavioral-model' }}
-    uses: p4lang/.github/.github/workflows/bump-version.yml@main
+    uses: p4lang/.github/.github/workflows/monthly-release.yml@main
     with:
       tag_prefix: ""
       branch_pattern: "release/{version}"
