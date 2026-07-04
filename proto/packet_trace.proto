@@ -1,0 +1,59 @@
+// SPDX-FileCopyrightText: 2026 Yuao Ma
+//
+// SPDX-License-Identifier: Apache-2.0
+
+// BMv2 Structured Packet Trace
+//
+// A structured, programmatic representation of a packet's journey through a P4
+// pipeline in BMv2. Designed for use by automated tools for test coverage
+// measurement, automated test generation, root-cause analysis, and human
+// comprehension.
+
+syntax = "proto3";
+
+package p4.bm;
+
+// Describes the input packet that entered the pipeline.
+message InputPacket {
+  uint64 packet_id = 1;
+  uint32 ingress_port = 2;
+}
+
+// Top-level trace for one packet copy through the pipeline.
+message PacketTrace {
+  InputPacket input = 1;
+  TraceTree root = 2;
+}
+
+// Recursive trace structure: a sequence of events followed by an outcome.
+message TraceTree {
+  repeated TraceEvent events = 1;
+}
+
+// A single event in the packet trace.
+message TraceEvent {
+  oneof event {
+    // Pipeline lifecycle.
+    PipelineStageEvent pipeline_stage = 1;
+  }
+}
+
+// Fired when the pipeline enters or exits a processing stage.
+message PipelineStageEvent {
+  string stage_name = 1;
+
+  enum StageKind {
+    STAGE_KIND_UNSPECIFIED = 0;
+    PARSER = 1;
+    CONTROL = 2;
+    DEPARSER = 3;
+  }
+  StageKind stage_kind = 2;
+
+  enum Direction {
+    DIRECTION_UNSPECIFIED = 0;
+    ENTER = 1;
+    EXIT = 2;
+  }
+  Direction direction = 3;
+}

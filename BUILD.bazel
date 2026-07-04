@@ -54,6 +54,7 @@ expand_template(
         "#cmakedefine BM_LOG_DEBUG_ON @BM_LOG_DEBUG_ON@": "#define BM_LOG_DEBUG_ON 1",
         "#cmakedefine BM_LOG_TRACE_ON @BM_LOG_TRACE_ON@": "#define BM_LOG_TRACE_ON 1",
         "#cmakedefine BM_NANOMSG_ON @BM_NANOMSG_ON@": "#define BM_NANOMSG_ON 1",
+        "#cmakedefine BM_PACKET_TRACE_ON @BM_PACKET_TRACE_ON@": "#define BM_PACKET_TRACE_ON 1",
         # disabled
         "#cmakedefine BM_THRIFT_ON @BM_THRIFT_ON@": "/* #undef BM_THRIFT_ON */",
         "#cmakedefine BM_THRIFT_VERSION @BM_THRIFT_VERSION@": "/* #undef BM_THRIFT_VERSION */",

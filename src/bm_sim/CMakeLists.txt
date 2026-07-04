@@ -47,6 +47,7 @@ add_library(bmsim OBJECT
   options_parse.cpp
   P4Objects.cpp
   packet.cpp
+  packet_tracer.cpp
   parser.cpp
   parser_error.cpp
   pcap_file.cpp
@@ -86,4 +87,14 @@ target_link_libraries(bmsim PUBLIC
 
 if(WITH_NANOMSG)
   target_link_libraries(bmsim PUBLIC ${NANOMSG_LIBRARY})
+endif()
+
+if(ENABLE_PACKET_TRACE)
+  target_include_directories(bmsim PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}/../../proto/cpp_out
+  )
+
+  target_link_libraries(bmsim PUBLIC
+    bm_packet_trace_proto
+  )
 endif()

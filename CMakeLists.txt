@@ -51,6 +51,7 @@ option(ENABLE_DEBUGGER "Enable bmv2 remote debugger" OFF)
 option(ENABLE_COVERAGE "Enable code coverage tracking" OFF)
 option(ENABLE_LOGGING_MACROS "Enable compile time debug and trace logging macros" ON)
 option(ENABLE_ELOGGER "Enable nanomsg event logger" ON)
+option(ENABLE_PACKET_TRACE "Enable structured packet tracing" OFF)
 option(ENABLE_MODULES "Allow loading third-party modules at runtime" ON)
 option(REQUIRE_MODULES "Require support for loading third-party modules at runtime" OFF)
 option(ENABLE_UNDETERMINISTIC_TESTS "Run undeterministic tests (e.g. queueing) when running tests" ON)
@@ -240,6 +241,11 @@ add_subdirectory(tools)
 
 if(WITH_PDFIXED)
   add_subdirectory(pdfixed)
+endif()
+
+if(ENABLE_PACKET_TRACE)
+  find_package(Protobuf REQUIRED)
+  add_subdirectory(proto)
 endif()
 
 # Installation rules
