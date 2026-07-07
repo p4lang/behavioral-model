@@ -13,21 +13,28 @@ syntax = "proto3";
 
 package p4.bm;
 
-// Describes the input packet that entered the pipeline.
-message InputPacket {
-  uint64 packet_id = 1;
-  uint32 ingress_port = 2;
-}
-
 // Top-level trace for one packet copy through the pipeline.
 message PacketTrace {
   InputPacket input = 1;
   TraceTree root = 2;
 }
 
+// Describes the input packet that entered the pipeline.
+message InputPacket {
+  uint64 packet_id = 1;
+  uint32 ingress_port = 2;
+}
+
 // Recursive trace structure: a sequence of events followed by an outcome.
 message TraceTree {
   repeated TraceEvent events = 1;
+  oneof outcome {
+    // Terminal: packet emitted on a port.
+    Transmit transmit = 2;
+
+    // Terminal: packet discarded.
+    Drop drop = 3;
+  }
 }
 
 // A single event in the packet trace.
@@ -57,3 +64,12 @@ message PipelineStageEvent {
   }
   Direction direction = 3;
 }
+
+// Packet was transmitted out of a port.
+message Transmit {
+  uint32 egress_port = 1;
+  uint32 packet_size = 2;
+}
+
+// Packet was dropped.
+message Drop {}
