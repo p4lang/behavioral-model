@@ -61,4 +61,5 @@ jobs:
         run: bazel build //targets/simple_switch_grpc:simple_switch_grpc
 
       - name: Test
-        run: bazel test //targets/simple_switch_grpc/tests/...
+        run: bazel test //targets/simple_switch_grpc/tests/... --test_output=errors
+
