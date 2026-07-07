@@ -163,10 +163,6 @@ AgeingMonitor::do_sweep() {
     const MatchTableAbstract *t = data.table;
     auto &prev_sweep_entries = data.prev_sweep_entries;
     t->sweep_entries(&entries_tmp);
-    if (entries_tmp.empty()) {
-      prev_sweep_entries.clear();
-      continue;
-    }
 
     for (entry_handle_t handle : entries_tmp) {
       if (prev_sweep_entries.find(handle) == prev_sweep_entries.end()) {
@@ -174,14 +170,14 @@ AgeingMonitor::do_sweep() {
         entries.push_back(handle);
       }
     }
-    entries_tmp.clear();
+
+    // Synchronize prev_sweep_entries with the full set of currently-aged
+    // entries (entries_tmp) to accurately track active state across sweeps.
     prev_sweep_entries.clear();
+    prev_sweep_entries.insert(entries_tmp.begin(), entries_tmp.end());
+    entries_tmp.clear();
 
     if (entries.empty()) continue;
-
-    for (entry_handle_t handle : entries) {
-      prev_sweep_entries.insert(handle);
-    }
 
     BMLOG_TRACE("Sending ageing notification for table '{}' ({})",
                 t->get_name(), entry.first);
