@@ -275,14 +275,14 @@ AC_TYPE_SIZE_T
 AC_TYPE_UINT64_T
 AC_LANG_POP(C++)
 
+AC_PATH_PROG([PROTOC], [protoc], [])
+AS_IF([test "x$PROTOC" = x], [AC_MSG_ERROR([protoc not found])])
+
+PKG_CHECK_MODULES([PROTOBUF], [protobuf >= 3.0.0])
+AC_SUBST([PROTOBUF_CFLAGS])
+AC_SUBST([PROTOBUF_LIBS])
+
 AS_IF([test "$want_pi" = yes], [
-	AC_PATH_PROG([PROTOC], [protoc], [])
-	AS_IF([test "x$PROTOC" = x], [AC_MSG_ERROR([protoc not found])])
-
-	PKG_CHECK_MODULES([PROTOBUF], [protobuf >= 3.0.0])
-	AC_SUBST([PROTOBUF_CFLAGS])
-	AC_SUBST([PROTOBUF_LIBS])
-
 	PKG_CHECK_MODULES([GRPC], [grpc++ >= 1.3.0 grpc >= 3.0.0])
 	AC_SUBST([GRPC_CFLAGS])
 	AC_SUBST([GRPC_LIBS])
@@ -309,6 +309,7 @@ AC_CONFIG_FILES([Makefile
 		third_party/gmock/Makefile
 		third_party/gtest/Makefile
 		third_party/spdlog/Makefile
+		proto/Makefile
 		include/Makefile
 		src/Makefile
 		src/bm_sim/Makefile

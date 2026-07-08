@@ -102,6 +102,7 @@ include_directories(
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread program_options)
 find_package(jsoncpp REQUIRED)
+find_package(Protobuf REQUIRED)
 
 # Check for the presence of an include file and report an error if not found
 #
@@ -170,8 +171,7 @@ if(WITH_THRIFT)
 endif()
 
 if(WITH_PI)
-  # Find Protobuf and gRPC
-  find_package(Protobuf REQUIRED)
+  # Find gRPC
   find_package(gRPC REQUIRED)
 
   # Verify that PI headers are present
@@ -220,6 +220,7 @@ if(WITH_THRIFT)
 endif()
 
 add_subdirectory(third_party)
+add_subdirectory(proto)
 add_subdirectory(src)
 add_subdirectory(include)
 
