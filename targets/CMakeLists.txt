@@ -22,4 +22,5 @@ endif()
 
 if(WITH_PI)
   add_subdirectory(simple_switch_grpc)
+  add_subdirectory(psa_switch_grpc)
 endif()

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpsaswitchgrpc.a CMakeFiles/psaswitchgrpc.dir/switch_runner.o
+/usr/bin/ranlib libpsaswitchgrpc.a

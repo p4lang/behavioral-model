@@ -11,7 +11,7 @@ include_directories(
 if(WITH_PI)
   add_definitions(-DWITH_PI)
   include_directories(${CMAKE_SOURCE_DIR}/PI)
-  set(PI_LIB bmpi)
+  set(PI_LIB bmpi_simple)
 else()
   set(PI_LIB "")
 endif()

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsimpleswitchgrpc.a CMakeFiles/simpleswitchgrpc.dir/switch_runner.cpp.o
+/usr/bin/ranlib libsimpleswitchgrpc.a

@@ -1,0 +1,302 @@
+// SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+// Copyright 2013-present Barefoot Networks, Inc.
+// Copyright 2022 VMware, Inc.
+// SPDX-FileCopyrightText: 2022 VMware, Inc.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+/*
+ * Antonin Bas
+ *
+ */
+
+#include <bm/bm_sim/options_parse.h>
+#include <bm/bm_sim/target_parser.h>
+#include <bm/bm_grpc/pem.h>
+
+#include <exception>
+#include <climits>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <streambuf>
+#include <string>
+
+#include "switch_runner.h"
+
+int
+main(int argc, char* argv[]) {
+  bm::TargetParserBasicWithDynModules psa_switch_parser;
+  psa_switch_parser.add_flag_option(
+      "disable-swap",
+      "Disable JSON swapping at runtime; this is not recommended when using "
+      "P4Runtime!");
+  psa_switch_parser.add_string_option(
+      "grpc-server-addr",
+      "Bind gRPC server to given address [default is 0.0.0.0:9559]");
+  psa_switch_parser.add_flag_option(
+      "grpc-server-ssl",
+      "Enable SSL/TLS for gRPC server");
+  psa_switch_parser.add_string_option(
+      "grpc-server-cacert",
+      "Path to pem file holding CA certificate to verify peer against");
+  psa_switch_parser.add_string_option(
+      "grpc-server-cert",
+      "Path to pem file holding server certificate");
+  psa_switch_parser.add_string_option(
+      "grpc-server-key",
+      "Path to pem file holding server key");
+  psa_switch_parser.add_flag_option(
+      "grpc-server-with-client-auth",
+      "Require client to have a valid certificate for mutual authentication");
+  psa_switch_parser.add_uint_option(
+      "cpu-port",
+      "Choose a numerical value for the CPU port, it will be used for "
+      "packet-in / packet-out. Do not add an interface with this port number, "
+      "and 0 is not a valid value. "
+      "When using standard v1model.p4, this value must fit within 9 bits. "
+      "If you do not use this command-line option, "
+      "P4Runtime packet IO functionality will not be available: you will not "
+      "be able to receive / send packets using the P4Runtime StreamChannel "
+      "bi-directional stream.");
+  psa_switch_parser.add_uint_option(
+      "drop-port",
+      "Choose a numerical value for the drop port (default is 511). "
+      "When using standard v1model.p4, this value must fit within 9 bits. "
+      "You will need to use this command-line option when you wish to use port "
+      "511 as a valid dataplane port or as the CPU port.");
+  psa_switch_parser.add_string_option(
+      "dp-grpc-server-addr",
+      "Use a gRPC channel to inject and receive dataplane packets; "
+      "bind this gRPC server to given address, e.g. 0.0.0.0:50052");
+  psa_switch_parser.add_uint_option(
+    "priority-queues",
+    "Number of priority queues (default is 1)");
+  psa_switch_parser.add_uint_option(
+      "max-mc-groups",
+      "Maximum number of multicast groups (default is "
+      + std::to_string(
+          pswitch_grpc::PsaSwitchGrpcRunner::default_mgid_table_size)
+      + ")");
+  psa_switch_parser.add_uint_option(
+      "max-l1-entries",
+      "Maximum number of L1 multicast entries (default is "
+      + std::to_string(
+          pswitch_grpc::PsaSwitchGrpcRunner::default_l1_max_entries)
+      + ")");
+  psa_switch_parser.add_uint_option(
+      "max-l2-entries",
+      "Maximum number of L2 multicast entries (default is "
+      + std::to_string(
+          pswitch_grpc::PsaSwitchGrpcRunner::default_l2_max_entries)
+      + ")");
+
+  bm::OptionsParser parser;
+  parser.parse(argc, argv, &psa_switch_parser);
+
+  std::string dp_grpc_server_addr;
+  {
+    auto rc = psa_switch_parser.get_string_option(
+        "dp-grpc-server-addr", &dp_grpc_server_addr);
+    if (rc != bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED &&
+        rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+  }
+
+  bool disable_swap_flag = false;
+  {
+    auto rc = psa_switch_parser.get_flag_option(
+        "disable-swap", &disable_swap_flag);
+    if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS) std::exit(1);
+  }
+
+  std::string grpc_server_addr;
+  {
+    auto rc = psa_switch_parser.get_string_option(
+        "grpc-server-addr", &grpc_server_addr);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      grpc_server_addr = "0.0.0.0:9559";
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+  }
+
+  bool grpc_server_ssl = false;
+  {
+    auto rc = psa_switch_parser.get_flag_option(
+        "grpc-server-ssl", &grpc_server_ssl);
+    if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS) std::exit(1);
+  }
+
+  std::string grpc_server_cacert;
+  {
+    auto rc = psa_switch_parser.get_string_option(
+        "grpc-server-cacert", &grpc_server_cacert);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      grpc_server_cacert = "";
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+  }
+
+  std::string grpc_server_cert;
+  {
+    auto rc = psa_switch_parser.get_string_option(
+        "grpc-server-cert", &grpc_server_cert);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      grpc_server_cert = "";
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+  }
+
+  std::string grpc_server_key;
+  {
+    auto rc = psa_switch_parser.get_string_option(
+        "grpc-server-key", &grpc_server_key);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      grpc_server_key = "";
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+  }
+
+  bool grpc_server_with_client_auth = false;
+  {
+    auto rc = psa_switch_parser.get_flag_option(
+        "grpc-server-with-client-auth", &grpc_server_with_client_auth);
+    if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS) std::exit(1);
+  }
+
+  if (!grpc_server_ssl &&
+      (grpc_server_cacert != "" ||
+       grpc_server_cert != "" ||
+       grpc_server_key != "")) {
+    std::cerr << "SSL/TLS is disabled for gRPC server, "
+        << "so provided .pem files will be ignored\n";
+  }
+
+  if (!grpc_server_ssl && grpc_server_with_client_auth) {
+    std::cerr << "SSL/TLS is disabled for gRPC server, "
+        << "so cannot request client auth\n";
+  }
+
+  if (grpc_server_ssl && grpc_server_cert == "") {
+    std::cerr << "When enabling SSL/TLS for gRPC server, "
+        << "--grpc-server-cert is required\n";
+    std::exit(1);
+  }
+  if (grpc_server_ssl && grpc_server_key == "") {
+    std::cerr << "When enabling SSL/TLS for gRPC server, "
+        << "--grpc-server-key is required\n";
+    std::exit(1);
+  }
+
+  uint32_t cpu_port = 0xffffffff;
+  {
+    auto rc = psa_switch_parser.get_uint_option("cpu-port", &cpu_port);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      cpu_port = 0;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS || cpu_port == 0)
+      std::exit(1);
+  }
+
+  uint32_t drop_port = 0xffffffff;
+  {
+    auto rc = psa_switch_parser.get_uint_option("drop-port", &drop_port);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      drop_port = pswitch_grpc::PsaSwitchGrpcRunner::default_drop_port;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+  }
+
+  auto ssl_options = std::make_shared<pswitch_grpc::SSLOptions>();
+  try {
+    if (grpc_server_ssl) {
+      if (grpc_server_cacert != "") {
+        ssl_options->pem_root_certs = bm::read_pem_file(grpc_server_cacert);
+      }
+      if (grpc_server_cert != "") {
+        ssl_options->pem_cert_chain = bm::read_pem_file(grpc_server_cert);
+      }
+      if (grpc_server_key != "") {
+        ssl_options->pem_private_key = bm::read_pem_file(grpc_server_key);
+      }
+      ssl_options->with_client_auth = grpc_server_with_client_auth;
+    }
+  } catch (const bm::read_pem_exception &e) {
+    std::cerr << e.msg();
+    std::exit(1);
+  }
+
+  uint32_t priority_queues = 0xffffffff;
+  {
+    auto rc = psa_switch_parser.get_uint_option("priority-queues",
+                                                   &priority_queues);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      priority_queues =
+          pswitch_grpc::PsaSwitchGrpcRunner::default_nb_queues_per_port;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+  }
+
+  uint32_t mgid_table_size = 0xffffffff;
+  {
+    auto rc = psa_switch_parser.get_uint_option(
+        "max-mc-groups", &mgid_table_size);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      mgid_table_size =
+          pswitch_grpc::PsaSwitchGrpcRunner::default_mgid_table_size;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+    if (mgid_table_size == 0 || mgid_table_size > INT_MAX) {
+      std::cerr << "max-mc-groups must be between 1 and "
+                << INT_MAX << std::endl;
+      std::exit(1);
+    }
+  }
+
+  uint32_t l1_max_entries = 0xffffffff;
+  {
+    auto rc = psa_switch_parser.get_uint_option(
+        "max-l1-entries", &l1_max_entries);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      l1_max_entries =
+          pswitch_grpc::PsaSwitchGrpcRunner::default_l1_max_entries;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+    if (l1_max_entries == 0 || l1_max_entries > INT_MAX) {
+      std::cerr << "max-l1-entries must be between 1 and "
+                << INT_MAX << std::endl;
+      std::exit(1);
+    }
+  }
+
+  uint32_t l2_max_entries = 0xffffffff;
+  {
+    auto rc = psa_switch_parser.get_uint_option(
+        "max-l2-entries", &l2_max_entries);
+    if (rc == bm::TargetParserBasic::ReturnCode::OPTION_NOT_PROVIDED)
+      l2_max_entries =
+          pswitch_grpc::PsaSwitchGrpcRunner::default_l2_max_entries;
+    else if (rc != bm::TargetParserBasic::ReturnCode::SUCCESS)
+      std::exit(1);
+    if (l2_max_entries == 0 || l2_max_entries > INT_MAX) {
+      std::cerr << "max-l2-entries must be between 1 and "
+                << INT_MAX << std::endl;
+      std::exit(1);
+    }
+  }
+
+  auto &runner = pswitch_grpc::PsaSwitchGrpcRunner::get_instance(
+      !disable_swap_flag,
+      grpc_server_addr,
+      cpu_port,
+      dp_grpc_server_addr,
+      drop_port,
+      grpc_server_ssl ? ssl_options : nullptr,
+      priority_queues,
+      mgid_table_size, l1_max_entries, l2_max_entries);
+  int status = runner.init_and_start(parser);
+  if (status != 0) std::exit(status);
+
+  runner.wait();
+  return 0;
+}

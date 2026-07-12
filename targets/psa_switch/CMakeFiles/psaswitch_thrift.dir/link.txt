@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpsaswitch_thrift.a "CMakeFiles/psaswitch_thrift.dir/gen-cpp/bm/psa_switch_constants.cpp.o" "CMakeFiles/psaswitch_thrift.dir/gen-cpp/bm/psa_switch_types.cpp.o" "CMakeFiles/psaswitch_thrift.dir/gen-cpp/bm/PsaSwitch.cpp.o"
+/usr/bin/ranlib libpsaswitch_thrift.a

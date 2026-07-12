@@ -14,12 +14,16 @@
 #include <PI/pi_mc.h>
 #include <PI/target/pi_clone_imp.h>
 
+#include "common.h"
+
+#if WITH_SIMPLE_SWITCH && WITH_PSA_SWITCH
+#error "WITH_SIMPLE_SWITCH and WITH_PSA_SWITCH cannot both be enabled"
+#endif
+
 // TODO(antonin): it would probably make more sense to move this code to
 // targets/simple_switch, but for now it will have to do.
 #if WITH_SIMPLE_SWITCH
 #include "simple_switch.h"
-
-#include "common.h"
 
 extern "C" {
 
@@ -61,7 +65,50 @@ pi_status_t _pi_clone_session_reset(
 
 }
 
-#else  // WITH_SIMPLE_SWITCH
+#elif WITH_PSA_SWITCH
+
+#include "psa_switch.h"
+
+extern "C" {
+
+pi_status_t _pi_clone_session_set(
+    pi_session_handle_t session_handle,
+    pi_dev_tgt_t dev_tgt,
+    pi_clone_session_id_t clone_session_id,
+    const pi_clone_session_config_t *clone_session_config) {
+  _BM_UNUSED(session_handle);
+  _BM_UNUSED(dev_tgt);
+  auto *pswitch = dynamic_cast<bm::psa::PsaSwitch *>(pibmv2::switch_);
+  if (pswitch == nullptr) return PI_STATUS_NOT_IMPLEMENTED_BY_TARGET;
+  bm::psa::PsaSwitch::MirroringSessionConfig config = {};
+  if (clone_session_config->direction != PI_CLONE_DIRECTION_BOTH)
+    return PI_STATUS_NOT_IMPLEMENTED_BY_TARGET;
+  config.egress_port = clone_session_config->eg_port;
+  config.egress_port_valid = clone_session_config->eg_port_valid;
+  config.mgid = clone_session_config->mc_grp_id;
+  config.mgid_valid = clone_session_config->mc_grp_id_valid;
+  // TODO(antonin): add support for truncation in bmv2
+  if (clone_session_config->max_packet_length != 0)
+    return PI_STATUS_NOT_IMPLEMENTED_BY_TARGET;
+  auto success = pswitch->mirroring_add_session(clone_session_id, config);
+  return success ? PI_STATUS_SUCCESS : PI_STATUS_TARGET_ERROR;
+}
+
+pi_status_t _pi_clone_session_reset(
+    pi_session_handle_t session_handle,
+    pi_dev_tgt_t dev_tgt,
+    pi_clone_session_id_t clone_session_id) {
+  _BM_UNUSED(session_handle);
+  _BM_UNUSED(dev_tgt);
+  auto *pswitch = dynamic_cast<bm::psa::PsaSwitch *>(pibmv2::switch_);
+  if (pswitch == nullptr) return PI_STATUS_NOT_IMPLEMENTED_BY_TARGET;
+  auto success = pswitch->mirroring_delete_session(clone_session_id);
+  return success ? PI_STATUS_SUCCESS : PI_STATUS_TARGET_ERROR;
+}
+
+}
+
+#else  // WITH_SIMPLE_SWITCH / WITH_PSA_SWITCH
 
 extern "C" {
 

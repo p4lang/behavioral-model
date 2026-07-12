@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-add_library(bmpi STATIC
+set(BMPI_CORE_SRCS
   src/pi.cpp
   src/pi_imp.cpp
   src/pi_tables_imp.cpp
@@ -11,7 +11,6 @@ add_library(bmpi STATIC
   src/pi_meter_imp.cpp
   src/pi_learn_imp.cpp
   src/pi_mc_imp.cpp
-  src/pi_clone_imp.cpp
   src/common.h
   src/common.cpp
   src/action_helpers.h
@@ -24,6 +23,10 @@ add_library(bmpi STATIC
   src/device_state.cpp
 )
 
+add_library(bmpi STATIC
+  ${BMPI_CORE_SRCS}
+)
+
 target_include_directories(bmpi PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
@@ -31,15 +34,33 @@ target_include_directories(bmpi PRIVATE
 # FIXME: remove the redundant moves
 target_compile_options(bmpi PRIVATE "-Wno-error=redundant-move")
 
-if(WITH_TARGETS)
-  target_compile_definitions(bmpi PRIVATE WITH_SIMPLE_SWITCH)
+set(BMPI_INSTALL_TARGETS bmpi)
 
-  target_include_directories(bmpi PRIVATE
+if(WITH_TARGETS)
+  add_library(bmpi_simple STATIC
+    src/pi_clone_imp.cpp
+  )
+  target_compile_definitions(bmpi_simple PRIVATE WITH_SIMPLE_SWITCH=1)
+  target_include_directories(bmpi_simple PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/targets/simple_switch
   )
+  target_link_libraries(bmpi_simple PUBLIC bmpi)
+
+  add_library(bmpi_psa STATIC
+    src/pi_clone_imp.cpp
+  )
+  target_compile_definitions(bmpi_psa PRIVATE WITH_PSA_SWITCH=1)
+  target_include_directories(bmpi_psa PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/targets/psa_switch
+  )
+  target_link_libraries(bmpi_psa PUBLIC bmpi)
+
+  list(APPEND BMPI_INSTALL_TARGETS bmpi_simple bmpi_psa)
 endif()
 
-install(TARGETS bmpi
+install(TARGETS ${BMPI_INSTALL_TARGETS}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )

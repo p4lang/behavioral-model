@@ -109,7 +109,7 @@ class PsaSwitch::MirroringSessions {
 
 PsaSwitch::PsaSwitch(bool enable_swap)
   : Switch(enable_swap),
-    input_buffer(1024),
+    input_buffer(1024, Queue<std::unique_ptr<Packet> >::WriteBehavior::WriteReturn, Queue<std::unique_ptr<Packet> >::ReadBehavior::ReadBlock),
 #ifdef SSWITCH_PRIORITY_QUEUEING_ON
     egress_buffers(nb_egress_threads,
                    64, EgressThreadMapper(nb_egress_threads),
@@ -207,7 +207,9 @@ PsaSwitch::receive_(port_t port_num, const char *buffer, int len) {
   // each add_header / remove_header primitive call
   packet->set_register(PACKET_LENGTH_REG_IDX, len);
 
+  BMLOG_DEBUG("Pushing packet to input buffer");
   input_buffer.push_front(std::move(packet));
+  BMLOG_DEBUG("Done pushing! Input buffer size is now {}", input_buffer.size());
   return 0;
 }
 
@@ -368,7 +370,9 @@ PsaSwitch::ingress_thread() {
 
   while (1) {
     std::unique_ptr<Packet> packet;
+    BMLOG_DEBUG("Popping packet from input buffer");
     input_buffer.pop_back(&packet);
+    BMLOG_DEBUG("Done popping! Input buffer size is now {}", input_buffer.size());
     if (packet == nullptr) break;
 
     phv = packet->get_phv();
@@ -478,7 +482,9 @@ PsaSwitch::ingress_thread() {
       phv->get_field("psa_ingress_parser_input_metadata.packet_path").set(
           PACKET_PATH_RESUBMIT);
 
+      BMLOG_DEBUG("Pushing packet to input buffer");
       input_buffer.push_front(std::move(packet));
+      BMLOG_DEBUG("Done pushing! Input buffer size is now {}", input_buffer.size());
       continue;
     }
 
@@ -611,7 +617,10 @@ PsaSwitch::egress_thread(size_t worker_id) {
         .set(PSA_PORT_RECIRCULATE);
       phv->get_field("psa_ingress_parser_input_metadata.packet_path")
         .set(PACKET_PATH_RECIRCULATE);
+
+      BMLOG_DEBUG("Pushing packet to input buffer");
       input_buffer.push_front(std::move(packet));
+      BMLOG_DEBUG("Done pushing! Input buffer size is now {}", input_buffer.size());
       continue;
     }
     output_buffer.push_front(std::move(packet));

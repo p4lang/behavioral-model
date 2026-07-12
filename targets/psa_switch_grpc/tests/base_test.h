@@ -1,0 +1,87 @@
+/*
+ * SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+ * Copyright 2013-present Barefoot Networks, Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/*
+ * Antonin Bas (antonin@barefootnetworks.com)
+ *
+ */
+
+#ifndef PSA_SWITCH_GRPC_TESTS_BASE_TEST_H_
+#define PSA_SWITCH_GRPC_TESTS_BASE_TEST_H_
+
+#include <p4/config/v1/p4info.grpc.pb.h>
+#include <p4/v1/p4runtime.grpc.pb.h>
+
+#include <gtest/gtest.h>
+
+#include <memory>
+
+#include "utils.h"
+
+#ifndef GRPCPP_CHANNEL_IMPL_H
+// A typedef `Channel` has been was introduced in <grpcpp/channel.h>
+// with https://github.com/grpc/grpc/pull/19067
+namespace grpc {
+
+class Channel;
+
+}  // namespace grpc
+#endif  // GRPCPP_CHANNEL_IMPL_H
+
+namespace pswitch_grpc {
+
+namespace testing {
+
+using grpc::ClientContext;
+using grpc::Status;
+
+class PsaSwitchGrpcBaseTest : public ::testing::Test {
+ public:
+  static constexpr char grpc_server_addr[] = "0.0.0.0:50056";
+  static constexpr char dp_grpc_server_addr[] = "0.0.0.0:50057";
+  static constexpr int cpu_port = 64;
+  static constexpr uint64_t device_id = 3;
+
+ protected:
+  explicit PsaSwitchGrpcBaseTest(const char *p4info_proto_txt_path);
+
+  void SetUp() override;
+
+  void TearDown() override;
+
+  void update_json(const char *json_path);
+
+  void set_election_id(p4::v1::Uint128 *election_id) const;
+
+  grpc::Status write(const p4::v1::Entity &entity,
+                     p4::v1::Update::Type type) const;
+  grpc::Status insert(const p4::v1::Entity &entity) const;
+  grpc::Status modify(const p4::v1::Entity &entity) const;
+  grpc::Status remove(const p4::v1::Entity &entity) const;
+
+  grpc::Status read(const p4::v1::Entity &entity,
+                    p4::v1::ReadResponse *rep) const;
+
+  // calls p4runtime_stub->Write, with the appropriate election_id
+  grpc::Status Write(ClientContext *context,
+                     p4::v1::WriteRequest &request,
+                     p4::v1::WriteResponse *response) const;
+
+  std::shared_ptr<grpc::Channel> p4runtime_channel;
+  std::unique_ptr<p4::v1::P4Runtime::Stub> p4runtime_stub;
+  using ReaderWriter = ::grpc::ClientReaderWriter<
+      p4::v1::StreamMessageRequest, p4::v1::StreamMessageResponse>;
+  ClientContext stream_context;
+  std::unique_ptr<ReaderWriter> stream{nullptr};
+  p4::config::v1::P4Info p4info{};
+};
+
+}  // namespace testing
+
+}  // namespace pswitch_grpc
+
+#endif  // PSA_SWITCH_GRPC_TESTS_BASE_TEST_H_

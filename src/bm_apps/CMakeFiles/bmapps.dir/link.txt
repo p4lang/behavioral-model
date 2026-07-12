@@ -1,0 +1,2 @@
+/usr/bin/ar qc libbmapps.a CMakeFiles/bmapps.dir/notifications.cpp.o CMakeFiles/bmapps.dir/packet_pipe.cpp.o CMakeFiles/bmapps.dir/learn.cpp.o
+/usr/bin/ranlib libbmapps.a

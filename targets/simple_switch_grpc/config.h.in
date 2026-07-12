@@ -1,5 +1,16 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+
+/*
+ * SPDX-FileCopyrightText: 2013 Barefoot Networks, Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#ifndef SIMPLE_SWITCH_GRPC_CONFIG_H_
+#define SIMPLE_SWITCH_GRPC_CONFIG_H_
+
+
 /* define if the compiler supports basic C++17 syntax */
 #undef HAVE_CXX17
 
@@ -111,3 +122,7 @@
 /* Define to the type of an unsigned integer type of width exactly 8 bits if
    such a type exists and the standard includes do not define it. */
 #undef uint8_t
+
+
+#endif  // SIMPLE_SWITCH_GRPC_CONFIG_H_
+

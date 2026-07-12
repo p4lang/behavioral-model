@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpnanic_thrift.a "CMakeFiles/pnanic_thrift.dir/gen-cpp/bm/pna_nic_constants.cpp.o" "CMakeFiles/pnanic_thrift.dir/gen-cpp/bm/pna_nic_types.cpp.o" "CMakeFiles/pnanic_thrift.dir/gen-cpp/bm/PnaNic.cpp.o"
+/usr/bin/ranlib libpnanic_thrift.a

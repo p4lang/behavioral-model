@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpsaswitchgrpc.a CMakeFiles/psaswitchgrpc.dir/switch_runner.cpp.o CMakeFiles/psaswitchgrpc.dir/__/psa_switch/thrift/src/PsaSwitch_server.cpp.o
+/usr/bin/ranlib libpsaswitchgrpc.a
