@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: 2026 Yuao Ma
+#
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(
+    default_visibility = ["//visibility:public"],
+    licenses = ["notice"],
+)
+
+cc_library(
+    name = "bmpi",
+    srcs = glob([
+        "src/*.cpp",
+        "src/*.h",
+    ]),
+    hdrs = ["bm/PI/pi.h"],
+    includes = ["."],
+    local_defines = ["WITH_SIMPLE_SWITCH"],
+    deps = [
+        "//:bm_headers",
+        "//targets/simple_switch:simpleswitch",
+        "@com_github_p4lang_pi//:pi",
+    ],
+    alwayslink = True,
+)

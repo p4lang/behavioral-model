@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2026 Yuao Ma
+#
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(
+    default_visibility = ["//visibility:public"],
+    licenses = ["notice"],
+)
+
+cc_library(
+    name = "bmi",
+    srcs = [
+        "bmi_interface.c",
+        "bmi_port.c",
+    ],
+    hdrs = [
+        "BMI/bmi_port.h",
+        "bmi_interface.h",
+    ],
+    includes = ["."],
+    local_defines = ["WITH_PCAP_FIX"],
+    deps = ["@libpcap"],
+)

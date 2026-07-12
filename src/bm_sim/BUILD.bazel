@@ -1,0 +1,52 @@
+# SPDX-FileCopyrightText: 2026 Yuao Ma
+#
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(
+    default_visibility = ["//visibility:public"],
+    licenses = ["notice"],
+)
+
+genrule(
+    name = "version_cpp",
+    srcs = [
+        "version.cpp.in",
+        "//:VERSION",
+    ],
+    outs = ["version.cpp"],
+    cmd = "sed \"s/@BM_VERSION@/$$(cat $(rootpath //:VERSION))/\" $(location version.cpp.in) > $@",
+)
+
+cc_library(
+    name = "bmsim",
+    srcs = glob(
+        [
+            "*.cpp",
+            "*.c",
+            "*.h",
+            "core/*.cpp",
+        ],
+        exclude = ["md5.c"],
+    ) + [":version_cpp"],
+    copts = ["-Isrc/bm_sim"],
+    defines = ["HAVE_OPENSSL"],
+    linkopts = ["-ldl"],
+    deps = [
+        "//:bm_headers",
+        "//src/BMI:bmi",
+        "//third_party:spdlog",
+        "@boost.container",
+        "@boost.container_hash",
+        "@boost.multiprecision",
+        "@boost.program_options",
+        "@boost.thread",
+        "@boringssl//:crypto",
+        "@gmp",
+        "@jsoncpp",
+        "@libpcap",
+        "@nanomsg",
+        "@xxhash",
+    ],
+)

@@ -25,11 +25,11 @@ from bm_runtime.standard import Standard
 from bm_runtime.standard.ttypes import *
 try:
     from bm_runtime.simple_pre import SimplePre
-except:
+except ImportError:
     pass
 try:
     from bm_runtime.simple_pre_lag import SimplePreLAG
-except:
+except ImportError:
     pass
 
 
@@ -472,7 +472,7 @@ def ipv4Addr_to_bytes(addr):
         raise UIn_BadIPv4Error()
     try:
         return [int(b) for b in s]
-    except:
+    except Exception:
         raise UIn_BadIPv4Error()
 
 
@@ -484,7 +484,7 @@ def macAddr_to_bytes(addr):
         raise UIn_BadMacError()
     try:
         return [int(b, 16) for b in s]
-    except:
+    except Exception:
         raise UIn_BadMacError()
 
 
@@ -494,11 +494,11 @@ def ipv6Addr_to_bytes(addr):
         raise CLI_FormatExploreError()
     try:
         ip = IPv6Address(addr)
-    except:
+    except Exception:
         raise UIn_BadIPv6Error()
     try:
         return list(ip.packed)
-    except:
+    except Exception:
         raise UIn_BadIPv6Error()
 
 
@@ -541,7 +541,7 @@ def parse_param(input_str, bitwidth):
             raise UIn_BadParamError("Invalid IPv6 address")
     try:
         input_ = int(input_str, 0)
-    except:
+    except Exception:
         raise UIn_BadParamError(
             "Invalid input, could not cast to integer, try in hex with 0x prefix"
         )
@@ -693,7 +693,7 @@ BmMatchParamRange.to_str = BmMatchParamRange_to_str
 def parse_pvs_value(input_str, bitwidth):
     try:
         input_ = int(input_str, 0)
-    except:
+    except Exception:
         raise UIn_BadParamError(
             "Invalid input, could not cast to integer, try in hex with 0x prefix"
         )
@@ -864,7 +864,7 @@ def parse_bool(s):
     try:
         s = int(s, 0)
         return bool(s)
-    except:
+    except Exception:
         pass
     raise UIn_Error("Invalid bool parameter")
 
@@ -927,7 +927,7 @@ class RuntimeAPI(cmd.Cmd):
     def parse_int(self, arg, name):
         try:
             return int(arg)
-        except:
+        except Exception:
             raise UIn_Error("Bad format for {}, expected integer".format(name))
 
     def _complete_res(self, array, text):
@@ -1150,7 +1150,7 @@ class RuntimeAPI(cmd.Cmd):
         if table.match_type in {MatchType.TERNARY, MatchType.RANGE}:
             try:
                 priority = int(args.pop(-1))
-            except:
+            except Exception:
                 raise UIn_Error(
                     "Table is ternary, but could not extract a valid priority from args"
                 )
@@ -1203,12 +1203,12 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             entry_handle = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for entry handle")
 
         try:
             timeout_ms = int(args[2])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for timeout")
 
         print("Setting a", timeout_ms, "ms timeout for entry", entry_handle)
@@ -1236,7 +1236,7 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             entry_handle = int(args[2])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for entry handle")
 
         action_params = args[3:]
@@ -1267,7 +1267,7 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             entry_handle = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for entry handle")
 
         print("Deleting entry", entry_handle, "from", table_name)
@@ -1340,7 +1340,7 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             mbr_handle = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for member handle")
 
         self.client.bm_mt_act_prof_delete_member(0, act_prof.name, mbr_handle)
@@ -1374,7 +1374,7 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             mbr_handle = int(args[2])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for member handle")
 
         action_params = args[3:]
@@ -1413,7 +1413,7 @@ class RuntimeAPI(cmd.Cmd):
         if table.match_type in {MatchType.TERNARY, MatchType.RANGE}:
             try:
                 priority = int(args.pop(-1))
-            except:
+            except Exception:
                 raise UIn_Error(
                     "Table is ternary, but could not extract a valid priority from args"
                 )
@@ -1431,7 +1431,7 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             handle = int(handle)
-        except:
+        except Exception:
             raise UIn_Error("Bad format for handle")
 
         match_key = parse_match_key(table, match_key)
@@ -1484,7 +1484,7 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             entry_handle = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for entry handle")
 
         print("Deleting entry", entry_handle, "from", table_name)
@@ -1509,7 +1509,7 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             handle = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for handle")
 
         return table.name, handle
@@ -1595,7 +1595,7 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             grp_handle = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for group handle")
 
         self.client.bm_mt_act_prof_delete_group(0, act_prof.name, grp_handle)
@@ -1626,12 +1626,12 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             mbr_handle = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for member handle")
 
         try:
             grp_handle = int(args[2])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for group handle")
 
         self.client.bm_mt_act_prof_add_member_to_group(
@@ -1663,12 +1663,12 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             mbr_handle = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for member handle")
 
         try:
             grp_handle = int(args[2])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for group handle")
 
         self.client.bm_mt_act_prof_remove_member_from_group(
@@ -1694,7 +1694,7 @@ class RuntimeAPI(cmd.Cmd):
     def get_mgrp(self, s):
         try:
             return int(s)
-        except:
+        except Exception:
             raise UIn_Error("Bad format for multicast group id")
 
     @handle_bad_input_mc
@@ -1725,7 +1725,7 @@ class RuntimeAPI(cmd.Cmd):
         for port_num_str in ports:
             try:
                 port_num = int(port_num_str)
-            except:
+            except Exception:
                 raise UIn_Error("'%s' is not a valid %s number"
                                 "" % (port_num_str, description))
             if port_num < 0:
@@ -1764,7 +1764,7 @@ class RuntimeAPI(cmd.Cmd):
         self.at_least_n_args(args, 1)
         try:
             rid = int(args[0])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for rid")
         port_map_str, lag_map_str = self.parse_ports_and_lags(args)
         if self.pre_type == PreType.SimplePre:
@@ -1781,7 +1781,7 @@ class RuntimeAPI(cmd.Cmd):
     def get_node_handle(self, s):
         try:
             return int(s)
-        except:
+        except Exception:
             raise UIn_Error("Bad format for node handle")
 
     @handle_bad_input_mc
@@ -1846,7 +1846,7 @@ class RuntimeAPI(cmd.Cmd):
         self.at_least_n_args(args, 2)
         try:
             lag_index = int(args[0])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for lag index")
         port_map_str = self.ports_to_port_map_str(args[1:], description="lag")
         print("Setting lag membership:", lag_index, "<-", port_map_str)
@@ -1859,7 +1859,7 @@ class RuntimeAPI(cmd.Cmd):
         json_dump = self.mc_client.bm_mc_get_entries(0)
         try:
             mc_json = json.loads(json_dump)
-        except:
+        except Exception:
             print("Exception when retrieving MC entries")
             return
 
@@ -1908,7 +1908,7 @@ class RuntimeAPI(cmd.Cmd):
             json_str = f.read()
             try:
                 json.loads(json_str)
-            except:
+            except Exception:
                 raise UIn_Error("Not a valid JSON file")
             self.client.bm_load_new_config(json_str)
             load_json_str(json_str)
@@ -1939,7 +1939,7 @@ class RuntimeAPI(cmd.Cmd):
                 r = float(r)
                 b = int(b)
                 new_rates.append(BmMeterRateConfig(r, b))
-            except:
+            except Exception:
                 raise UIn_Error("Error while parsing rates")
         self.client.bm_meter_array_set_rates(0, meter.name, new_rates)
 
@@ -1955,7 +1955,7 @@ class RuntimeAPI(cmd.Cmd):
         meter = self.get_res("meter", meter_name, ResType.meter_array)
         try:
             index = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for index")
         rates = args[2:]
         if len(rates) != meter.rate_count:
@@ -1970,7 +1970,7 @@ class RuntimeAPI(cmd.Cmd):
                 r = float(r)
                 b = int(b)
                 new_rates.append(BmMeterRateConfig(r, b))
-            except:
+            except Exception:
                 raise UIn_Error("Error while parsing rates")
         if meter.is_direct:
             table_name = meter.binding
@@ -1990,7 +1990,7 @@ class RuntimeAPI(cmd.Cmd):
         meter = self.get_res("meter", meter_name, ResType.meter_array)
         try:
             index = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for index")
         # meter.rate_count
         if meter.is_direct:
@@ -2021,7 +2021,7 @@ class RuntimeAPI(cmd.Cmd):
         index = args[1]
         try:
             index = int(index)
-        except:
+        except Exception:
             raise UIn_Error("Bad format for index")
         if counter.is_direct:
             table_name = counter.binding
@@ -2048,15 +2048,15 @@ class RuntimeAPI(cmd.Cmd):
         byts = args[3]
         try:
             index = int(index)
-        except:
+        except Exception:
             raise UIn_Error("Bad format for index")
         try:
             pkts = int(pkts)
-        except:
+        except Exception:
             raise UIn_Error("Bad format for packets")
         try:
             byts = int(byts)
-        except:
+        except Exception:
             raise UIn_Error("Bad format for bytes")
         if counter.is_direct:
             table_name = counter.binding
@@ -2104,7 +2104,7 @@ class RuntimeAPI(cmd.Cmd):
             index = args[1]
             try:
                 index = int(index)
-            except:
+            except Exception:
                 raise UIn_Error("Bad format for index")
             value = self.client.bm_register_read(0, register.name, index)
             print("{}[{}]=".format(register_name, index), value)
@@ -2128,12 +2128,12 @@ class RuntimeAPI(cmd.Cmd):
         index = args[1]
         try:
             index = int(index)
-        except:
+        except Exception:
             raise UIn_Error("Bad format for index")
         value = args[2]
         try:
             value = int(value)
-        except:
+        except Exception:
             raise UIn_Error("Bad format for value, must be an integer")
         self.client.bm_register_write(0, register.name, index, value)
 
@@ -2239,7 +2239,7 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             entry_handle = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for entry handle")
 
         entry = self.client.bm_mt_get_entry(0, table.name, entry_handle)
@@ -2260,7 +2260,7 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             mbr_handle = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for member handle")
 
         member = self.client.bm_mt_act_prof_get_member(
@@ -2294,7 +2294,7 @@ class RuntimeAPI(cmd.Cmd):
 
         try:
             grp_handle = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for group handle")
 
         group = self.client.bm_mt_act_prof_get_group(
@@ -2382,7 +2382,7 @@ class RuntimeAPI(cmd.Cmd):
         if table.match_type in {MatchType.TERNARY, MatchType.RANGE}:
             try:
                 priority = int(args.pop(-1))
-            except:
+            except Exception:
                 raise UIn_Error(
                     "Table is ternary, but could not extract a valid priority from args"
                 )
@@ -2489,7 +2489,7 @@ class RuntimeAPI(cmd.Cmd):
         iface_name = args[0]
         try:
             port_num = int(args[1])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for port_num, must be an integer")
         pcap_path = ""
         if len(args) > 2:
@@ -2503,7 +2503,7 @@ class RuntimeAPI(cmd.Cmd):
         self.exactly_n_args(args, 1)
         try:
             port_num = int(args[0])
-        except:
+        except Exception:
             raise UIn_Error("Bad format for port_num, must be an integer")
         self.client.bm_dev_mgr_remove_port(port_num)
 
@@ -2603,7 +2603,7 @@ class RuntimeAPI(cmd.Cmd):
         name = args[0]
         try:
             key = bytearray.fromhex(args[1])
-        except:
+        except Exception:
             raise UIn_BadParamError("Toeplitz hash key must be a hex string")
         if len(key) % 4 != 0:
             raise UIn_BadParamError("Toeplitz hash key must be a multiple of 4 bytes in length")
