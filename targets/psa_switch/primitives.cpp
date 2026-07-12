@@ -328,6 +328,9 @@ REGISTER_PRIMITIVE(register_read);
 class register_write
   : public ActionPrimitive<RegisterArray &, const Data &, const Data &> {
   void operator ()(RegisterArray &dst, const Data &idx, const Data &src) {
+    BMLOG_TRACE_PKT(get_packet(),
+                    "Attempting to write register '{}' at index {} with value {}",
+                    dst.get_name(), idx.get_uint(), src);
     auto i = idx.get_uint();
 #ifndef NDEBUG
     if (i >= dst.size()) {

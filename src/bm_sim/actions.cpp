@@ -417,6 +417,11 @@ ActionFnEntry::execute(Packet *pkt) const {
     param_offset = primitive.get_param_offset();
     primitive.execute(&state, action_fn->params.data() + param_offset);
     idx = primitive.get_jump_offset(idx);
+    BMLOG_TRACE_SI_PKT(*pkt, primitive.get_source_info(),
+      "Primitive {} done, next primitive index is {}",
+        (primitive.get_source_info() == nullptr) ? "(no source info)"
+        : primitive.get_source_info()->get_source_fragment(),
+        idx);
   }
 }
 

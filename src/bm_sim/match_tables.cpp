@@ -127,6 +127,7 @@ MatchTableAbstract::apply_action(Packet *pkt) {
 
   action_entry.action_fn(pkt);
 
+  BMLOG_DEBUG_PKT(*pkt, "Finished executing action entry");
   return next_node;
 }
 

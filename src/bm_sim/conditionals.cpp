@@ -19,6 +19,10 @@ namespace bm {
 
 const ControlFlowNode *
 Conditional::operator()(Packet *pkt) const {
+  BMLOG_TRACE_SI_PKT(*pkt, get_source_info(), "Begin evaluating condition \"{}\" ({})",
+                     (get_source_info() == nullptr) ? get_name() :
+                     get_source_info()->get_source_fragment(),
+                     get_name());
   // TODO(antonin)
   // this is temporary while we experiment with the debugger
   DEBUGGER_NOTIFY_CTR(
@@ -43,6 +47,10 @@ Conditional::operator()(Packet *pkt) const {
   DEBUGGER_NOTIFY_CTR(
       Debugger::PacketId::make(pkt->get_packet_id(), pkt->get_copy_id()),
       DBG_CTR_EXIT(DBG_CTR_CONDITION) | get_id());
+  BMLOG_TRACE_SI_PKT(*pkt, get_source_info(), "Finished evaluating condition \"{}\" ({})",
+                     (get_source_info() == nullptr) ? get_name() :
+                     get_source_info()->get_source_fragment(),
+                     get_name());
   return result ? true_next : false_next;
 }
 

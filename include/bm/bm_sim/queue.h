@@ -19,6 +19,7 @@
 #include <deque>
 #include <mutex>
 #include <utility>
+#include <bm/bm_sim/logger.h>
 
 namespace bm {
 
@@ -61,7 +62,10 @@ class Queue {
   void push_front(const T &item) {
     std::unique_lock<std::mutex> lock(q_mutex);
     while (!is_not_full()) {
-      if (wb == WriteReturn) return;
+      if (wb == WriteReturn) {
+        BMLOG_DEBUG("Queue is full, returning without pushing packet");
+        return;
+      }
       q_not_full.wait(lock);
     }
     queue.push_front(item);
@@ -73,7 +77,10 @@ class Queue {
   void push_front(T &&item) {
     std::unique_lock<std::mutex> lock(q_mutex);
     while (!is_not_full()) {
-      if (wb == WriteReturn) return;
+      if (wb == WriteReturn) {
+        BMLOG_DEBUG("Queue is full, returning without pushing packet");
+        return;
+      }
       q_not_full.wait(lock);
     }
     queue.push_front(std::move(item));

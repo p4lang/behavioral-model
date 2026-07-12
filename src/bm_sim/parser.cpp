@@ -81,6 +81,7 @@ template<>
 void
 ParserOpSet<ParserLookAhead>::operator()(Packet *pkt, const char *data,
                                          size_t *bytes_parsed) const {
+  BMLOG_DEBUG_PKT(*pkt, "Lookahead begin at offset {} for {} bits", src.byte_offset, src.bitwidth);
   static thread_local ByteContainer bc;
   auto phv = pkt->get_phv();
   if (pkt->get_data_size() - *bytes_parsed < src.nbytes)
@@ -469,6 +470,8 @@ ParserOpAdvance<Data>::operator()(Packet *pkt, const char *data,
   if (pkt->get_ingress_length() - *bytes_parsed < shift_bytes_uint)
     throw parser_exception_core(ErrorCodeMap::Core::PacketTooShort);
   *bytes_parsed += shift_bytes_uint;
+  BMLOG_TRACE_PKT(*pkt, "Advanced by {} bytes",
+                  shift_bytes_uint);
 }
 
 template<>
@@ -493,6 +496,7 @@ ParserOpAdvance<ArithExpression>::operator()(Packet *pkt, const char *data,
   if (pkt->get_ingress_length() - *bytes_parsed < shift_bytes_uint)
     throw parser_exception_core(ErrorCodeMap::Core::PacketTooShort);
   *bytes_parsed += shift_bytes_uint;
+  BMLOG_TRACE_PKT(*pkt, "Advanced by {} bytes", shift_bytes_uint);
 }
 
 template<>
@@ -516,6 +520,7 @@ ParserOpAdvance<field_t>::operator()(Packet *pkt, const char *data,
   if (pkt->get_ingress_length() - *bytes_parsed < shift_bytes_uint)
     throw parser_exception_core(ErrorCodeMap::Core::PacketTooShort);
   *bytes_parsed += shift_bytes_uint;
+  BMLOG_TRACE_PKT(*pkt, "Advanced by {} bytes", shift_bytes_uint);
 }
 
 template <typename P, bool with_padding = true>
