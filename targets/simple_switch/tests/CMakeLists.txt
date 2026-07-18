@@ -39,7 +39,7 @@ foreach(TEST ${TESTS})
   set_target_properties(ss_test_${TEST} PROPERTIES
     OUTPUT_NAME ${TEST}
   )
-  add_test(NAME simple_switch/${TEST} COMMAND ${TEST})
+  add_test(NAME simple_switch/${TEST} COMMAND ss_test_${TEST})
 endforeach()
 
 # FIXME: should we have a test_all target?
