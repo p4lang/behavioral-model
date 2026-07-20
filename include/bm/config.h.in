@@ -82,6 +82,9 @@
 /* Enable Nanomsg support */
 #cmakedefine BM_NANOMSG_ON @BM_NANOMSG_ON@
 
+/* Enable structured packet trace support */
+#cmakedefine BM_PACKET_TRACE_ON @BM_PACKET_TRACE_ON@
+
 /* Enable Thrift support */
 #cmakedefine BM_THRIFT_ON @BM_THRIFT_ON@
 
