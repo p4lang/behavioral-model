@@ -7,3 +7,4 @@
 .github/
 **/Dockerfile
 **/*.md
+!README.md
