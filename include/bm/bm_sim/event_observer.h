@@ -19,10 +19,9 @@
 
 namespace bm {
 
-// Forward declarations of P4 object classes. This is ugly, but:
-// 1) I don't have to worry about circular dependencies
-// 2) If I decide to switch from id to name for msgs, I won't have to modify the
-// EventObserverIface
+// Forward declarations of P4 object classes. Don't need their full definitions
+// because this file only uses references to them and doesn't require their
+// implementation/layout details.
 class ActionFn;
 class Checksum;
 class Conditional;
@@ -107,7 +106,12 @@ class EventObserverRegistry {
 }  // namespace bm
 
 //! Dispatch an event to all registered observers.
-//! Usage: BMELOG(parser_start, *pkt, *this);
+//! For example:
+//! @code
+//! BMELOG(packet_in, packet);
+//! // packet processing
+//! BMELOG(packet_out, packet);
+//! @endcode
 #if defined(BM_ELOG_ON) || defined(BM_PACKET_TRACE_ON)
 #define BMELOG(fn, ...)                                                 \
   do {                                                                  \
