@@ -817,7 +817,7 @@ def deprecated_act_prof(substitute, with_selection=False,
                     "This is a deprecated command, use '{}' instead\n".format(
                         substitute))
             return substitute_fn(" ".join(args))
-        # we add the handle_bad_input decorator "programatically"
+        # we add the handle_bad_input decorator "programmatically"
         return handle_bad_input(wrapper)
     return deprecated_act_prof_
 
