@@ -62,6 +62,14 @@ class McSimplePre {
   struct McIn {
     //! Multicast group id to use for replication
     mgrp_t mgid;
+    //! Hash value used by LAG-aware PRE implementations (see
+    //! McSimplePreLAG) to select a member port within a LAG. Callers
+    //! replicating over a LAG should populate this with a hash of
+    //! per-packet data (e.g. the packet's header fields) so that traffic
+    //! is spread across LAG members instead of always resolving to the
+    //! same one. Implementations which do not support LAGs ignore this
+    //! field. Defaults to 0.
+    uint64_t hash{0};
   };
 
   //! Output of replicate() method

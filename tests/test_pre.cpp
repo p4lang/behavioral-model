@@ -14,6 +14,7 @@
 #include <bm/bm_sim/simple_pre_lag.h>
 
 #include <bitset>
+#include <set>
 #include <vector>
 
 using namespace bm;
@@ -384,6 +385,44 @@ TEST(McSimplePreLAG, ResetState) {
   ASSERT_EQ(McSimplePre::SUCCESS, pre.mc_mgrp_create(1, &mgrp));
   auto mc_out_3 = pre.replicate({1});
   ASSERT_EQ(0u, mc_out_3.size());
+}
+
+TEST(McSimplePreLAG, LAGHashSelectsMember) {
+  // Regression test: the member of a LAG selected during replication must
+  // depend on the hash value supplied in McIn, so that traffic is spread
+  // across LAG members instead of always resolving to the same one.
+  McSimplePreLAG pre;
+  McSimplePreLAG::mgrp_t mgid = 0x400;
+  McSimplePreLAG::mgrp_hdl_t mgrp;
+  McSimplePreLAG::l1_hdl_t l1h;
+  McSimplePreLAG::rid_t rid = 0x200;
+  McSimplePreLAG::lag_id_t lag_id = 2;
+  std::vector<McSimplePre::egress_port_t> members = {10, 11, 12, 13};
+
+  McSimplePreLAG::PortMap lag_port_map;
+  for (const auto &m : members) lag_port_map[m] = 1;
+
+  McSimplePreLAG::LagMap lag_map;
+  lag_map[lag_id] = 1;
+
+  ASSERT_EQ(McSimplePre::SUCCESS, pre.mc_mgrp_create(mgid, &mgrp));
+  ASSERT_EQ(McSimplePre::SUCCESS, pre.mc_node_create(rid, {}, lag_map, &l1h));
+  ASSERT_EQ(McSimplePre::SUCCESS, pre.mc_node_associate(mgrp, l1h));
+  ASSERT_EQ(McSimplePre::SUCCESS,
+            pre.mc_set_lag_membership(lag_id, lag_port_map));
+
+  // Every member should be reachable for some hash value (i.e. the member
+  // selection is not stuck on a single port), and the selection should
+  // match the expected (hash % member_count) mapping.
+  std::set<McSimplePre::egress_port_t> selected_ports;
+  for (uint64_t hash = 0; hash < members.size(); hash++) {
+    McSimplePre::McIn ingress_info{mgid, hash};
+    auto egress_info = pre.replicate(ingress_info);
+    ASSERT_EQ(1u, egress_info.size());
+    selected_ports.insert(egress_info[0].egress_port);
+    EXPECT_EQ(members[hash % members.size()], egress_info[0].egress_port);
+  }
+  EXPECT_EQ(members.size(), selected_ports.size());
 }
 
 TEST(McSimplePreLAG, LAGMembershipNotSet) {
