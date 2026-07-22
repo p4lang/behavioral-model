@@ -28,8 +28,8 @@ expand_template(
     substitutions = {
         # disabled
         "#cmakedefine BM_DEBUG_ON @BM_DEBUG_ON@": "/* #undef BM_DEBUG_ON */",
-        "#cmakedefine BM_ELOG_ON @BM_ELOG_ON@": "/* #undef BM_ELOG_ON */",
         # enabled
+        "#cmakedefine BM_ELOG_ON @BM_ELOG_ON@": "#define BM_ELOG_ON 1",
         "#cmakedefine BM_ENABLE_MODULES @BM_ENABLE_MODULES@": "#define BM_ENABLE_MODULES 1",
         "#cmakedefine BM_HAVE_ALGORITHM @BM_HAVE_ALGORITHM@": "#define BM_HAVE_ALGORITHM 1",
         "#cmakedefine BM_HAVE_ARRAY @BM_HAVE_ARRAY@": "#define BM_HAVE_ARRAY 1",

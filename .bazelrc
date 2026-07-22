@@ -6,6 +6,10 @@
 common --enable_bzlmod
 common --noenable_workspace
 
+# Auto-select build:linux / build:macos / build:windows based on the host OS,
+# so platform-specific flags don't need manual --config= activation.
+common --enable_platform_specific_config
+
 # In Bazel 9, native C++ rules are no longer injected into the global namespace
 # by default.  Two files in grpc 1.76.0 still use native.cc_*:
 #   bazel/cython_library.bzl      (native.cc_binary)
@@ -15,3 +19,8 @@ build --incompatible_autoload_externally=+cc_library,+cc_binary
 
 build --conlyopt='-std=gnu11' --cxxopt='-std=c++17'
 build --host_cxxopt='-std=c++17'
+
+# Deployment target 10.13 is the minimum for C++17 aligned_alloc in libc++.
+# host_macos_minimum_os covers host tool builds (e.g. protoc).
+build:macos --macos_minimum_os=10.13
+build:macos --host_macos_minimum_os=10.13

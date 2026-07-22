@@ -12,31 +12,47 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    env:
-      BAZEL: bazelisk-linux-amd64
-      BUILDIFIER: buildifier-linux-amd64
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
         with:
           submodules: recursive
 
+      - name: Set platform environment variables
+        run: |
+          case "$(uname -s)" in
+            Linux*)  OS=linux ;;
+            Darwin*) OS=darwin ;;
+          esac
+          case "$(uname -m)" in
+            x86_64)        ARCH=amd64 ;;
+            arm64|aarch64) ARCH=arm64 ;;
+          esac
+          echo "OS=${OS}" >> $GITHUB_ENV
+          echo "ARCH=${ARCH}" >> $GITHUB_ENV
+
       - name: Mount bazel cache
         uses: actions/cache@v6
         with:
+          # Bazel's output root differs by OS: ~/.cache/bazel on Linux, ~/Library/Caches/bazel on macOS.
           # See https://docs.bazel.build/versions/master/output_directories.html
-          path: "~/.cache/bazel"
+          path: ${{ runner.os == 'macOS' && '~/Library/Caches/bazel' || '~/.cache/bazel' }}
           # Create a new cache entry whenever Bazel files change.
           # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows
-          key: bazel-${{ runner.os }}-build-${{ hashFiles('**/*.bzl', '**/*.bazel') }}
+          key: bazel-${{ runner.os }}-${{ runner.arch }}-build-${{ hashFiles('**/*.bzl', '**/*.bazel') }}
           restore-keys: |
-            bazel-${{ runner.os }}-build-
+            bazel-${{ runner.os }}-${{ runner.arch }}-build-
 
       - name: Install Buildifier
         run: |
-          curl -LO "https://github.com/bazelbuild/buildtools/releases/download/v8.5.1/$BUILDIFIER"
-          chmod +x $BUILDIFIER
-          sudo mv $BUILDIFIER /usr/local/bin/buildifier
+          BUILDIFIER="buildifier-${OS}-${ARCH}"
+          curl -LO "https://github.com/bazelbuild/buildtools/releases/download/v8.5.1/${BUILDIFIER}"
+          chmod +x "${BUILDIFIER}"
+          sudo mv "${BUILDIFIER}" /usr/local/bin/buildifier
 
       - name: Run Buildifier
         run: |
@@ -53,9 +69,10 @@ jobs:
 
       - name: Install bazelisk
         run: |
-          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.29.0/$BAZEL"
-          chmod +x $BAZEL
-          sudo mv $BAZEL /usr/local/bin/bazel
+          BAZEL="bazelisk-${OS}-${ARCH}"
+          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.29.0/${BAZEL}"
+          chmod +x "${BAZEL}"
+          sudo mv "${BAZEL}" /usr/local/bin/bazel
 
       - name: Build
         run: bazel build //targets/simple_switch_grpc:simple_switch_grpc
