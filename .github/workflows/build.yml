@@ -50,7 +50,8 @@ jobs:
         tags: p4lang/behavioral-model:test-build
         build-args: IMAGE_TYPE=test
         cache-from: type=gha
-        cache-to: type=gha,mode=max
+          # A cache write must not fail the build.
+        cache-to: type=gha,mode=max,ignore-error=true
     - name: Run tests in Docker image
       run: |
         docker run --rm p4lang/behavioral-model:test-build \
@@ -67,7 +68,8 @@ jobs:
         push: true
         tags: p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }}
         cache-from: type=gha
-        cache-to: type=gha,mode=max
+        # A cache write must not fail the build.
+        cache-to: type=gha,mode=max,ignore-error=true
 
   build-no-pi:
     if: ${{ github.repository == 'p4lang/behavioral-model' && github.ref == 'refs/heads/main' }}
@@ -88,7 +90,8 @@ jobs:
         tags: p4lang/behavioral-model:test-build-no-pi
         build-args: IMAGE_TYPE=test
         cache-from: type=gha
-        cache-to: type=gha,mode=max
+        # A cache write must not fail the build.
+        cache-to: type=gha,mode=max,ignore-error=true
     - name: Run tests in Docker image
       run: |
         docker run --rm p4lang/behavioral-model:test-build-no-pi \
@@ -106,4 +109,5 @@ jobs:
         push: true
         tags: p4lang/behavioral-model:no-pi
         cache-from: type=gha
-        cache-to: type=gha,mode=max
+        # A cache write must not fail the build.
+        cache-to: type=gha,mode=max,ignore-error=true

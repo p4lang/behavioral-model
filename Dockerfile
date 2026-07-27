@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-ARG PARENT_VERSION=latest-24
+ARG PARENT_VERSION=latest
 FROM p4lang/pi:${PARENT_VERSION}
 LABEL maintainer="P4 Developers <p4-dev@lists.p4.org>"
 
@@ -33,10 +33,10 @@ ENV BM_DEPS build-essential \
             libjsoncpp-dev \
             libxxhash-dev \
             pkg-config
-ENV BM_RUNTIME_DEPS libboost-program-options1.74.0 \
-                    libboost-system1.74.0 \
-                    libboost-filesystem1.74.0 \
-                    libboost-thread1.74.0 \
+ENV BM_RUNTIME_DEPS libboost-program-options1.83.0 \
+                    libboost-system1.83.0 \
+                    libboost-filesystem1.83.0 \
+                    libboost-thread1.83.0 \
                     libgmp10 \
                     libpcap0.8t64 \
                     libxxhash0 \
