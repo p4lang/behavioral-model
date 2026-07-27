@@ -50,7 +50,7 @@ jobs:
         tags: p4lang/behavioral-model:test-build
         build-args: IMAGE_TYPE=test
         cache-from: type=gha
-          # A cache write must not fail the build.
+        # A cache write must not fail the build.
         cache-to: type=gha,mode=max,ignore-error=true
     - name: Run tests in Docker image
       run: |
@@ -61,15 +61,26 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-    - name: Build and push production image
+    - name: Build production image
+      uses: docker/build-push-action@v7
+      with:
+        context: .
+        load: true
+        tags: p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }}
+        cache-from: type=gha
+        # A cache write must not fail the build.
+        cache-to: type=gha,mode=max,ignore-error=true
+    - name: Smoke test production image
+      run: |
+        docker run --rm p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }} \
+          simple_switch --version
+    - name: Push production image
       uses: docker/build-push-action@v7
       with:
         context: .
         push: true
         tags: p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }}
         cache-from: type=gha
-        # A cache write must not fail the build.
-        cache-to: type=gha,mode=max,ignore-error=true
 
   build-no-pi:
     if: ${{ github.repository == 'p4lang/behavioral-model' && github.ref == 'refs/heads/main' }}
@@ -101,7 +112,20 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-    - name: Build and push no-PI production image
+    - name: Build no-PI production image
+      uses: docker/build-push-action@v7
+      with:
+        context: .
+        file: Dockerfile.noPI
+        load: true
+        tags: p4lang/behavioral-model:no-pi
+        cache-from: type=gha
+        # A cache write must not fail the build.
+        cache-to: type=gha,mode=max,ignore-error=true
+    - name: Smoke test no-PI production image
+      run: |
+        docker run --rm p4lang/behavioral-model:no-pi simple_switch --version
+    - name: Push no-PI production image
       uses: docker/build-push-action@v7
       with:
         context: .
@@ -109,5 +133,3 @@ jobs:
         push: true
         tags: p4lang/behavioral-model:no-pi
         cache-from: type=gha
-        # A cache write must not fail the build.
-        cache-to: type=gha,mode=max,ignore-error=true
