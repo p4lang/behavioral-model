@@ -26,12 +26,13 @@ ENV BM_DEPS build-essential \
             libboost-thread-dev \
             libjsoncpp-dev \
             libxxhash-dev
-ENV BM_RUNTIME_DEPS libboost-program-options1.74.0 \
-                    libboost-system1.74.0 \
-                    libboost-filesystem1.74.0 \
-                    libboost-thread1.74.0 \
+ENV BM_RUNTIME_DEPS libboost-program-options1.83.0 \
+                    libboost-system1.83.0 \
+                    libboost-filesystem1.83.0 \
+                    libboost-thread1.83.0 \
                     libgmp10 \
-                    libpcap0.8 \
+                    libpcap0.8t64 \
+                    libjsoncpp25 \
                     libxxhash0 \
                     python3 \
                     python3-six \
