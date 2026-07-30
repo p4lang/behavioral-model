@@ -371,6 +371,53 @@ TEST_F(HeaderStackP4_16Test, PopFront) {
   EXPECT_FALSE(h2.is_valid());
 }
 
+// Regression test for unsigned underflow when num >= stack size
+TEST_F(HeaderStackP4_16Test, PopFrontLargeNum) {
+  auto &stack = this->stack;
+  auto *phv = this->phv.get();
+
+  auto &h0 = phv->get_header(this->testHeader_0);
+  auto &h1 = phv->get_header(this->testHeader_1);
+  auto &h2 = phv->get_header(this->testHeader_2);
+
+  ASSERT_EQ(2u, stack.push_front(2));
+  h0.mark_valid();
+  h1.mark_valid();
+  ASSERT_EQ(2u, stack.get_count());
+
+  size_t num_to_pop = 5;  // exceeds stack depth
+  EXPECT_EQ(std::min(num_to_pop, this->stack_depth),
+            stack.pop_front(num_to_pop));
+
+  EXPECT_FALSE(h0.is_valid());
+  EXPECT_FALSE(h1.is_valid());
+  EXPECT_FALSE(h2.is_valid());
+  EXPECT_EQ(0u, stack.get_count());
+}
+
+// Boundary case: pop exactly stack depth elements
+TEST_F(HeaderStackP4_16Test, PopFrontExactDepth) {
+  auto &stack = this->stack;
+  auto *phv = this->phv.get();
+
+  auto &h0 = phv->get_header(this->testHeader_0);
+  auto &h1 = phv->get_header(this->testHeader_1);
+  auto &h2 = phv->get_header(this->testHeader_2);
+
+  ASSERT_EQ(3u, stack.push_front(3));
+  h0.mark_valid();
+  h1.mark_valid();
+  h2.mark_valid();
+  ASSERT_EQ(3u, stack.get_count());
+
+  EXPECT_EQ(3u, stack.pop_front(3));
+
+  EXPECT_FALSE(h0.is_valid());
+  EXPECT_FALSE(h1.is_valid());
+  EXPECT_FALSE(h2.is_valid());
+  EXPECT_EQ(0u, stack.get_count());
+}
+
 }  // namespace testing
 
 }  // namespace bm

@@ -103,8 +103,11 @@ StackP4_16<T>::pop_front(size_t num) {
   auto size = this->elements.size();
   this->next -= std::min(this->next, num);
   size_t i = 0;
-  for (; i < size - num; i++) {
-    this->elements[i].get().swap_values(&this->elements[i + num].get());
+  // Avoid unsigned underflow when num >= size
+  if (num < size) {
+    for (; i < size - num; i++) {
+      this->elements[i].get().swap_values(&this->elements[i + num].get());
+    }
   }
   for (; i < size; i++) {
     this->elements[i].get().mark_invalid();
