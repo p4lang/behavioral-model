@@ -30,16 +30,16 @@
 #include <functional>
 #include <mutex>
 #include <string>
-#include <unordered_set>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
+#include <boost/container/small_vector.hpp>
 #include <boost/thread/locks.hpp>  // for boost::lock
 
 #include "bignum.h"
 #include "data.h"
 #include "named_p4object.h"
-#include "short_alloc.h"
 
 namespace bm {
 
@@ -175,19 +175,16 @@ class RegisterSync {
   using Lock = RegisterArray::UniqueLock;
 
   template <size_t NumLocks = 4>
-  using LockVector = std::vector<
-    Lock, ::detail::short_alloc<Lock, NumLocks * sizeof(Lock), alignof(Lock)> >;
+  using LockVector = boost::container::small_vector<Lock, NumLocks>;
 
   struct RegisterLocks {
-    LockVector<>::allocator_type::arena_type a;
-    LockVector<> v{a};
+    LockVector<> v{};
   };
 
   void add_register_array(const RegisterArray *register_array);
 
   void merge_from(const RegisterSync &other);
 
-  // tried NRVO, but RegisterLocks not movable
   void lock(RegisterLocks *RL) const {
     for (auto m : mutexes) RL->v.emplace_back(*m, std::defer_lock);
     boost::lock(RL->v.begin(), RL->v.end());

@@ -86,7 +86,6 @@ bm/bm_sim/queue.h \
 bm/bm_sim/queueing.h \
 bm/bm_sim/ras.h \
 bm/bm_sim/runtime_interface.h \
-bm/bm_sim/short_alloc.h \
 bm/bm_sim/stateful.h \
 bm/bm_sim/switch.h \
 bm/bm_sim/simple_pre.h \
