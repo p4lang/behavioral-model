@@ -15,13 +15,12 @@
 #ifndef BM_BM_SIM_BYTECONTAINER_H_
 #define BM_BM_SIM_BYTECONTAINER_H_
 
-#include <vector>
 #include <iterator>
 #include <string>
+#include <vector>
 
+#include <boost/container/small_vector.hpp>
 #include <boost/functional/hash.hpp>
-
-#include "short_alloc.h"
 
 namespace bm {
 
@@ -32,7 +31,7 @@ class ByteContainer {
   static constexpr size_t S = 16u;
   static_assert(sizeof(char) == 1, "");
   static_assert(alignof(char) == 1, "");
-  using _vector = std::vector<char, detail::short_alloc<char, S, 1> >;
+  using _vector = boost::container::small_vector<char, S>;
 
  public:
   using iterator = _vector::iterator;
@@ -42,22 +41,19 @@ class ByteContainer {
   using size_type = size_t;
 
  public:
-  ByteContainer()
-      : bytes(_a) {
-    bytes.reserve(S);
-  }
+  ByteContainer() = default;
 
   //! Constructs the container with \p nbytes copies of elements with value \p c
   explicit ByteContainer(const size_t nbytes, const char c = '\x00')
-      : bytes(nbytes, c, _a) { }
+      : bytes(nbytes, c) {}
 
   //! Constructs the container by copying the bytes in vector \p bytes
-  explicit ByteContainer(const std::vector<char> &bytes)
-      : bytes(bytes.begin(), bytes.end(), _a) { }
+  explicit ByteContainer(const std::vector<char>& bytes)
+      : bytes(bytes.begin(), bytes.end()) {}
 
   //! Constructs the container by copying the bytes in this byte array
-  ByteContainer(const char *bytes, size_t nbytes)
-      : bytes(bytes, bytes + nbytes, _a) { }
+  ByteContainer(const char* bytes, size_t nbytes)
+      : bytes(bytes, bytes + nbytes) {}
 
   static char char2digit(char c) {
     if (c >= '0' && c <= '9')
@@ -72,8 +68,7 @@ class ByteContainer {
 
   //! Constructs the container from a hexadecimal string. Parameter \p hexstring
   //! can optionally include the `0x` prefix.
-  explicit ByteContainer(const std::string &hexstring)
-      : bytes(_a) {
+  explicit ByteContainer(const std::string& hexstring) {
     bytes.reserve(S);
     size_t idx = 0;
 
@@ -97,19 +92,11 @@ class ByteContainer {
     }
   }
 
-  ByteContainer(const ByteContainer &other)
-      : bytes(other.bytes, _a) { }
-
-  ByteContainer &operator=(const ByteContainer &other) {
-    bytes.assign(other.begin(), other.end());
-    return *this;
-  }
-
   //! Returns the number of bytes in the container
   size_type size() const noexcept { return bytes.size(); }
 
   //! Clears the contents of the container
-  void clear() { return bytes.clear(); }
+  void clear() { bytes.clear(); }
 
   // iterators
 
@@ -265,7 +252,6 @@ class ByteContainer {
   }
 
  private:
-  _vector::allocator_type::arena_type _a;
   _vector bytes;
 };
 
