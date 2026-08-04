@@ -1,0 +1,76 @@
+=========================================================================
+Packet trace test: recirc: recirculate once
+A 1-byte packet with value 0x00 is recirculated by the egress pipeline; the recirculated pass emits a 2-byte packet on the ingress port. The recirculated packet copy currently produces no additional trace events.
+=========================================================================
+-- INPUT ----------------------------------------------------------------
+P4 pipeline: recirc.json
+Table programming:
+  (none)
+Input packets:
+  port=1 len=1 bytes=00
+-- OUTPUT ---------------------------------------------------------------
+Output packets:
+  port=1 len=2 bytes=01ab
+Packet traces:
+--- trace_0.txtpb
+input {
+  ingress_port: 1
+}
+root {
+  events {
+    pipeline_stage {
+      stage_name: "parser"
+      stage_kind: PARSER
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "parser"
+      stage_kind: PARSER
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "ingress"
+      stage_kind: CONTROL
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "ingress"
+      stage_kind: CONTROL
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "egress"
+      stage_kind: CONTROL
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "egress"
+      stage_kind: CONTROL
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "deparser"
+      stage_kind: DEPARSER
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "deparser"
+      stage_kind: DEPARSER
+      direction: EXIT
+    }
+  }
+}
