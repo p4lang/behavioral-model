@@ -13,6 +13,8 @@
 #include <google/rpc/code.pb.h>
 #include <p4/v1/p4runtime.grpc.pb.h>
 
+#include <gtest/gtest.h>
+
 #include <google/protobuf/util/message_differencer.h>
 
 #include <fstream>
@@ -66,8 +68,8 @@ test() {
     stream->Write(request);
     p4v1::StreamMessageResponse response;
     stream->Read(&response);
-    assert(response.update_case() == p4v1::StreamMessageResponse::kArbitration);
-    assert(response.arbitration().status().code() == ::google::rpc::Code::OK);
+    ASSERT_EQ(response.update_case(), p4v1::StreamMessageResponse::kArbitration);
+    ASSERT_EQ(response.arbitration().status().code(), ::google::rpc::Code::OK);
   }
 
   {
@@ -87,9 +89,9 @@ test() {
     ClientContext context;
     auto status = pi_stub_->SetForwardingPipelineConfig(
         &context, request, &rep);
-    assert(status.ok());
+    ASSERT_TRUE(status.ok());
     auto *released_p4info = config->release_p4info();
-    assert(released_p4info == &p4info);
+    ASSERT_EQ(released_p4info, &p4info);
   }
 
   auto t_id = get_table_id(p4info, "ipv4_lpm");
@@ -131,9 +133,9 @@ test() {
     ClientContext context;
     p4v1::WriteResponse rep;
     auto status = pi_stub_->Write(&context, request, &rep);
-    assert(status.ok());
+    ASSERT_TRUE(status.ok());
     auto *released_entity = update->release_entity();
-    assert(released_entity == &entity);
+    ASSERT_EQ(released_entity, &entity);
   }
 
   auto read_one = [&dev_id, &pi_stub_, &table_entry] () {
@@ -147,17 +149,17 @@ test() {
     p4v1::ReadResponse rep;
     reader->Read(&rep);
     auto status = reader->Finish();
-    assert(status.ok());
+    ASSERT_TRUE(status.ok());
     auto *released_table_entry = entity->release_table_entry();
-    assert(released_table_entry == table_entry);
+    ASSERT_EQ(released_table_entry, table_entry);
     return rep;
   };
 
   // get entry, check it is the one we added
   {
     auto rep = read_one();
-    assert(rep.entities().size() == 1);
-    assert(MessageDifferencer::Equals(entity, rep.entities().Get(0)));
+    ASSERT_EQ(rep.entities().size(), 1);
+    ASSERT_TRUE(MessageDifferencer::Equals(entity, rep.entities().Get(0)));
   }
 
   // remove entry
@@ -171,15 +173,15 @@ test() {
     ClientContext context;
     p4v1::WriteResponse rep;
     auto status = pi_stub_->Write(&context, request, &rep);
-    assert(status.ok());
+    ASSERT_TRUE(status.ok());
     auto *released_entity = update->release_entity();
-    assert(released_entity == &entity);
+    ASSERT_EQ(released_entity, &entity);
   }
 
   // check entry is indeed gone
   {
     auto rep = read_one();
-    assert(rep.entities().size() == 0);
+    ASSERT_EQ(rep.entities().size(), 0);
   }
 
   {
@@ -187,7 +189,7 @@ test() {
     p4v1::StreamMessageResponse response;
     while (stream->Read(&response)) { }
     auto status = stream->Finish();
-    assert(status.ok());
+    ASSERT_TRUE(status.ok());
   }
 
   return 0;
