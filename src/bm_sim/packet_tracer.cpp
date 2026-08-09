@@ -95,7 +95,7 @@ namespace {
 
 // Add a TraceEvent to the packet's trace context (if present).
 void trace_add_event(const Packet& packet, p4::bm::TraceEvent event) {
-  auto* ctx = packet.get_trace_ctx();
+  PacketTraceContext* ctx = packet.get_trace_ctx();
   if (ctx) {
     ctx->add_event(std::move(event));
   }
@@ -109,7 +109,7 @@ void PacketTracer::packet_out(const Packet& packet) { _BM_UNUSED(packet); }
 
 void PacketTracer::parser_start(const Packet& packet, const Parser& parser) {
   p4::bm::TraceEvent ev;
-  auto* ps = ev.mutable_pipeline_stage();
+  p4::bm::PipelineStageEvent* ps = ev.mutable_pipeline_stage();
   ps->set_stage_name(parser.get_name());
   ps->set_stage_kind(p4::bm::PipelineStageEvent::PARSER);
   ps->set_direction(p4::bm::PipelineStageEvent::ENTER);
@@ -118,7 +118,7 @@ void PacketTracer::parser_start(const Packet& packet, const Parser& parser) {
 
 void PacketTracer::parser_done(const Packet& packet, const Parser& parser) {
   p4::bm::TraceEvent ev;
-  auto* ps = ev.mutable_pipeline_stage();
+  p4::bm::PipelineStageEvent* ps = ev.mutable_pipeline_stage();
   ps->set_stage_name(parser.get_name());
   ps->set_stage_kind(p4::bm::PipelineStageEvent::PARSER);
   ps->set_direction(p4::bm::PipelineStageEvent::EXIT);
@@ -133,7 +133,7 @@ void PacketTracer::parser_extract(const Packet& packet, header_id_t header) {
 void PacketTracer::deparser_start(const Packet& packet,
                                   const Deparser& deparser) {
   p4::bm::TraceEvent ev;
-  auto* ps = ev.mutable_pipeline_stage();
+  p4::bm::PipelineStageEvent* ps = ev.mutable_pipeline_stage();
   ps->set_stage_name(deparser.get_name());
   ps->set_stage_kind(p4::bm::PipelineStageEvent::DEPARSER);
   ps->set_direction(p4::bm::PipelineStageEvent::ENTER);
@@ -143,7 +143,7 @@ void PacketTracer::deparser_start(const Packet& packet,
 void PacketTracer::deparser_done(const Packet& packet,
                                  const Deparser& deparser) {
   p4::bm::TraceEvent ev;
-  auto* ps = ev.mutable_pipeline_stage();
+  p4::bm::PipelineStageEvent* ps = ev.mutable_pipeline_stage();
   ps->set_stage_name(deparser.get_name());
   ps->set_stage_kind(p4::bm::PipelineStageEvent::DEPARSER);
   ps->set_direction(p4::bm::PipelineStageEvent::EXIT);
@@ -164,7 +164,7 @@ void PacketTracer::checksum_update(const Packet& packet,
 void PacketTracer::pipeline_start(const Packet& packet,
                                   const Pipeline& pipeline) {
   p4::bm::TraceEvent ev;
-  auto* ps = ev.mutable_pipeline_stage();
+  p4::bm::PipelineStageEvent* ps = ev.mutable_pipeline_stage();
   ps->set_stage_name(pipeline.get_name());
   ps->set_stage_kind(p4::bm::PipelineStageEvent::CONTROL);
   ps->set_direction(p4::bm::PipelineStageEvent::ENTER);
@@ -174,7 +174,7 @@ void PacketTracer::pipeline_start(const Packet& packet,
 void PacketTracer::pipeline_done(const Packet& packet,
                                  const Pipeline& pipeline) {
   p4::bm::TraceEvent ev;
-  auto* ps = ev.mutable_pipeline_stage();
+  p4::bm::PipelineStageEvent* ps = ev.mutable_pipeline_stage();
   ps->set_stage_name(pipeline.get_name());
   ps->set_stage_kind(p4::bm::PipelineStageEvent::CONTROL);
   ps->set_direction(p4::bm::PipelineStageEvent::EXIT);
