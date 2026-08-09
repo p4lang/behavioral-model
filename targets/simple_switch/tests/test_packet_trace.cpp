@@ -65,6 +65,9 @@ constexpr char kInputBanner[] =
 constexpr char kOutputBanner[] =
     "-- OUTPUT ---------------------------------------------------------------";
 
+// Formats a raw byte string as lowercase hex, two zero-padded digits per byte
+// with no separators (e.g. "\x0a\xbc" -> "0abc"). Used to print packet
+// payloads and match keys deterministically in the golden output.
 std::string hex_dump(const std::string& bytes) {
   static const char digits[] = "0123456789abcdef";
   std::string out;
@@ -122,6 +125,11 @@ class DummyDevMgr : public bm::DevMgrIface {
   std::map<port_t, PortInfo> get_port_info_() const override { return {}; }
 };
 
+struct InputPacket {
+  bm::port_t port;
+  std::string data;
+};
+
 struct OutputPacket {
   bm::port_t port;
   std::string data;
@@ -155,11 +163,6 @@ class OutputCollector {
   std::mutex mutex_;
   std::condition_variable cvar_;
   std::vector<OutputPacket> packets_;
-};
-
-struct InputPacket {
-  bm::port_t port;
-  std::string data;
 };
 
 struct TraceTestCase {
