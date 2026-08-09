@@ -4,7 +4,7 @@ A packet is forwarded from port 1 to port 2; the egress pipeline appends a heade
 =========================================================================
 -- INPUT ----------------------------------------------------------------
 P4 pipeline: queueing.json
-Table programming:
+Table programming (runtime only; config-baked defaults not shown):
   t_ingress: set default action set_port(2)
   t_egress: set default action copy_queueing_data()
 Input packets:

@@ -4,7 +4,7 @@ A 4-byte packet parses without error; the error code (0) is written to the last 
 =========================================================================
 -- INPUT ----------------------------------------------------------------
 P4 pipeline: parser_error.json
-Table programming:
+Table programming (runtime only; config-baked defaults not shown):
   (none)
 Input packets:
   port=1 len=4 bytes=00000000
@@ -81,7 +81,7 @@ A 2-byte packet triggers a PacketTooShort parser error; the ingress pipeline mak
 =========================================================================
 -- INPUT ----------------------------------------------------------------
 P4 pipeline: parser_error.json
-Table programming:
+Table programming (runtime only; config-baked defaults not shown):
   (none)
 Input packets:
   port=1 len=2 bytes=0000
@@ -159,7 +159,7 @@ The last byte (0xab) triggers a verify() failure with a custom error, reported a
 =========================================================================
 -- INPUT ----------------------------------------------------------------
 P4 pipeline: parser_error.json
-Table programming:
+Table programming (runtime only; config-baked defaults not shown):
   (none)
 Input packets:
   port=1 len=4 bytes=000000ab

@@ -4,8 +4,7 @@ A 128-byte packet matches an entry that truncates it to 32 bytes and forwards it
 =========================================================================
 -- INPUT ----------------------------------------------------------------
 P4 pipeline: truncate.json
-Table programming:
-  t_ingress: set default action _nop()
+Table programming (runtime only; config-baked defaults not shown):
   t_ingress: add entry [0x01] => _truncate(32, 2)
 Input packets:
   port=1 len=128 bytes=01ababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab

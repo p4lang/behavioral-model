@@ -1,13 +1,10 @@
 =========================================================================
 Packet trace test: packet_redirect: baseline unicast
-The packet hits t_ingress_1 (_set_port to port 2), misses the other tables, and is emitted on port 2.
+The packet hits t_ingress_1 (_set_port to port 2), misses t_ingress_2 and t_egress (their config-baked NoAction default is a no-op), and is emitted on port 2 with hdrA.f2 rewritten to the packet length by t_exit's programmed set_hdr default.
 =========================================================================
 -- INPUT ----------------------------------------------------------------
 P4 pipeline: packet_redirect.json
-Table programming:
-  t_ingress_1: set default action _nop()
-  t_ingress_2: set default action _nop()
-  t_egress: set default action _nop()
+Table programming (runtime only; config-baked defaults not shown):
   t_exit: set default action set_hdr()
   t_ingress_1: add entry [0x01, 0x00] => _set_port(2)
 Input packets:

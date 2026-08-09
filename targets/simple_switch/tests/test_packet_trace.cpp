@@ -196,7 +196,8 @@ void set_default_action(SimpleSwitch* sw, std::ostream& os,
   os << "  " << table << ": set default action " << action << "("
      << printed_args << ")\n";
   if (rc != MatchErrorCode::SUCCESS) {
-    os << "  ERROR: mt_set_default_action failed for table " << table << "\n";
+    os << "  ERROR: mt_set_default_action failed for table " << table << ": "
+       << bm::match_error_code_to_string(rc) << "\n";
   }
 }
 
@@ -225,7 +226,8 @@ void add_exact_entry(SimpleSwitch* sw, std::ostream& os,
   os << "  " << table << ": add entry [" << printed_key << "] => " << action
      << "(" << printed_args << ")\n";
   if (rc != MatchErrorCode::SUCCESS) {
-    os << "  ERROR: mt_add_entry failed for table " << table << "\n";
+    os << "  ERROR: mt_add_entry failed for table " << table << ": "
+       << bm::match_error_code_to_string(rc) << "\n";
   }
 }
 
@@ -288,7 +290,8 @@ void run_case(SimpleSwitch* sw, OutputCollector* collector,
   std::cout << kInputBanner << "\n";
   std::cout << "P4 pipeline: " << pipeline << ".json\n";
   sw->reset_state();
-  std::cout << "Table programming:\n";
+  std::cout << "Table programming (runtime only; config-baked defaults not "
+               "shown):\n";
   if (test_case.setup) {
     test_case.setup(sw, std::cout);
   } else {
@@ -349,13 +352,20 @@ std::vector<TraceTestCase> queueing_cases() {
   }};
 }
 
+// recirc.p4 bakes both tables' default actions (loopback, recirc) into the
+// config, and its keyless tables cannot take entries (bmv2 returns
+// NO_TABLE_KEY), so there is nothing to program at runtime.
 std::vector<TraceTestCase> recirc_cases() {
   return {TraceTestCase{
       "recirculate once",
       "A 1-byte packet with value 0x00 is recirculated by the egress "
-      "pipeline; the recirculated pass emits a 2-byte packet on the ingress "
-      "port. The recirculated packet copy currently produces no additional "
-      "trace events.",
+      "pipeline, so it enters the ingress and egress pipelines twice: the "
+      "config-baked default actions run t_loopback on both passes and "
+      "t_recirc only on the first (the egress conditional is false once "
+      "hdrA1.f1 is 0x01). The second pass is proven by the output: "
+      "re-parsing the recirculated 2-byte packet rewrites hdrA2.f1 to 0xab. "
+      "The recirculated packet copy currently produces no additional trace "
+      "events.",
       nullptr,
       {InputPacket{1, std::string(1, '\0')}},
       1,
@@ -368,7 +378,6 @@ std::vector<TraceTestCase> truncate_cases() {
       "A 128-byte packet matches an entry that truncates it to 32 bytes and "
       "forwards it to port 2.",
       [](SimpleSwitch* sw, std::ostream& os) {
-        set_default_action(sw, os, "t_ingress", "_nop");
         add_exact_entry(sw, os, "t_ingress", {std::string(1, '\x01')},
                         "_truncate", {32, 2});
       },
@@ -409,12 +418,11 @@ std::vector<TraceTestCase> parser_error_cases() {
 std::vector<TraceTestCase> packet_redirect_cases() {
   return {TraceTestCase{
       "baseline unicast",
-      "The packet hits t_ingress_1 (_set_port to port 2), misses the other "
-      "tables, and is emitted on port 2.",
+      "The packet hits t_ingress_1 (_set_port to port 2), misses t_ingress_2 "
+      "and t_egress (their config-baked NoAction default is a no-op), and is "
+      "emitted on port 2 with hdrA.f2 rewritten to the packet length by "
+      "t_exit's programmed set_hdr default.",
       [](SimpleSwitch* sw, std::ostream& os) {
-        set_default_action(sw, os, "t_ingress_1", "_nop");
-        set_default_action(sw, os, "t_ingress_2", "_nop");
-        set_default_action(sw, os, "t_egress", "_nop");
         set_default_action(sw, os, "t_exit", "set_hdr");
         add_exact_entry(sw, os, "t_ingress_1",
                         {std::string(1, '\x01'), std::string(1, '\0')},
