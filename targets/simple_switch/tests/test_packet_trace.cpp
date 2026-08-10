@@ -68,7 +68,7 @@ constexpr char kOutputBanner[] =
 // Formats a raw byte string as lowercase hex, two zero-padded digits per byte
 // with no separators (e.g. "\x0a\xbc" -> "0abc"). Used to print packet
 // payloads and match keys deterministically in the golden output.
-std::string hex_dump(const std::string& bytes) {
+std::string ByteStringToFormatedHexString(const std::string& bytes) {
   static const char digits[] = "0123456789abcdef";
   std::string out;
   out.reserve(bytes.size() * 2);
@@ -211,7 +211,7 @@ void add_exact_entry(SimpleSwitch* sw, std::ostream& os,
   for (const auto& field : key) {
     match_key.emplace_back(MatchKeyParam::Type::EXACT, field);
     if (!printed_key.empty()) printed_key += ", ";
-    printed_key += "0x" + hex_dump(field);
+    printed_key += "0x" + ByteStringToFormatedHexString(field);
   }
   ActionData data;
   std::string printed_args;
@@ -300,7 +300,7 @@ void run_case(SimpleSwitch* sw, OutputCollector* collector,
   std::cout << "Input packets:\n";
   for (const auto& input : test_case.inputs) {
     std::cout << "  port=" << input.port << " len=" << input.data.size()
-              << " bytes=" << hex_dump(input.data) << "\n";
+              << " bytes=" << ByteStringToFormatedHexString(input.data) << "\n";
   }
 
   bm::PacketTracer::get()->set_output_dir(trace_dir.string());
@@ -322,7 +322,7 @@ void run_case(SimpleSwitch* sw, OutputCollector* collector,
   for (const auto& output : outputs) {
     std::cout << "  port=" << output.port << " len=" << output.data.size();
     if (test_case.dump_output_payload) {
-      std::cout << " bytes=" << hex_dump(output.data);
+      std::cout << " bytes=" << ByteStringToFormatedHexString(output.data);
     } else {
       std::cout << " (payload not shown: non-deterministic)";
     }
