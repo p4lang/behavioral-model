@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <chrono>
 #include <condition_variable>
+#include <cstdint>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -230,11 +231,13 @@ void add_exact_entry(SimpleSwitch* sw, std::ostream& os,
   }
 }
 
-// Reads all trace files from dir, keyed by file name, keeping only files that
-// parse as a complete p4::bm::PacketTrace textproto (a file may be observed
-// mid-write since traces are flushed from the switch's processing threads).
-std::map<std::string, std::string> read_traces(const fs::path& dir) {
-  std::map<std::string, std::string> traces;
+// Reads all trace files from dir, keyed by the global packet id recorded in
+// the trace (so iteration order is numeric injection order, not lexicographic
+// file-name order). Only files that parse as a complete p4::bm::PacketTrace
+// textproto are kept (a file may be observed mid-write since traces are
+// flushed from the switch's processing threads).
+std::map<uint64_t, p4::bm::PacketTrace> read_traces(const fs::path& dir) {
+  std::map<uint64_t, p4::bm::PacketTrace> traces;
   std::error_code ec;
   for (const auto& entry : fs::directory_iterator(dir, ec)) {
     std::ifstream in(entry.path());
@@ -243,7 +246,7 @@ std::map<std::string, std::string> read_traces(const fs::path& dir) {
     ss << in.rdbuf();
     p4::bm::PacketTrace trace;
     if (google::protobuf::TextFormat::ParseFromString(ss.str(), &trace)) {
-      traces.emplace(entry.path().filename().string(), ss.str());
+      traces[trace.input().packet_id()] = std::move(trace);
     }
   }
   return traces;
@@ -255,8 +258,8 @@ std::map<std::string, std::string> read_traces(const fs::path& dir) {
 // collected. Each input packet produces exactly one trace file (clones and
 // recirculated copies attach to the same recursive trace), so poll until
 // `expected` files parse or the timeout expires.
-std::map<std::string, std::string> wait_for_traces(const fs::path& dir,
-                                                   size_t expected) {
+std::map<uint64_t, p4::bm::PacketTrace> wait_for_traces(const fs::path& dir,
+                                                        size_t expected) {
   using clock = std::chrono::steady_clock;
   const auto deadline = clock::now() + std::chrono::seconds(5);
   auto traces = read_traces(dir);
@@ -317,10 +320,20 @@ void run_case(SimpleSwitch* sw, OutputCollector* collector,
     }
     std::cout << "\n";
   }
-  std::cout << "Packet traces:\n";
+  // The golden output renumbers traces 0..N-1 within each case, in packet-id
+  // (= injection) order, so trace k is the trace of inputs[k]. The global
+  // packet id is deliberately not printed: it depends on how many packets
+  // earlier cases injected, and letting it through would churn later cases'
+  // golden sections whenever an earlier case changes.
+  std::cout << "Packet traces: " << traces.size() << "\n";
   if (traces.empty()) std::cout << "  (none)\n";
-  for (const auto& trace : traces) {
-    std::cout << "--- " << trace.first << "\n" << trace.second;
+  uint64_t index = 0;
+  for (auto& [packet_id, trace] : traces) {
+    trace.mutable_input()->set_packet_id(index);
+    std::string txtpb;
+    google::protobuf::TextFormat::PrintToString(trace, &txtpb);
+    std::cout << "--- trace " << index << "\n" << txtpb;
+    index++;
   }
   std::cout << "\n";
 }

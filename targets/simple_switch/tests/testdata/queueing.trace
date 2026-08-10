@@ -12,8 +12,8 @@ Input packets:
 -- OUTPUT ---------------------------------------------------------------
 Output packets:
   port=2 len=81 (payload not shown: non-deterministic)
-Packet traces:
---- trace_0.txtpb
+Packet traces: 1
+--- trace 0
 input {
   ingress_port: 1
 }

@@ -11,8 +11,8 @@ Input packets:
 -- OUTPUT ---------------------------------------------------------------
 Output packets:
   port=1 len=2 bytes=01ab
-Packet traces:
---- trace_0.txtpb
+Packet traces: 1
+--- trace 0
 input {
   ingress_port: 1
 }

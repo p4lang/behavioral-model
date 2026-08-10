@@ -11,8 +11,8 @@ Input packets:
 -- OUTPUT ---------------------------------------------------------------
 Output packets:
   port=1 len=4 bytes=00000000
-Packet traces:
---- trace_0.txtpb
+Packet traces: 1
+--- trace 0
 input {
   ingress_port: 1
 }
@@ -88,10 +88,9 @@ Input packets:
 -- OUTPUT ---------------------------------------------------------------
 Output packets:
   port=1 len=6 bytes=000000010000
-Packet traces:
---- trace_1.txtpb
+Packet traces: 1
+--- trace 0
 input {
-  packet_id: 1
   ingress_port: 1
 }
 root {
@@ -166,10 +165,9 @@ Input packets:
 -- OUTPUT ---------------------------------------------------------------
 Output packets:
   port=1 len=4 bytes=00000002
-Packet traces:
---- trace_2.txtpb
+Packet traces: 1
+--- trace 0
 input {
-  packet_id: 2
   ingress_port: 1
 }
 root {
