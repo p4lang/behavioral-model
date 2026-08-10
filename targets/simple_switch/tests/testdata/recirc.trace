@@ -1,0 +1,76 @@
+=========================================================================
+Packet trace test: recirc: recirculate once
+A 1-byte packet with value 0x00 is recirculated by the egress pipeline, so it enters the ingress and egress pipelines twice: the config-baked default actions run t_loopback on both passes and t_recirc only on the first (the egress conditional is false once hdrA1.f1 is 0x01). The second pass is proven by the output: re-parsing the recirculated 2-byte packet rewrites hdrA2.f1 to 0xab. The recirculated packet copy currently produces no additional trace events.
+=========================================================================
+-- INPUT ----------------------------------------------------------------
+P4 pipeline: recirc.json
+Table programming (runtime only; config-baked defaults not shown):
+  (none)
+Input packets:
+  port=1 len=1 bytes=00
+-- OUTPUT ---------------------------------------------------------------
+Output packets:
+  port=1 len=2 bytes=01ab
+Packet traces: 1
+--- trace 0
+input {
+  ingress_port: 1
+}
+root {
+  events {
+    pipeline_stage {
+      stage_name: "parser"
+      stage_kind: PARSER
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "parser"
+      stage_kind: PARSER
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "ingress"
+      stage_kind: CONTROL
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "ingress"
+      stage_kind: CONTROL
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "egress"
+      stage_kind: CONTROL
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "egress"
+      stage_kind: CONTROL
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "deparser"
+      stage_kind: DEPARSER
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "deparser"
+      stage_kind: DEPARSER
+      direction: EXIT
+    }
+  }
+}

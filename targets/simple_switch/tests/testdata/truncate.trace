@@ -1,0 +1,76 @@
+=========================================================================
+Packet trace test: truncate: truncate to 32 bytes
+A 128-byte packet matches an entry that truncates it to 32 bytes and forwards it to port 2.
+=========================================================================
+-- INPUT ----------------------------------------------------------------
+P4 pipeline: truncate.json
+Table programming (runtime only; config-baked defaults not shown):
+  t_ingress: add entry [0x01] => _truncate(32, 2)
+Input packets:
+  port=1 len=128 bytes=01ababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababab
+-- OUTPUT ---------------------------------------------------------------
+Output packets:
+  port=2 len=32 bytes=01ababababababababababababababababababababababababababababababab
+Packet traces: 1
+--- trace 0
+input {
+  ingress_port: 1
+}
+root {
+  events {
+    pipeline_stage {
+      stage_name: "parser"
+      stage_kind: PARSER
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "parser"
+      stage_kind: PARSER
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "ingress"
+      stage_kind: CONTROL
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "ingress"
+      stage_kind: CONTROL
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "egress"
+      stage_kind: CONTROL
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "egress"
+      stage_kind: CONTROL
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "deparser"
+      stage_kind: DEPARSER
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "deparser"
+      stage_kind: DEPARSER
+      direction: EXIT
+    }
+  }
+}

@@ -1,0 +1,230 @@
+=========================================================================
+Packet trace test: parser_error: no parser error
+A 4-byte packet parses without error; the error code (0) is written to the last header byte.
+=========================================================================
+-- INPUT ----------------------------------------------------------------
+P4 pipeline: parser_error.json
+Table programming (runtime only; config-baked defaults not shown):
+  (none)
+Input packets:
+  port=1 len=4 bytes=00000000
+-- OUTPUT ---------------------------------------------------------------
+Output packets:
+  port=1 len=4 bytes=00000000
+Packet traces: 1
+--- trace 0
+input {
+  ingress_port: 1
+}
+root {
+  events {
+    pipeline_stage {
+      stage_name: "parser"
+      stage_kind: PARSER
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "parser"
+      stage_kind: PARSER
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "ingress"
+      stage_kind: CONTROL
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "ingress"
+      stage_kind: CONTROL
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "egress"
+      stage_kind: CONTROL
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "egress"
+      stage_kind: CONTROL
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "deparser"
+      stage_kind: DEPARSER
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "deparser"
+      stage_kind: DEPARSER
+      direction: EXIT
+    }
+  }
+}
+
+=========================================================================
+Packet trace test: parser_error: packet too short
+A 2-byte packet triggers a PacketTooShort parser error; the ingress pipeline makes the header valid and writes error code 1.
+=========================================================================
+-- INPUT ----------------------------------------------------------------
+P4 pipeline: parser_error.json
+Table programming (runtime only; config-baked defaults not shown):
+  (none)
+Input packets:
+  port=1 len=2 bytes=0000
+-- OUTPUT ---------------------------------------------------------------
+Output packets:
+  port=1 len=6 bytes=000000010000
+Packet traces: 1
+--- trace 0
+input {
+  ingress_port: 1
+}
+root {
+  events {
+    pipeline_stage {
+      stage_name: "parser"
+      stage_kind: PARSER
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "parser"
+      stage_kind: PARSER
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "ingress"
+      stage_kind: CONTROL
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "ingress"
+      stage_kind: CONTROL
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "egress"
+      stage_kind: CONTROL
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "egress"
+      stage_kind: CONTROL
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "deparser"
+      stage_kind: DEPARSER
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "deparser"
+      stage_kind: DEPARSER
+      direction: EXIT
+    }
+  }
+}
+
+=========================================================================
+Packet trace test: parser_error: custom parser error
+The last byte (0xab) triggers a verify() failure with a custom error, reported as error code 2.
+=========================================================================
+-- INPUT ----------------------------------------------------------------
+P4 pipeline: parser_error.json
+Table programming (runtime only; config-baked defaults not shown):
+  (none)
+Input packets:
+  port=1 len=4 bytes=000000ab
+-- OUTPUT ---------------------------------------------------------------
+Output packets:
+  port=1 len=4 bytes=00000002
+Packet traces: 1
+--- trace 0
+input {
+  ingress_port: 1
+}
+root {
+  events {
+    pipeline_stage {
+      stage_name: "parser"
+      stage_kind: PARSER
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "parser"
+      stage_kind: PARSER
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "ingress"
+      stage_kind: CONTROL
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "ingress"
+      stage_kind: CONTROL
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "egress"
+      stage_kind: CONTROL
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "egress"
+      stage_kind: CONTROL
+      direction: EXIT
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "deparser"
+      stage_kind: DEPARSER
+      direction: ENTER
+    }
+  }
+  events {
+    pipeline_stage {
+      stage_name: "deparser"
+      stage_kind: DEPARSER
+      direction: EXIT
+    }
+  }
+}
