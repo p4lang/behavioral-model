@@ -181,7 +181,6 @@ struct TraceTestCase {
 // Table-programming helpers: perform the operation and print one line
 // describing it. Errors are printed to stdout so that they break the golden
 // diff instead of going unnoticed.
-
 void set_default_action(SimpleSwitch* sw, std::ostream& os,
                         const std::string& table, const std::string& action,
                         const std::vector<unsigned>& args = {}) {
@@ -251,29 +250,19 @@ std::map<std::string, std::string> read_traces(const fs::path& dir) {
 }
 
 // Traces are flushed when the switch destroys a packet, which happens shortly
-// *after* the corresponding output packet (if any) is transmitted, and a
-// single input may produce several traces (e.g. recirculation). So rather
-// than waiting for an expected file count, wait for the trace directory to
-// quiesce: at least min_expected parseable files, unchanged for a settle
-// period.
+// *after* the corresponding output packet (if any) is transmitted, so the
+// trace files may not exist yet when the output packets have all been
+// collected. Each input packet produces exactly one trace file (clones and
+// recirculated copies attach to the same recursive trace), so poll until
+// `expected` files parse or the timeout expires.
 std::map<std::string, std::string> wait_for_traces(const fs::path& dir,
-                                                   size_t min_expected) {
+                                                   size_t expected) {
   using clock = std::chrono::steady_clock;
-  constexpr auto kSettleTime = std::chrono::milliseconds(300);
-  constexpr auto kTimeout = std::chrono::seconds(5);
-  const auto deadline = clock::now() + kTimeout;
+  const auto deadline = clock::now() + std::chrono::seconds(5);
   auto traces = read_traces(dir);
-  auto last_change = clock::now();
-  while (clock::now() < deadline) {
+  while (traces.size() < expected && clock::now() < deadline) {
     std::this_thread::sleep_for(std::chrono::milliseconds(25));
-    auto current = read_traces(dir);
-    if (current != traces) {
-      traces = std::move(current);
-      last_change = clock::now();
-    } else if (traces.size() >= min_expected &&
-               clock::now() - last_change >= kSettleTime) {
-      break;
-    }
+    traces = read_traces(dir);
   }
   return traces;
 }
