@@ -1784,7 +1784,15 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
       if (cfg_table.isMember("direct_meters") &&
           !cfg_table["direct_meters"].isNull()) {
         const std::string meter_name = cfg_table["direct_meters"].asString();
-        const DirectMeterArray &direct_meter = direct_meters[meter_name];
+        const auto direct_meter_it = direct_meters.find(meter_name);
+        if (direct_meter_it == direct_meters.end()) {
+          throw json_exception(
+              EFormat() << "Table '" << table_name
+                        << "' refers to unknown direct meter array '"
+                        << meter_name << "'",
+              cfg_table);
+        }
+        const DirectMeterArray &direct_meter = direct_meter_it->second;
         table->get_match_table()->set_direct_meters(
             direct_meter.meter, direct_meter.header, direct_meter.offset);
       }
