@@ -177,14 +177,13 @@ TEST_F(AgeingTest, NoDuplicate) {
   ASSERT_GT(elapsed, sweep_int - 20u);
   ASSERT_LT(elapsed, 2 * sweep_int + 20u);
 
-  auto tp3 = clock::now();
-  ageing_writer->read(buffer, sizeof(buffer));
-  auto tp4 = clock::now();
-
-  // we make sure that the next sweep does not generate a message
-
-  elapsed = duration_cast<milliseconds>(tp4 - tp3).count();
-  ASSERT_GT(elapsed, (unsigned int) (sweep_int * 1.5));
+  // Poll non-blocking over multiple sweep intervals to verify no duplicate
+  // notifications are produced for untreated aged entries.
+  auto deadline = clock::now() + milliseconds(4 * sweep_int);
+  while (clock::now() < deadline) {
+    ASSERT_NE(MemoryAccessor::Status::CAN_READ, ageing_writer->check_status());
+    sleep_for(milliseconds(10));
+  }
 }
 
 TEST_F(AgeingTest, GetTableNameFromId) {

@@ -174,14 +174,13 @@ AgeingMonitor::do_sweep() {
         entries.push_back(handle);
       }
     }
-    entries_tmp.clear();
+    // Save the full set of aged entries seen in this sweep so already-reported
+    // entries aren't re-notified as new on subsequent sweeps.
     prev_sweep_entries.clear();
+    prev_sweep_entries.insert(entries_tmp.begin(), entries_tmp.end());
+    entries_tmp.clear();
 
     if (entries.empty()) continue;
-
-    for (entry_handle_t handle : entries) {
-      prev_sweep_entries.insert(handle);
-    }
 
     BMLOG_TRACE("Sending ageing notification for table '{}' ({})",
                 t->get_name(), entry.first);
