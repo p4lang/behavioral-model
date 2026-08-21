@@ -77,7 +77,7 @@ McSimplePreLAG::mc_set_lag_membership(const lag_id_t lag_index,
                                       const PortMap &port_map) {
   std::unique_lock<std::shared_mutex> lock(mutex);
   uint16_t member_count = 0;
-  if (lag_index > LAG_MAX_ENTRIES) {
+  if (lag_index >= LAG_MAX_ENTRIES) {
     Logger::get()->error("lag membership set failed, invalid lag index");
     return ERROR;
   }
