@@ -48,13 +48,7 @@ test() {
   std::unique_ptr<p4v1::P4Runtime::Stub> pi_stub_(
       p4v1::P4Runtime::NewStub(channel));
 
-  p4configv1::P4Info p4info;
-  try {
-    p4info = parse_p4info(test_proto_txt);
-  } catch (const std::exception &e) {
-    std::cerr << "Error: " << e.what() << "\n";
-    return 1;
-  }
+  auto p4info = parse_p4info(test_proto_txt);
 
   auto set_election_id = [](p4v1::Uint128 *election_id) {
     election_id->set_high(0);
