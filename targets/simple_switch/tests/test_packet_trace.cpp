@@ -11,8 +11,10 @@
 // cmd_diff_test Bazel rule.
 //
 // To regenerate the golden file after an intended behavior change:
-//   bazel run //targets/simple_switch/tests:packet_trace_<pipeline>_diff_test \
+//   bazel run //targets/simple_switch/tests:packet_trace_<pipeline>_diff_test
 //     -- --update
+// With the autotools or CMake build, run tests/run_packet_trace_test.sh with
+// BM_UPDATE_GOLDEN=1 instead.
 //
 // Usage: test_packet_trace <pipeline> <path/to/pipeline.json>
 
