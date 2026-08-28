@@ -12,10 +12,9 @@
 
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
-#include <gtest/gtest.h>
 
-#include <cassert>
 #include <fstream>
+#include <stdexcept>
 #include <streambuf>
 #include <string>
 
@@ -86,7 +85,10 @@ int get_act_prof_id(const p4configv1::P4Info &p4info,
 p4configv1::P4Info parse_p4info(const char *path) {
   p4configv1::P4Info p4info;
   std::ifstream istream(path);
-  ASSERT_TRUE(istream.good());
+  if (!istream.good()) {
+    throw std::runtime_error(
+        std::string("Failed to open P4Info file: ") + path);
+  }
   // p4info.ParseFromIstream(&istream);
   google::protobuf::io::IstreamInputStream istream_(&istream);
   google::protobuf::TextFormat::Parse(&istream_, &p4info);

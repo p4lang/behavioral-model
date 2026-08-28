@@ -13,11 +13,10 @@
 #include <google/rpc/code.pb.h>
 #include <p4/v1/p4runtime.grpc.pb.h>
 
-#include <gtest/gtest.h>
-
 #include <google/protobuf/util/message_differencer.h>
 
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <streambuf>
 #include <string>
@@ -49,7 +48,13 @@ test() {
   std::unique_ptr<p4v1::P4Runtime::Stub> pi_stub_(
       p4v1::P4Runtime::NewStub(channel));
 
-  auto p4info = parse_p4info(test_proto_txt);
+  p4configv1::P4Info p4info;
+  try {
+    p4info = parse_p4info(test_proto_txt);
+  } catch (const std::exception &e) {
+    std::cerr << "Error: " << e.what() << "\n";
+    return 1;
+  }
 
   auto set_election_id = [](p4v1::Uint128 *election_id) {
     election_id->set_high(0);
@@ -68,8 +73,14 @@ test() {
     stream->Write(request);
     p4v1::StreamMessageResponse response;
     stream->Read(&response);
-    ASSERT_EQ(response.update_case(), p4v1::StreamMessageResponse::kArbitration);
-    ASSERT_EQ(response.arbitration().status().code(), ::google::rpc::Code::OK);
+    if (response.update_case() != p4v1::StreamMessageResponse::kArbitration) {
+      std::cerr << "Error: unexpected response update case\n";
+      return 1;
+    }
+    if (response.arbitration().status().code() != ::google::rpc::Code::OK) {
+      std::cerr << "Error: arbitration status not OK\n";
+      return 1;
+    }
   }
 
   {
@@ -89,9 +100,16 @@ test() {
     ClientContext context;
     auto status = pi_stub_->SetForwardingPipelineConfig(
         &context, request, &rep);
-    ASSERT_TRUE(status.ok());
+    if (!status.ok()) {
+      std::cerr << "Error: SetForwardingPipelineConfig failed: "
+                << status.error_message() << "\n";
+      return 1;
+    }
     auto *released_p4info = config->release_p4info();
-    ASSERT_EQ(released_p4info, &p4info);
+    if (released_p4info != &p4info) {
+      std::cerr << "Error: released_p4info pointer mismatch\n";
+      return 1;
+    }
   }
 
   auto t_id = get_table_id(p4info, "ipv4_lpm");
@@ -133,33 +151,49 @@ test() {
     ClientContext context;
     p4v1::WriteResponse rep;
     auto status = pi_stub_->Write(&context, request, &rep);
-    ASSERT_TRUE(status.ok());
+    if (!status.ok()) {
+      std::cerr << "Error: Write (INSERT) failed: "
+                << status.error_message() << "\n";
+      return 1;
+    }
     auto *released_entity = update->release_entity();
-    ASSERT_EQ(released_entity, &entity);
+    if (released_entity != &entity) {
+      std::cerr << "Error: released_entity pointer mismatch\n";
+      return 1;
+    }
   }
 
-  auto read_one = [&dev_id, &pi_stub_, &table_entry] () {
+  // read and verify entry
+  {
     p4v1::ReadRequest request;
     request.set_device_id(dev_id);
-    auto entity = request.add_entities();
-    entity->set_allocated_table_entry(table_entry);
+    auto read_entity = request.add_entities();
+    read_entity->set_allocated_table_entry(table_entry);
     ClientContext context;
     std::unique_ptr<grpc::ClientReader<p4v1::ReadResponse> > reader(
         pi_stub_->Read(&context, request));
     p4v1::ReadResponse rep;
     reader->Read(&rep);
     auto status = reader->Finish();
-    ASSERT_TRUE(status.ok());
-    auto *released_table_entry = entity->release_table_entry();
-    ASSERT_EQ(released_table_entry, table_entry);
-    return rep;
-  };
-
-  // get entry, check it is the one we added
-  {
-    auto rep = read_one();
-    ASSERT_EQ(rep.entities().size(), 1);
-    ASSERT_TRUE(MessageDifferencer::Equals(entity, rep.entities().Get(0)));
+    if (!status.ok()) {
+      std::cerr << "Error: Read failed: " << status.error_message() << "\n";
+      return 1;
+    }
+    auto *released_table_entry = read_entity->release_table_entry();
+    if (released_table_entry != table_entry) {
+      std::cerr << "Error: released_table_entry pointer mismatch\n";
+      return 1;
+    }
+    // get entry, check it is the one we added
+    if (rep.entities().size() != 1) {
+      std::cerr << "Error: expected 1 entity, got "
+                << rep.entities().size() << "\n";
+      return 1;
+    }
+    if (!MessageDifferencer::Equals(entity, rep.entities().Get(0))) {
+      std::cerr << "Error: entity mismatch\n";
+      return 1;
+    }
   }
 
   // remove entry
@@ -173,15 +207,44 @@ test() {
     ClientContext context;
     p4v1::WriteResponse rep;
     auto status = pi_stub_->Write(&context, request, &rep);
-    ASSERT_TRUE(status.ok());
+    if (!status.ok()) {
+      std::cerr << "Error: Write (DELETE) failed: "
+                << status.error_message() << "\n";
+      return 1;
+    }
     auto *released_entity = update->release_entity();
-    ASSERT_EQ(released_entity, &entity);
+    if (released_entity != &entity) {
+      std::cerr << "Error: released_entity pointer mismatch\n";
+      return 1;
+    }
   }
 
   // check entry is indeed gone
   {
-    auto rep = read_one();
-    ASSERT_EQ(rep.entities().size(), 0);
+    p4v1::ReadRequest request;
+    request.set_device_id(dev_id);
+    auto read_entity = request.add_entities();
+    read_entity->set_allocated_table_entry(table_entry);
+    ClientContext context;
+    std::unique_ptr<grpc::ClientReader<p4v1::ReadResponse> > reader(
+        pi_stub_->Read(&context, request));
+    p4v1::ReadResponse rep;
+    reader->Read(&rep);
+    auto status = reader->Finish();
+    if (!status.ok()) {
+      std::cerr << "Error: Read failed: " << status.error_message() << "\n";
+      return 1;
+    }
+    auto *released_table_entry = read_entity->release_table_entry();
+    if (released_table_entry != table_entry) {
+      std::cerr << "Error: released_table_entry pointer mismatch\n";
+      return 1;
+    }
+    if (rep.entities().size() != 0) {
+      std::cerr << "Error: expected 0 entities, got "
+                << rep.entities().size() << "\n";
+      return 1;
+    }
   }
 
   {
@@ -189,7 +252,11 @@ test() {
     p4v1::StreamMessageResponse response;
     while (stream->Read(&response)) { }
     auto status = stream->Finish();
-    ASSERT_TRUE(status.ok());
+    if (!status.ok()) {
+      std::cerr << "Error: stream finish failed: "
+                << status.error_message() << "\n";
+      return 1;
+    }
   }
 
   return 0;
