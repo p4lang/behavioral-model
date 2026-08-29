@@ -11,7 +11,7 @@ Input packets:
 -- OUTPUT ---------------------------------------------------------------
 Output packets:
   port=2 len=32 bytes=01ababababababababababababababababababababababababababababababab
-Packet traces: 1
+Number of packet traces: 1
 --- trace 0
 input {
   ingress_port: 1

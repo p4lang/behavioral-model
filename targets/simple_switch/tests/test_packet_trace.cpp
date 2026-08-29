@@ -327,7 +327,7 @@ void run_case(SimpleSwitch* sw, OutputCollector* collector,
   // packet id is deliberately not printed: it depends on how many packets
   // earlier cases injected, and letting it through would churn later cases'
   // golden sections whenever an earlier case changes.
-  std::cout << "Packet traces: " << traces.size() << "\n";
+  std::cout << "Number of packet traces: " << traces.size() << "\n";
   if (traces.empty()) std::cout << "  (none)\n";
   uint64_t index = 0;
   for (auto& [packet_id, trace] : traces) {
