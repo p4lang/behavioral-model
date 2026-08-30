@@ -8,6 +8,7 @@
  *
  */
 
+#include <bm/bm_sim/calculations.h>
 #include <bm/bm_sim/parser.h>
 #include <bm/bm_sim/tables.h>
 #include <bm/bm_sim/logger.h>
@@ -339,7 +340,12 @@ PsaSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
 void
 PsaSwitch::multicast(Packet *packet, unsigned int mgid, PktInstanceType path, unsigned int class_of_service) {
   auto phv = packet->get_phv();
-  const auto pre_out = pre->replicate({mgid});
+  // Hash the packet data to obtain per-packet entropy for LAG member
+  // selection, so that replication across a LAG's member ports is
+  // actually spread out instead of always picking the same member.
+  const uint64_t lag_hash =
+      bm::hash::xxh64(packet->data(), packet->get_data_size());
+  const auto pre_out = pre->replicate({mgid, lag_hash});
   auto &f_eg_cos = phv->get_field("psa_egress_input_metadata.class_of_service");
   auto &f_instance = phv->get_field("psa_egress_input_metadata.instance");
   auto &f_packet_path = phv->get_field("psa_egress_parser_input_metadata.packet_path");

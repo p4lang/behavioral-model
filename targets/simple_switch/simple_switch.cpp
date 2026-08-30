@@ -11,6 +11,7 @@
  */
 
 #include <bm/bm_sim/_assert.h>
+#include <bm/bm_sim/calculations.h>
 #include <bm/bm_sim/parser.h>
 #include <bm/bm_sim/tables.h>
 #include <bm/bm_sim/logger.h>
@@ -454,7 +455,12 @@ void
 SimpleSwitch::multicast(Packet *packet, unsigned int mgid) {
   auto *phv = packet->get_phv();
   auto &f_rid = phv->get_field("intrinsic_metadata.egress_rid");
-  const auto pre_out = pre->replicate({mgid});
+  // Hash the packet data to obtain per-packet entropy for LAG member
+  // selection, so that replication across a LAG's member ports is
+  // actually spread out instead of always picking the same member.
+  const uint64_t lag_hash =
+      bm::hash::xxh64(packet->data(), packet->get_data_size());
+  const auto pre_out = pre->replicate({mgid, lag_hash});
   auto packet_size =
       packet->get_register(RegisterAccess::PACKET_LENGTH_REG_IDX);
   for (const auto &out : pre_out) {
