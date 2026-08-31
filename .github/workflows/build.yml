@@ -15,6 +15,7 @@ on:
     # Ideally, we would update the image every time the base image (p4lang/pi)
     # is updated, but we deem this good enough.
     - cron: '15 3-23/4 * * *' # "At minute 15 past every 4th hour from 3 through 23."
+  workflow_dispatch: # Allows manual runs
 
 jobs:
   build:
