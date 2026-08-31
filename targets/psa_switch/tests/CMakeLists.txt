@@ -6,7 +6,7 @@
 add_definitions(-DTESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
 set(COMMON_SRCS main.cpp)
-set(TESTS test_internet_checksum test_hash)
+set(TESTS test_internet_checksum test_hash test_meter_counter_bounds)
 foreach(TEST_NAME ${TESTS})
   add_executable(${TEST_NAME}
     ${COMMON_SRCS}
@@ -35,6 +35,7 @@ add_executable(psa_switch_test_all
   ${COMMON_SRCS}
   test_internet_checksum.cpp
   test_hash.cpp
+  test_meter_counter_bounds.cpp
 )
 
 target_link_libraries(psa_switch_test_all

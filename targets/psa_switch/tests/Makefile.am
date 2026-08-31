@@ -16,14 +16,17 @@ $(top_builddir)/src/bm_apps/libbmapps.la
 # Define unit tests
 common_source = main.cpp
 TESTS = test_internet_checksum \
-test_hash
+test_hash \
+test_meter_counter_bounds
 
 check_PROGRAMS = $(TESTS) test_all
 
 # Sources for tests
 test_internet_checksum_SOURCES = $(common_source) test_internet_checksum.cpp
 test_hash_SOURCES = $(common_source) test_hash.cpp
+test_meter_counter_bounds_SOURCES = $(common_source) test_meter_counter_bounds.cpp
 
 test_all_SOURCES = $(common_source) \
 test_internet_checksum.cpp \
-test_hash.cpp
+test_hash.cpp \
+test_meter_counter_bounds.cpp

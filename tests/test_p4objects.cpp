@@ -140,6 +140,18 @@ TEST(P4Objects, UnknownHashSelector) {
   EXPECT_EQ(expected, os.str());
 }
 
+TEST(P4Objects, UnknownDirectMeter) {
+  // NOLINTNEXTLINE(whitespace/line_length)
+  std::istringstream is("{\"actions\":[{\"name\":\"_drop\",\"id\":2,\"runtime_data\":[],\"primitives\":[{\"op\":\"drop\",\"parameters\":[]}]}],\"pipelines\":[{\"name\":\"ingress\",\"id\":0,\"init_table\":\"t1\",\"tables\":[{\"name\":\"t1\",\"id\":0,\"match_type\":\"exact\",\"type\":\"simple\",\"max_size\":1024,\"with_counters\":false,\"key\":[],\"actions\":[\"_drop\"],\"next_tables\":{\"_drop\":null},\"default_action\":null,\"direct_meters\":\"bad_meter\"}],\"conditionals\":[]}]}");
+  std::stringstream os;
+  LookupStructureFactory factory;
+  P4Objects objects(os);
+  std::string expected(
+      "Table 't1' refers to unknown direct meter array 'bad_meter'\n");
+  ASSERT_NE(0, objects.init_objects(&is, &factory));
+  EXPECT_EQ(expected, os.str());
+}
+
 TEST(P4Objects, RequiredField) {
   std::istringstream is("{}");
   std::set<P4Objects::header_field_pair> required_fields;
