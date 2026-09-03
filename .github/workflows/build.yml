@@ -33,14 +33,15 @@ jobs:
       shell: bash
       run: |
         TAG=""
-        if [[ "$GITHUB_REF" =~ "main" ]]; then
-            TAG="latest"
-        elif [[ "$GITHUB_REF" =~ "stable" ]]; then
-            TAG="stable"
-        else
-            echo "Invalid Github ref $GITHUB_REF"
-            exit 1
-        fi
+        TAG="latest"
+        #if [[ "$GITHUB_REF" =~ "main" ]]; then
+        #    TAG="latest"
+        #elif [[ "$GITHUB_REF" =~ "stable" ]]; then
+        #    TAG="stable"
+        #else
+        #    echo "Invalid Github ref $GITHUB_REF"
+        #    exit 1
+        #fi
         echo "Tag is $TAG"
         echo "tag=$TAG" >> $GITHUB_OUTPUT
     - name: Set up Docker Buildx
