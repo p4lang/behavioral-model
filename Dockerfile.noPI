@@ -40,34 +40,9 @@ ENV BM_RUNTIME_DEPS libboost-program-options1.83.0 \
 
 COPY . /behavioral-model/
 WORKDIR /behavioral-model/
-RUN apt-get update -qq
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
-RUN apt-get install -qq --no-install-recommends build-essential
-RUN apt-get install -qq --no-install-recommends pkg-config
-RUN apt-get install -qq --no-install-recommends cmake
-RUN apt-get install -qq --no-install-recommends curl
-RUN apt-get install -qq --no-install-recommends git
-RUN apt-get install -qq --no-install-recommends libgmp-dev
-RUN apt-get install -qq --no-install-recommends libpcap-dev
-RUN apt-get install -qq --no-install-recommends libboost-dev
-RUN apt-get install -qq --no-install-recommends libboost-program-options-dev
-RUN apt-get install -qq --no-install-recommends libboost-system-dev
-RUN apt-get install -qq --no-install-recommends libboost-filesystem-dev
-RUN apt-get install -qq --no-install-recommends libboost-thread-dev
-RUN apt-get install -qq --no-install-recommends libjsoncpp-dev
-RUN apt-get install -qq --no-install-recommends libxxhash-dev
-RUN apt-get install -qq --no-install-recommends libboost-program-options1.83.0
-RUN apt-get install -qq --no-install-recommends libboost-system1.83.0
-RUN apt-get install -qq --no-install-recommends libboost-filesystem1.83.0
-RUN apt-get install -qq --no-install-recommends libboost-thread1.83.0
-RUN apt-get install -qq --no-install-recommends libgmp10
-RUN apt-get install -qq --no-install-recommends libpcap0.8t64
-RUN apt-get install -qq --no-install-recommends libjsoncpp25
-RUN apt-get install -qq --no-install-recommends libxxhash0
-RUN apt-get install -qq --no-install-recommends python3
-RUN apt-get install -qq --no-install-recommends python3-six
-RUN apt-get install -qq --no-install-recommends python-is-python3
-
+RUN apt-get update -qq && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata && \
+    apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS
 RUN mkdir -p build && cd build && \
     cmake -DENABLE_DEBUGGER=ON ..
 WORKDIR /behavioral-model/build/
