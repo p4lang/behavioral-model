@@ -70,6 +70,7 @@ RUN apt-get install -qq --no-install-recommends python-is-python3
 
 RUN mkdir -p build && cd build && \
     cmake -DENABLE_DEBUGGER=ON ..
+WORKDIR /behavioral-model/build/
 RUN cmake --build . -j$(nproc)
 RUN ctest --output-on-failure && \
     cmake --install . && cd .. && \
