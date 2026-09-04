@@ -42,11 +42,12 @@ COPY . /behavioral-model/
 WORKDIR /behavioral-model/
 RUN apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata && \
-    apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
-    mkdir -p build && cd build && \
-    cmake -DENABLE_DEBUGGER=ON .. && \
-    cmake --build . -j$(nproc) && \
-    ctest --output-on-failure && \
+    apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS
+RUN mkdir -p build && cd build && \
+    cmake -DENABLE_DEBUGGER=ON ..
+WORKDIR /behavioral-model/build/
+RUN cmake --build . -j$(nproc)
+RUN ctest --output-on-failure && \
     cmake --install . && cd .. && \
     ldconfig && \
     (test "$IMAGE_TYPE" = "build" && \

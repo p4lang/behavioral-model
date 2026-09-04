@@ -5,6 +5,9 @@
 name: Build and push latest image
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -18,73 +21,74 @@ on:
   workflow_dispatch: # Allows manual runs
 
 jobs:
-  build:
-    if: ${{ github.repository == 'p4lang/behavioral-model' }}
-    runs-on: [ubuntu-latest]
-    steps:
-    - uses: actions/checkout@v7
-      with:
-        submodules: recursive
-    - name: Determine Docker image tag
-      id: get-tag
-      shell: bash
-      run: |
-        TAG=""
-        if [[ "$GITHUB_REF" =~ "main" ]]; then
-            TAG="latest"
-        elif [[ "$GITHUB_REF" =~ "stable" ]]; then
-            TAG="stable"
-        else
-            echo "Invalid Github ref $GITHUB_REF"
-            exit 1
-        fi
-        echo "Tag is $TAG"
-        echo "tag=$TAG" >> $GITHUB_OUTPUT
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v4
-    - name: Build Docker image (test mode)
-      uses: docker/build-push-action@v7
-      with:
-        context: .
-        load: true
-        push: false
-        tags: p4lang/behavioral-model:test-build
-        build-args: IMAGE_TYPE=test
-        cache-from: type=gha
-        # A cache write must not fail the build.
-        cache-to: type=gha,mode=max,ignore-error=true
-    - name: Run tests in Docker image
-      run: |
-        docker run --rm p4lang/behavioral-model:test-build \
-          bash -c "cd /behavioral-model/build && ctest -j\$(nproc) --output-on-failure"
-    - name: Login to DockerHub
-      uses: docker/login-action@v4
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    - name: Build production image
-      uses: docker/build-push-action@v7
-      with:
-        context: .
-        load: true
-        tags: p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }}
-        cache-from: type=gha
-        # A cache write must not fail the build.
-        cache-to: type=gha,mode=max,ignore-error=true
-    - name: Smoke test production image
-      run: |
-        docker run --rm p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }} \
-          simple_switch --version
-    - name: Push production image
-      uses: docker/build-push-action@v7
-      with:
-        context: .
-        push: true
-        tags: p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }}
-        cache-from: type=gha
+#  build:
+#    if: ${{ github.repository == 'p4lang/behavioral-model' }}
+#    runs-on: [ubuntu-latest]
+#    steps:
+#    - uses: actions/checkout@v7
+#      with:
+#        submodules: recursive
+#    - name: Determine Docker image tag
+#      id: get-tag
+#      shell: bash
+#      run: |
+#        TAG=""
+#        TAG="latest"
+#        #if [[ "$GITHUB_REF" =~ "main" ]]; then
+#        #    TAG="latest"
+#        #elif [[ "$GITHUB_REF" =~ "stable" ]]; then
+#        #    TAG="stable"
+#        #else
+#        #    echo "Invalid Github ref $GITHUB_REF"
+#        #    exit 1
+#        #fi
+#        echo "Tag is $TAG"
+#        echo "tag=$TAG" >> $GITHUB_OUTPUT
+#    - name: Set up Docker Buildx
+#      uses: docker/setup-buildx-action@v4
+#    - name: Build Docker image (test mode)
+#      uses: docker/build-push-action@v7
+#      with:
+#        context: .
+#        load: true
+#        push: false
+#        tags: p4lang/behavioral-model:test-build
+#        build-args: IMAGE_TYPE=test
+#        cache-from: type=gha
+#        # A cache write must not fail the build.
+#        cache-to: type=gha,mode=max,ignore-error=true
+#    - name: Run tests in Docker image
+#      run: |
+#        docker run --rm p4lang/behavioral-model:test-build \
+#          bash -c "cd /behavioral-model/build && ctest -j\$(nproc) --output-on-failure"
+#    - name: Login to DockerHub
+#      uses: docker/login-action@v4
+#      with:
+#        username: ${{ secrets.DOCKER_USERNAME }}
+#        password: ${{ secrets.DOCKER_PASSWORD }}
+#    - name: Build production image
+#      uses: docker/build-push-action@v7
+#      with:
+#        context: .
+#        load: true
+#        tags: p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }}
+#        cache-from: type=gha
+#        # A cache write must not fail the build.
+#        cache-to: type=gha,mode=max,ignore-error=true
+#    - name: Smoke test production image
+#      run: |
+#        docker run --rm p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }} \
+#          simple_switch --version
+#    - name: Push production image
+#      uses: docker/build-push-action@v7
+#      with:
+#        context: .
+#        push: true
+#        tags: p4lang/behavioral-model:${{ steps.get-tag.outputs.tag }}
+#        cache-from: type=gha
 
   build-no-pi:
-    if: ${{ github.repository == 'p4lang/behavioral-model' && github.ref == 'refs/heads/main' }}
+#    if: ${{ github.repository == 'p4lang/behavioral-model' && github.ref == 'refs/heads/main' }}
     runs-on: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v7
