@@ -89,7 +89,7 @@ if(GRPC_PYTHON_PLUGIN)
   add_dependencies(bm_grpc_dataplane gengrpc_py_services)
 
   install(DIRECTORY ${PROTOC_GEN_PY_DIR}/
-    DESTINATION ${PY_SITE_PKG_DIR}
+    DESTINATION ${CMAKE_INSTALL_PYTHON_SET_DIR}
     FILES_MATCHING PATTERN "*.py"
   )
 endif()
