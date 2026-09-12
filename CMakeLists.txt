@@ -213,7 +213,10 @@ endif()
 
 # Identify python installation directory
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
-set(PY_SITE_PKG_DIR "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages")
+if(NOT DEFINED CMAKE_INSTALL_PYTHON_SET_DIR)
+    set(CMAKE_INSTALL_PYTHON_SET_DIR "${Python3_SITELIB}" CACHE PATH
+        "Directory where Python packages should be installed")
+endif()
 
 # Add subdirectories
 if(WITH_THRIFT)
@@ -265,3 +268,4 @@ message(STATUS "  Debugger enabled: ${ENABLE_DEBUGGER}")
 message(STATUS "  With Thrift: ${WITH_THRIFT}")
 message(STATUS "  With pdfixed: ${WITH_PDFIXED}")
 message(STATUS "  With PI: ${WITH_PI}")
+message(STATUS "  CMAKE_INSTALL_PYTHON_SET_DIR: ${CMAKE_INSTALL_PYTHON_SET_DIR}")

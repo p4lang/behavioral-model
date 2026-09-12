@@ -79,16 +79,16 @@ if(WITH_THRIFT)
 
   # Install Python modules
   install(FILES ${THRIFT_PY_FILES}
-    DESTINATION ${PY_SITE_PKG_DIR}/pnic_runtime
+    DESTINATION ${CMAKE_INSTALL_PYTHON_SET_DIR}/pnic_runtime
   )
 
   # Install Python CLI
   install(FILES pnic_CLI.py
-    DESTINATION ${PY_SITE_PKG_DIR}
+    DESTINATION ${CMAKE_INSTALL_PYTHON_SET_DIR}
   )
 
   # Configure and install pna_nic_CLI script
-  set(pythondir "${CMAKE_INSTALL_PREFIX}/${PY_SITE_PKG_DIR}")
+  set(pythondir "${CMAKE_INSTALL_PYTHON_SET_DIR}")
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/pna_nic_CLI.in
     ${CMAKE_CURRENT_BINARY_DIR}/pna_nic_CLI

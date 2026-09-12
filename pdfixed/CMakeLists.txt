@@ -16,7 +16,7 @@ foreach(THRIFT_FILE ${THRIFT_FILES})
 
   install(FILES
     ${THRIFT_PY_FILES}
-    DESTINATION "${PY_SITE_PKG_DIR}/bm/pdfixed/${THRIFT_PY_NAMESPACE}"
+    DESTINATION "${CMAKE_INSTALL_PYTHON_SET_DIR}/bm/pdfixed/${THRIFT_PY_NAMESPACE}"
   )
 endforeach()
 
