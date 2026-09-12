@@ -340,9 +340,7 @@ PsaSwitch::enqueue(port_t egress_port, std::unique_ptr<Packet> &&packet) {
 void
 PsaSwitch::multicast(Packet *packet, unsigned int mgid, PktInstanceType path, unsigned int class_of_service) {
   auto phv = packet->get_phv();
-  // Hash the packet data to obtain per-packet entropy for LAG member
-  // selection, so that replication across a LAG's member ports is
-  // actually spread out instead of always picking the same member.
+  // Hash the packet data for LAG member selection.
   const uint64_t lag_hash =
       bm::hash::xxh64(packet->data(), packet->get_data_size());
   const auto pre_out = pre->replicate({mgid, lag_hash});

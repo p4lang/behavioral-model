@@ -137,10 +137,7 @@ McSimplePreLAG::replicate(const McSimplePre::McIn ingress_info) const {
   std::vector<McSimplePre::McOut> egress_info_list;
   egress_port_t port_id;
   lag_id_t lag_index;
-  // Hash used to pick a member within a LAG. This is supplied by the
-  // caller (e.g. derived from a hash of packet header fields) so that
-  // packets are actually spread across LAG members rather than always
-  // resolving to the same one.
+  // Use the supplied hash to select a LAG member.
   const uint64_t lag_hash = ingress_info.hash;
   int port_count1 = 0, port_count2 = 0;
   McSimplePre::McOut egress_info;

@@ -388,9 +388,7 @@ TEST(McSimplePreLAG, ResetState) {
 }
 
 TEST(McSimplePreLAG, LAGHashSelectsMember) {
-  // Regression test: the member of a LAG selected during replication must
-  // depend on the hash value supplied in McIn, so that traffic is spread
-  // across LAG members instead of always resolving to the same one.
+  // Verify that the supplied hash affects LAG member selection.
   McSimplePreLAG pre;
   McSimplePreLAG::mgrp_t mgid = 0x400;
   McSimplePreLAG::mgrp_hdl_t mgrp;
@@ -411,9 +409,7 @@ TEST(McSimplePreLAG, LAGHashSelectsMember) {
   ASSERT_EQ(McSimplePre::SUCCESS,
             pre.mc_set_lag_membership(lag_id, lag_port_map));
 
-  // Every member should be reachable for some hash value (i.e. the member
-  // selection is not stuck on a single port), and the selection should
-  // match the expected (hash % member_count) mapping.
+  // Check that each member can be selected and matches the hash mapping.
   std::set<McSimplePre::egress_port_t> selected_ports;
   for (uint64_t hash = 0; hash < members.size(); hash++) {
     McSimplePre::McIn ingress_info{mgid, hash};
