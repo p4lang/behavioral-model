@@ -5,7 +5,6 @@
 
 /*
  * Antonin Bas (antonin@barefootnetworks.com)
- *
  */
 
 #include <bm/bm_sim/ageing.h>
