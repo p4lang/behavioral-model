@@ -176,7 +176,7 @@ AgeingMonitor::do_sweep() {
     }
 
     // Keep prev_sweep_entries synced with entries_tmp so active aged 
-    //entries aren't re-notified on silent sweeps.
+    // entries aren't re-notified on silent sweeps.
     prev_sweep_entries.clear();
     prev_sweep_entries.insert(entries_tmp.begin(), entries_tmp.end());
     entries_tmp.clear();

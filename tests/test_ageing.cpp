@@ -167,7 +167,7 @@ TEST_F(AgeingTest, NoDuplicate) {
   std::string key("0x0aba");
   entry_handle_t handle_1;
   // Use a longer interval to give shared CI workers enough margin 
-  //against scheduling lag.
+  // against scheduling lag.
   unsigned int sweep_int = 500u;
   init_monitor(sweep_int);
   auto tp1 = clock::now();
@@ -180,7 +180,7 @@ TEST_F(AgeingTest, NoDuplicate) {
   ASSERT_LT(elapsed, 3 * sweep_int);
 
   // Poll across multiple sweep windows to ensure no duplicate notifications 
-  //are generated.
+  // are generated.
   auto deadline = clock::now() + milliseconds(6 * sweep_int);
   while (clock::now() < deadline) {
     ASSERT_NE(MemoryAccessor::Status::CAN_READ, ageing_writer->check_status());
