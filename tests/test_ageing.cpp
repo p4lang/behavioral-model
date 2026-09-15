@@ -166,7 +166,7 @@ TEST_F(AgeingTest, NoDuplicate) {
   std::string key_("\x0a\xba");
   std::string key("0x0aba");
   entry_handle_t handle_1;
-  // Use a longer interval to give shared CI workers enough margin 
+  // Use a longer interval to give shared CI workers enough margin
   // against scheduling lag.
   unsigned int sweep_int = 500u;
   init_monitor(sweep_int);
@@ -179,7 +179,7 @@ TEST_F(AgeingTest, NoDuplicate) {
   ASSERT_GT(elapsed, sweep_int / 2);
   ASSERT_LT(elapsed, 3 * sweep_int);
 
-  // Poll across multiple sweep windows to ensure no duplicate notifications 
+  // Poll across multiple sweep windows to ensure no duplicate notifications
   // are generated.
   auto deadline = clock::now() + milliseconds(6 * sweep_int);
   while (clock::now() < deadline) {
