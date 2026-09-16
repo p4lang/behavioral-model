@@ -62,6 +62,9 @@ class McSimplePre {
   struct McIn {
     //! Multicast group id to use for replication
     mgrp_t mgid;
+    //! Hash used by LAG-aware PREs to select a member port.
+    //! Defaults to 0 for PRE implementations that do not use it.
+    uint64_t hash{0};
   };
 
   //! Output of replicate() method
