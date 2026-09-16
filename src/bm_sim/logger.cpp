@@ -21,8 +21,14 @@ namespace bm {
 spdlog::logger *Logger::logger = nullptr;
 
 void
+Logger::drop_logger() {
+  spdlog::drop("bmv2");
+  logger = nullptr;
+}
+
+void
 Logger::set_logger_console() {
-  unset_logger();
+  drop_logger();
   auto logger_ = spdlog::stdout_logger_mt("bmv2");
   logger = logger_.get();
   set_pattern();
@@ -31,8 +37,8 @@ Logger::set_logger_console() {
 
 void
 Logger::set_logger_file(const std::string &filename, bool force_flush,
-                         size_t max_size, size_t max_files) {
-  unset_logger();
+                        size_t max_size, size_t max_files) {
+  drop_logger();
   auto logger_ = spdlog::rotating_logger_mt("bmv2", filename,
                                             max_size, max_files, force_flush);
   logger = logger_.get();
@@ -42,7 +48,7 @@ Logger::set_logger_file(const std::string &filename, bool force_flush,
 
 void
 Logger::set_logger_ostream(std::ostream &os) {
-  unset_logger();
+  drop_logger();
   auto sink = std::make_shared<spdlog::sinks::ostream_sink_mt>(os);
   auto logger_ = std::make_shared<spdlog::logger>("bmv2", sink);
   spdlog::register_logger(logger_);
@@ -53,17 +59,25 @@ Logger::set_logger_ostream(std::ostream &os) {
 
 void
 Logger::set_pattern() {
-  logger->set_pattern("[%H:%M:%S.%e] [%n] [%L] [thread %t] %v");
+  if (logger != nullptr) {
+    logger->set_pattern("[%H:%M:%S.%e] [%n] [%L] [thread %t] %v");
+  }
 }
 
 void
 Logger::unset_logger() {
-  spdlog::drop("bmv2");
+  drop_logger();
+  init_logger();
 }
 
 spdlog::logger *
 Logger::init_logger() {
   if (logger != nullptr) return logger;
+  auto existing = spdlog::get("bmv2");
+  if (existing) {
+    logger = existing.get();
+    return logger;
+  }
   auto null_sink = std::make_shared<spdlog::sinks::null_sink_mt>();
   auto null_logger = std::make_shared<spdlog::logger>("bmv2", null_sink);
   spdlog::register_logger(null_logger);
@@ -74,7 +88,9 @@ Logger::init_logger() {
 void
 Logger::set_log_level(LogLevel level) {
   spdlog::logger *logger = get();
-  logger->set_level(to_spd_level(level));
+  if (logger != nullptr) {
+    logger->set_level(to_spd_level(level));
+  }
 }
 
 spdlog::level::level_enum
