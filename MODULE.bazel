@@ -29,10 +29,16 @@ bazel_dep(name = "rules_cc", version = "0.2.18")
 bazel_dep(name = "xxhash", version = "0.8.3.bcr.1")
 
 bazel_dep(name = "googletest", version = "1.17.0.bcr.2", dev_dependency = True)
+bazel_dep(name = "gutil", version = "20260309.0", dev_dependency = True)
 
 git_override(
     module_name = "com_github_p4lang_pi",
     commit = "0aa6c69140045b8a74575dbb7818664dd1066504",
     init_submodules = True,
     remote = "https://github.com/p4lang/PI.git",
+)
+
+single_version_override(
+    module_name = "abseil-cpp",
+    version = "20250814.1",
 )
