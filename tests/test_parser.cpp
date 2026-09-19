@@ -670,8 +670,9 @@ class SwitchCaseTest : public ::testing::Test {
       : phv_source(PHVSourceIface::make_phv_source()) { }
 
   Packet get_pkt() {
-    // dummy packet, won't be parsed
-    return Packet::make_new(64, PacketBuffer(128), phv_source.get());
+    // Dummy packet with enough data for switch-key lookahead tests.
+    const char data[2] = {0, 0};
+    return Packet::make_new(2, PacketBuffer(2, data, 2), phv_source.get());
   }
 
   unsigned int bc_as_uint(const ByteContainer &bc) {
@@ -1579,6 +1580,15 @@ TEST_F(ParserPacketTooShortTest, Extract) {
 TEST_F(ParserPacketTooShortTest, LookAhead) {
   auto packet = get_pkt(packet_nbytes);
   parse_state.add_set_from_lookahead(testHeader, 0, 0, header_nbits);
+  parse_and_check_error(&packet, ErrorCodeMap::Core::PacketTooShort);
+}
+
+TEST_F(ParserPacketTooShortTest, LookAheadSwitchKey) {
+  auto packet = get_pkt(packet_nbytes);
+  ParseSwitchKeyBuilder builder;
+  builder.push_back_lookahead(0, header_nbits);
+  parse_state.set_key_builder(builder);
+  parse_state.set_default_switch_case(&parse_state);
   parse_and_check_error(&packet, ErrorCodeMap::Core::PacketTooShort);
 }
 
