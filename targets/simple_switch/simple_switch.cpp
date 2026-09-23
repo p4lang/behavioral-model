@@ -267,6 +267,7 @@ SimpleSwitch::receive_(port_t port_num, const char *buffer, int len) {
 void
 SimpleSwitch::start_and_return_() {
   check_queueing_metadata();
+  check_lag_hash_metadata();
 
   threads_.push_back(std::thread(&SimpleSwitch::ingress_thread, this));
   for (size_t i = 0; i < nb_egress_threads; i++) {
@@ -280,6 +281,7 @@ SimpleSwitch::swap_notify_() {
   bm::Logger::get()->debug(
       "simple_switch target has been notified of a config swap");
   check_queueing_metadata();
+  check_lag_hash_metadata();
 }
 
 SimpleSwitch::~SimpleSwitch() {
@@ -451,10 +453,20 @@ SimpleSwitch::check_queueing_metadata() {
 }
 
 void
+SimpleSwitch::check_lag_hash_metadata() {
+  with_lag_hash_metadata = field_exists("intrinsic_metadata", "lag_hash");
+}
+
+void
 SimpleSwitch::multicast(Packet *packet, unsigned int mgid) {
   auto *phv = packet->get_phv();
   auto &f_rid = phv->get_field("intrinsic_metadata.egress_rid");
-  const auto pre_out = pre->replicate({mgid});
+  // Get the LAG hash computed by the P4 program.
+  uint64_t lag_hash = 0;
+  if (with_lag_hash_metadata) {
+    lag_hash = phv->get_field("intrinsic_metadata.lag_hash").get<uint64_t>();
+  }
+  const auto pre_out = pre->replicate({mgid, lag_hash});
   auto packet_size =
       packet->get_register(RegisterAccess::PACKET_LENGTH_REG_IDX);
   for (const auto &out : pre_out) {

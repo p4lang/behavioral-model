@@ -14,6 +14,7 @@
 #include <bm/bm_sim/simple_pre_lag.h>
 
 #include <bitset>
+#include <set>
 #include <vector>
 
 using namespace bm;
@@ -424,6 +425,45 @@ TEST(McSimplePreLAG, LAGEmptyMembership) {
   McSimplePre::McIn ingress_info{mgid};
   auto egress_info = pre.replicate(ingress_info);
   ASSERT_EQ(0u, egress_info.size());
+}
+
+TEST(McSimplePreLAG, LAGHashSelectsMember) {
+  McSimplePreLAG pre;
+  McSimplePreLAG::mgrp_t mgid = 0x400;
+  McSimplePreLAG::mgrp_hdl_t mgrp;
+  McSimplePreLAG::l1_hdl_t l1h;
+  McSimplePreLAG::rid_t rid = 0x200;
+  McSimplePreLAG::LagMap lag_map;
+  McSimplePreLAG::lag_id_t lag_id = 2;
+  lag_map[lag_id] = 1;
+
+  EXPECT_EQ(McSimplePre::SUCCESS, pre.mc_mgrp_create(mgid, &mgrp));
+  EXPECT_EQ(McSimplePre::SUCCESS, pre.mc_node_create(rid, {}, lag_map, &l1h));
+  EXPECT_EQ(McSimplePre::SUCCESS, pre.mc_node_associate(mgrp, l1h));
+
+  McSimplePreLAG::PortMap lag_port_map;
+  const std::vector<unsigned int> members = {3, 7, 11};
+  for (auto port : members) lag_port_map[port] = 1;
+  EXPECT_EQ(McSimplePre::SUCCESS,
+            pre.mc_set_lag_membership(lag_id, lag_port_map));
+
+  // Same hash should always select the same member.
+  for (int i = 0; i < 3; i++) {
+    McSimplePre::McIn ingress_info{mgid, 0x1234};
+    auto egress_info = pre.replicate(ingress_info);
+    ASSERT_EQ(1u, egress_info.size());
+    ASSERT_EQ(members[0x1234 % members.size()], egress_info[0].egress_port);
+  }
+
+  // Different hashes should reach all members.
+  std::set<McSimplePre::egress_port_t> selected_ports;
+  for (uint64_t hash = 0; hash < members.size(); hash++) {
+    McSimplePre::McIn ingress_info{mgid, hash};
+    auto egress_info = pre.replicate(ingress_info);
+    ASSERT_EQ(1u, egress_info.size());
+    selected_ports.insert(egress_info[0].egress_port);
+  }
+  ASSERT_EQ(members.size(), selected_ports.size());
 }
 
 TEST(McSimplePre, ConfigurableLimits) {

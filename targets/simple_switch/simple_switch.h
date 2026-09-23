@@ -182,6 +182,8 @@ class SimpleSwitch : public Switch {
 
   void check_queueing_metadata();
 
+  void check_lag_hash_metadata();
+
   void multicast(Packet *packet, unsigned int mgid);
 
  private:
@@ -198,6 +200,8 @@ class SimpleSwitch : public Switch {
   std::shared_ptr<McSimplePreLAG> pre;
   clock::time_point start;
   bool with_queueing_metadata{false};
+  // Whether the P4 program defines the LAG hash metadata.
+  bool with_lag_hash_metadata{false};
   std::unique_ptr<MirroringSessions> mirroring_sessions;
 };
 
