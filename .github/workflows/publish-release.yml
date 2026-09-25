@@ -26,3 +26,6 @@ jobs:
     uses: p4lang/.github/.github/workflows/publish-release.yml@main
     with:
       tag_prefix: ""
+      dispatch_package: bmv2
+    secrets:
+      RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
