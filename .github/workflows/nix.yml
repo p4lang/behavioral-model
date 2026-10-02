@@ -1,0 +1,63 @@
+# SPDX-FileCopyrightText: 2026 The P4 Language Consortium
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Experimental: builds the Nix package (flake.nix, package.nix). Not a
+# required check.
+#
+# macOS is opt-in for now: the CMake build does not yet succeed there, and
+# running this workflow by hand with the "macos" input shows why.
+
+name: Test Nix build
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      macos:
+        description: Also build on macOS
+        type: boolean
+        default: false
+
+# Cancel any preceding run on the pull request.
+concurrency:
+  group: nix-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  check-changes:
+    name: Check whether tests need to be run based on diff
+    if: ${{ github.event_name != 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - uses: antrea-io/has-changes@v2
+      id: check_diff
+      with:
+        paths-ignore: docs/* *.md
+    outputs:
+      has_changes: ${{ steps.check_diff.outputs.has_changes }}
+
+  nix-build:
+    needs: check-changes
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.check-changes.outputs.has_changes == 'yes') }}
+    runs-on: ${{ matrix.os }}
+    name: nix-build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(inputs.macos && '["ubuntu-24.04", "macos-15"]' || '["ubuntu-24.04"]') }}
+    steps:
+    - uses: actions/checkout@v7
+    - uses: cachix/install-nix-action@v31
+    - name: Build bmv2 and run its unit tests
+      run: nix build --print-build-logs
+    - name: Smoke test
+      run: |
+        ./result/bin/simple_switch --version
+        ./result/bin/simple_switch_CLI --help

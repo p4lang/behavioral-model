@@ -108,3 +108,7 @@ VERSION-build
 
 core
 vgcore*
+
+# nix
+/result
+/result-*
