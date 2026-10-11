@@ -1101,8 +1101,15 @@ P4Objects::init_parsers(const Json::Value &cfg_root, InitState *init_state) {
                           << "arguments, expected " << 1,
                 cfg_parser_op);
           }
-          auto shift_bytes = static_cast<size_t>(cfg_parameters[0].asInt());
-          parse_state->add_shift(shift_bytes);
+          int shift_bytes_int = cfg_parameters[0].asInt();
+          if (shift_bytes_int < 0) {
+            throw json_exception(
+                EFormat() << "Parser 'shift' operation requires "
+                          << "a non-negative number of bytes, got "
+                          << shift_bytes_int,
+                cfg_parser_op);
+          }
+          parse_state->add_shift(static_cast<size_t>(shift_bytes_int));
         } else if (op_type == "advance") {
           if (cfg_parameters.size() != 1) {
             throw json_exception(
