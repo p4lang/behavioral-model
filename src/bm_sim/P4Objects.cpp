@@ -669,6 +669,12 @@ P4Objects::init_header_types(const Json::Value &cfg_root) {
             is_signed, is_saturating);
       } else {
         int field_bit_width = cfg_field[1].asInt();
+        if (field_bit_width <= 0) {
+          throw json_exception(
+              EFormat() << "Invalid field bitwidth '" << field_bit_width
+                        << "' for field '" << field_name << "'",
+              cfg_field);
+        }
         header_type->push_back_field(
             field_name, field_bit_width, is_signed, is_saturating);
       }
