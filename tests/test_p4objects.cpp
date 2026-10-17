@@ -962,24 +962,22 @@ TEST(P4Objects, InvalidHeaderFieldWidth) {
     ASSERT_EQ(0, objects.init_objects(&is, &factory));
   }
 
-  {  // zero-width fixed field has no valid packet encoding
+  {  // p4c emits bit<0> fields, so zero width must load
     std::stringstream is;
     create_json(0, &is);
-    std::stringstream os;
-    P4Objects objects(os);
+    P4Objects objects;
     LookupStructureFactory factory;
-    ASSERT_NE(0, objects.init_objects(&is, &factory));
-    EXPECT_EQ("Invalid field bitwidth '0' for field 'f'\n", os.str());
+    ASSERT_EQ(0, objects.init_objects(&is, &factory));
   }
 
-  {  // negative width would underflow Field's mask shift
+  {  // negative width gives Field an invalid mask shift count
     std::stringstream is;
     create_json(-8, &is);
     std::stringstream os;
     P4Objects objects(os);
     LookupStructureFactory factory;
     ASSERT_NE(0, objects.init_objects(&is, &factory));
-    EXPECT_EQ("Invalid field bitwidth '-8' for field 'f'\n", os.str());
+    EXPECT_EQ("Invalid negative bitwidth '-8' for field 'f'\n", os.str());
   }
 }
 
