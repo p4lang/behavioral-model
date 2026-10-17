@@ -971,6 +971,39 @@ TEST(P4Objects, ParserExtractVL) {
   ASSERT_EQ(0, objects.init_objects(&is, &factory));
 }
 
+TEST(P4Objects, InvalidHeaderFieldWidth) {
+  auto create_json = [](int width, std::ostream *os) {
+    *os << "{\"header_types\":[{\"name\":\"h_t\",\"id\":0,\"fields\":"
+        << "[[\"f\"," << width << "]]}]}";
+  };
+
+  {
+    std::stringstream is;
+    create_json(8, &is);
+    P4Objects objects;
+    LookupStructureFactory factory;
+    ASSERT_EQ(0, objects.init_objects(&is, &factory));
+  }
+
+  {  // p4c emits bit<0> fields, so zero width must load
+    std::stringstream is;
+    create_json(0, &is);
+    P4Objects objects;
+    LookupStructureFactory factory;
+    ASSERT_EQ(0, objects.init_objects(&is, &factory));
+  }
+
+  {  // negative width gives Field an invalid mask shift count
+    std::stringstream is;
+    create_json(-8, &is);
+    std::stringstream os;
+    P4Objects objects(os);
+    LookupStructureFactory factory;
+    ASSERT_NE(0, objects.init_objects(&is, &factory));
+    EXPECT_EQ("Invalid negative bitwidth '-8' for field 'f'\n", os.str());
+  }
+}
+
 TEST(P4Objects, BadRuntimeDataOffset) {
   std::stringstream is(
       "{\"actions\":[{\"name\":\"a0\",\"id\":0,\"runtime_data\":[],"

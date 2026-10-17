@@ -21,6 +21,8 @@ namespace extract {
 
 static inline void generic_extract(const char *data, int bit_offset,
                                    int bitwidth, char *dst) {
+  if (bitwidth == 0) return;
+
   int nbytes = (bitwidth + 7) / 8;
 
   if (bit_offset == 0 && bitwidth % 8 == 0) {
