@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-ARG PARENT_VERSION=latest-ubuntu26
+ARG PARENT_VERSION=latest-ubuntu-26.04
 FROM p4lang/pi:${PARENT_VERSION}
 LABEL maintainer="P4 Developers <p4-dev@lists.p4.org>"
 
@@ -31,8 +31,7 @@ ENV BM_DEPS build-essential \
             libboost-thread-dev \
             libjsoncpp-dev \
             libxxhash-dev \
-            pkg-config \
-            patch
+            pkg-config
 ENV BM_RUNTIME_DEPS libboost-program-options1.90.0 \
                     libboost-filesystem1.90.0 \
                     libboost-thread1.90.0 \
@@ -48,7 +47,6 @@ WORKDIR /behavioral-model/
 RUN apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata && \
     apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
-    patch -p1 < patches/behavioral-model-extra-libs-for-build.patch && \
     mkdir -p build && cd build && \
     if [ "$GCOV" != "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_COVERAGE=ON -DENABLE_WERROR=ON ..; fi && \
     if [ "$GCOV" = "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..; fi && \
