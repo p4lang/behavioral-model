@@ -24,26 +24,15 @@ add_library(simpleswitchgrpc STATIC
   ${PROTO_GENERATED_FILES}
 )
 
-# Read /etc/os-release to detect the Ubuntu version
-if(EXISTS "/etc/os-release")
-  file(STRINGS "/etc/os-release" OS_RELEASE_LINES REGEX "^(NAME|VERSION_ID)=")
-  foreach(LINE ${OS_RELEASE_LINES})
-    if(LINE MATCHES "^NAME=\"?([^\"]+)\"?")
-      set(OS_NAME ${CMAKE_MATCH_1})
-    elseif(LINE MATCHES "^VERSION_ID=\"?([^\"]+)\"?")
-      set(OS_VERSION ${CMAKE_MATCH_1})
-    endif()
-  endforeach()
-endif()
-
-if(OS_NAME STREQUAL "Ubuntu" AND OS_VERSION STREQUAL "26.04")
-  message(STATUS "Ubuntu 26.04 detected.  Linking extra libraries for simple_switch_grpc.")
+find_package(absl CONFIG QUIET)
+if(absl_FOUND)
+  message(STATUS "absl found.  Linking extra libraries for simple_switch_grpc.")
   set(EXTRA_LINK_LIBRARIES
       absl_strings
       absl_synchronization
   )
 else()
-  message(STATUS "Some OS other than Ubuntu 26.04 detected.  No extra libraries being linked for simple_switch_grpc.")
+  message(STATUS "absl not found.  No extra libraries being linked for simple_switch_grpc.")
   set(EXTRA_LINK_LIBRARIES
   )
 endif()
