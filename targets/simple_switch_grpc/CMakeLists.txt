@@ -24,12 +24,26 @@ add_library(simpleswitchgrpc STATIC
   ${PROTO_GENERATED_FILES}
 )
 
+find_package(absl CONFIG QUIET)
+if(absl_FOUND)
+  message(STATUS "absl found.  Linking extra libraries for simple_switch_grpc.")
+  set(EXTRA_LINK_LIBRARIES
+      absl_strings
+      absl_synchronization
+  )
+else()
+  message(STATUS "absl not found.  No extra libraries being linked for simple_switch_grpc.")
+  set(EXTRA_LINK_LIBRARIES
+  )
+endif()
+
 target_link_libraries(simpleswitchgrpc
   simpleswitch
   bmpi
   bm_grpc_dataplane
   ${PROTOBUF_LIBRARIES}
   ${GRPC_LIBRARIES}
+  ${EXTRA_LINK_LIBRARIES}
 )
 
 target_include_directories(simpleswitchgrpc PRIVATE
