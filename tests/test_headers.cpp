@@ -175,3 +175,42 @@ TEST_F(HeaderVLTest, AssignField) {
   EXPECT_EQ(2 + 1, hdr_1->get_nbytes_packet());
   EXPECT_EQ(2 + 1, hdr_2->get_nbytes_packet());
 }
+
+class HeaderZeroWidthFieldTest : public ::testing::Test {
+ protected:
+  PHVFactory phv_factory;
+  std::unique_ptr<PHV> phv;
+
+  HeaderType testHeaderType;
+  header_id_t testHeader1{0};
+
+  HeaderZeroWidthFieldTest()
+      : testHeaderType("zero_width_t", 0) {
+    // f1 + f0 + f7 = 8 bits; same field layout p4c emits for a bit<0> field
+    testHeaderType.push_back_field("f1", 1);
+    testHeaderType.push_back_field("f0", 0);
+    testHeaderType.push_back_field("f7", 7);
+    phv_factory.push_back_header("test1", testHeader1, testHeaderType);
+  }
+
+  virtual void SetUp() {
+    phv = phv_factory.create();
+  }
+};
+
+TEST_F(HeaderZeroWidthFieldTest, ExtractAndDeparse) {
+  auto &hdr = phv->get_header(testHeader1);
+  const std::string data("\x81");
+  // f0 sits at bit offset 1, the non-byte-aligned case from p4c's bit0-bmv2.p4
+  hdr.extract(data.data(), *phv);
+
+  EXPECT_EQ(1, hdr.get_field(0).get_uint());
+  EXPECT_EQ(0, hdr.get_field(1).get_nbits());
+  EXPECT_EQ(0, hdr.get_field(1).get_uint());
+  EXPECT_EQ(1, hdr.get_field(2).get_uint());
+  EXPECT_EQ(1, hdr.get_nbytes_packet());
+
+  std::string output(1, '\x00');
+  hdr.deparse(output.data());
+  EXPECT_EQ(data, output);
+}
