@@ -917,18 +917,41 @@ Action entry: a -
 }
 
 TEST(P4Objects, ParserShift) {
-  auto create_json = [](size_t shift_bytes, std::ostream *os) {
+  auto create_json = [](int shift_bytes, std::ostream *os) {
     *os << "{\"parsers\":[{\"name\":\"parser\",\"id\":0,\"init_state\":"
         << "\"start\",\"parse_states\":[{\"name\":\"start\",\"id\":0,"
         << "\"parser_ops\":[{\"op\":\"shift\",\"parameters\":["
         << shift_bytes << "]}],\"transition_key\":[],\"transitions\":[]}]}]}";
   };
 
-  std::stringstream is;
-  create_json(4, &is);
-  P4Objects objects;
-  LookupStructureFactory factory;
-  ASSERT_EQ(0, objects.init_objects(&is, &factory));
+  {
+    std::stringstream is;
+    create_json(4, &is);
+    P4Objects objects;
+    LookupStructureFactory factory;
+    ASSERT_EQ(0, objects.init_objects(&is, &factory));
+  }
+
+  {  // zero-byte shift is valid
+    std::stringstream is;
+    create_json(0, &is);
+    P4Objects objects;
+    LookupStructureFactory factory;
+    ASSERT_EQ(0, objects.init_objects(&is, &factory));
+  }
+
+  {  // negative shift must be rejected instead of wrapping to SIZE_MAX
+    std::stringstream is;
+    create_json(-1, &is);
+    std::stringstream os;
+    P4Objects objects(os);
+    LookupStructureFactory factory;
+    ASSERT_NE(0, objects.init_objects(&is, &factory));
+    std::string expected(
+        "Parser 'shift' operation requires a non-negative number of bytes, "
+        "got -1\n");
+    EXPECT_EQ(expected, os.str());
+  }
 }
 
 TEST(P4Objects, ParserExtractVL) {

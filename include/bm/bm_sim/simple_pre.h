@@ -16,6 +16,7 @@
 #ifndef BM_BM_SIM_SIMPLE_PRE_H_
 #define BM_BM_SIM_SIMPLE_PRE_H_
 
+#include <cstdint>
 #include <shared_mutex>
 #include <string>
 #include <unordered_map>
@@ -62,6 +63,8 @@ class McSimplePre {
   struct McIn {
     //! Multicast group id to use for replication
     mgrp_t mgid;
+    //! Hash used to select a member port in a LAG.
+    uint64_t hash{0};
   };
 
   //! Output of replicate() method
