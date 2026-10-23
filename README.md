@@ -146,6 +146,14 @@ sudo dpkg -i /path/to/package.deb
     library.  Macports may fail to install non-mt versions of the boost libraries; you may
     need to add symlinks in /opt/local/lib for libboost_X.dynlib -> libboost_X-mt.dynlib.
 
+    #### Nix (experimental)
+
+    With [Nix](https://nixos.org/) installed, `nix develop` enters a shell
+    with the dependencies of the CMake build, pinned by `flake.lock`, on Linux
+    and macOS; the CMake build steps below work unchanged in it. On Linux,
+    `nix build` builds bmv2 (without PI) with CMake, runs the unit tests and
+    links the result at `./result`.
+
 3. Building the code
 
     #### Recommended: autoconf-based build
