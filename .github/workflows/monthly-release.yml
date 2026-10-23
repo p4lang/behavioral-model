@@ -21,3 +21,5 @@ jobs:
       tag_prefix: ""
       branch_pattern: "release/{version}"
       reviewers: fruffy, jafingerhut
+    secrets:
+      RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
