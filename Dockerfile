@@ -56,8 +56,8 @@ RUN apt-get update -qq && \
     ctest --output-on-failure && \
     cmake --install . && cd .. && \
     ldconfig && \
-    (test "$IMAGE_TYPE" = "build" && \
+    ((test "$IMAGE_TYPE" = "build" && \
       rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/* && \
       echo 'Build image ready') || \
     (test "$IMAGE_TYPE" = "test" && \
-      echo 'Test image ready')
+      echo 'Test image ready'))
