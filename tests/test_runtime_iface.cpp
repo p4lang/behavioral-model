@@ -149,3 +149,17 @@ TEST_F(RuntimeIfaceTest, Registers) {
   rc = sw.register_reset(cxt_id, bad_name);
   ASSERT_EQ(ErrorCode::INVALID_REGISTER_NAME, rc);
 }
+
+TEST_F(RuntimeIfaceTest, RegisterResetClearsValues) {
+  using ErrorCode = Register::RegisterErrorCode;
+  const std::string name("my_register");
+  ASSERT_EQ(ErrorCode::SUCCESS,
+            sw.register_write(cxt_id, name, 0, Data(99)));
+  ASSERT_EQ(ErrorCode::SUCCESS,
+            sw.register_write(cxt_id, name, 1, Data(42)));
+  ASSERT_EQ(ErrorCode::SUCCESS, sw.register_reset(cxt_id, name));
+  const auto values = sw.register_read_all(cxt_id, name);
+  ASSERT_GE(values.size(), 2u);
+  for (const auto &value : values)
+    EXPECT_EQ(0, value.get<int>());
+}
