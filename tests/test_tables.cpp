@@ -3443,19 +3443,18 @@ TEST_F(TableTernaryCache, LookupWithoutCache) {
 }
 
 TEST_F(TableTernaryCache, LookupCmp) {
-  auto run = [this](bool enable_cache) {
-    using clock = std::chrono::high_resolution_clock;
-    using std::chrono::milliseconds;
-    using std::chrono::duration_cast;
-
-    auto tp1 = clock::now();
-    run_test(enable_cache, 1000);
-    auto tp2 = clock::now();
-    return duration_cast<milliseconds>(tp2 - tp1).count();
+  auto run = [this](bool enable_cache, size_t num_packets) {
+    // Capture the starting CPU clock tick count
+    std::clock_t tp1 = std::clock();
+    run_test(enable_cache, num_packets);
+    std::clock_t tp2 = std::clock();
+    double cpu_time_ms = 1000.0 * (tp2 - tp1) / CLOCKS_PER_SEC;
+    return cpu_time_ms;
   };
 
-  auto time_with = run(true);
-  auto time_without = run(false);
+  size_t num_packets = 10000;
+  auto time_with = run(true, num_packets);
+  auto time_without = run(false, num_packets);
 
   if (!WITH_VALGRIND) {
     // on my machine, compiling with O0, time_with = 10ms, time_without = 60ms
