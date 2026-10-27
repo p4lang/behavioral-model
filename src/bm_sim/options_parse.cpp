@@ -10,8 +10,10 @@
 
 #include <bm/bm_sim/P4Objects.h>
 #include <bm/bm_sim/event_logger.h>
+#include <bm/bm_sim/event_observer.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/options_parse.h>
+#include <bm/bm_sim/packet_tracer.h>
 #include <bm/config.h>
 
 #include <cassert>
@@ -109,6 +111,11 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
       ("nanolog", po::value<std::string>(),
        "IPC socket to use for nanomsg pub/sub logs "
        "(default: no nanomsg logging")
+#ifdef BM_PACKET_TRACE_ON
+      ("trace-dir", po::value<std::string>(),
+       "Enable structured packet tracing and write textproto traces to the "
+       "specified directory")
+#endif
       ("log-console",
        "Enable logging on stdout")
       ("log-file", po::value<std::string>(),
@@ -269,6 +276,16 @@ OptionsParser::parse(int argc, char *argv[], TargetParserIface *tp,
     EventLogger::init(std::move(event_transport), device_id);
 #endif
   }
+
+#ifdef BM_PACKET_TRACE_ON
+  if (vm.count("trace-dir")) {
+    std::string trace_dir = vm["trace-dir"].as<std::string>();
+    if (!trace_dir.empty()) {
+      PacketTracer::get()->set_output_dir(trace_dir);
+      EventObserverRegistry::get()->register_observer(PacketTracer::get());
+    }
+  }
+#endif
 
   if (vm.count("log-console") && vm.count("log-file")) {
     outstream << "Error: --log-console and --log-file are exclusive\n";

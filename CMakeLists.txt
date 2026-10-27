@@ -51,6 +51,7 @@ option(ENABLE_DEBUGGER "Enable bmv2 remote debugger" OFF)
 option(ENABLE_COVERAGE "Enable code coverage tracking" OFF)
 option(ENABLE_LOGGING_MACROS "Enable compile time debug and trace logging macros" ON)
 option(ENABLE_ELOGGER "Enable nanomsg event logger" ON)
+option(ENABLE_PACKET_TRACE "Enable structured packet tracing" OFF)
 option(ENABLE_MODULES "Allow loading third-party modules at runtime" ON)
 option(REQUIRE_MODULES "Require support for loading third-party modules at runtime" OFF)
 option(ENABLE_UNDETERMINISTIC_TESTS "Run undeterministic tests (e.g. queueing) when running tests" ON)
@@ -212,7 +213,10 @@ endif()
 
 # Identify python installation directory
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
-set(PY_SITE_PKG_DIR "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages")
+if(NOT DEFINED CMAKE_INSTALL_PYTHON_SET_DIR)
+    set(CMAKE_INSTALL_PYTHON_SET_DIR "${Python3_SITELIB}" CACHE PATH
+        "Directory where Python packages should be installed")
+endif()
 
 # Add subdirectories
 if(WITH_THRIFT)
@@ -242,6 +246,11 @@ if(WITH_PDFIXED)
   add_subdirectory(pdfixed)
 endif()
 
+if(ENABLE_PACKET_TRACE)
+  find_package(Protobuf REQUIRED)
+  add_subdirectory(proto)
+endif()
+
 # Installation rules
 install(FILES README.md
   DESTINATION share/doc/behavioral-model)
@@ -259,3 +268,4 @@ message(STATUS "  Debugger enabled: ${ENABLE_DEBUGGER}")
 message(STATUS "  With Thrift: ${WITH_THRIFT}")
 message(STATUS "  With pdfixed: ${WITH_PDFIXED}")
 message(STATUS "  With PI: ${WITH_PI}")
+message(STATUS "  CMAKE_INSTALL_PYTHON_SET_DIR: ${CMAKE_INSTALL_PYTHON_SET_DIR}")

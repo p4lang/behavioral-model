@@ -25,14 +25,20 @@ bazel_dep(name = "nanomsg", version = "1.2.2")
 bazel_dep(name = "p4runtime", version = "1.5.0.bcr.1", repo_name = "com_github_p4lang_p4runtime")
 bazel_dep(name = "package_metadata", version = "0.0.10")
 bazel_dep(name = "protobuf", version = "33.5", repo_name = "com_google_protobuf")
-bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "rules_cc", version = "0.2.18")
 bazel_dep(name = "xxhash", version = "0.8.3.bcr.1")
 
 bazel_dep(name = "googletest", version = "1.17.0.bcr.2", dev_dependency = True)
+bazel_dep(name = "gutil", version = "20260309.0", dev_dependency = True)
 
 git_override(
     module_name = "com_github_p4lang_pi",
     commit = "0aa6c69140045b8a74575dbb7818664dd1066504",
     init_submodules = True,
     remote = "https://github.com/p4lang/PI.git",
+)
+
+single_version_override(
+    module_name = "abseil-cpp",
+    version = "20250814.1",
 )

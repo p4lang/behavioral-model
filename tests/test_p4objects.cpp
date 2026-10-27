@@ -140,6 +140,18 @@ TEST(P4Objects, UnknownHashSelector) {
   EXPECT_EQ(expected, os.str());
 }
 
+TEST(P4Objects, UnknownDirectMeter) {
+  // NOLINTNEXTLINE(whitespace/line_length)
+  std::istringstream is("{\"actions\":[{\"name\":\"_drop\",\"id\":2,\"runtime_data\":[],\"primitives\":[{\"op\":\"drop\",\"parameters\":[]}]}],\"pipelines\":[{\"name\":\"ingress\",\"id\":0,\"init_table\":\"t1\",\"tables\":[{\"name\":\"t1\",\"id\":0,\"match_type\":\"exact\",\"type\":\"simple\",\"max_size\":1024,\"with_counters\":false,\"key\":[],\"actions\":[\"_drop\"],\"next_tables\":{\"_drop\":null},\"default_action\":null,\"direct_meters\":\"bad_meter\"}],\"conditionals\":[]}]}");
+  std::stringstream os;
+  LookupStructureFactory factory;
+  P4Objects objects(os);
+  std::string expected(
+      "Table 't1' refers to unknown direct meter array 'bad_meter'\n");
+  ASSERT_NE(0, objects.init_objects(&is, &factory));
+  EXPECT_EQ(expected, os.str());
+}
+
 TEST(P4Objects, RequiredField) {
   std::istringstream is("{}");
   std::set<P4Objects::header_field_pair> required_fields;
@@ -905,18 +917,41 @@ Action entry: a -
 }
 
 TEST(P4Objects, ParserShift) {
-  auto create_json = [](size_t shift_bytes, std::ostream *os) {
+  auto create_json = [](int shift_bytes, std::ostream *os) {
     *os << "{\"parsers\":[{\"name\":\"parser\",\"id\":0,\"init_state\":"
         << "\"start\",\"parse_states\":[{\"name\":\"start\",\"id\":0,"
         << "\"parser_ops\":[{\"op\":\"shift\",\"parameters\":["
         << shift_bytes << "]}],\"transition_key\":[],\"transitions\":[]}]}]}";
   };
 
-  std::stringstream is;
-  create_json(4, &is);
-  P4Objects objects;
-  LookupStructureFactory factory;
-  ASSERT_EQ(0, objects.init_objects(&is, &factory));
+  {
+    std::stringstream is;
+    create_json(4, &is);
+    P4Objects objects;
+    LookupStructureFactory factory;
+    ASSERT_EQ(0, objects.init_objects(&is, &factory));
+  }
+
+  {  // zero-byte shift is valid
+    std::stringstream is;
+    create_json(0, &is);
+    P4Objects objects;
+    LookupStructureFactory factory;
+    ASSERT_EQ(0, objects.init_objects(&is, &factory));
+  }
+
+  {  // negative shift must be rejected instead of wrapping to SIZE_MAX
+    std::stringstream is;
+    create_json(-1, &is);
+    std::stringstream os;
+    P4Objects objects(os);
+    LookupStructureFactory factory;
+    ASSERT_NE(0, objects.init_objects(&is, &factory));
+    std::string expected(
+        "Parser 'shift' operation requires a non-negative number of bytes, "
+        "got -1\n");
+    EXPECT_EQ(expected, os.str());
+  }
 }
 
 TEST(P4Objects, ParserExtractVL) {
@@ -934,6 +969,39 @@ TEST(P4Objects, ParserExtractVL) {
   P4Objects objects;
   LookupStructureFactory factory;
   ASSERT_EQ(0, objects.init_objects(&is, &factory));
+}
+
+TEST(P4Objects, InvalidHeaderFieldWidth) {
+  auto create_json = [](int width, std::ostream *os) {
+    *os << "{\"header_types\":[{\"name\":\"h_t\",\"id\":0,\"fields\":"
+        << "[[\"f\"," << width << "]]}]}";
+  };
+
+  {
+    std::stringstream is;
+    create_json(8, &is);
+    P4Objects objects;
+    LookupStructureFactory factory;
+    ASSERT_EQ(0, objects.init_objects(&is, &factory));
+  }
+
+  {  // p4c emits bit<0> fields, so zero width must load
+    std::stringstream is;
+    create_json(0, &is);
+    P4Objects objects;
+    LookupStructureFactory factory;
+    ASSERT_EQ(0, objects.init_objects(&is, &factory));
+  }
+
+  {  // negative width gives Field an invalid mask shift count
+    std::stringstream is;
+    create_json(-8, &is);
+    std::stringstream os;
+    P4Objects objects(os);
+    LookupStructureFactory factory;
+    ASSERT_NE(0, objects.init_objects(&is, &factory));
+    EXPECT_EQ("Invalid negative bitwidth '-8' for field 'f'\n", os.str());
+  }
 }
 
 TEST(P4Objects, BadRuntimeDataOffset) {

@@ -55,6 +55,12 @@ AC_ARG_WITH([nanomsg],
 
 AM_CONDITIONAL([COND_NANOMSG], [test "$want_nanomsg" = yes])
 
+AC_ARG_WITH([packet-trace],
+    AS_HELP_STRING([--with-packet-trace], [Support structured packet tracing]),
+    [want_packet_trace="$withval"], [want_packet_trace=yes])
+
+AM_CONDITIONAL([COND_PACKET_TRACE], [test "$want_packet_trace" = yes])
+
 debugger_enabled=no
 AC_ARG_ENABLE([debugger],
     AS_HELP_STRING([--enable-debugger], [Enable bmv2 remote debugger]))
@@ -188,6 +194,10 @@ AS_IF([test "$want_nanomsg" = yes], [
     AC_DEFINE([NANOMSG_ON], [], [Enable Nanomsg support])
 ])
 
+AS_IF([test "$want_packet_trace" = yes], [
+    AC_DEFINE([PACKET_TRACE_ON], [], [Enable structured packet trace support])
+])
+
 # Check for pthread, libgmp, libpcap
 AX_PTHREAD([], [AC_MSG_ERROR([Missing pthread library])])
 AC_CHECK_LIB([gmp], [__gmpz_init], [], [AC_MSG_ERROR([Missing libgmp])])
@@ -275,14 +285,16 @@ AC_TYPE_SIZE_T
 AC_TYPE_UINT64_T
 AC_LANG_POP(C++)
 
-AS_IF([test "$want_pi" = yes], [
+AS_IF([test "$want_packet_trace" = yes || test "$want_pi" = yes], [
 	AC_PATH_PROG([PROTOC], [protoc], [])
 	AS_IF([test "x$PROTOC" = x], [AC_MSG_ERROR([protoc not found])])
 
 	PKG_CHECK_MODULES([PROTOBUF], [protobuf >= 3.0.0])
 	AC_SUBST([PROTOBUF_CFLAGS])
 	AC_SUBST([PROTOBUF_LIBS])
+])
 
+AS_IF([test "$want_pi" = yes], [
 	PKG_CHECK_MODULES([GRPC], [grpc++ >= 1.3.0 grpc >= 3.0.0])
 	AC_SUBST([GRPC_CFLAGS])
 	AC_SUBST([GRPC_LIBS])
@@ -309,6 +321,7 @@ AC_CONFIG_FILES([Makefile
 		third_party/gmock/Makefile
 		third_party/gtest/Makefile
 		third_party/spdlog/Makefile
+		proto/Makefile
 		include/Makefile
 		src/Makefile
 		src/bm_sim/Makefile
@@ -356,6 +369,7 @@ AS_ECHO("Features recap ......................")
 AS_ECHO("Coverage enabled .............. : $coverage_enabled")
 AS_ECHO("Logging macros enabled ........ : $logging_macros_enabled")
 AS_ECHO("With Nanomsg .................. : $want_nanomsg")
+AS_ECHO("With packet trace ............. : $want_packet_trace")
 AS_ECHO("Event logger enabled .......... : $elogger_enabled")
 AS_ECHO("Debugger enabled .............. : $debugger_enabled")
 AS_ECHO("With Thrift ................... : $want_thrift")

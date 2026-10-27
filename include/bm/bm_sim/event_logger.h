@@ -22,28 +22,11 @@
 #include <utility>
 
 #include "device_id.h"
+#include "event_observer.h"
 #include "phv_forward.h"
 #include "transport.h"
 
 namespace bm {
-
-class Packet;
-
-// Forward declarations of P4 object classes. This is ugly, but:
-// 1) I don't have to worry about circular dependencies
-// 2) If I decide to switch from id to name for msgs, I won't have to modify the
-// EventLogger interface
-class Parser;
-class Deparser;
-class MatchTableAbstract;
-class MatchEntry;
-class ActionFn;
-struct ActionData;
-class Conditional;
-class Checksum;
-class Pipeline;
-
-using entry_handle_t = uint32_t;
 
 //! Signals significant packet event by publishing a message on a
 //! transport. This is meant to be used with the nanomsg PUB/SUB transport.
@@ -58,41 +41,39 @@ using entry_handle_t = uint32_t;
 //! responsible of generated "packet in" and "packet out" messages (when a
 //! packet is received / transmitted). Obviously, this is optional and you do
 //! not have to do it if you are not interested in using the event logger.
-class EventLogger {
+class EventLogger : public EventObserverIface {
  public:
   explicit EventLogger(std::unique_ptr<TransportIface> transport,
                        device_id_t device_id = 0)
       : transport_instance(std::move(transport)), device_id(device_id) { }
 
-  // we need the ingress / egress ports, but they are part of the Packet
-  //! Signal that a packet was received by the switch
-  void packet_in(const Packet &packet);
-  //! Signal that a packet was transmitted by the switch
-  void packet_out(const Packet &packet);
+  void packet_in(const Packet& packet) override;
+  void packet_out(const Packet& packet) override;
 
-  void parser_start(const Packet &packet, const Parser &parser);
-  void parser_done(const Packet &packet, const Parser &parser);
-  void parser_extract(const Packet &packet, header_id_t header);
+  void parser_start(const Packet& packet, const Parser& parser) override;
+  void parser_done(const Packet& packet, const Parser& parser) override;
+  void parser_extract(const Packet& packet, header_id_t header) override;
 
-  void deparser_start(const Packet &packet, const Deparser &deparser);
-  void deparser_done(const Packet &packet, const Deparser &deparser);
-  void deparser_emit(const Packet &packet, header_id_t header);
+  void deparser_start(const Packet& packet, const Deparser& deparser) override;
+  void deparser_done(const Packet& packet, const Deparser& deparser) override;
+  void deparser_emit(const Packet& packet, header_id_t header) override;
 
-  void checksum_update(const Packet &packet, const Checksum &checksum);
+  void checksum_update(const Packet& packet, const Checksum& checksum) override;
 
-  void pipeline_start(const Packet &packet, const Pipeline &pipeline);
-  void pipeline_done(const Packet &packet, const Pipeline &pipeline);
+  void pipeline_start(const Packet& packet, const Pipeline& pipeline) override;
+  void pipeline_done(const Packet& packet, const Pipeline& pipeline) override;
 
-  void condition_eval(const Packet &packet,
-                      const Conditional &cond, bool result);
-  void table_hit(const Packet &packet,
-                 const MatchTableAbstract &table, entry_handle_t handle);
-  void table_miss(const Packet &packet, const MatchTableAbstract &table);
+  void condition_eval(const Packet& packet, const Conditional& cond,
+                      bool result) override;
+  void table_hit(const Packet& packet, const MatchTableAbstract& table,
+                 entry_handle_t handle) override;
+  void table_miss(const Packet& packet,
+                  const MatchTableAbstract& table) override;
 
-  void action_execute(const Packet &packet,
-                      const ActionFn &action_fn, const ActionData &action_data);
+  void action_execute(const Packet& packet, const ActionFn& action_fn,
+                      const ActionData& action_data) override;
 
-  void config_change();
+  void config_change() override;
 
   static EventLogger *get() {
     static EventLogger event_logger(TransportIface::make_dummy());
@@ -103,6 +84,7 @@ class EventLogger {
                    device_id_t device_id = 0) {
     get()->transport_instance = std::move(transport);
     get()->device_id = device_id;
+    EventObserverRegistry::get()->register_observer(get());
   }
 
  private:
@@ -111,18 +93,5 @@ class EventLogger {
 };
 
 }  // namespace bm
-
-//! Log an event with the event logger.
-//! For example:
-//! @code
-//! BMELOG(packet_in, packet);
-//! // packet processing
-//! BMELOG(packet_out, packet);
-//! @endcode
-#ifdef BM_ELOG_ON
-#define BMELOG(fn, ...) bm::EventLogger::get()->fn(__VA_ARGS__)
-#else
-#define BMELOG(fn, ...)
-#endif
 
 #endif  // BM_BM_SIM_EVENT_LOGGER_H_

@@ -462,7 +462,7 @@ def recv_msgs(socket_addr, client):
 
         try:
             p = MSG_TYPES.get_msg_class(msg_type)(msg)
-        except:
+        except Exception:
             print("Unknown msg type", msg_type)
             continue
         p.extract()
@@ -492,7 +492,7 @@ def main():
     if not args.json or not args.socket:
         try:
             import bmpy_utils as utils
-        except:
+        except ImportError:
             print(
                 "When '--json' or '--socket' is not provided, the client needs bmpy_utils")
             print("bmpy_utils is not available when building bmv2 without Thrift support")

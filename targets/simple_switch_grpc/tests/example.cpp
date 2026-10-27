@@ -16,6 +16,7 @@
 #include <google/protobuf/util/message_differencer.h>
 
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <streambuf>
 #include <string>
@@ -66,8 +67,14 @@ test() {
     stream->Write(request);
     p4v1::StreamMessageResponse response;
     stream->Read(&response);
-    assert(response.update_case() == p4v1::StreamMessageResponse::kArbitration);
-    assert(response.arbitration().status().code() == ::google::rpc::Code::OK);
+    if (response.update_case() != p4v1::StreamMessageResponse::kArbitration) {
+      std::cerr << "Error: unexpected response update case\n";
+      return 1;
+    }
+    if (response.arbitration().status().code() != ::google::rpc::Code::OK) {
+      std::cerr << "Error: arbitration status not OK\n";
+      return 1;
+    }
   }
 
   {
@@ -87,9 +94,16 @@ test() {
     ClientContext context;
     auto status = pi_stub_->SetForwardingPipelineConfig(
         &context, request, &rep);
-    assert(status.ok());
+    if (!status.ok()) {
+      std::cerr << "Error: SetForwardingPipelineConfig failed: "
+                << status.error_message() << "\n";
+      return 1;
+    }
     auto *released_p4info = config->release_p4info();
-    assert(released_p4info == &p4info);
+    if (released_p4info != &p4info) {
+      std::cerr << "Error: released_p4info pointer mismatch\n";
+      return 1;
+    }
   }
 
   auto t_id = get_table_id(p4info, "ipv4_lpm");
@@ -131,33 +145,49 @@ test() {
     ClientContext context;
     p4v1::WriteResponse rep;
     auto status = pi_stub_->Write(&context, request, &rep);
-    assert(status.ok());
+    if (!status.ok()) {
+      std::cerr << "Error: Write (INSERT) failed: "
+                << status.error_message() << "\n";
+      return 1;
+    }
     auto *released_entity = update->release_entity();
-    assert(released_entity == &entity);
+    if (released_entity != &entity) {
+      std::cerr << "Error: released_entity pointer mismatch\n";
+      return 1;
+    }
   }
 
-  auto read_one = [&dev_id, &pi_stub_, &table_entry] () {
+  // read and verify entry
+  {
     p4v1::ReadRequest request;
     request.set_device_id(dev_id);
-    auto entity = request.add_entities();
-    entity->set_allocated_table_entry(table_entry);
+    auto read_entity = request.add_entities();
+    read_entity->set_allocated_table_entry(table_entry);
     ClientContext context;
     std::unique_ptr<grpc::ClientReader<p4v1::ReadResponse> > reader(
         pi_stub_->Read(&context, request));
     p4v1::ReadResponse rep;
     reader->Read(&rep);
     auto status = reader->Finish();
-    assert(status.ok());
-    auto *released_table_entry = entity->release_table_entry();
-    assert(released_table_entry == table_entry);
-    return rep;
-  };
-
-  // get entry, check it is the one we added
-  {
-    auto rep = read_one();
-    assert(rep.entities().size() == 1);
-    assert(MessageDifferencer::Equals(entity, rep.entities().Get(0)));
+    if (!status.ok()) {
+      std::cerr << "Error: Read failed: " << status.error_message() << "\n";
+      return 1;
+    }
+    auto *released_table_entry = read_entity->release_table_entry();
+    if (released_table_entry != table_entry) {
+      std::cerr << "Error: released_table_entry pointer mismatch\n";
+      return 1;
+    }
+    // get entry, check it is the one we added
+    if (rep.entities().size() != 1) {
+      std::cerr << "Error: expected 1 entity, got "
+                << rep.entities().size() << "\n";
+      return 1;
+    }
+    if (!MessageDifferencer::Equals(entity, rep.entities().Get(0))) {
+      std::cerr << "Error: entity mismatch\n";
+      return 1;
+    }
   }
 
   // remove entry
@@ -171,15 +201,44 @@ test() {
     ClientContext context;
     p4v1::WriteResponse rep;
     auto status = pi_stub_->Write(&context, request, &rep);
-    assert(status.ok());
+    if (!status.ok()) {
+      std::cerr << "Error: Write (DELETE) failed: "
+                << status.error_message() << "\n";
+      return 1;
+    }
     auto *released_entity = update->release_entity();
-    assert(released_entity == &entity);
+    if (released_entity != &entity) {
+      std::cerr << "Error: released_entity pointer mismatch\n";
+      return 1;
+    }
   }
 
   // check entry is indeed gone
   {
-    auto rep = read_one();
-    assert(rep.entities().size() == 0);
+    p4v1::ReadRequest request;
+    request.set_device_id(dev_id);
+    auto read_entity = request.add_entities();
+    read_entity->set_allocated_table_entry(table_entry);
+    ClientContext context;
+    std::unique_ptr<grpc::ClientReader<p4v1::ReadResponse> > reader(
+        pi_stub_->Read(&context, request));
+    p4v1::ReadResponse rep;
+    reader->Read(&rep);
+    auto status = reader->Finish();
+    if (!status.ok()) {
+      std::cerr << "Error: Read failed: " << status.error_message() << "\n";
+      return 1;
+    }
+    auto *released_table_entry = read_entity->release_table_entry();
+    if (released_table_entry != table_entry) {
+      std::cerr << "Error: released_table_entry pointer mismatch\n";
+      return 1;
+    }
+    if (rep.entities().size() != 0) {
+      std::cerr << "Error: expected 0 entities, got "
+                << rep.entities().size() << "\n";
+      return 1;
+    }
   }
 
   {
@@ -187,7 +246,11 @@ test() {
     p4v1::StreamMessageResponse response;
     while (stream->Read(&response)) { }
     auto status = stream->Finish();
-    assert(status.ok());
+    if (!status.ok()) {
+      std::cerr << "Error: stream finish failed: "
+                << status.error_message() << "\n";
+      return 1;
+    }
   }
 
   return 0;

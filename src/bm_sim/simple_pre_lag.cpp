@@ -77,7 +77,7 @@ McSimplePreLAG::mc_set_lag_membership(const lag_id_t lag_index,
                                       const PortMap &port_map) {
   std::unique_lock<std::shared_mutex> lock(mutex);
   uint16_t member_count = 0;
-  if (lag_index > LAG_MAX_ENTRIES) {
+  if (lag_index >= LAG_MAX_ENTRIES) {
     Logger::get()->error("lag membership set failed, invalid lag index");
     return ERROR;
   }
@@ -137,7 +137,7 @@ McSimplePreLAG::replicate(const McSimplePre::McIn ingress_info) const {
   std::vector<McSimplePre::McOut> egress_info_list;
   egress_port_t port_id;
   lag_id_t lag_index;
-  int lag_hash = 0xFF;  // TODO(unknown): get lag hash from metadata
+  const uint64_t lag_hash = ingress_info.hash;
   int port_count1 = 0, port_count2 = 0;
   McSimplePre::McOut egress_info;
   std::shared_lock<std::shared_mutex> lock(mutex);
@@ -175,7 +175,7 @@ McSimplePreLAG::replicate(const McSimplePre::McIn ingress_info) const {
                                lag_index);
           continue;
         }
-        port_count1 = (lag_hash % lag_entry.member_count) + 1;
+        port_count1 = static_cast<int>(lag_hash % lag_entry.member_count) + 1;
         port_count2 = 0;
         for (port_id = 0; port_id < port_map.size(); port_id++) {
           if (port_map[port_id]) {

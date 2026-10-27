@@ -128,10 +128,23 @@ sudo dpkg -i /path/to/package.deb
     Our CI tests now run on Ubuntu 22.04 and `ubuntu-latest` (which is
     24.04 as of 2025-Mar-05).
 
+    #### MacOS
+
     On MacOS you can use the tools/macos/bootstrap_mac.sh script to
     install all the above dependencies using homebrew. Note that in order
     to compile the code you need [XCode 8](https://itunes.apple.com/us/app/xcode/id497799835?mt=12)
     or later.
+
+    With MacPorts, you can use
+
+    ```console
+    sudo port install automake autoconf libtool thrift gmp boost
+    ```
+
+    You may need to specify `LDFLAGS=-L/opt/local/lib` on the `configure` command line.
+    You'll also need to manually install the [nanomsg](https://github.com/nanomsg/nanomsg)
+    library.  Macports may fail to install non-mt versions of the boost libraries; you may
+    need to add symlinks in /opt/local/lib for libboost_X.dynlib -> libboost_X-mt.dynlib.
 
 3. Building the code
 
@@ -158,15 +171,13 @@ sudo dpkg -i /path/to/package.deb
     The new bmv2 debugger can be enabled by passing `--enable-debugger` to
     `configure`.
 
-    #### Experimental: cmake-based build
+    #### CMake-based build
 
-    A cmake-based build process was recently added to the project. Differences
+    A CMake-based build process is available and covered by CI. Differences
     from the autoconf-based system are:
-    - Static vs shared libraries: the cmake build produces a single version of
-      each library (the choice depnds upon the library), while the autoconf
+    - Static vs shared libraries: the CMake build produces a single version of
+      each library (the choice depends upon the library), while the autoconf
       build produces static and shared versions for every library.
-    - bmp4apps library: the cmake build system does produce the bmp4apps
-      library.
 
     ```console
     # Create a build directory
@@ -256,7 +267,7 @@ To run the unit tests, simply do:
 **If you get a nanomsg error when running the tests (make check), try running
   them as sudo**
 
-### cmake-based build
+### CMake-based build
 To run the unit tests, simply do from the build directory:
 
     ctest

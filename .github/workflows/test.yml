@@ -88,7 +88,7 @@ jobs:
         GCOV: ${{ matrix.gcov }}
       run: |
         ./autogen.sh
-        CONFIG_FLAGS="--with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror"
+        CONFIG_FLAGS="--with-pdfixed --with-pi --with-packet-trace --with-stress-tests --enable-debugger --enable-Werror"
         if [ -n "$GCOV" ]; then
           ./configure $CONFIG_FLAGS --enable-coverage
         else
@@ -153,11 +153,11 @@ jobs:
         include:
           - os: ubuntu-24.04
             name: default
-            options: -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON
+            options: -DWITH_PDFIXED=ON -DWITH_PI=ON -DENABLE_PACKET_TRACE=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON
             run_install: true
           - os: ubuntu-24.04
             name: without-thrift
-            options: -DWITH_PDFIXED=OFF -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON -DWITH_THRIFT=OFF
+            options: -DWITH_PDFIXED=OFF -DWITH_PI=ON -DENABLE_PACKET_TRACE=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON -DWITH_THRIFT=OFF
             run_install: false
     steps:
     - uses: actions/checkout@v7

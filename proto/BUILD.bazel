@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2026 Yuao Ma
+#
+# SPDX-License-Identifier: Apache-2.0
+
+load("@com_google_protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
+
+package(
+    default_visibility = ["//visibility:public"],
+    licenses = ["notice"],
+)
+
+proto_library(
+    name = "packet_trace_proto",
+    srcs = ["packet_trace.proto"],
+    strip_import_prefix = "",
+)
+
+cc_proto_library(
+    name = "packet_trace_cc_proto",
+    deps = [":packet_trace_proto"],
+)

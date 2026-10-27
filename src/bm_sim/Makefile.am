@@ -58,6 +58,7 @@ meters.cpp \
 options_parse.cpp \
 P4Objects.cpp \
 packet.cpp \
+packet_tracer.cpp \
 parser.cpp \
 parser_error.cpp \
 pcap_file.cpp \
@@ -82,3 +83,11 @@ version.h
 
 libbmsim_la_SOURCES += \
 core/primitives.cpp
+
+if COND_PACKET_TRACE
+    libbmsim_la_LIBADD = \
+    $(top_builddir)/proto/libbm_packet_trace.la \
+    $(PROTOBUF_LIBS)
+
+    AM_CPPFLAGS += -I$(top_builddir)/proto/cpp_out
+endif

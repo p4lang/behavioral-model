@@ -40,18 +40,24 @@ install(TARGETS bmall
   ARCHIVE DESTINATION lib
 )
 
-# Create apps library if nanomsg is enabled
-# FIXME: do we need bmp4apps?
-##if(WITH_NANOMSG)
-##  add_library(bmp4apps SHARED)
-##  target_link_libraries(bmp4apps
-##    PUBLIC
-##      bmapps
-##  )
-##
-##  # Install library
-##  install(TARGETS bmp4apps
-##    LIBRARY DESTINATION lib
-##    ARCHIVE DESTINATION lib
-##  )
-##endif()
+# Match the autoconf install surface, which provides a shared wrapper library
+# for applications using the nanomsg helpers.
+if(WITH_NANOMSG)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/bmp4apps_dummy.cpp
+    "namespace bm { namespace cmake { void bmp4apps_dummy() {} } }\n"
+  )
+
+  add_library(bmp4apps SHARED
+    ${CMAKE_CURRENT_BINARY_DIR}/bmp4apps_dummy.cpp
+  )
+
+  target_link_libraries(bmp4apps
+    PUBLIC
+      bmapps
+  )
+
+  install(TARGETS bmp4apps
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+  )
+endif()

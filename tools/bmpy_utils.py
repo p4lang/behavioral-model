@@ -32,7 +32,7 @@ def check_JSON_md5(client, json_src, out=sys.stdout):
 
     try:
         bm_md5sum = client.bm_get_config_md5()
-    except:
+    except Exception:
         my_print("Error when requesting config md5 sum from switch\n")
         sys.exit(1)
 
@@ -41,8 +41,8 @@ def check_JSON_md5(client, json_src, out=sys.stdout):
         my_print("WARNING: the JSON files loaded into the switch and the one ")
         my_print("you just provided to this CLI don't have the same md5 sum. ")
         my_print("Are you sure they describe the same program?\n")
-        bm_md5sum_str = "".join("{:02x}".format(ord(c)) for c in bm_md5sum)
-        md5sum_str = "".join("{:02x}".format(ord(c)) for c in md5sum)
+        bm_md5sum_str = "".join("{:02x}".format(c) for c in bm_md5sum)
+        md5sum_str = "".join("{:02x}".format(c) for c in md5sum)
         my_print("{:<15}: {}\n".format("switch md5", bm_md5sum_str))
         my_print("{:<15}: {}\n".format("CLI input md5", md5sum_str))
         my_print("**********\n")
@@ -63,7 +63,7 @@ def get_json_config(standard_client=None, json_path=None, out=sys.stdout):
             my_print("Obtaining JSON from switch...\n")
             json_cfg = standard_client.bm_get_config()
             my_print("Done\n")
-        except:
+        except Exception:
             my_print("Error when requesting JSON config from switch\n")
             sys.exit(1)
         return json_cfg

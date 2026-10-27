@@ -20,6 +20,19 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+}
+#endif
+
+// C++ only: maximum number of devices supported by pdfixed
+#ifdef __cplusplus
+constexpr int PD_MAX_DEVICES = 256;
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef uint32_t p4_pd_status_t;
 
 typedef uint32_t p4_pd_sess_hdl_t;

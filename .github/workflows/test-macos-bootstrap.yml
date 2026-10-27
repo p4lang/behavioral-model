@@ -26,7 +26,7 @@ jobs:
     name: Check whether tests need to be run based on diff
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: antrea-io/has-changes@v2
       id: check_diff
       with:
@@ -45,7 +45,7 @@ jobs:
         os:
           - macos-15    # arm64 (Apple Silicon, latest)
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         submodules: 'recursive'
 
@@ -72,7 +72,7 @@ jobs:
         export LDFLAGS="-L$(brew --prefix openssl)/lib -L$(brew --prefix thrift)/lib -L$(brew --prefix nanomsg)/lib -L$(brew --prefix gmp)/lib -L$(brew --prefix xxhash)/lib -L$(brew --prefix jsoncpp)/lib -L$(brew --prefix boost)/lib"
         export CPPFLAGS="-I$(brew --prefix openssl)/include -I$(brew --prefix thrift)/include -I$(brew --prefix nanomsg)/include -I$(brew --prefix gmp)/include -I$(brew --prefix xxhash)/include -I$(brew --prefix jsoncpp)/include -I$(brew --prefix boost)/include"
         ./autogen.sh
-	 mkdir -p build && cd build
+        mkdir -p build && cd build
         ../configure
         make -j$(sysctl -n hw.logicalcpu)
 

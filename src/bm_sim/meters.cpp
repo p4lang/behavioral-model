@@ -23,12 +23,6 @@ using MeterErrorCode = Meter::MeterErrorCode;
 using ticks = std::chrono::microseconds;  // better with nanoseconds ?
 using std::chrono::duration_cast;
 
-namespace {
-
-Meter::clock::time_point time_init = Meter::clock::now();
-
-}  // namespace
-
 MeterErrorCode
 Meter::set_rate(size_t idx, const rate_config_t &config) {
   MeterRate &rate = rates[idx];
@@ -57,11 +51,15 @@ Meter::reset_rates() {
 
 Meter::color_t
 Meter::execute(const Packet &pkt, color_t pre_color) {
+  return execute(pkt, pre_color, clock::now());
+}
+
+Meter::color_t
+Meter::execute(const Packet &pkt, color_t pre_color, clock::time_point now) {
   color_t packet_color = 0;
 
   if (!configured) return packet_color;
 
-  clock::time_point now = clock::now();
   int64_t micros_since_init = duration_cast<ticks>(now - time_init).count();
 
   auto lock = unique_lock();
@@ -119,8 +117,9 @@ Meter::deserialize(std::istream *in) {
 }
 
 void
-Meter::reset_global_clock() {
-  time_init = Meter::clock::now();
+Meter::reset_time_origin(clock::time_point t) {
+  auto lock = unique_lock();
+  time_init = t;
 }
 
 std::vector<Meter::rate_config_t>

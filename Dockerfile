@@ -15,13 +15,10 @@ ARG IMAGE_TYPE=build
 ARG CC=gcc
 ARG CXX=g++
 ARG GCOV=
-ARG USE_CMAKE=
 ARG sswitch_grpc=yes
 
-ENV BM_DEPS automake \
-            build-essential \
-            clang-8 \
-            clang-10 \
+ENV BM_DEPS build-essential \
+            clang \
             cmake \
             curl \
             git \
@@ -34,18 +31,17 @@ ENV BM_DEPS automake \
             libboost-filesystem-dev \
             libboost-thread-dev \
             libjsoncpp-dev \
-            libtool \
             libxxhash-dev \
             pkg-config
-ENV BM_RUNTIME_DEPS libboost-program-options1.71.0 \
-                    libboost-system1.71.0 \
-                    libboost-filesystem1.71.0 \
-                    libboost-thread1.71.0 \
+ENV BM_RUNTIME_DEPS libboost-program-options1.83.0 \
+                    libboost-system1.83.0 \
+                    libboost-filesystem1.83.0 \
+                    libboost-thread1.83.0 \
                     libgmp10 \
-                    libjsoncpp1 \
-                    libpcap0.8 \
+                    libpcap0.8t64 \
                     libxxhash0 \
                     python3 \
+                    python3-six \
                     python-is-python3
 
 COPY . /behavioral-model/
@@ -53,26 +49,15 @@ WORKDIR /behavioral-model/
 RUN apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata && \
     apt-get install -qq --no-install-recommends $BM_DEPS $BM_RUNTIME_DEPS && \
-    if [ "$USE_CMAKE" -gt 0 ] ; then \
-        mkdir -p build && cd build && \
-        if [ "$GCOV" != "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_COVERAGE=ON -DENABLE_WERROR=ON ..; fi && \
-        if [ "$GCOV" = "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..; fi ; \
-    else \
-        ./autogen.sh && \
-        if [ "$GCOV" != "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-coverage --enable-Werror; fi && \
-        if [ "$GCOV" = "" ]; then ./configure --with-pdfixed --with-pi --with-stress-tests --enable-debugger --enable-Werror; fi ; \
-    fi && \
-    make -j$(nproc) && \
-    if [ "$USE_CMAKE" -gt 0 ] ; then \
-        make install && cd .. ; \
-    else \
-        make install-strip ; \
-    fi && \
+    mkdir -p build && cd build && \
+    if [ "$GCOV" != "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_COVERAGE=ON -DENABLE_WERROR=ON ..; fi && \
+    if [ "$GCOV" = "" ]; then cmake -DWITH_PDFIXED=ON -DWITH_PI=ON -DWITH_STRESS_TESTS=ON -DENABLE_DEBUGGER=ON -DENABLE_WERROR=ON ..; fi && \
+    cmake --build . -j$(nproc) && \
+    ctest --output-on-failure && \
+    cmake --install . && cd .. && \
     ldconfig && \
-    (test "$IMAGE_TYPE" = "build" && \
-      apt-get purge -qq $BM_DEPS && \
-      apt-get autoremove --purge -qq && \
+    ((test "$IMAGE_TYPE" = "build" && \
       rm -rf /behavioral-model /var/cache/apt/* /var/lib/apt/lists/* && \
       echo 'Build image ready') || \
     (test "$IMAGE_TYPE" = "test" && \
-      echo 'Test image ready')
+      echo 'Test image ready'))

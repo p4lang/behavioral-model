@@ -113,16 +113,16 @@ if(WITH_THRIFT)
   
   # Install Python modules
   install(FILES ${THRIFT_PY_FILES}
-    DESTINATION ${PY_SITE_PKG_DIR}/${THRIFT_PY_NAMESPACE}
+    DESTINATION ${CMAKE_INSTALL_PYTHON_SET_DIR}/${THRIFT_PY_NAMESPACE}
   )
   
   # Install Python CLI
   install(FILES sswitch_CLI.py
-    DESTINATION ${PY_SITE_PKG_DIR}
+    DESTINATION ${CMAKE_INSTALL_PYTHON_SET_DIR}
   )
   
   # Configure and install simple_switch_CLI script
-  set(pythondir "${CMAKE_INSTALL_PREFIX}/${PY_SITE_PKG_DIR}")
+  set(pythondir "${CMAKE_INSTALL_PYTHON_SET_DIR}")
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/simple_switch_CLI.in
     ${CMAKE_CURRENT_BINARY_DIR}/simple_switch_CLI

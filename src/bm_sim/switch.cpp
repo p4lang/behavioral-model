@@ -16,6 +16,7 @@
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/options_parse.h>
 #include <bm/bm_sim/packet.h>
+#include <bm/bm_sim/packet_tracer.h>
 #include <bm/bm_sim/periodic_task.h>
 #include <bm/bm_sim/switch.h>
 #include <bm/config.h>
@@ -535,9 +536,13 @@ SwitchWContexts::new_packet_ptr(cxt_id_t cxt_id, port_t ingress_port,
                                 // NOLINTNEXTLINE(whitespace/operators)
                                 PacketBuffer &&buffer) {
   std::shared_lock<std::shared_mutex> lock(process_packet_mutex);
-  return std::unique_ptr<Packet>(new Packet(
-      cxt_id, ingress_port, id, 0u, ingress_length, std::move(buffer),
-      phv_source.get()));
+  auto packet = std::unique_ptr<Packet>(
+      new Packet(cxt_id, ingress_port, id, 0u, ingress_length,
+                 std::move(buffer), phv_source.get()));
+#ifdef BM_PACKET_TRACE_ON
+  PacketTracer::get()->attach_trace_ctx(packet.get());
+#endif
+  return packet;
 }
 
 Packet
@@ -546,8 +551,12 @@ SwitchWContexts::new_packet(cxt_id_t cxt_id, port_t ingress_port,
                             // NOLINTNEXTLINE(whitespace/operators)
                             PacketBuffer &&buffer) {
   std::shared_lock<std::shared_mutex> lock(process_packet_mutex);
-  return Packet(cxt_id, ingress_port, id, 0u, ingress_length,
-                std::move(buffer), phv_source.get());
+  Packet packet(cxt_id, ingress_port, id, 0u, ingress_length, std::move(buffer),
+                phv_source.get());
+#ifdef BM_PACKET_TRACE_ON
+  PacketTracer::get()->attach_trace_ctx(&packet);
+#endif
+  return packet;
 }
 
 int

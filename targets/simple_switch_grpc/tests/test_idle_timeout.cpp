@@ -159,7 +159,7 @@ TEST_F(SimpleSwitchGrpcTest_IdleTimeout, EntryExpire) {
       notification->table_entry(0), entry.table_entry()));
 }
 
-TEST_F(SimpleSwitchGrpcTest_IdleTimeout, NotifyAgain) {
+TEST_F(SimpleSwitchGrpcTest_IdleTimeout, NoDuplicateNotification) {
   const std::string smac("\x11\x22\x33\x44\x55\x66");
   const std::chrono::milliseconds idle_timeout{2000};
   auto entry = make_entry(smac, idle_timeout);
@@ -169,18 +169,15 @@ TEST_F(SimpleSwitchGrpcTest_IdleTimeout, NotifyAgain) {
         idle_timeout + std::chrono::milliseconds(1500));
     ASSERT_TRUE(notification != nullptr);
   }
-  // TODO(antonin)
-  // The current bmv2 implementation uses a sweeper thread to generate idle
-  // timeout notifications. It never generates a notification for the same entry
-  // in 2 successive sweeps, but if the entry has not been hit by the 3rd sweep,
-  // a duplicate notification will be sent. This does not match the P4Runtime
-  // specification, which states that the target must generate a notification
-  // after one more TTL (and not a fixed sweep interval), so we will have to fix
-  // this in the future.
+  // The entry is never hit again after the first notification, so no
+  // further notification should be generated for it. Prior to the fix in
+  // https://github.com/p4lang/behavioral-model/pull/1443, the sweeper
+  // thread would spuriously re-notify for the same entry roughly every
+  // other sweep for as long as it remained idle.
   {
     auto notification = receive_notification(
         idle_timeout + std::chrono::milliseconds(1500));
-    ASSERT_TRUE(notification != nullptr);
+    ASSERT_TRUE(notification == nullptr);
   }
 }
 

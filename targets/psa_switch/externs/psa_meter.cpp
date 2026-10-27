@@ -8,6 +8,8 @@
  */
 
 #include "psa_meter.h"
+#include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/packet.h>
 #include <iostream>
 
 namespace bm {
@@ -32,7 +34,19 @@ PSA_Meter::init() {
 
 void
 PSA_Meter::execute(const Data &index, Data &value) {
-    auto color_out = _meter->execute_meter(get_packet(), index.get<size_t>(), static_cast<unsigned int>(0));
+    auto idx = index.get<size_t>();
+#ifndef NDEBUG
+    if (idx >= size()) {
+        BMLOG_ERROR_PKT(get_packet(),
+                        "Attempted to execute meter '{}' with size {}"
+                        " at out-of-bounds index {}."
+                        "  No meters were updated, and neither was"
+                        " the value field.",
+                        get_name(), size(), idx);
+        return;
+    }
+#endif  // NDEBUG
+    auto color_out = _meter->execute_meter(get_packet(), idx, static_cast<unsigned int>(0));
 
     // color adjustment for PSA:
     // bmv2 meter implementation assign higher value for busier flow:

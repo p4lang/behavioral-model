@@ -19,6 +19,7 @@
 #include <thrift/protocol/TMultiplexedProtocol.h>
 
 #include <bm/thrift/stdcxx.h>
+#include <bm/pdfixed/pd_common.h>
 
 #include <mutex>
 #include <iostream>
@@ -27,8 +28,6 @@
 #include <unordered_map>
 #include <typeindex>
 #include <string>
-
-#define NUM_DEVICES 256
 
 template <typename A>
 struct Client {
@@ -78,7 +77,7 @@ struct PdConnMgr {
   virtual int client_close(int dev_id) = 0;
 
  protected:
-  std::array<detail::ClientState, NUM_DEVICES> clients;
+  std::array<detail::ClientState, PD_MAX_DEVICES> clients;
   detail::TypeMapper mapper{};
 };
 
@@ -195,7 +194,5 @@ struct PdConnMgr_ : public PdConnMgr {
 };
 
 }  // namespace detail
-
-#undef NUM_DEVICES
 
 #endif  // BM_PDFIXED_INT_PD_CONN_MGR_H_

@@ -14,7 +14,7 @@ if(WITH_THRIFT)
   )
 
   # Configure bm_CLI script
-  set(pythondir "${CMAKE_INSTALL_PREFIX}/${PY_SITE_PKG_DIR}")
+  set(pythondir "${CMAKE_INSTALL_PYTHON_SET_DIR}")
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/bm_CLI.in
     ${CMAKE_CURRENT_BINARY_DIR}/bm_CLI
@@ -74,7 +74,7 @@ endforeach()
 
 # Install Python scripts
 install(FILES ${PYTHON_SCRIPTS}
-  DESTINATION ${PY_SITE_PKG_DIR}
+  DESTINATION ${CMAKE_INSTALL_PYTHON_SET_DIR}
 )
 
 # Install binary scripts

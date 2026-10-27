@@ -10,6 +10,8 @@
 
 
 #include "pna_counter.h"
+#include <bm/bm_sim/logger.h>
+#include <bm/bm_sim/packet.h>
 
 namespace bm {
 
@@ -17,8 +19,18 @@ namespace pna {
 
 void
 PNA_Counter::count(const Data &index) {
-  _counter->get_counter(
-      index.get<size_t>()).increment_counter(get_packet());
+  auto idx = index.get<size_t>();
+#ifndef NDEBUG
+  if (idx >= size()) {
+    BMLOG_ERROR_PKT(get_packet(),
+                    "Attempted to update counter '{}' with size {}"
+                    " at out-of-bounds index {}."
+                    "  No counters were updated.",
+                    get_name(), size(), idx);
+    return;
+  }
+#endif  // NDEBUG
+  _counter->get_counter(idx).increment_counter(get_packet());
 }
 
 Counter &

@@ -23,7 +23,7 @@ from functools import wraps
 try:
     import runtime_CLI
     with_runtime_CLI = True
-except:
+except ImportError:
     with_runtime_CLI = False
 
 parser = argparse.ArgumentParser(description='BM NNG debugger')
@@ -560,7 +560,7 @@ class DebuggerAPI(cmd.Cmd):
             self.sok.recv_timeout = 500
             self.sok.send_timeout = 500
             self.sok.dial(self.addr)
-        except:
+        except Exception:
             print("Impossible to connect to provided socket (bad format?)")
             sys.exit(1)
         self.req_id = 0
@@ -637,7 +637,7 @@ class DebuggerAPI(cmd.Cmd):
         status = self.sok.send(req.generate())
         try:
             msg = self.wait_for_msg()
-        except:
+        except Exception:
             return
         self.check_msg_CLS(msg, Msg_Status)
         self.wps = set()
@@ -783,7 +783,7 @@ class DebuggerAPI(cmd.Cmd):
             try:
                 field_id = get_field_id_from_name(field_name)
                 return field_id
-            except:
+            except Exception:
                 raise UIn_Error("Unknow field name '%s'" % field_name)
 
     @handle_bad_input
@@ -849,7 +849,7 @@ class DebuggerAPI(cmd.Cmd):
 
         try:
             ctr = lookup_ctr(args[0], args[1])
-        except:
+        except Exception:
             raise UIn_Error("Invalid object for breakpoint")
 
         if not self.bps:
@@ -885,7 +885,7 @@ class DebuggerAPI(cmd.Cmd):
 
         try:
             ctr = lookup_ctr(args[0], args[1])
-        except:
+        except Exception:
             raise UIn_Error("Invalid object for breakpoint")
 
         if ctr not in self.bps:
@@ -927,7 +927,7 @@ class DebuggerAPI(cmd.Cmd):
             packet_id, copy_id = id_.split(".")
             packet_id, copy_id = int(packet_id), int(copy_id)
             return packet_id, copy_id
-        except:
+        except Exception:
             raise UIn_Error("Bad packet id format '%s', should be of the form <1>.<2>" % id_)
 
     @handle_bad_input
@@ -1068,7 +1068,7 @@ class DebuggerAPI(cmd.Cmd):
                 try:
                     packet_id = int(pid)
                     copy_id = 0xffffffffffffffff
-                except:
+                except Exception:
                     raise UIn_Error("Bad format for packet id")
             pids.append( (packet_id, copy_id) )
 
@@ -1167,7 +1167,7 @@ def main():
     if not args.json or not args.socket:
         try:
             import bmpy_utils as utils
-        except:
+        except ImportError:
             print("When '--json' or '--socket' is not provided, the debugger needs bmpy_utils")
             print("bmpy_utils is not available when building bmv2 without Thrift support")
             sys.exit(1)

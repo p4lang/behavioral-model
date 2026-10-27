@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: 2026 Yuao Ma
+#
+# SPDX-License-Identifier: Apache-2.0
+
+load("@gutil//gutil:diff_test.bzl", "cmd_diff_test")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+
+package(
+    default_visibility = ["//visibility:public"],
+    licenses = ["notice"],
+)
+
+cc_binary(
+    name = "test_packet_trace",
+    testonly = True,
+    srcs = ["test_packet_trace.cpp"],
+    deps = [
+        "//:bm_headers",
+        "//proto:packet_trace_cc_proto",
+        "//src/bm_sim:bmsim",
+        "//targets/simple_switch:simpleswitch",
+        "@com_google_protobuf//:protobuf",
+    ],
+)
+
+# One golden test per P4 pipeline: the runner sends the pipeline's scenario
+# packets through an in-process simple_switch and prints the resulting packet
+# traces; the output is diffed against the checked-in testdata/<pipeline>.trace
+# file. To regenerate a golden file:
+#   bazel run <test target> -- --update
+_PACKET_TRACE_GOLDEN_PIPELINES = [
+    "packet_redirect",
+    "parser_error",
+    "queueing",
+    "recirc",
+    "truncate",
+]
+
+[
+    cmd_diff_test(
+        name = "packet_trace_%s_diff_test" % pipeline,
+        actual_cmd = "$(execpath :test_packet_trace) %s $(location testdata/%s.json)" % (pipeline, pipeline),
+        data = ["testdata/%s.json" % pipeline],
+        expected = "testdata/%s.trace" % pipeline,
+        tools = [":test_packet_trace"],
+    )
+    for pipeline in _PACKET_TRACE_GOLDEN_PIPELINES
+]

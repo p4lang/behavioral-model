@@ -669,6 +669,12 @@ P4Objects::init_header_types(const Json::Value &cfg_root) {
             is_signed, is_saturating);
       } else {
         int field_bit_width = cfg_field[1].asInt();
+        if (field_bit_width < 0) {
+          throw json_exception(
+              EFormat() << "Invalid negative bitwidth '" << field_bit_width
+                        << "' for field '" << field_name << "'",
+              cfg_field);
+        }
         header_type->push_back_field(
             field_name, field_bit_width, is_signed, is_saturating);
       }
@@ -1101,8 +1107,15 @@ P4Objects::init_parsers(const Json::Value &cfg_root, InitState *init_state) {
                           << "arguments, expected " << 1,
                 cfg_parser_op);
           }
-          auto shift_bytes = static_cast<size_t>(cfg_parameters[0].asInt());
-          parse_state->add_shift(shift_bytes);
+          int shift_bytes_int = cfg_parameters[0].asInt();
+          if (shift_bytes_int < 0) {
+            throw json_exception(
+                EFormat() << "Parser 'shift' operation requires "
+                          << "a non-negative number of bytes, got "
+                          << shift_bytes_int,
+                cfg_parser_op);
+          }
+          parse_state->add_shift(static_cast<size_t>(shift_bytes_int));
         } else if (op_type == "advance") {
           if (cfg_parameters.size() != 1) {
             throw json_exception(
@@ -1784,7 +1797,15 @@ P4Objects::init_pipelines(const Json::Value &cfg_root,
       if (cfg_table.isMember("direct_meters") &&
           !cfg_table["direct_meters"].isNull()) {
         const std::string meter_name = cfg_table["direct_meters"].asString();
-        const DirectMeterArray &direct_meter = direct_meters[meter_name];
+        const auto direct_meter_it = direct_meters.find(meter_name);
+        if (direct_meter_it == direct_meters.end()) {
+          throw json_exception(
+              EFormat() << "Table '" << table_name
+                        << "' refers to unknown direct meter array '"
+                        << meter_name << "'",
+              cfg_table);
+        }
+        const DirectMeterArray &direct_meter = direct_meter_it->second;
         table->get_match_table()->set_direct_meters(
             direct_meter.meter, direct_meter.header, direct_meter.offset);
       }

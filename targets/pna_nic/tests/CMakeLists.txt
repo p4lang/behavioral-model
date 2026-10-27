@@ -24,4 +24,26 @@ target_include_directories(test_parse_pna PRIVATE
 
 add_test(NAME pna_nic/test_parse_pna COMMAND test_parse_pna)
 
+add_executable(pna_nic_test_meter_counter_bounds
+  main.cpp
+  test_meter_counter_bounds.cpp
+)
+
+target_link_libraries(pna_nic_test_meter_counter_bounds
+  pnanic
+  gtest
+  bmapps
+)
+
+target_include_directories(pna_nic_test_meter_counter_bounds PRIVATE
+  ..
+)
+
+set_target_properties(pna_nic_test_meter_counter_bounds PROPERTIES
+  OUTPUT_NAME test_meter_counter_bounds
+)
+
+add_test(NAME pna_nic/test_meter_counter_bounds
+  COMMAND pna_nic_test_meter_counter_bounds)
+
 # FIXME: do we want the test_all target?

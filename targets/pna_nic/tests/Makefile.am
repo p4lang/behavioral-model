@@ -18,15 +18,17 @@ $(top_builddir)/src/bm_apps/libbmapps.la
 
 # Define unit tests
 common_source = main.cpp
-TESTS = test_parse_pna
+TESTS = test_parse_pna test_meter_counter_bounds
 
 check_PROGRAMS = $(TESTS) test_all
 
 # Sources for tests
 test_parse_pna_SOURCES = $(common_source) test_parse_pna.cpp
+test_meter_counter_bounds_SOURCES = $(common_source) test_meter_counter_bounds.cpp
 
 test_all_SOURCES = $(common_source) \
-test_parse_pna.cpp
+test_parse_pna.cpp \
+test_meter_counter_bounds.cpp
 
 EXTRA_DIST = \
 testdata/pna-demo-L2-one-table.json

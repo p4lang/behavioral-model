@@ -15,25 +15,30 @@
 #ifndef BM_BM_SIM_PACKET_H_
 #define BM_BM_SIM_PACKET_H_
 
+#include <bm/config.h>
+
+#include <algorithm>  // for std::min
 #include <array>
+#include <atomic>
+#include <cassert>
+#include <chrono>
+#include <limits>
 #include <memory>
 #include <mutex>
-#include <chrono>
 #include <string>
 #include <vector>
-#include <atomic>
-#include <algorithm>  // for std::min
-#include <limits>
-
-#include <cassert>
 
 #include "device_id.h"
 #include "packet_buffer.h"
 #include "parser_error.h"
-#include "phv_source.h"
 #include "phv_forward.h"
+#include "phv_source.h"
 
 namespace bm {
+
+#ifdef BM_PACKET_TRACE_ON
+class PacketTraceContext;
+#endif
 
 //! Integral type used to identify a given data packet
 using packet_id_t = uint64_t;
@@ -122,6 +127,12 @@ class Packet final {
   //! Set the egress_port of the packet, which is the target responsibility.
   void set_egress_port(int port) { egress_port = port; }
   void set_ingress_port(int port) { ingress_port = port; }
+
+#ifdef BM_PACKET_TRACE_ON
+  //! Get or set the trace context for structured packet tracing.
+  PacketTraceContext* get_trace_ctx() const { return trace_ctx.get(); }
+  void set_trace_ctx(std::unique_ptr<PacketTraceContext> ctx);
+#endif
 
   //! Obtains the copy_id of a packet, used to differentiate all the clones
   //! generated from the same incoming data packet. See get_packet_id() for more
@@ -376,6 +387,11 @@ class Packet final {
   ErrorCode error_code{ErrorCode::make_invalid()};
 
   bool checksum_error{false};
+
+#ifdef BM_PACKET_TRACE_ON
+  // Per-packet trace context for structured tracing.
+  std::unique_ptr<PacketTraceContext> trace_ctx;
+#endif
 
  private:
   static CopyIdGenerator *copy_id_gen;
