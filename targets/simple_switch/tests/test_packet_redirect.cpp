@@ -23,6 +23,8 @@
 #include <string>
 #include <vector>
 
+#include <unistd.h>
+
 #include "simple_switch.h"
 
 namespace fs = std::filesystem;
@@ -128,8 +130,8 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
   }
 
  protected:
-  static const char event_logger_addr[];
-  static const char packet_in_addr[];
+  static const std::string event_logger_addr;
+  static const std::string packet_in_addr;
   static SimpleSwitch *test_switch;
   bm_apps::PacketInject packet_inject;
   PacketInReceiver receiver{};
@@ -146,10 +148,11 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
 // packet drops are to be expected when the phblisher is faster than the
 // consummer. However, I do not believe my consummer is that slow and I never
 // observe the drops with 'ipc'
-const char SimpleSwitch_PacketRedirectP4::event_logger_addr[] =
-    "ipc:///tmp/test_events_abc123";
-const char SimpleSwitch_PacketRedirectP4::packet_in_addr[] =
-    "ipc:///tmp/test_packet_in_abc123";
+// Per-process, so concurrent test processes never share the sockets.
+const std::string SimpleSwitch_PacketRedirectP4::event_logger_addr =
+    "ipc:///tmp/test_packet_redirect_events_" + std::to_string(getpid());
+const std::string SimpleSwitch_PacketRedirectP4::packet_in_addr =
+    "ipc:///tmp/test_packet_redirect_packet_in_" + std::to_string(getpid());
 
 SimpleSwitch *SimpleSwitch_PacketRedirectP4::test_switch = nullptr;
 

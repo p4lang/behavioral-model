@@ -22,6 +22,8 @@
 #include <string>
 #include <vector>
 
+#include <unistd.h>
+
 #include "utils.h"
 
 using namespace bm;
@@ -295,7 +297,9 @@ class PacketInDevMgrTest : public ::testing::Test {
     return !memcmp(recv_buffer, send_buffer, size);
   }
 
-  const std::string addr = "ipc:///tmp/test_packet_in_abc123";
+  // Per-process, so concurrent test processes never share the socket.
+  const std::string addr =
+      "ipc:///tmp/test_devmgr_packet_in_" + std::to_string(getpid());
 
   PacketInReceiver recv_switch{kMaxBufferSize};
   PacketInReceiver recv_lib{kMaxBufferSize};
