@@ -15,6 +15,7 @@
 #include <bm/config.h>
 #include <gtest/gtest.h>
 #include <utils.h>
+#include <unistd.h>
 
 #include <filesystem>
 #include <initializer_list>
@@ -48,8 +49,8 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
   static constexpr bm::device_id_t device_id{0};
 
   SimpleSwitch_PacketRedirectP4()
-      : packet_inject(packet_in_addr),
-        events(event_logger_addr) { }
+      : packet_inject(packet_in_addr()),
+        events(event_logger_addr()) { }
 
   // Per-test-case set-up.
   // We make the switch a shared resource for all tests. This is mainly because
@@ -57,7 +58,8 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
   static void SetUpTestCase() {
     // bm::Logger::set_logger_console();
 #ifdef BM_ELOG_ON
-    auto event_transport = bm::TransportIface::make_nanomsg(event_logger_addr);
+    auto event_transport =
+        bm::TransportIface::make_nanomsg(event_logger_addr());
     event_transport->open();
     bm::EventLogger::init(std::move(event_transport));
 #endif
@@ -69,7 +71,7 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
     test_switch->init_objects(json_path.string());
 
     // packet in - packet out
-    test_switch->set_dev_mgr_packet_in(device_id, packet_in_addr, nullptr);
+    test_switch->set_dev_mgr_packet_in(device_id, packet_in_addr(), nullptr);
     test_switch->Switch::start();  // there is a start member in SimpleSwitch
     test_switch->set_packet_handler(packet_handler,
                                     static_cast<void *>(test_switch));
@@ -128,8 +130,8 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
   }
 
  protected:
-  static const char event_logger_addr[];
-  static const char packet_in_addr[];
+  static std::string event_logger_addr();
+  static std::string packet_in_addr();
   static SimpleSwitch *test_switch;
   bm_apps::PacketInject packet_inject;
   PacketInReceiver receiver{};
@@ -146,10 +148,14 @@ class SimpleSwitch_PacketRedirectP4 : public ::testing::Test {
 // packet drops are to be expected when the phblisher is faster than the
 // consummer. However, I do not believe my consummer is that slow and I never
 // observe the drops with 'ipc'
-const char SimpleSwitch_PacketRedirectP4::event_logger_addr[] =
-    "ipc:///tmp/test_events_abc123";
-const char SimpleSwitch_PacketRedirectP4::packet_in_addr[] =
-    "ipc:///tmp/test_packet_in_abc123";
+// Per-process, so concurrent test processes never share the sockets.
+std::string SimpleSwitch_PacketRedirectP4::event_logger_addr() {
+  return "ipc:///tmp/test_packet_redirect_events_" + std::to_string(getpid());
+}
+std::string SimpleSwitch_PacketRedirectP4::packet_in_addr() {
+  return "ipc:///tmp/test_packet_redirect_packet_in_" +
+         std::to_string(getpid());
+}
 
 SimpleSwitch *SimpleSwitch_PacketRedirectP4::test_switch = nullptr;
 
