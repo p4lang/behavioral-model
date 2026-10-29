@@ -19,6 +19,7 @@ include(CheckIncludeFile)
 include(CheckIncludeFiles)
 include(CheckIncludeFileCXX)
 include(GenerateThrift)
+include(GNUInstallDirs)
 
 # Extract version from VERSION file
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" BM_VERSION)

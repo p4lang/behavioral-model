@@ -150,8 +150,8 @@ if(WITH_THRIFT)
 
   # Install libraries
   install(TARGETS simpleswitch_thrift
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 endif()
 
@@ -162,6 +162,6 @@ endif()
 
 # Install libraries
 install(TARGETS simpleswitch simpleswitch_runner
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
