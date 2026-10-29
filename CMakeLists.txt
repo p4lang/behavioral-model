@@ -4,11 +4,13 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-# Use ccache if it is installed
-find_program(CCACHE_PROGRAM ccache)
-if(CCACHE_PROGRAM)
-    MESSAGE(STATUS "Enabling ccache")
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+option(ENABLE_CCACHE "Use ccache as the compiler launcher when it is installed" ON)
+if(ENABLE_CCACHE)
+    find_program(CCACHE_PROGRAM ccache)
+    if(CCACHE_PROGRAM)
+        MESSAGE(STATUS "Enabling ccache")
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+    endif()
 endif()
 
 # Add cmake modules path
