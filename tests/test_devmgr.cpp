@@ -9,6 +9,7 @@
 #include <bm/bm_sim/dev_mgr.h>
 #include <bm/bm_sim/port_monitor.h>
 #include <bm/bm_apps/packet_pipe.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <cassert>
@@ -21,8 +22,6 @@
 #include <condition_variable>
 #include <string>
 #include <vector>
-
-#include <unistd.h>
 
 #include "utils.h"
 
