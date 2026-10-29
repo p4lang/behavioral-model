@@ -1,0 +1,38 @@
+# proto-file: p4/config/v1/p4info.proto
+# proto-message: p4.config.v1.P4Info
+
+pkg_info {
+  arch: "v1model"
+}
+registers {
+  preamble {
+    id: 379599323
+    name: "ingress.r16"
+    alias: "r16"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 16
+      }
+    }
+  }
+  size: 8
+}
+registers {
+  preamble {
+    id: 376614854
+    name: "ingress.r_wide"
+    alias: "r_wide"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 160
+      }
+    }
+  }
+  size: 4
+}
+type_info {
+}
