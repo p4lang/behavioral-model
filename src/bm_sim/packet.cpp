@@ -74,7 +74,7 @@ Packet::update_signature(uint64_t seed) {
 
 void
 Packet::set_ingress_ts() {
-  ingress_ts = clock::now();
+  ingress_ts = ClockIface::get()->now();
   ingress_ts_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
     ingress_ts.time_since_epoch()).count();
 }

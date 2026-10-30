@@ -13,9 +13,11 @@
 #ifndef TESTS_UTILS_H_
 #define TESTS_UTILS_H_
 
+#include <bm/bm_sim/clock.h>
 #include <bm/bm_sim/transport.h>
 
-#include <algorithm>  // for std::copy
+#include <algorithm>  // for std::copy, std::all_of
+#include <chrono>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
@@ -109,6 +111,84 @@ class MemoryAccessor : public bm::TransportIface {
   mutable std::mutex mutex;
   mutable std::condition_variable can_write;
   mutable std::condition_variable can_read;
+};
+
+// A clock that only moves when advance() is called, installed as the process
+// clock for its lifetime.
+class ManualClock : public bm::ClockIface {
+ public:
+  ManualClock() {
+    bm::ClockIface::set(this);
+  }
+
+  ~ManualClock() {
+    bm::ClockIface::set(nullptr);
+  }
+
+  clock::time_point now() const override {
+    std::unique_lock<std::mutex> lock(mutex);
+    return now_;
+  }
+
+  void wait_until(std::unique_lock<std::mutex> *lock,
+                  std::condition_variable *cv,
+                  clock::time_point tp) override {
+    Waiter waiter{lock->mutex(), cv, tp};
+    {
+      std::unique_lock<std::mutex> clock_lock(mutex);
+      if (now_ >= tp) return;
+      waiters.push_back(&waiter);
+    }
+    waiters_changed.notify_all();
+    cv->wait(*lock);
+    {
+      std::unique_lock<std::mutex> clock_lock(mutex);
+      waiters.erase(std::find(waiters.begin(), waiters.end(), &waiter));
+    }
+    waiters_changed.notify_all();
+  }
+
+  // Wakes the waiters whose deadline the new time reaches. Their mutexes and
+  // condition variables must stay alive until this returns.
+  void advance(clock::duration d) {
+    std::vector<Waiter> due;
+    {
+      std::unique_lock<std::mutex> lock(mutex);
+      now_ += d;
+      for (const Waiter *waiter : waiters)
+        if (waiter->deadline <= now_) due.push_back(*waiter);
+    }
+    for (const Waiter &waiter : due) {
+      // A waiter holds its mutex until it is blocked on its condvar.
+      { std::unique_lock<std::mutex> lock(*waiter.mutex); }
+      waiter.cv->notify_all();
+    }
+  }
+
+  // Blocks until num_threads threads wait on this clock and none is due, i.e.
+  // they have done all their work up to now(). False on timeout.
+  bool wait_until_idle(size_t num_threads,
+                       std::chrono::milliseconds timeout =
+                           std::chrono::seconds(10)) {
+    std::unique_lock<std::mutex> lock(mutex);
+    return waiters_changed.wait_for(lock, timeout, [this, num_threads] {
+      return waiters.size() == num_threads &&
+          std::all_of(waiters.begin(), waiters.end(),
+                      [this](const Waiter *w) { return w->deadline > now_; });
+    });
+  }
+
+ private:
+  struct Waiter {
+    std::mutex *mutex;
+    std::condition_variable *cv;
+    clock::time_point deadline;
+  };
+
+  mutable std::mutex mutex;
+  clock::time_point now_{std::chrono::hours(1)};
+  std::vector<const Waiter *> waiters;
+  std::condition_variable waiters_changed;
 };
 
 class CLIWrapperImp;
