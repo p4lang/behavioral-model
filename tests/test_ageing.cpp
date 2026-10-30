@@ -13,12 +13,10 @@
 #include <bm/bm_sim/ageing.h>
 #include <bm/bm_sim/match_tables.h>
 
+#include <chrono>
 #include <memory>
 #include <string>
-#include <mutex>
 #include <thread>
-#include <condition_variable>
-#include <chrono>
 #include <vector>
 
 #include <cassert>
@@ -31,12 +29,11 @@ using std::chrono::milliseconds;
 using std::chrono::duration_cast;
 using std::this_thread::sleep_for;
 
-// Google Test fixture for learning tests
+// Google Test fixture for ageing tests
 class AgeingTest : public ::testing::Test {
  protected:
   using clock = std::chrono::high_resolution_clock;
 
- protected:
   PHVFactory phv_factory;
 
   const device_id_t device_id = 0;
@@ -164,7 +161,6 @@ TEST_F(AgeingTest, OneNotification) {
 
 TEST_F(AgeingTest, NoDuplicate) {
   std::string key_("\x0a\xba");
-  std::string key("0x0aba");
   entry_handle_t handle_1;
   // Use a longer interval to give shared CI workers enough margin
   // against scheduling lag.
