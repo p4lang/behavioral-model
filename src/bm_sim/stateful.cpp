@@ -30,7 +30,7 @@ Register::export_bytes() {
 
 RegisterArray::RegisterArray(const std::string &name, p4object_id_t id,
                              size_t size, int bitwidth)
-    : NamedP4Object(name, id), bitwidth(bitwidth) {
+    : NamedP4Object(name, id), register_count(size), bitwidth(bitwidth) {
   registers.reserve(size);
   for (size_t i = 0; i < size; i++)
     registers.emplace_back(bitwidth, this);
@@ -47,7 +47,7 @@ RegisterArray::reset_state() {
   registers_new.reserve(s);
   for (size_t i = 0; i < s; i++)
     registers_new.emplace_back(bitwidth, this);
-  auto lock = UniqueLock();
+  auto lock = unique_lock();
   registers.swap(registers_new);
 }
 
