@@ -153,7 +153,8 @@ AgeingMonitor::sweep_loop() {
     do_sweep();
     milliseconds interval(sweep_interval_ms);
     tp += interval;
-    stop_condvar.wait_until(&lock, tp);
+    while (!stop_sweep_thread && time_base->now() < tp)
+      stop_condvar.wait_until(&lock, tp);
   }
 }
 
