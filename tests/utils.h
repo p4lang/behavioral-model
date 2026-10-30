@@ -300,6 +300,22 @@ class HoldWithRegister
   Gate::Id id;
 };
 
+// Tells whether some other thread holds a register array's lock.
+class RegisterLockProbe {
+ public:
+  // Takes the lock briefly, so call it while no one else holds it.
+  explicit RegisterLockProbe(const bm::RegisterArray &register_array)
+      : mutex(register_array.unique_lock().mutex()) { }
+
+  bool held_elsewhere() const {
+    std::unique_lock<std::mutex> lock(*mutex, std::try_to_lock);
+    return !lock.owns_lock();
+  }
+
+ private:
+  std::mutex *mutex;
+};
+
 class CLIWrapperImp;
 
 class CLIWrapper {
