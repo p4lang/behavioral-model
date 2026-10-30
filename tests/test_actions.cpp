@@ -865,12 +865,6 @@ class ActionsTestRegisterProtection : public ActionsTest {
     configure_one_action(&testActionFn, &register_array_1);
   }
 
-  virtual void SetUp() {
-    ActionsTest::SetUp();
-  }
-
-  // virtual void TearDown() { }
-
   void configure_one_action(ActionFn *action_fn,
                             RegisterArray *register_array) {
     action_fn->push_back_primitive(primitive_spin.get());
