@@ -13,7 +13,9 @@
 #ifndef TESTS_UTILS_H_
 #define TESTS_UTILS_H_
 
+#include <bm/bm_sim/actions.h>
 #include <bm/bm_sim/clock.h>
+#include <bm/bm_sim/stateful.h>
 #include <bm/bm_sim/transport.h>
 
 #include <algorithm>  // for std::copy, std::all_of
@@ -282,6 +284,20 @@ class GatedThreads {
  private:
   Gate *gate;
   std::vector<std::thread> threads;
+};
+
+// Action primitive that waits at a gate for the whole of its body.
+class HoldWithRegister
+    : public bm::ActionPrimitive<bm::RegisterArray &> {
+ public:
+  HoldWithRegister(Gate *gate, Gate::Id id) : gate(gate), id(id) { }
+
+  // The array is only there to make the action access it.
+  void operator ()(bm::RegisterArray &) override { gate->pass(id); }
+
+ private:
+  Gate *gate;
+  Gate::Id id;
 };
 
 class CLIWrapperImp;
