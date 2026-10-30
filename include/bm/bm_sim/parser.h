@@ -97,6 +97,8 @@ class ParseSwitchKeyBuilder {
 
   std::vector<int> get_bitwidths() const;
 
+  size_t get_required_bytes() const;
+
   void operator()(const PHV &phv, const char *data, ByteContainer *key) const;
 
  private:
@@ -127,6 +129,7 @@ class ParseSwitchKeyBuilder {
 
   std::vector<Entry> entries{};
   std::vector<int> bitwidths{};
+  size_t max_lookahead_bytes{0};
 };
 
 class ParseState;
