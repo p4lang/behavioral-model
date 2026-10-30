@@ -23,6 +23,8 @@
 #include <mutex>
 #include <stdexcept>
 #include <string>
+#include <thread>
+#include <utility>
 #include <vector>
 #include <cassert>
 
@@ -256,6 +258,30 @@ class Gate {
   bool all_open{false};
   size_t held{0};
   size_t max_held_{0};
+};
+
+// Threads whose work may wait at a gate; opens it before joining them.
+class GatedThreads {
+ public:
+  explicit GatedThreads(Gate *gate) : gate(gate) { }
+
+  ~GatedThreads() { join(); }
+
+  template <typename... Args>
+  void start(Args &&... args) {
+    threads.emplace_back(std::forward<Args>(args)...);
+  }
+
+  void join() {
+    gate->open_all();
+    for (auto &t : threads) {
+      if (t.joinable()) t.join();
+    }
+  }
+
+ private:
+  Gate *gate;
+  std::vector<std::thread> threads;
 };
 
 class CLIWrapperImp;
