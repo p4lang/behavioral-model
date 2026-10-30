@@ -40,6 +40,7 @@ $(builddir)/libtestutils.la \
 common_source = main.cpp bmi_stubs.c primitives.cpp
 TESTS = test_actions \
 test_checksums \
+test_clock \
 test_expressions \
 test_conditionals \
 test_data \
@@ -82,6 +83,7 @@ check_PROGRAMS = $(TESTS) test_all
 # Sources for tests
 test_actions_SOURCES         = $(common_source) test_actions.cpp
 test_checksums_SOURCES       = $(common_source) test_checksums.cpp
+test_clock_SOURCES           = $(common_source) test_clock.cpp
 test_expressions_SOURCES     = $(common_source) test_expressions.cpp
 test_conditionals_SOURCES    = $(common_source) test_conditionals.cpp
 test_data_SOURCES            = $(common_source) test_data.cpp
@@ -122,6 +124,7 @@ test_ras_SOURCES             = $(common_source) test_ras.cpp
 test_all_SOURCES = $(common_source) \
 test_actions.cpp \
 test_checksums.cpp \
+test_clock.cpp \
 test_expressions.cpp \
 test_conditionals.cpp \
 test_data.cpp \
