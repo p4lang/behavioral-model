@@ -23,6 +23,8 @@
 #include <cassert>
 #include <string>
 
+#include "utils.h"
+
 using namespace bm;
 
 // some primitive definitions for testing
@@ -840,6 +842,21 @@ TEST_F(ActionsTest, UniquePrimitivesForEachP4Objects) {
   ASSERT_EQ(first_objects.get_primitive(std::string("_nop")),
             first_objects.get_primitive(std::string("_nop")));
 }
+
+// Action primitive that writes its destination, then waits at a gate.
+class SetAndHold : public ActionPrimitive<Data &, const Data &> {
+ public:
+  SetAndHold(Gate *gate, Gate::Id id) : gate(gate), id(id) { }
+
+  void operator ()(Data &dst, const Data &src) override {
+    dst.set(src);
+    gate->pass(id);
+  }
+
+ private:
+  Gate *gate;
+  Gate::Id id;
+};
 
 class ActionsTestRegisterProtection : public ActionsTest {
  protected:
