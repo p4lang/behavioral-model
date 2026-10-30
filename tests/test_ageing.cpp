@@ -15,8 +15,8 @@
 
 #include <chrono>
 #include <memory>
+#include <stdexcept>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include <cassert>
@@ -26,13 +26,12 @@
 using namespace bm;
 
 using std::chrono::milliseconds;
-using std::chrono::duration_cast;
-using std::this_thread::sleep_for;
 
 // Google Test fixture for ageing tests
 class AgeingTest : public ::testing::Test {
  protected:
-  using clock = std::chrono::high_resolution_clock;
+  // declared first so that it outlives the sweep thread
+  ManualClock manual_clock;
 
   PHVFactory phv_factory;
 
@@ -50,8 +49,6 @@ class AgeingTest : public ::testing::Test {
   char buffer[4096];
 
   std::unique_ptr<AgeingMonitorIface> ageing_monitor;
-
-  clock::time_point start;
 
   std::unique_ptr<PHVSourceIface> phv_source{nullptr};
 
@@ -81,7 +78,6 @@ class AgeingTest : public ::testing::Test {
 
   virtual void SetUp() {
     phv_source->set_phv_factory(0, &phv_factory);
-    start = clock::now();
   }
 
   // virtual void TearDown() { }
@@ -128,6 +124,18 @@ class AgeingTest : public ::testing::Test {
     ageing_monitor = AgeingMonitorIface::make(
         device_id, cxt_id, ageing_writer, sweep_int);
     ageing_monitor->add_table(table.get());
+    wait_for_sweeps();
+  }
+
+  // Moves the clock forward and waits for the sweeps due by then to complete.
+  void advance(unsigned int ms) {
+    manual_clock.advance(milliseconds(ms));
+    wait_for_sweeps();
+  }
+
+  void wait_for_sweeps() {
+    if (!manual_clock.wait_until_idle(1))
+      throw std::runtime_error("sweep thread did not go idle");
   }
 };
 
@@ -136,51 +144,44 @@ TEST_F(AgeingTest, OneNotification) {
   std::string key("0x0aba");
   entry_handle_t handle_1;
   entry_handle_t lookup_handle;
-  unsigned int sweep_int = 200u;  // use it as timeout too
+  const unsigned int sweep_int = 100u;
+  const unsigned int ttl = 250u;
   init_monitor(sweep_int);
-  ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry(key_, &handle_1, sweep_int));
-  ASSERT_NE(MemoryAccessor::Status::CAN_READ, ageing_writer->check_status());
-  sleep_for(milliseconds(150));
+  ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry(key_, &handle_1, ttl));
+
+  advance(2 * sweep_int);
   ASSERT_NE(MemoryAccessor::Status::CAN_READ, ageing_writer->check_status());
 
-  auto tp1 = clock::now();
+  // a hit restarts the TTL: at t = 400 the entry was last hit at t = 200
   ASSERT_TRUE(send_pkt(key, &lookup_handle));
-  ageing_writer->read(buffer, sizeof(buffer));
-  auto tp2 = clock::now();
+  advance(2 * sweep_int);
+  ASSERT_NE(MemoryAccessor::Status::CAN_READ, ageing_writer->check_status());
 
-  unsigned int elapsed = duration_cast<milliseconds>(tp2 - tp1).count();
-  ASSERT_GT(elapsed, sweep_int - 20u);
-  ASSERT_LT(elapsed, 2 * sweep_int + 20u);
+  advance(sweep_int);
+  ASSERT_EQ(MemoryAccessor::Status::CAN_READ, ageing_writer->check_status());
+  ageing_writer->read(buffer, sizeof(buffer));
 
   // delete and make sure we do not get a new notification
   ASSERT_EQ(MatchErrorCode::SUCCESS, delete_entry(handle_1));
-
-  sleep_for(milliseconds(2 * sweep_int + 100u));
+  advance(5 * sweep_int);
   ASSERT_NE(MemoryAccessor::Status::CAN_READ, ageing_writer->check_status());
 }
 
 TEST_F(AgeingTest, NoDuplicate) {
   std::string key_("\x0a\xba");
   entry_handle_t handle_1;
-  // Use a longer interval to give shared CI workers enough margin
-  // against scheduling lag.
-  unsigned int sweep_int = 500u;
+  const unsigned int sweep_int = 100u;
+  const unsigned int ttl = 150u;
   init_monitor(sweep_int);
-  auto tp1 = clock::now();
-  ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry(key_, &handle_1, sweep_int));
+  ASSERT_EQ(MatchErrorCode::SUCCESS, add_entry(key_, &handle_1, ttl));
+
+  advance(2 * sweep_int);
+  ASSERT_EQ(MemoryAccessor::Status::CAN_READ, ageing_writer->check_status());
   ageing_writer->read(buffer, sizeof(buffer));
-  auto tp2 = clock::now();
 
-  unsigned int elapsed = duration_cast<milliseconds>(tp2 - tp1).count();
-  ASSERT_GT(elapsed, sweep_int / 2);
-  ASSERT_LT(elapsed, 3 * sweep_int);
-
-  // Poll across multiple sweep windows to ensure no duplicate notifications
-  // are generated.
-  auto deadline = clock::now() + milliseconds(6 * sweep_int);
-  while (clock::now() < deadline) {
+  for (int i = 0; i < 5; i++) {
+    advance(sweep_int);
     ASSERT_NE(MemoryAccessor::Status::CAN_READ, ageing_writer->check_status());
-    sleep_for(milliseconds(20));
   }
 }
 
