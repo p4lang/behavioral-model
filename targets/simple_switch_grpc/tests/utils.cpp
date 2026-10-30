@@ -82,6 +82,15 @@ int get_act_prof_id(const p4configv1::P4Info &p4info,
   return 0;
 }
 
+int get_register_id(const p4configv1::P4Info &p4info,
+                    const std::string &register_name) {
+  for (const auto &reg : p4info.registers()) {
+    const auto &pre = reg.preamble();
+    if (pre.name() == register_name) return pre.id();
+  }
+  return 0;
+}
+
 p4configv1::P4Info parse_p4info(const char *path) {
   p4configv1::P4Info p4info;
   std::ifstream istream(path);
