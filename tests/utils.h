@@ -13,7 +13,9 @@
 #ifndef TESTS_UTILS_H_
 #define TESTS_UTILS_H_
 
+#include <bm/bm_sim/actions.h>
 #include <bm/bm_sim/clock.h>
+#include <bm/bm_sim/stateful.h>
 #include <bm/bm_sim/transport.h>
 
 #include <algorithm>  // for std::copy, std::all_of
@@ -21,7 +23,10 @@
 #include <condition_variable>
 #include <memory>
 #include <mutex>
+#include <stdexcept>
 #include <string>
+#include <thread>
+#include <utility>
 #include <vector>
 #include <cassert>
 
@@ -189,6 +194,126 @@ class ManualClock : public bm::ClockIface {
   clock::time_point now_{std::chrono::hours(1)};
   std::vector<const Waiter *> waiters;
   std::condition_variable waiters_changed;
+};
+
+// Holds each caller of pass() until the test opens the gate for it, so the
+// test can inspect shared state while callers are inside.
+class Gate {
+ public:
+  using Id = unsigned int;  // names the caller, need not be unique
+
+  struct Arrival {
+    Id id;
+    size_t index;  // position in arrival order
+  };
+
+  // Returns once open() has been called for this arrival, or open_all().
+  void pass(Id id) {
+    std::unique_lock<std::mutex> lock(mutex);
+    const size_t index = arrivals.size();
+    arrivals.push_back(id);
+    opened.push_back(false);
+    max_held_ = std::max(max_held_, ++held);
+    cv.notify_all();
+    cv.wait(lock, [this, index] { return all_open || opened[index]; });
+    --held;
+  }
+
+  // The next caller to reach pass(), in arrival order. Throws if none arrives
+  // in time.
+  Arrival next_arrival() {
+    std::unique_lock<std::mutex> lock(mutex);
+    // Generous: it only runs out when the code under test is broken.
+    const auto timeout = std::chrono::seconds(10);
+    if (!cv.wait_for(lock, timeout,
+                     [this] { return arrivals.size() > reported; })) {
+      throw std::runtime_error("no caller reached the gate");
+    }
+    const size_t index = reported++;
+    return Arrival{arrivals[index], index};
+  }
+
+  void open(const Arrival &arrival) {
+    std::unique_lock<std::mutex> lock(mutex);
+    opened[arrival.index] = true;
+    cv.notify_all();
+  }
+
+  void open_all() {
+    std::unique_lock<std::mutex> lock(mutex);
+    all_open = true;
+    cv.notify_all();
+  }
+
+  // Most callers ever inside pass() at once.
+  size_t max_held() const {
+    std::unique_lock<std::mutex> lock(mutex);
+    return max_held_;
+  }
+
+ private:
+  mutable std::mutex mutex;
+  std::condition_variable cv;
+  std::vector<Id> arrivals;
+  std::vector<bool> opened;  // indexed like arrivals
+  size_t reported{0};  // prefix of arrivals returned by next_arrival()
+  bool all_open{false};
+  size_t held{0};
+  size_t max_held_{0};
+};
+
+// Threads whose work may wait at a gate; opens it before joining them.
+class GatedThreads {
+ public:
+  explicit GatedThreads(Gate *gate) : gate(gate) { }
+
+  ~GatedThreads() { join(); }
+
+  template <typename... Args>
+  void start(Args &&... args) {
+    threads.emplace_back(std::forward<Args>(args)...);
+  }
+
+  void join() {
+    gate->open_all();
+    for (auto &t : threads) {
+      if (t.joinable()) t.join();
+    }
+  }
+
+ private:
+  Gate *gate;
+  std::vector<std::thread> threads;
+};
+
+// Action primitive that waits at a gate for the whole of its body.
+class HoldWithRegister
+    : public bm::ActionPrimitive<bm::RegisterArray &> {
+ public:
+  HoldWithRegister(Gate *gate, Gate::Id id) : gate(gate), id(id) { }
+
+  // The array is only there to make the action access it.
+  void operator ()(bm::RegisterArray &) override { gate->pass(id); }
+
+ private:
+  Gate *gate;
+  Gate::Id id;
+};
+
+// Tells whether some other thread holds a register array's lock.
+class RegisterLockProbe {
+ public:
+  // Takes the lock briefly, so call it while no one else holds it.
+  explicit RegisterLockProbe(const bm::RegisterArray &register_array)
+      : mutex(register_array.unique_lock().mutex()) { }
+
+  bool held_elsewhere() const {
+    std::unique_lock<std::mutex> lock(*mutex, std::try_to_lock);
+    return !lock.owns_lock();
+  }
+
+ private:
+  std::mutex *mutex;
 };
 
 class CLIWrapperImp;
