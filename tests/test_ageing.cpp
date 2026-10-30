@@ -161,7 +161,8 @@ TEST_F(AgeingTest, OneNotification) {
   ASSERT_EQ(MemoryAccessor::Status::CAN_READ, ageing_writer->check_status());
   ageing_writer->read(buffer, sizeof(buffer));
 
-  // delete and make sure we do not get a new notification
+  // a hit re-arms the notification, but deleting the entry cancels it
+  ASSERT_TRUE(send_pkt(key, &lookup_handle));
   ASSERT_EQ(MatchErrorCode::SUCCESS, delete_entry(handle_1));
   advance(5 * sweep_int);
   ASSERT_NE(MemoryAccessor::Status::CAN_READ, ageing_writer->check_status());
