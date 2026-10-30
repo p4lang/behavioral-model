@@ -21,8 +21,7 @@ jobs:
         with:
           submodules: recursive
 
-      # The cache holds Bazel's autoconfigured C++ toolchain, which is only
-      # valid for the image and compiler that produced it.
+      # See its use in the bazel cache key below.
       - name: Identify toolchain
         id: toolchain
         run: echo "id=$ImageOS-gcc-$(gcc -dumpfullversion)" >> "$GITHUB_OUTPUT"
@@ -34,6 +33,9 @@ jobs:
           path: "~/.cache/bazel"
           # Create a new cache entry whenever Bazel files change.
           # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows
+          # The cache holds Bazel's autoconfigured C++ toolchain, which is only
+          # valid for the image and compiler that produced it, so those are in
+          # the key and the restore prefix too.
           key: bazel-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-build-${{ hashFiles('**/*.bzl', '**/*.bazel') }}
           restore-keys: |
             bazel-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-build-
