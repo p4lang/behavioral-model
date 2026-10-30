@@ -76,11 +76,24 @@ void PacketTracer::flush_trace(const p4::bm::PacketTrace& trace) {
   auto path = std::filesystem::path(output_dir_) /
               ("trace_" + std::to_string(trace.input().packet_id()) + ".txtpb");
 
-  std::ofstream out(path);
-  if (out.is_open()) {
+  // Written aside and renamed into place, so a trace_*.txtpb file is always
+  // complete.
+  auto tmp_path = path;
+  tmp_path += ".tmp";
+  {
+    std::ofstream out(tmp_path);
     out << txtpb;
-  } else {
-    BMLOG_ERROR("Failed to write trace to {}", path.string());
+    out.close();
+    if (!out) {
+      BMLOG_ERROR("Failed to write trace to {}", tmp_path.string());
+      return;
+    }
+  }
+  std::error_code ec;
+  std::filesystem::rename(tmp_path, path, ec);
+  if (ec) {
+    BMLOG_ERROR("Failed to rename trace {} to {}: {}", tmp_path.string(),
+                path.string(), ec.message());
   }
 }
 
