@@ -9,6 +9,7 @@
  */
 
 #include <bm/bm_sim/ageing.h>
+#include <bm/bm_sim/clock.h>
 #include <bm/bm_sim/match_tables.h>
 #include <bm/bm_sim/packet.h>
 #include <bm/bm_sim/logger.h>
@@ -31,7 +32,6 @@ class AgeingMonitor final : public AgeingMonitorIface {
  public:
   using msg_hdr_t = AgeingMonitorIface::msg_hdr_t;
   using buffer_id_t = uint64_t;
-  using clock = Packet::clock;
 
   AgeingMonitor(device_id_t device_id, cxt_id_t cxt_id,
                 std::shared_ptr<TransportIface> writer,
@@ -146,13 +146,14 @@ AgeingMonitor::get_table_name_from_id(p4object_id_t id) const {
 void
 AgeingMonitor::sweep_loop() {
   using std::chrono::milliseconds;
-  auto tp = clock::now();
+  ClockIface *time_base = ClockIface::get();
+  auto tp = time_base->now();
   std::unique_lock<std::mutex> lock(mutex);
   while (!stop_sweep_thread) {
     do_sweep();
     milliseconds interval(sweep_interval_ms);
     tp += interval;
-    stop_condvar.wait_until(lock, tp);
+    time_base->wait_until(&lock, &stop_condvar, tp);
   }
 }
 
