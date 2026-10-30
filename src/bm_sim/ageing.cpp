@@ -108,6 +108,7 @@ AgeingMonitor::~AgeingMonitor() {
 
 void
 AgeingMonitor::add_table(MatchTableAbstract *table) {
+  std::unique_lock<std::mutex> lock(mutex);
   tables_with_ageing.insert(std::make_pair(table->get_id(), TableData(table)));
 }
 
