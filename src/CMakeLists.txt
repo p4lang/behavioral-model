@@ -36,8 +36,8 @@ endif()
 
 # Install library
 install(TARGETS bmall
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 # Match the autoconf install surface, which provides a shared wrapper library
@@ -57,7 +57,7 @@ if(WITH_NANOMSG)
   )
 
   install(TARGETS bmp4apps
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 endif()
