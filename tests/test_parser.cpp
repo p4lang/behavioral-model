@@ -26,6 +26,8 @@
 #include <utility>  // for std::pair
 #include <vector>
 
+#include "utils.h"
+
 using namespace bm;
 
 /* Frame (66 bytes) */
@@ -1740,35 +1742,36 @@ TEST_F(ParserMethodCallTest, SetField) {
   ASSERT_EQ(value, f.get<decltype(value)>());
 }
 
+// a parser method call and an action on the same register array run one at a
+// time, holding its lock
 TEST_F(ParserMethodCallTest, RegisterSync) {
   RegisterArray register_array("register_test", 0, 128u, 32u);
+  Gate gate;
+  HoldWithRegister hold(&gate, 0);
   ActionFn action_fn("test_action", 0, 0);
-  auto primitive_spin = ActionOpcodesMap::get_instance()->get_primitive(
-      "RegisterSpin");
-  constexpr unsigned int msecs_to_sleep(1000u);
-  action_fn.push_back_primitive(primitive_spin.get());
+  action_fn.push_back_primitive(&hold);
   action_fn.parameter_push_back_register_array(&register_array);
-  action_fn.parameter_push_back_const(Data(msecs_to_sleep));
   parse_state.add_method_call(&action_fn);
-  auto pkt = get_pkt();
   ActionFnEntry testActionFnEntry(&action_fn);
+  auto parsed_pkt = get_pkt();
+  auto acted_pkt = get_pkt();
+  RegisterLockProbe lock(register_array);
 
-  using clock = std::chrono::system_clock;
-  clock::time_point start = clock::now();
+  GatedThreads threads(&gate);
+  threads.start([this, &parsed_pkt] {
+    this->parse_and_check_no_error(&parsed_pkt);
+  });
+  threads.start([&testActionFnEntry, &acted_pkt] {
+    testActionFnEntry(&acted_pkt);
+  });
+  for (int i = 0; i < 2; i++) {
+    auto arrival = gate.next_arrival();
+    EXPECT_TRUE(lock.held_elsewhere());
+    gate.open(arrival);
+  }
+  threads.join();
 
-  // access same register through parser method call and direct action call,
-  // check that the 2 calls are executing sequentially
-  std::thread t([this, &pkt]() { this->parse_and_check_no_error(&pkt); });
-  testActionFnEntry(&pkt);
-  t.join();
-
-  clock::time_point end = clock::now();
-
-  constexpr unsigned int expected_timedelta = msecs_to_sleep * 2;
-  auto timedelta = std::chrono::duration_cast<std::chrono::milliseconds>(
-      end - start).count();
-  ASSERT_LT(expected_timedelta * 0.95, timedelta);
-  ASSERT_GT(expected_timedelta * 1.2, timedelta);
+  EXPECT_EQ(1u, gate.max_held());
 }
 
 class ParserShiftTest : public ParserTestGeneric {
