@@ -185,6 +185,11 @@ Header::mark_invalid() {
   if (union_membership) union_membership->make_invalid();
 }
 
+const HeaderUnion *
+Header::get_union() const {
+  return union_membership ? union_membership->header_union : nullptr;
+}
+
 void
 Header::reset() {
   for (Field &f : fields)
