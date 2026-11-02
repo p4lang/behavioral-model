@@ -76,9 +76,7 @@ jobs:
     - name: Setup native CI
       uses: ./.github/actions/setup-native-ci
       with:
-        cache-key: ccache-${{ matrix.os }}-${{ matrix.cc }}-${{ hashFiles('configure.ac', 'Makefile.am', '.github/workflows/test.yml', 'install_deps.sh') }}
-        cache-restore-keys: |
-          ccache-${{ matrix.os }}-${{ matrix.cc }}-
+        cache-key: ccache-v2-${{ runner.arch }}-${{ matrix.os }}-${{ matrix.cc }}-${{ hashFiles('configure.ac', 'Makefile.am', '.github/workflows/test.yml', 'install_deps.sh') }}
         install-lcov: true
         install-clang: ${{ matrix.cc == 'clang' }}
     - name: Run tests
@@ -123,10 +121,7 @@ jobs:
     - name: Setup native CI
       uses: ./.github/actions/setup-native-ci
       with:
-        cache-key: ccache-${{ matrix.os }}-no-pi-${{ hashFiles('configure.ac', 'Makefile.am', '.github/workflows/test.yml', 'install_deps.sh') }}
-        cache-restore-keys: |
-          ccache-${{ matrix.os }}-no-pi-
-          ccache-${{ matrix.os }}-
+        cache-key: ccache-v2-${{ runner.arch }}-${{ matrix.os }}-no-pi-${{ hashFiles('configure.ac', 'Makefile.am', '.github/workflows/test.yml', 'install_deps.sh') }}
     - name: Run tests
       env:
         CC: ccache gcc
@@ -166,11 +161,7 @@ jobs:
     - name: Setup native CI
       uses: ./.github/actions/setup-native-ci
       with:
-        cache-key: ccache-${{ matrix.os }}-cmake-${{ matrix.name }}-${{ hashFiles('CMakeLists.txt', '.github/workflows/test.yml', 'install_deps.sh') }}
-        cache-restore-keys: |
-          ccache-${{ matrix.os }}-cmake-${{ matrix.name }}-
-          ccache-${{ matrix.os }}-cmake-
-          ccache-${{ matrix.os }}-
+        cache-key: ccache-v2-${{ runner.arch }}-${{ matrix.os }}-cmake-${{ matrix.name }}-${{ hashFiles('CMakeLists.txt', '.github/workflows/test.yml', 'install_deps.sh') }}
     - name: Build BMv2
       run: |
         mkdir -p build
