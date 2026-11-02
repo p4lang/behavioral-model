@@ -34,6 +34,7 @@ set(TESTS
   test_idle_timeout
   test_action_profile
   test_optional
+  test_register
   # test_gnmi
 )
 
