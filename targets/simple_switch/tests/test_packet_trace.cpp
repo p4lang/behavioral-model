@@ -235,20 +235,20 @@ void add_exact_entry(SimpleSwitch* sw, std::ostream& os,
 
 // Reads all trace files from dir, keyed by the global packet id recorded in
 // the trace (so iteration order is numeric injection order, not lexicographic
-// file-name order). Only files that parse as a complete p4::bm::PacketTrace
-// textproto are kept (a file may be observed mid-write since traces are
-// flushed from the switch's processing threads).
+// file-name order). Files still being written lack the .txtpb extension.
 std::map<uint64_t, p4::bm::PacketTrace> read_traces(const fs::path& dir) {
   std::map<uint64_t, p4::bm::PacketTrace> traces;
   std::error_code ec;
   for (const auto& entry : fs::directory_iterator(dir, ec)) {
+    if (entry.path().extension() != ".txtpb") continue;
     std::ifstream in(entry.path());
-    if (!in.is_open()) continue;
     std::stringstream ss;
     ss << in.rdbuf();
     p4::bm::PacketTrace trace;
     if (google::protobuf::TextFormat::ParseFromString(ss.str(), &trace)) {
       traces[trace.input().packet_id()] = std::move(trace);
+    } else {
+      std::cout << "ERROR: cannot parse " << entry.path().filename() << "\n";
     }
   }
   return traces;
