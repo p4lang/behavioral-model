@@ -11,6 +11,7 @@
 #include <bm/bm_sim/_assert.h>
 #include <bm/bm_sim/action_entry.h>
 #include <bm/bm_sim/action_profile.h>
+#include <bm/bm_sim/clock.h>
 #include <bm/bm_sim/match_units.h>
 #include <bm/bm_sim/match_key_types.h>
 #include <bm/bm_sim/logger.h>
@@ -711,7 +712,7 @@ MatchUnitAbstract_::set_entry_ttl(entry_handle_t handle, unsigned int ttl_ms) {
   meta.timeout_ms = ttl_ms;
   // reset timestamp so that entries are not aged right away even if they have
   // not been hit in a while (i.e. timeout starts now)
-  meta.ts.set(Packet::clock::now());
+  meta.ts.set(ClockIface::get()->now());
   return MatchErrorCode::SUCCESS;
 }
 
@@ -720,7 +721,7 @@ MatchUnitAbstract_::sweep_entries(std::vector<entry_handle_t> *entries) const {
   using std::chrono::duration_cast;
   using std::chrono::milliseconds;
 
-  auto tp = Packet::clock::now();
+  auto tp = ClockIface::get()->now();
   uint64_t now_ms = duration_cast<milliseconds>(tp.time_since_epoch()).count();
   for (auto it = handles.begin(); it != handles.end(); ++it) {
     const EntryMeta &meta = entry_meta[*it];

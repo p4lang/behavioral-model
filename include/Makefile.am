@@ -38,6 +38,7 @@ bm/bm_sim/bytecontainer.h \
 bm/bm_sim/calculations.h \
 bm/bm_sim/control_action.h \
 bm/bm_sim/checksums.h \
+bm/bm_sim/clock.h \
 bm/bm_sim/conditionals.h \
 bm/bm_sim/context.h \
 bm/bm_sim/control_flow.h \

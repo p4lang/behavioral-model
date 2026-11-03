@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 
+#include "clock.h"
 #include "device_id.h"
 #include "packet_buffer.h"
 #include "parser_error.h"
@@ -97,7 +98,7 @@ class Packet final {
   friend class Switch;
 
  public:
-  using clock = std::chrono::system_clock;
+  using clock = ClockIface::clock;
 
   using buffer_state_t = PacketBuffer::state_t;
 

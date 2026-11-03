@@ -18,6 +18,7 @@ add_library(bmsim OBJECT
   bytecontainer.cpp
   calculations.cpp
   checksums.cpp
+  clock.cpp
   conditionals.cpp
   context.cpp
   control_action.cpp
