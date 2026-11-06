@@ -1,0 +1,33 @@
+# SPDX-FileCopyrightText: 2026 The P4 Language Consortium
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Cache maintenance
+on:
+  schedule:
+    - cron: "23 3 * * *"
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Preview cache deletions without applying them
+        type: boolean
+        default: false
+permissions:
+  actions: write
+  pull-requests: read
+concurrency:
+  group: cache-maintenance
+  cancel-in-progress: false
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Keep main caches and clean up PR caches
+        uses: p4lang/.github/CI/cache-retention@4bec527fd3988345ec240ae8f4f000bc938e4259
+        with:
+          key-prefixes: |
+            ccache-v2-
+            bazel-v2-
+          pr-budget: "2000000000"
+          total-budget: "9000000000"
+          dry-run: ${{ inputs.dry-run || false }}
