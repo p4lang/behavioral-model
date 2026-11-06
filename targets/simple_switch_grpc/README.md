@@ -1,7 +1,7 @@
 <!--
 SPDX-FileCopyrightText: 2017 Antonin Bas
 
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: CC-BY-4.0
 -->
 
 # SimpleSwitchGrpc - a version of SimpleSwitch with P4Runtime support

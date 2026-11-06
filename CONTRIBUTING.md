@@ -1,7 +1,7 @@
 <!--
 SPDX-FileCopyrightText: 2017 Barefoot Networks, Inc.
 
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: CC-BY-4.0
 -->
 
 You can fork the repo and submit a pull request in Github. For more information

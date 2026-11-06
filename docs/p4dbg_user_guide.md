@@ -1,7 +1,7 @@
 <!--
 SPDX-FileCopyrightText: 2016 Barefoot Networks, Inc.
 
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: CC-BY-4.0
 -->
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
