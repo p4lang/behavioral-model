@@ -724,8 +724,14 @@ MatchUnitAbstract_::sweep_entries(std::vector<entry_handle_t> *entries) const {
   uint64_t now_ms = duration_cast<milliseconds>(tp.time_since_epoch()).count();
   for (auto it = handles.begin(); it != handles.end(); ++it) {
     const EntryMeta &meta = entry_meta[*it];
-    assert(now_ms >= meta.ts.get_ms());
-    if (meta.timeout_ms > 0 && (now_ms - meta.ts.get_ms() >= meta.timeout_ms)) {
+    // Entry timestamps are written by data-plane threads on table hits and
+    // by the control-plane thread on add_entry / set_entry_ttl, without
+    // holding the match-unit lock. A timestamp can therefore be more recent
+    // than 'tp' (a backward system clock step has the same effect), in
+    // which case the entry is by definition not expired yet.
+    const uint64_t ts_ms = meta.ts.get_ms();
+    if (meta.timeout_ms > 0 && ts_ms <= now_ms &&
+        (now_ms - ts_ms >= meta.timeout_ms)) {
       entries->push_back(HANDLE_SET(meta.version, *it));
     }
   }
