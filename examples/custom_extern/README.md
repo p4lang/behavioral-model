@@ -1,7 +1,7 @@
 <!--
 SPDX-FileCopyrightText: 2022 Bili Dong
 
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: CC-BY-4.0
 -->
 
 # Custom Extern Example
