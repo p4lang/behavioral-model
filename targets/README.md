@@ -1,7 +1,7 @@
 <!--
 SPDX-FileCopyrightText: 2018 Andy Fingerhut
 
-SPDX-License-Identifier: Apache-2.0
+SPDX-License-Identifier: CC-BY-4.0
 -->
 
 # Behavioral model targets
