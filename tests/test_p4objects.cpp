@@ -359,6 +359,43 @@ TEST(P4Objects, HeaderStackArith) {
   ASSERT_NO_THROW(h1_f2.get_int());
 }
 
+TEST(P4Objects, HeaderUnionArith) {
+  std::istringstream is(R"({
+    "header_types": [{"name": "H", "id": 0, "fields": [["f", 8]]}],
+    "headers": [
+      {"name": "src.first", "id": 0, "header_type": "H"},
+      {"name": "src.second", "id": 1, "header_type": "H"},
+      {"name": "dst.first", "id": 2, "header_type": "H"},
+      {"name": "dst.second", "id": 3, "header_type": "H"}
+    ],
+    "header_union_types": [{
+      "name": "U", "id": 0, "headers": [["first", "H"], ["second", "H"]]
+    }],
+    "header_unions": [
+      {"name": "src", "id": 0, "union_type": "U", "header_ids": [0, 1]},
+      {"name": "dst", "id": 1, "union_type": "U", "header_ids": [2, 3]}
+    ],
+    "actions": [{"name": "copy", "id": 0, "runtime_data": [],
+      "primitives": [{"op": "assign_union", "parameters": [
+        {"type": "header_union", "value": "dst"},
+        {"type": "header_union", "value": "src"}
+      ]}]
+    }]
+  })");
+  P4Objects objects;
+  LookupStructureFactory factory;
+  ASSERT_EQ(0, objects.init_objects(&is, &factory));
+  auto phv = objects.get_phv_factory().create();
+  const char data[] = "\xab";
+  for (header_id_t id = 0; id < 4; id++) {
+    auto &header = phv->get_header(id);
+    header.extract(data, *phv);
+    // Union arguments must enable arithmetic just like header arguments;
+    // otherwise assign_header reads a stale zero instead of extracted bytes.
+    EXPECT_EQ(0xabu, header.get_field(0).get_uint());
+  }
+}
+
 TEST(P4Objects, Errors) {
   std::istringstream is(
       "{\"errors\":[[\"NoError\",0],[\"PacketTooShort\",1]]}");
