@@ -23,6 +23,8 @@
 #include <cassert>
 #include <string>
 
+#include "utils.h"
+
 using namespace bm;
 
 // some primitive definitions for testing
@@ -889,16 +891,25 @@ class ActionsTestRegisterProtection : public ActionsTest {
 
 constexpr unsigned int ActionsTestRegisterProtection::msecs_to_sleep;
 
-// both actions reference the same register so sequential execution
+// an action holds the lock of each register array it uses while it runs, so
+// actions on the same array run one at a time
 TEST_F(ActionsTestRegisterProtection, Sequential) {
-  configure_one_action(&testActionFn_2, &register_array_1);
+  std::mutex &mutex_1 = mutex_of(register_array_1);
+  bool locked_1 = false;
+  Callback check([&] { locked_1 = is_locked(mutex_1); });
+  auto register_write =
+      ActionOpcodesMap::get_instance()->get_primitive("register_write");
+  ActionFn action("register_test_action", 2, 0);
+  action.push_back_primitive(register_write.get());
+  action.parameter_push_back_register_array(&register_array_1);
+  action.parameter_push_back_const(Data(0));
+  action.parameter_push_back_const(Data(1));
+  action.push_back_primitive(&check);
 
-  auto timedelta = execute_both_actions();
+  ActionFnEntry entry(&action);
+  entry(pkt.get());
 
-  constexpr unsigned int expected_timedelta = msecs_to_sleep * 2;
-
-  ASSERT_LT(expected_timedelta * 0.95, timedelta);
-  ASSERT_GT(expected_timedelta * 1.2, timedelta);
+  EXPECT_TRUE(locked_1);
 }
 
 // the actions referenced different registers so parallel execution
