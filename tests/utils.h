@@ -14,6 +14,7 @@
 #define TESTS_UTILS_H_
 
 #include <bm/bm_sim/clock.h>
+#include <bm/bm_sim/stateful.h>
 #include <bm/bm_sim/transport.h>
 
 #include <algorithm>  // for std::copy, std::all_of
@@ -190,6 +191,11 @@ class ManualClock : public bm::ClockIface {
   std::vector<const Waiter *> waiters;
   std::condition_variable waiters_changed;
 };
+
+// The mutex behind a register array's lock. Takes the lock briefly to reach it.
+inline std::mutex &mutex_of(const bm::RegisterArray &register_array) {
+  return *register_array.unique_lock().mutex();
+}
 
 class CLIWrapperImp;
 
