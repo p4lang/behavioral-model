@@ -20,6 +20,7 @@
 #include <algorithm>  // for std::copy, std::all_of
 #include <chrono>
 #include <condition_variable>
+#include <future>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -195,6 +196,15 @@ class ManualClock : public bm::ClockIface {
 // The mutex behind a register array's lock. Takes the lock briefly to reach it.
 inline std::mutex &mutex_of(const bm::RegisterArray &register_array) {
   return *register_array.unique_lock().mutex();
+}
+
+// Whether any thread holds m, the calling one included.
+inline bool is_locked(std::mutex &m) {
+  // Asked from a new thread: try_lock on a mutex this thread owns is undefined.
+  return std::async(std::launch::async, [&m] {
+    std::unique_lock<std::mutex> lock(m, std::try_to_lock);
+    return !lock.owns_lock();
+  }).get();
 }
 
 class CLIWrapperImp;
