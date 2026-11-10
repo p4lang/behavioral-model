@@ -912,18 +912,27 @@ TEST_F(ActionsTestRegisterProtection, Sequential) {
   EXPECT_TRUE(locked_1);
 }
 
-// the actions referenced different registers so parallel execution
+// an action leaves the register arrays it does not use unlocked, so actions on
+// different arrays can run at the same time
 TEST_F(ActionsTestRegisterProtection, Parallel) {
   RegisterArray register_array_2("register_test_2", 1,
                                  register_size, register_bw);
-  configure_one_action(&testActionFn_2, &register_array_2);
+  std::mutex &mutex_2 = mutex_of(register_array_2);
+  bool locked_2 = true;  // fails the test if the check never runs
+  Callback check([&] { locked_2 = is_locked(mutex_2); });
+  auto register_write =
+      ActionOpcodesMap::get_instance()->get_primitive("register_write");
+  ActionFn action("register_test_action", 2, 0);
+  action.push_back_primitive(register_write.get());
+  action.parameter_push_back_register_array(&register_array_1);
+  action.parameter_push_back_const(Data(0));
+  action.parameter_push_back_const(Data(1));
+  action.push_back_primitive(&check);
 
-  auto timedelta = execute_both_actions();
+  ActionFnEntry entry(&action);
+  entry(pkt.get());
 
-  constexpr unsigned int expected_timedelta = msecs_to_sleep;
-
-  ASSERT_LT(expected_timedelta * 0.95, timedelta);
-  ASSERT_GT(expected_timedelta * 1.2, timedelta);
+  EXPECT_FALSE(locked_2);
 }
 
 class SetAndSpin : public ActionPrimitive<Data &, const Data &, const Data &> {
