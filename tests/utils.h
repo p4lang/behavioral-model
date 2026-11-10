@@ -13,6 +13,7 @@
 #ifndef TESTS_UTILS_H_
 #define TESTS_UTILS_H_
 
+#include <bm/bm_sim/actions.h>
 #include <bm/bm_sim/clock.h>
 #include <bm/bm_sim/stateful.h>
 #include <bm/bm_sim/transport.h>
@@ -20,10 +21,12 @@
 #include <algorithm>  // for std::copy, std::all_of
 #include <chrono>
 #include <condition_variable>
+#include <functional>
 #include <future>
 #include <memory>
 #include <mutex>
 #include <string>
+#include <utility>
 #include <vector>
 #include <cassert>
 
@@ -206,6 +209,17 @@ inline bool is_locked(std::mutex &m) {
     return !lock.owns_lock();
   }).get();
 }
+
+// Action primitive whose body is the given function.
+class Callback : public bm::ActionPrimitive<> {
+ public:
+  explicit Callback(std::function<void()> body) : body(std::move(body)) { }
+
+  void operator ()() override { body(); }
+
+ private:
+  std::function<void()> body;
+};
 
 class CLIWrapperImp;
 
