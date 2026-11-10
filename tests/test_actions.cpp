@@ -16,7 +16,6 @@
 #include <bm/bm_sim/P4Objects.h>
 
 #include <memory>
-#include <chrono>
 #include <thread>
 #include <functional>
 
@@ -845,51 +844,15 @@ TEST_F(ActionsTest, UniquePrimitivesForEachP4Objects) {
 
 class ActionsTestRegisterProtection : public ActionsTest {
  protected:
-  static constexpr unsigned int msecs_to_sleep = 1000u;
-
   static constexpr size_t register_size = 1024;
   static constexpr int register_bw = 16;
 
   RegisterArray register_array_1;
 
-  std::unique_ptr<ActionPrimitive_> primitive_spin;
-
-  ActionFn testActionFn_2;
-  ActionFnEntry testActionFnEntry_2;
-
   ActionsTestRegisterProtection()
       : ActionsTest(),
-        register_array_1("register_test_1", 0, register_size, register_bw),
-        primitive_spin(ActionOpcodesMap::get_instance()->get_primitive(
-            "RegisterSpin")),
-        testActionFn_2("test_action_2", 1, 0),
-        testActionFnEntry_2(&testActionFn_2) {
-    configure_one_action(&testActionFn, &register_array_1);
-  }
-
-  void configure_one_action(ActionFn *action_fn,
-                            RegisterArray *register_array) {
-    action_fn->push_back_primitive(primitive_spin.get());
-    action_fn->parameter_push_back_register_array(register_array);
-    action_fn->parameter_push_back_const(Data(msecs_to_sleep));
-  }
-
-  std::chrono::milliseconds::rep execute_both_actions() {
-    using clock = std::chrono::system_clock;
-    clock::time_point start = clock::now();
-
-    std::thread t(&ActionFnEntry::operator(), &testActionFnEntry, pkt.get());
-    testActionFnEntry_2(pkt.get());
-    t.join();
-
-    clock::time_point end = clock::now();
-
-    return std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
-        .count();
-  }
+        register_array_1("register_test_1", 0, register_size, register_bw) { }
 };
-
-constexpr unsigned int ActionsTestRegisterProtection::msecs_to_sleep;
 
 // an action holds the lock of each register array it uses while it runs, so
 // actions on the same array run one at a time
