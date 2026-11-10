@@ -935,68 +935,41 @@ TEST_F(ActionsTestRegisterProtection, Parallel) {
   EXPECT_FALSE(locked_2);
 }
 
-class SetAndSpin : public ActionPrimitive<Data &, const Data &, const Data &> {
-  void operator ()(Data &dst, const Data &src, const Data &ts) {
-    dst.set(src);
-    std::this_thread::sleep_for(std::chrono::milliseconds(ts.get_uint()));
-  }
-};
-
-REGISTER_PRIMITIVE(SetAndSpin);
-
+// reg_2[reg_1[3] + 1] = 0xab holds reg_1's lock as well as reg_2's, so it runs
+// one at a time with actions on reg_1
 TEST_F(ActionsTestRegisterProtection, SequentialAdvanced) {
   RegisterArray register_array_2("register_test_2", 1,
                                  register_size, register_bw);
+  std::mutex &mutex_1 = mutex_of(register_array_1);
+  std::mutex &mutex_2 = mutex_of(register_array_2);
+  bool locked_1 = false;
+  bool locked_2 = false;
+  Callback check([&] {
+    locked_1 = is_locked(mutex_1);
+    locked_2 = is_locked(mutex_2);
+  });
 
-  // this test is more tricky
-  // we execute reg_2[reg_1[3] + 1] = 0xab and in parallel we access reg_1. The
-  // actions need to be executed sequentially
-  // we initialize reg_1[3] to 1, so at the end reg_2[2] must be equal to 0xab
-
-  SetAndSpin primitive;
-
-  // the register index is an expression
   std::unique_ptr<ArithExpression> expr_idx(new ArithExpression());
   expr_idx->push_back_load_const(Data(1));
   expr_idx->push_back_load_register_ref(&register_array_1, 3);
   expr_idx->push_back_op(ExprOpcode::ADD);
   expr_idx->build();
 
-  testActionFn_2.push_back_primitive(&primitive);
-  testActionFn_2.parameter_push_back_register_gen(&register_array_2,
-                                                  std::move(expr_idx));
-  testActionFn_2.parameter_push_back_const(Data(0xab));
-  testActionFn_2.parameter_push_back_const(Data(msecs_to_sleep));
+  Set set;
+  ActionFn action("register_test_action", 2, 0);
+  action.push_back_primitive(&set);
+  action.parameter_push_back_register_gen(&register_array_2,
+                                          std::move(expr_idx));
+  action.parameter_push_back_const(Data(0xab));
+  action.push_back_primitive(&check);
 
-  register_array_1.at(0).set(0);
   register_array_1.at(3).set(1);
   register_array_2.at(2).set(0);
 
-  using clock = std::chrono::system_clock;
-  clock::time_point start = clock::now();
+  ActionFnEntry entry(&action);
+  entry(pkt.get());
 
-  std::thread t_1(&ActionFnEntry::operator(), &testActionFnEntry, pkt.get());
-  std::thread t_2(&ActionFnEntry::operator(), &testActionFnEntry_2, pkt.get());
-  {
-    // just for the sake of an extra access
-    auto lock = register_array_1.unique_lock();
-    unsigned int v1 = register_array_1.at(0).get_uint();
-    std::this_thread::sleep_for(std::chrono::milliseconds(msecs_to_sleep));
-    unsigned int v2 = register_array_1.at(0).get_uint();
-    ASSERT_EQ(v1, v2);
-  }
-  t_1.join();
-  t_2.join();
-
-  clock::time_point end = clock::now();
-
-  auto timedelta = std::chrono::duration_cast<std::chrono::milliseconds>(
-      end - start).count();
-
-  ASSERT_EQ(0xabu, register_array_2.at(2).get_uint());
-
-  constexpr unsigned int expected_timedelta = msecs_to_sleep * 3;
-
-  ASSERT_LT(expected_timedelta * 0.95, timedelta);
-  ASSERT_GT(expected_timedelta * 1.2, timedelta);
+  EXPECT_TRUE(locked_1);
+  EXPECT_TRUE(locked_2);
+  EXPECT_EQ(0xabu, register_array_2.at(2).get_uint());
 }
