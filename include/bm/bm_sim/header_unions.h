@@ -56,12 +56,7 @@ class HeaderUnion : public NamedP4Object {
   }
 
   void make_header_invalid(size_t idx) {
-    if (!valid) return;
-    // Invalidating any member invalidates the whole union. Clear the union's
-    // validity first so that invalidating the active member does not recurse.
-    valid = false;
-    if (valid_header_idx != idx)
-      headers[valid_header_idx].get().mark_invalid();
+    if (valid && valid_header_idx == idx) valid = false;
   }
 
   // used for stacks of header unions

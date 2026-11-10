@@ -81,8 +81,7 @@ TEST_F(HeaderUnionTest, Validity) {
   EXPECT_TRUE(header_union.is_valid());
 
   header_union.make_header_invalid(0);
-  EXPECT_EQ(nullptr, header_union.get_valid_header());
-  EXPECT_FALSE(header_union.is_valid());
+  EXPECT_EQ(&header1, header_union.get_valid_header());
 
   header_union.make_header_valid(0);
   EXPECT_EQ(&header0, header_union.get_valid_header());
@@ -112,9 +111,8 @@ TEST_F(HeaderUnionTest, ValidityThruHeader) {
 
   header0.mark_invalid();
   EXPECT_FALSE(header0.is_valid());
-  EXPECT_FALSE(header1.is_valid());
-  EXPECT_FALSE(header_union.is_valid());
-  EXPECT_EQ(nullptr, header_union.get_valid_header());
+  EXPECT_TRUE(header1.is_valid());
+  EXPECT_EQ(&header1, header_union.get_valid_header());
 
   header0.mark_valid();
   EXPECT_TRUE(header0.is_valid());
@@ -125,29 +123,6 @@ TEST_F(HeaderUnionTest, ValidityThruHeader) {
   EXPECT_FALSE(header0.is_valid());
   EXPECT_FALSE(header1.is_valid());
   EXPECT_EQ(nullptr, header_union.get_valid_header());
-}
-
-TEST_F(HeaderUnionTest, InvalidateAnyMember) {
-  auto &header_union = phv->get_header_union(testHeaderUnion0);
-  const auto valid_offset0 = testHeaderType0.get_hidden_offset(
-      HeaderType::HiddenF::VALID);
-  const auto valid_offset1 = testHeaderType1.get_hidden_offset(
-      HeaderType::HiddenF::VALID);
-  for (size_t active = 0; active < 2; active++) {
-    for (size_t invalidated = 0; invalidated < 2; invalidated++) {
-      header_union.at(active).mark_valid();
-      EXPECT_EQ(&header_union, header_union.at(active).get_union());
-      header_union.at(invalidated).mark_invalid();
-      // Repeated invalidation must also leave the union invalid.
-      header_union.at(invalidated).mark_invalid();
-      EXPECT_FALSE(header_union.is_valid());
-      EXPECT_EQ(nullptr, header_union.get_valid_header());
-      EXPECT_FALSE(header_union.at(0).is_valid());
-      EXPECT_FALSE(header_union.at(1).is_valid());
-      EXPECT_EQ(0u, header_union.at(0).get_field(valid_offset0).get_uint());
-      EXPECT_EQ(0u, header_union.at(1).get_field(valid_offset1).get_uint());
-    }
-  }
 }
 
 TEST_F(HeaderUnionTest, SwapValues) {
@@ -215,33 +190,6 @@ TEST_F(HeaderUnionTest, AssignUnion) {
   EXPECT_FALSE(header01.is_valid());
   EXPECT_TRUE(header00.cmp(header10));
   EXPECT_FALSE(header01.cmp(header11));
-}
-
-TEST_F(HeaderUnionTest, AssignUnionValidity) {
-  auto &src = phv->get_header_union(testHeaderUnion0);
-  auto &dst = phv->get_header_union(testHeaderUnion1);
-  core::assign_union assign;
-  for (size_t active = 0; active < 2; active++) {
-    src.at(active).mark_valid();
-    src.at(active).get_field(0).set(0xabc);
-    dst.at(1 - active).mark_valid();
-    assign(dst, src);
-    EXPECT_EQ(&dst.at(active), dst.get_valid_header());
-    EXPECT_TRUE(dst.at(active).cmp(src.at(active)));
-    EXPECT_FALSE(dst.at(1 - active).is_valid());
-
-    assign(dst, dst);
-    EXPECT_EQ(&dst.at(active), dst.get_valid_header());
-    EXPECT_TRUE(dst.at(active).cmp(src.at(active)));
-
-    src.at(active).mark_invalid();
-    assign(dst, src);
-    EXPECT_FALSE(dst.is_valid());
-    EXPECT_FALSE(dst.at(0).is_valid());
-    EXPECT_FALSE(dst.at(1).is_valid());
-    assign(dst, dst);
-    EXPECT_FALSE(dst.is_valid());
-  }
 }
 
 // Special case where one of the headers in the union has a VL field

@@ -172,11 +172,8 @@ class Header : public NamedP4Object {
   //! Marks the header as valid
   void mark_valid();
 
-  //! Marks the header as not-valid, including any other valid union member.
+  //! Marks the header as not-valid
   void mark_invalid();
-
-  //! Returns the containing header union, or nullptr for a standalone header.
-  const HeaderUnion *get_union() const;
 
   //! Sets all the fields in the header to value `0`.
   void reset();

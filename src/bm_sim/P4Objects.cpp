@@ -269,7 +269,6 @@ P4Objects::build_expression(const Json::Value &json_expression,
     auto header_union_id = get_header_union_id_cfg(json_value.asString());
     expr->push_back_load_header_union(header_union_id);
     *expr_type = ExprType::UNION;
-    enable_union_arith(header_union_id);
   } else if (type == "header_union_stack") {
     auto header_union_stack_id = get_header_union_stack_id_cfg(
         json_value.asString());
@@ -444,7 +443,6 @@ P4Objects::process_single_param(ActionFn* action_fn,
     const auto header_union_name = cfg_parameter["value"].asString();
     auto header_union_id = get_header_union_id_cfg(header_union_name);
     action_fn->parameter_push_back_header_union(header_union_id);
-    enable_union_arith(header_union_id);
   } else if (type == "header_union_stack") {
     const auto header_union_stack_name = cfg_parameter["value"].asString();
     auto header_union_stack_id = get_header_union_stack_id_cfg(
@@ -2597,14 +2595,6 @@ P4Objects::enable_arith(header_id_t header_id) {
     }
   }
   phv_factory.enable_all_field_arith(header_id);
-}
-
-void
-P4Objects::enable_union_arith(header_union_id_t header_union_id) {
-  for (const auto &entry : header_id_to_union_pos) {
-    if (entry.second.union_id == header_union_id)
-      enable_arith(entry.first);
-  }
 }
 
 ActionFn *

@@ -168,16 +168,12 @@ REGISTER_PRIMITIVE(add_header_fast);
 
 class remove_header : public ActionPrimitive<Header &> {
   void operator ()(Header &hdr) {
-    const auto *header_union = hdr.get_union();
-    const auto *valid_header = header_union ? header_union->get_valid_header()
-                                           : (hdr.is_valid() ? &hdr : nullptr);
-    if (valid_header) {
+    if (hdr.is_valid()) {
       // updated the length packet register (register 0)
       auto &packet = get_packet();
-      packet.set_register(0, packet.get_register(0) -
-                          valid_header->get_nbytes_packet());
+      packet.set_register(0, packet.get_register(0) - hdr.get_nbytes_packet());
+      hdr.mark_invalid();
     }
-    hdr.mark_invalid();
   }
 };
 

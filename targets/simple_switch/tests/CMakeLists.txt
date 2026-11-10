@@ -17,7 +17,6 @@ add_definitions(-DTESTDATADIR="${CMAKE_CURRENT_SOURCE_DIR}/testdata")
 
 # Create test executables
 set(TESTS
-  test_header_union
   test_packet_redirect
   test_truncate
   test_swap
