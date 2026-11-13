@@ -46,4 +46,26 @@ set_target_properties(pna_nic_test_meter_counter_bounds PROPERTIES
 add_test(NAME pna_nic/test_meter_counter_bounds
   COMMAND pna_nic_test_meter_counter_bounds)
 
+add_executable(pna_nic_test_hash
+  main.cpp
+  test_hash.cpp
+)
+
+target_link_libraries(pna_nic_test_hash
+  pnanic
+  gtest
+  bmapps
+)
+
+target_include_directories(pna_nic_test_hash PRIVATE
+  ..
+)
+
+set_target_properties(pna_nic_test_hash PROPERTIES
+  OUTPUT_NAME test_hash
+)
+
+add_test(NAME pna_nic/test_hash
+  COMMAND pna_nic_test_hash)
+
 # FIXME: do we want the test_all target?

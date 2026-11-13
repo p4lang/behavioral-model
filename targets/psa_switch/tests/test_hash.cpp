@@ -204,3 +204,25 @@ TEST_F(PSA_HashTest, PSA_HashMethods) {
     actionFnEntry_gh2(packet.get());
     ASSERT_EQ(hash, phv->get_field("meta.dst").get<uint16_t>());
 }
+
+TEST_F(PSA_HashTest, GetHashModZeroMax) {
+    auto phv = packet.get()->get_phv();
+
+    ActionFn actionFn("_Hash_get_hash_mod", 0, 0);
+    ActionFnEntry actionFnEntry(&actionFn);
+    auto primitive = get_extern_primitive("Hash", "get_hash_mod");
+    ASSERT_NE(nullptr, primitive);
+    actionFn.push_back_primitive(primitive.get());
+    actionFn.parameter_push_back_extern_instance(instance.get());
+    actionFn.parameter_push_back_field(ipv4Header, 9);
+    actionFn.parameter_push_back_const(Data("0x06"));
+    actionFn.parameter_start_field_list();
+    actionFn.parameter_push_back_field(ipv4Header, 10);
+    actionFn.parameter_push_back_field(ipv4Header, 11);
+    actionFn.parameter_end_field_list();
+    actionFn.parameter_push_back_const(Data("0x00"));
+
+    // A max of 0 is treated as 1, so the result is always base.
+    actionFnEntry(packet.get());
+    ASSERT_EQ(0x06, phv->get_field("ipv4.checksum").get<uint16_t>());
+}
