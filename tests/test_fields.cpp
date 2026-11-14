@@ -246,6 +246,24 @@ TEST_P(SignedFieldTest, ExportBytes) {
   }
 }
 
+// values outside of the range of the field are wrapped around, as in 2's
+// complement arithmetic; in particular, setting the field to the unsigned value
+// of the 2's complement representation of v (v + 2^bitwidth for a negative v)
+// gives v
+TEST_P(SignedFieldTest, SetOutOfRange) {
+  assert(bitwidth > 1);
+  int max = (1 << (bitwidth - 1)) - 1;
+  int min = -(1 << (bitwidth - 1));
+  for (int v = min; v <= max; v++) {
+    TwoCompV expected(v, bitwidth);
+    for (int offset : {1 << bitwidth, -(1 << bitwidth), 3 << bitwidth}) {
+      signed_f.set(v + offset);
+      ASSERT_EQ(v, signed_f.get_int());
+      ASSERT_EQ(expected.bytes(), signed_f.get_bytes());
+    }
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(TestParameters,
                          SignedFieldTest,
                          Range(2, 17));
