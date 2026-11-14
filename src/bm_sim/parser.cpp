@@ -20,6 +20,7 @@
 #include <bm/bm_sim/checksums.h>
 #include <bm/bm_sim/core/primitives.h>
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <unordered_set>
@@ -187,6 +188,10 @@ ParseSwitchKeyBuilder::push_back_union_stack_field(
 
 void
 ParseSwitchKeyBuilder::push_back_lookahead(int offset, int bitwidth) {
+  auto lookahead = ParserLookAhead::make(offset, bitwidth);
+  max_lookahead_bytes = std::max(
+      max_lookahead_bytes,
+      static_cast<size_t>(lookahead.byte_offset) + lookahead.nbytes);
   entries.push_back(Entry::make_lookahead(offset, bitwidth));
   bitwidths.push_back(bitwidth);
 }
@@ -194,6 +199,11 @@ ParseSwitchKeyBuilder::push_back_lookahead(int offset, int bitwidth) {
 std::vector<int>
 ParseSwitchKeyBuilder::get_bitwidths() const {
   return bitwidths;
+}
+
+size_t
+ParseSwitchKeyBuilder::get_required_bytes() const {
+  return max_lookahead_bytes;
 }
 
 void
@@ -1057,6 +1067,11 @@ ParseState::find_next_state(Packet *pkt, const char *data,
       get_name());
     return default_next_state;
   }
+
+  // Check that enough bytes remain for lookahead reads.
+  if (pkt->get_data_size() - *bytes_parsed <
+      key_builder.get_required_bytes())
+    throw parser_exception_core(ErrorCodeMap::Core::PacketTooShort);
 
   // build key
   static thread_local ByteContainer key;
