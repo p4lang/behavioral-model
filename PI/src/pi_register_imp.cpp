@@ -19,7 +19,8 @@
 namespace {
 
 size_t get_register_nbytes(const pi_p4info_t *p4info, pi_p4_id_t register_id) {
-  // PI common code only calls us for registers with a bitstring type
+  // PI common code only calls us for registers whose type is supported, i.e.
+  // whose bitwidth is not 0
   size_t bitwidth = pi_p4info_register_get_bitwidth(p4info, register_id);
   assert(bitwidth > 0);
   return (bitwidth + 7) / 8;
