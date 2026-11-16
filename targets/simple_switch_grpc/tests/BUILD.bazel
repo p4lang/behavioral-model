@@ -51,6 +51,7 @@ _TESTS = [
     "test_optional",
     "test_packet_io",
     "test_pre",
+    "test_register",
     "test_ternary",
 ]
 

@@ -45,7 +45,8 @@ test_pre.cpp \
 test_digest.cpp \
 test_idle_timeout.cpp \
 test_action_profile.cpp \
-test_optional.cpp
+test_optional.cpp \
+test_register.cpp
 if WITH_SYSREPO
 test_gtest_SOURCES += test_gnmi.cpp
 endif
@@ -73,4 +74,5 @@ multicast.p4 multicast.json multicast.proto.txt \
 clone.p4 clone.json clone.proto.txt \
 digest.p4 digest.json digest.proto.txt \
 action_profile.p4 action_profile.json action_profile.proto.txt \
-optional.p4 optional.json optional.proto.txt
+optional.p4 optional.json optional.proto.txt \
+register.p4 register.json register.proto.txt

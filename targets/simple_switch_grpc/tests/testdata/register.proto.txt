@@ -1,0 +1,138 @@
+# proto-file: p4/config/v1/p4info.proto
+# proto-message: p4.config.v1.P4Info
+
+pkg_info {
+  arch: "v1model"
+}
+registers {
+  preamble {
+    id: 379599323
+    name: "ingress.r16"
+    alias: "r16"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 16
+      }
+    }
+  }
+  size: 8
+}
+registers {
+  preamble {
+    id: 376614854
+    name: "ingress.r_wide"
+    alias: "r_wide"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 160
+      }
+    }
+  }
+  size: 4
+}
+registers {
+  preamble {
+    id: 370341457
+    name: "ingress.r_int"
+    alias: "r_int"
+  }
+  type_spec {
+    bitstring {
+      int {
+        bitwidth: 16
+      }
+    }
+  }
+  size: 4
+}
+registers {
+  preamble {
+    id: 378229822
+    name: "ingress.r_color"
+    alias: "r_color"
+  }
+  type_spec {
+    serializable_enum {
+      name: "color_t"
+    }
+  }
+  size: 4
+}
+registers {
+  preamble {
+    id: 375459353
+    name: "ingress.r_shape"
+    alias: "r_shape"
+  }
+  type_spec {
+    enum {
+      name: "shape_t"
+    }
+  }
+  size: 4
+}
+registers {
+  preamble {
+    id: 379798338
+    name: "ingress.r_id"
+    alias: "r_id"
+  }
+  type_spec {
+    new_type {
+      name: "id_t"
+    }
+  }
+  size: 4
+}
+type_info {
+  enums {
+    key: "shape_t"
+    value {
+      members {
+        name: "CIRCLE"
+      }
+      members {
+        name: "SQUARE"
+      }
+      members {
+        name: "TRIANGLE"
+      }
+    }
+  }
+  serializable_enums {
+    key: "color_t"
+    value {
+      underlying_type {
+        bitwidth: 8
+      }
+      members {
+        name: "RED"
+        value: "\001"
+      }
+      members {
+        name: "GREEN"
+        value: "\002"
+      }
+      members {
+        name: "BLUE"
+        value: "\003"
+      }
+    }
+  }
+  new_types {
+    key: "id_t"
+    value {
+      original_type {
+        bitstring {
+          bit {
+            bitwidth: 20
+          }
+        }
+      }
+    }
+  }
+}
