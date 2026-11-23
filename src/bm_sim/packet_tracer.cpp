@@ -71,7 +71,11 @@ void PacketTracer::flush_trace(const p4::bm::PacketTrace& trace) {
   if (!enabled_) return;
 
   std::string txtpb;
-  google::protobuf::TextFormat::PrintToString(trace, &txtpb);
+  if (!google::protobuf::TextFormat::PrintToString(trace, &txtpb)) {
+    BMLOG_ERROR("Failed to print trace for packet {}",
+                trace.input().packet_id());
+    return;
+  }
 
   auto path = std::filesystem::path(output_dir_) /
               ("trace_" + std::to_string(trace.input().packet_id()) + ".txtpb");

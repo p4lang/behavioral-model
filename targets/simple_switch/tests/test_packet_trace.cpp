@@ -333,7 +333,9 @@ void run_case(SimpleSwitch* sw, OutputCollector* collector,
   for (auto& [packet_id, trace] : traces) {
     trace.mutable_input()->set_packet_id(index);
     std::string txtpb;
-    google::protobuf::TextFormat::PrintToString(trace, &txtpb);
+    if (!google::protobuf::TextFormat::PrintToString(trace, &txtpb)) {
+      std::cout << "ERROR: cannot print trace " << index << "\n";
+    }
     std::cout << "--- trace " << index << "\n" << txtpb;
     index++;
   }
