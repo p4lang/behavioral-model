@@ -9,6 +9,9 @@
 
 #include <chrono>
 #include <functional>
+#include <stdexcept>
+
+#include "utils.h"
 
 using namespace bm;
 
@@ -28,71 +31,86 @@ class PeriodicIncrementor {
   PeriodicTask increment_task;
 };
 
-static constexpr int kSleepTimeMs = 500;
 static constexpr int kPeriods = 5;
 
-static constexpr std::chrono::milliseconds kInterval{kSleepTimeMs / kPeriods};
-static constexpr std::chrono::milliseconds kSleepTime{kSleepTimeMs};
+static constexpr std::chrono::milliseconds kInterval{100};
+
+class PeriodicExtern : public ::testing::Test {
+ protected:
+  void TearDown() override {
+    PeriodicTaskList::get_instance().join();
+  }
+
+  // Moves the clock forward step by step, waiting each time for the tasks due
+  // by then to run.
+  void advance(std::chrono::milliseconds step, int steps) {
+    for (int k = 0; k < steps; k++) {
+      manual_clock.advance(step);
+      wait_for_tasks();
+    }
+  }
+
+  void wait_for_tasks() {
+    if (!manual_clock.wait_until_idle(1))
+      throw std::runtime_error("periodic thread did not go idle");
+  }
+
+  ManualClock manual_clock;
+};
 
 // Tasks registered before the start of the thread execute on start
-TEST(PeriodicExtern, PreStartRegistration) {
+TEST_F(PeriodicExtern, PreStartRegistration) {
   int i = 0;
   PeriodicIncrementor incrementor(kInterval, &i);
-  std::this_thread::sleep_for(kSleepTime);
+  manual_clock.advance(kInterval * kPeriods);
 
   EXPECT_EQ(i, 0);
 
   PeriodicTaskList::get_instance().start();
-  std::this_thread::sleep_for(kSleepTime);
-  PeriodicTaskList::get_instance().join();
+  wait_for_tasks();
 
-  // One more or one less execution is o.k.
-  EXPECT_GE(i, kPeriods - 1);
-  EXPECT_LE(i, kPeriods + 1);
+  EXPECT_EQ(i, 1);
+
+  advance(kInterval, kPeriods);
+
+  EXPECT_EQ(i, kPeriods + 1);
 }
 
 // Tasks registered after the start of the thread still execute
-TEST(PeriodicExtern, PostStartRegistration) {
+TEST_F(PeriodicExtern, PostStartRegistration) {
   int i = 0;
   PeriodicTaskList::get_instance().start();
 
   PeriodicIncrementor incrementor(kInterval, &i);
+  advance(kInterval, kPeriods);
 
-  std::this_thread::sleep_for(kSleepTime);
-  PeriodicTaskList::get_instance().join();
-
-  EXPECT_GE(i, kPeriods - 1);
-  EXPECT_LE(i, kPeriods + 1);
+  EXPECT_EQ(i, kPeriods);
 }
 
 // Tasks stop executing when they go out of scope
-TEST(PeriodicExtern, Unregistration) {
+TEST_F(PeriodicExtern, Unregistration) {
   int i = 0;
   PeriodicTaskList::get_instance().start();
   {
     PeriodicIncrementor incrementor(kInterval, &i);
-    std::this_thread::sleep_for(kSleepTime);
+    advance(kInterval, kPeriods);
   }
-  std::this_thread::sleep_for(kSleepTime);
+  advance(kInterval, kPeriods);
 
-  EXPECT_GE(i, kPeriods - 1);
-  EXPECT_LE(i, kPeriods + 1);
+  EXPECT_EQ(i, kPeriods);
 }
 
 // Two tasks will be scheduled correctly
-TEST(PeriodicExtern, MultipleTasks) {
+TEST_F(PeriodicExtern, MultipleTasks) {
   int i = 0;
   int j = 0;
-  std::chrono::milliseconds interval_2{kSleepTimeMs / (kPeriods * 2)};
   PeriodicTaskList::get_instance().start();
   {
-      PeriodicIncrementor incrementor_1(kInterval, &i);
-      PeriodicIncrementor incrementor_2(interval_2, &j);
-      std::this_thread::sleep_for(kSleepTime);
+    PeriodicIncrementor incrementor_1(kInterval, &i);
+    PeriodicIncrementor incrementor_2(kInterval / 2, &j);
+    advance(kInterval / 2, 2 * kPeriods);
   }
 
-  EXPECT_GE(i, kPeriods - 1);
-  EXPECT_LE(i, kPeriods + 1);
-  EXPECT_GE(j, (kPeriods * 2) - 1);
-  EXPECT_LE(j, (kPeriods * 2) + 1);
+  EXPECT_EQ(i, kPeriods);
+  EXPECT_EQ(j, 2 * kPeriods);
 }
