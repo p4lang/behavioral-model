@@ -9,6 +9,7 @@ add_library(bmpi STATIC
   src/pi_act_prof_imp.cpp
   src/pi_counter_imp.cpp
   src/pi_meter_imp.cpp
+  src/pi_register_imp.cpp
   src/pi_learn_imp.cpp
   src/pi_mc_imp.cpp
   src/pi_clone_imp.cpp

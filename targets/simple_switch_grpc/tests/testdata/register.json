@@ -1,0 +1,1168 @@
+{
+  "header_types" : [
+    {
+      "name" : "scalars_0",
+      "id" : 0,
+      "fields" : [
+        ["tmp", 16, false],
+        ["tmp_0", 160, false],
+        ["tmp_1", 16, true],
+        ["tmp_2", 16, true],
+        ["tmp_3", 20, false],
+        ["v16_0", 16, false],
+        ["v_wide_0", 160, false],
+        ["v_int_0", 16, true],
+        ["v_color_0", 8, false],
+        ["v_shape_0", 32, false],
+        ["v_id_0", 20, false]
+      ]
+    },
+    {
+      "name" : "standard_metadata",
+      "id" : 1,
+      "fields" : [
+        ["ingress_port", 9, false],
+        ["egress_spec", 9, false],
+        ["egress_port", 9, false],
+        ["instance_type", 32, false],
+        ["packet_length", 32, false],
+        ["enq_timestamp", 32, false],
+        ["enq_qdepth", 19, false],
+        ["deq_timedelta", 32, false],
+        ["deq_qdepth", 19, false],
+        ["ingress_global_timestamp", 48, false],
+        ["egress_global_timestamp", 48, false],
+        ["mcast_grp", 16, false],
+        ["egress_rid", 16, false],
+        ["checksum_error", 1, false],
+        ["parser_error", 32, false],
+        ["priority", 3, false],
+        ["_padding", 3, false]
+      ]
+    }
+  ],
+  "headers" : [
+    {
+      "name" : "scalars",
+      "id" : 0,
+      "header_type" : "scalars_0",
+      "metadata" : true,
+      "pi_omit" : true
+    },
+    {
+      "name" : "standard_metadata",
+      "id" : 1,
+      "header_type" : "standard_metadata",
+      "metadata" : true,
+      "pi_omit" : true
+    }
+  ],
+  "header_stacks" : [],
+  "header_union_types" : [],
+  "header_unions" : [],
+  "header_union_stacks" : [],
+  "field_lists" : [],
+  "errors" : [
+    ["NoError", 0],
+    ["PacketTooShort", 1],
+    ["NoMatch", 2],
+    ["StackOutOfBounds", 3],
+    ["HeaderTooShort", 4],
+    ["ParserTimeout", 5],
+    ["ParserInvalidArgument", 6]
+  ],
+  "enums" : [
+    {
+      "name" : "shape_t",
+      "entries" : [
+        ["CIRCLE", 0],
+        ["SQUARE", 1],
+        ["TRIANGLE", 2]
+      ]
+    }
+  ],
+  "parsers" : [
+    {
+      "name" : "parser",
+      "id" : 0,
+      "init_state" : "start",
+      "parse_states" : [
+        {
+          "name" : "start",
+          "id" : 0,
+          "parser_ops" : [],
+          "transitions" : [
+            {
+              "type" : "default",
+              "value" : null,
+              "mask" : null,
+              "next_state" : null
+            }
+          ],
+          "transition_key" : []
+        }
+      ]
+    }
+  ],
+  "parse_vsets" : [],
+  "deparsers" : [
+    {
+      "name" : "deparser",
+      "id" : 0,
+      "source_info" : {
+        "filename" : "register.p4",
+        "line" : 28,
+        "column" : 8,
+        "source_fragment" : "deparser"
+      },
+      "order" : [],
+      "primitives" : []
+    }
+  ],
+  "meter_arrays" : [],
+  "counter_arrays" : [],
+  "register_arrays" : [
+    {
+      "name" : "ingress.r16",
+      "id" : 0,
+      "source_info" : {
+        "filename" : "register.p4",
+        "line" : 41,
+        "column" : 25,
+        "source_fragment" : "r16"
+      },
+      "size" : 8,
+      "bitwidth" : 16
+    },
+    {
+      "name" : "ingress.r_wide",
+      "id" : 1,
+      "source_info" : {
+        "filename" : "register.p4",
+        "line" : 42,
+        "column" : 26,
+        "source_fragment" : "r_wide"
+      },
+      "size" : 4,
+      "bitwidth" : 160
+    },
+    {
+      "name" : "ingress.r_int",
+      "id" : 2,
+      "source_info" : {
+        "filename" : "register.p4",
+        "line" : 43,
+        "column" : 25,
+        "source_fragment" : "r_int"
+      },
+      "size" : 4,
+      "bitwidth" : 16
+    },
+    {
+      "name" : "ingress.r_color",
+      "id" : 3,
+      "source_info" : {
+        "filename" : "register.p4",
+        "line" : 44,
+        "column" : 25,
+        "source_fragment" : "r_color"
+      },
+      "size" : 4,
+      "bitwidth" : 8
+    },
+    {
+      "name" : "ingress.r_shape",
+      "id" : 4,
+      "source_info" : {
+        "filename" : "register.p4",
+        "line" : 45,
+        "column" : 25,
+        "source_fragment" : "r_shape"
+      },
+      "size" : 4,
+      "bitwidth" : 32
+    },
+    {
+      "name" : "ingress.r_id",
+      "id" : 5,
+      "source_info" : {
+        "filename" : "register.p4",
+        "line" : 46,
+        "column" : 22,
+        "source_fragment" : "r_id"
+      },
+      "size" : 4,
+      "bitwidth" : 20
+    }
+  ],
+  "calculations" : [],
+  "learn_lists" : [],
+  "actions" : [
+    {
+      "name" : "register62",
+      "id" : 0,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_color"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000001"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x03"
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 62,
+            "column" : 12,
+            "source_fragment" : "r_color.write(1, color_t.BLUE)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "register64",
+      "id" : 1,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_color"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000001"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x01"
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 64,
+            "column" : 12,
+            "source_fragment" : "r_color.write(1, color_t.RED)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "register49",
+      "id" : 2,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "v16_0"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "ingress.r16"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 49,
+            "column" : 8,
+            "source_fragment" : "r16.read(v16, 0)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "v16_0"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x0001"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 50,
+            "column" : 21,
+            "source_fragment" : "v16 + 1"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "ingress.r16"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000001"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 50,
+            "column" : 8,
+            "source_fragment" : "r16.write(1, v16 + 1)"
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "v_wide_0"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_wide"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 52,
+            "column" : 8,
+            "source_fragment" : "r_wide.read(v_wide, 0)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "v_wide_0"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x0000000000000000000000000000000000000001"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffffffffffffffffffffffffffffffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 53,
+            "column" : 24,
+            "source_fragment" : "v_wide + 1"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_wide"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000001"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_0"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 53,
+            "column" : 8,
+            "source_fragment" : "r_wide.write(1, v_wide + 1)"
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "v_int_0"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_int"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 56,
+            "column" : 8,
+            "source_fragment" : "r_int.read(v_int, 0)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_1"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "two_comp_mod",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "v_int_0"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "-0x0001"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0x10"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 57,
+            "column" : 23,
+            "source_fragment" : "v_int - 1"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_int"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000001"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_1"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 57,
+            "column" : 8,
+            "source_fragment" : "r_int.write(1, v_int - 1)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_2"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "two_comp_mod",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : ">>",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "v_int_0"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x1"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0x10"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 58,
+            "column" : 23,
+            "source_fragment" : "v_int >> 1"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_int"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000002"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_2"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 58,
+            "column" : 8,
+            "source_fragment" : "r_int.write(2, v_int >> 1)"
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "v_color_0"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_color"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 60,
+            "column" : 8,
+            "source_fragment" : "r_color.read(v_color, 0)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "register69",
+      "id" : 3,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_shape"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000001"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000002"
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 69,
+            "column" : 12,
+            "source_fragment" : "r_shape.write(1, shape_t.TRIANGLE)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "register71",
+      "id" : 4,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_shape"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000001"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 71,
+            "column" : 12,
+            "source_fragment" : "r_shape.write(1, shape_t.CIRCLE)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "register67",
+      "id" : 5,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "v_shape_0"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_shape"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 67,
+            "column" : 8,
+            "source_fragment" : "r_shape.read(v_shape, 0)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "register74",
+      "id" : 6,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "v_id_0"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_id"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 74,
+            "column" : 8,
+            "source_fragment" : "r_id.read(v_id, 0)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_3"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "&",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["scalars", "v_id_0"]
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x0fffff"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x000001"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0x0fffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 75,
+            "column" : 28,
+            "source_fragment" : "((bit<20>)v_id + 1)"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "ingress.r_id"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000001"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_3"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 75,
+            "column" : 8,
+            "source_fragment" : "r_id.write(1, (id_t)((bit<20>)v_id + 1))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "egress_spec"]
+            },
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "ingress_port"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 76,
+            "column" : 8,
+            "source_fragment" : "sm.egress_spec = sm.ingress_port"
+          }
+        }
+      ]
+    }
+  ],
+  "pipelines" : [
+    {
+      "name" : "ingress",
+      "id" : 0,
+      "source_info" : {
+        "filename" : "register.p4",
+        "line" : 40,
+        "column" : 8,
+        "source_fragment" : "ingress"
+      },
+      "init_table" : "tbl_register49",
+      "tables" : [
+        {
+          "name" : "tbl_register49",
+          "id" : 0,
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 49,
+            "column" : 8,
+            "source_fragment" : "r16.read(v16, 0); ..."
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [2],
+          "actions" : ["register49"],
+          "base_default_next" : "node_3",
+          "next_tables" : {
+            "register49" : "node_3"
+          },
+          "default_entry" : {
+            "action_id" : 2,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_register62",
+          "id" : 1,
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 62,
+            "column" : 12,
+            "source_fragment" : "r_color.write(1, color_t.BLUE)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [0],
+          "actions" : ["register62"],
+          "base_default_next" : "tbl_register67",
+          "next_tables" : {
+            "register62" : "tbl_register67"
+          },
+          "default_entry" : {
+            "action_id" : 0,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_register64",
+          "id" : 2,
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 64,
+            "column" : 12,
+            "source_fragment" : "r_color.write(1, color_t.RED)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [1],
+          "actions" : ["register64"],
+          "base_default_next" : "tbl_register67",
+          "next_tables" : {
+            "register64" : "tbl_register67"
+          },
+          "default_entry" : {
+            "action_id" : 1,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_register67",
+          "id" : 3,
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 67,
+            "column" : 8,
+            "source_fragment" : "r_shape.read(v_shape, 0)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [5],
+          "actions" : ["register67"],
+          "base_default_next" : "node_7",
+          "next_tables" : {
+            "register67" : "node_7"
+          },
+          "default_entry" : {
+            "action_id" : 5,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_register69",
+          "id" : 4,
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 69,
+            "column" : 12,
+            "source_fragment" : "r_shape.write(1, shape_t.TRIANGLE)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [3],
+          "actions" : ["register69"],
+          "base_default_next" : "tbl_register74",
+          "next_tables" : {
+            "register69" : "tbl_register74"
+          },
+          "default_entry" : {
+            "action_id" : 3,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_register71",
+          "id" : 5,
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 71,
+            "column" : 12,
+            "source_fragment" : "r_shape.write(1, shape_t.CIRCLE)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [4],
+          "actions" : ["register71"],
+          "base_default_next" : "tbl_register74",
+          "next_tables" : {
+            "register71" : "tbl_register74"
+          },
+          "default_entry" : {
+            "action_id" : 4,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_register74",
+          "id" : 6,
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 74,
+            "column" : 8,
+            "source_fragment" : "r_id.read(v_id, 0); ..."
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [6],
+          "actions" : ["register74"],
+          "base_default_next" : null,
+          "next_tables" : {
+            "register74" : null
+          },
+          "default_entry" : {
+            "action_id" : 6,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        }
+      ],
+      "action_profiles" : [],
+      "conditionals" : [
+        {
+          "name" : "node_3",
+          "id" : 0,
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 61,
+            "column" : 12,
+            "source_fragment" : "v_color == color_t.GREEN"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "==",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "v_color_0"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x02"
+              }
+            }
+          },
+          "true_next" : "tbl_register62",
+          "false_next" : "tbl_register64"
+        },
+        {
+          "name" : "node_7",
+          "id" : 1,
+          "source_info" : {
+            "filename" : "register.p4",
+            "line" : 68,
+            "column" : 12,
+            "source_fragment" : "v_shape == shape_t.SQUARE"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "==",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "v_shape_0"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x00000001"
+              }
+            }
+          },
+          "true_next" : "tbl_register69",
+          "false_next" : "tbl_register71"
+        }
+      ]
+    },
+    {
+      "name" : "egress",
+      "id" : 1,
+      "source_info" : {
+        "filename" : "register.p4",
+        "line" : 24,
+        "column" : 8,
+        "source_fragment" : "egress"
+      },
+      "init_table" : null,
+      "tables" : [],
+      "action_profiles" : [],
+      "conditionals" : []
+    }
+  ],
+  "checksums" : [],
+  "force_arith" : [],
+  "extern_instances" : [],
+  "field_aliases" : [
+    [
+      "queueing_metadata.enq_timestamp",
+      ["standard_metadata", "enq_timestamp"]
+    ],
+    [
+      "queueing_metadata.enq_qdepth",
+      ["standard_metadata", "enq_qdepth"]
+    ],
+    [
+      "queueing_metadata.deq_timedelta",
+      ["standard_metadata", "deq_timedelta"]
+    ],
+    [
+      "queueing_metadata.deq_qdepth",
+      ["standard_metadata", "deq_qdepth"]
+    ],
+    [
+      "intrinsic_metadata.ingress_global_timestamp",
+      ["standard_metadata", "ingress_global_timestamp"]
+    ],
+    [
+      "intrinsic_metadata.egress_global_timestamp",
+      ["standard_metadata", "egress_global_timestamp"]
+    ],
+    [
+      "intrinsic_metadata.mcast_grp",
+      ["standard_metadata", "mcast_grp"]
+    ],
+    [
+      "intrinsic_metadata.egress_rid",
+      ["standard_metadata", "egress_rid"]
+    ],
+    [
+      "intrinsic_metadata.priority",
+      ["standard_metadata", "priority"]
+    ]
+  ],
+  "program" : "register.p4",
+  "__meta__" : {
+    "version" : [2, 23],
+    "compiler" : "https://github.com/p4lang/p4c"
+  }
+}

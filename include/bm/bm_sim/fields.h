@@ -108,7 +108,11 @@ class Field : public Data {
       value &= mask;
       bignum::export_bytes(bytes.data(), nbytes, value);
     } else {
-      if (value < min || value > mask) {
+      // values outside of [min, max] are wrapped around, including values in
+      // (max, mask], which are the 2's complement representation of negative
+      // values (e.g. the value of an unsigned register read into a signed
+      // field)
+      if (value < min || value > max) {
         value &= mask;
         if (value > max) value -= (mask + 1);
       }
