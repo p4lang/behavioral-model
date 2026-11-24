@@ -64,9 +64,16 @@ assign_header::operator ()(Header &dst, const Header &src) {
 void
 assign_union::operator ()(HeaderUnion &dst, const HeaderUnion &src) {
   assert(dst.get_num_headers() == src.get_num_headers());
-  // naive implementation which iterates over all headers in the union
-  for (size_t i = 0; i < dst.get_num_headers(); i++)
-    assign_header()(dst.at(i), src.at(i));
+  // Copy only the valid member: assigning an invalid member afterwards would
+  // invalidate the entire destination union. This also handles self-assignment.
+  for (size_t i = 0; i < src.get_num_headers(); i++) {
+    if (src.at(i).is_valid()) {
+      assign_header()(dst.at(i), src.at(i));
+      return;
+    }
+  }
+  if (auto *valid_header = dst.get_valid_header())
+    valid_header->mark_invalid();
 }
 
 void

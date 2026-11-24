@@ -22,7 +22,8 @@ $(top_builddir)/src/bm_apps/libbmapps.la
 
 # Define unit tests
 common_source = main.cpp ../../test_utils/utils.cpp ../../test_utils/utils.h
-gtest_programs = test_packet_redirect \
+gtest_programs = test_header_union \
+test_packet_redirect \
 test_truncate \
 test_swap \
 test_queueing \
@@ -34,6 +35,7 @@ TESTS = $(gtest_programs)
 check_PROGRAMS = $(gtest_programs) test_all
 
 # Sources for tests
+test_header_union_SOURCES = $(common_source) test_header_union.cpp
 test_packet_redirect_SOURCES = $(common_source) test_packet_redirect.cpp
 test_truncate_SOURCES = $(common_source) test_truncate.cpp
 test_swap_SOURCES = $(common_source) test_swap.cpp
@@ -42,6 +44,7 @@ test_recirc_SOURCES = $(common_source) test_recirc.cpp
 test_parser_error_SOURCES = $(common_source) test_parser_error.cpp
 
 test_all_SOURCES = $(common_source) \
+test_header_union.cpp \
 test_packet_redirect.cpp \
 test_truncate.cpp \
 test_swap.cpp \
