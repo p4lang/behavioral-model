@@ -33,7 +33,7 @@ bazel_dep(name = "gutil", version = "20260309.0", dev_dependency = True)
 
 git_override(
     module_name = "com_github_p4lang_pi",
-    commit = "0aa6c69140045b8a74575dbb7818664dd1066504",
+    commit = "6409ec0cc13006468987e1b65b1e71efa809e735",
     init_submodules = True,
     remote = "https://github.com/p4lang/PI.git",
 )
