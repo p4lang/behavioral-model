@@ -15,8 +15,8 @@
 
 namespace bm {
 
-//! The time base of packet ingress timestamps and match entry ageing. One
-//! instance serves the whole process; see get() and set().
+//! The time base of packet ingress timestamps, match entry ageing, and
+//! periodic tasks. One instance serves the whole process; see get() and set().
 class ClockIface {
  public:
   using clock = std::chrono::system_clock;
