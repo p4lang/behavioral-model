@@ -9,6 +9,7 @@
  */
 
 #include "pna_hash.h"
+#include <bm/bm_sim/logger.h>
 
 namespace {
 
@@ -52,7 +53,12 @@ void
 PNA_Hash::get_hash_mod(Field &dst, const Data &base, const std::vector<Field> &fields, const Data &max) {
   auto buf = build_buffer(fields);
   auto hash = compute(buf.data(), buf.size());
-  auto result = base.get<uint64_t>() + (hash % max.get<uint64_t>());
+  auto max_val = max.get<uint64_t>();
+  if (max_val == 0) {
+    max_val = 1;
+    Logger::get()->warn("hash max given as 0, but treating it as 1");
+  }
+  auto result = base.get<uint64_t>() + (hash % max_val);
   dst.set(result);
 }
 

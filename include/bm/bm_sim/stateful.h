@@ -137,7 +137,7 @@ class RegisterArray : public NamedP4Object {
 
   //! Return the size of the RegisterArray (i.e. number of registers it
   //! includes)
-  size_t size() const { return registers.size(); }
+  size_t size() const { return register_count; }
 
   void reset_state();
 
@@ -159,6 +159,8 @@ class RegisterArray : public NamedP4Object {
  private:
   void notify(const Register &reg) const;
 
+  // Immutable: size queries also occur before callers acquire m_mutex.
+  const size_t register_count;
   std::vector<Register> registers{};
   mutable std::mutex m_mutex{};
   int bitwidth{};

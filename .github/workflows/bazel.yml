@@ -21,16 +21,33 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Identify runner image
+        id: runner-image
+        run: echo "version=${ImageOS}-${ImageVersion}" >> "$GITHUB_OUTPUT"
+
+      - name: Set cache keys
+        id: cache-key
+        env:
+          CACHE_PREFIX: bazel-v2-${{ runner.os }}-${{ runner.arch }}-${{ steps.runner-image.outputs.version }}-${{ hashFiles('.bazelversion') }}-build
+          CACHE_SCOPE: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }}
+        run: |
+          {
+            echo "key=${CACHE_PREFIX}-${CACHE_SCOPE}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+            echo "restore=${CACHE_PREFIX}-${CACHE_SCOPE}-"
+            echo "main=${CACHE_PREFIX}-main-"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Mount bazel cache
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           # See https://docs.bazel.build/versions/master/output_directories.html
           path: "~/.cache/bazel"
-          # Create a new cache entry whenever Bazel files change.
-          # See https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows
-          key: bazel-${{ runner.os }}-build-${{ hashFiles('**/*.bzl', '**/*.bazel') }}
+          # The full cache includes the detected local C/C++ toolchain. Only
+          # reuse it on the same runner image and with the same Bazel version.
+          key: ${{ steps.cache-key.outputs.key }}
           restore-keys: |
-            bazel-${{ runner.os }}-build-
+            ${{ steps.cache-key.outputs.restore }}
+            ${{ steps.cache-key.outputs.main }}
 
       - name: Install Buildifier
         run: |
@@ -64,3 +81,10 @@ jobs:
         run: |
           bazel test //targets/simple_switch/tests/...
           bazel test //targets/simple_switch_grpc/tests/...
+
+      - name: Save bazel cache
+        uses: actions/cache/save@v6
+        if: success() && (github.ref == 'refs/heads/main' || github.event_name == 'pull_request')
+        with:
+          path: "~/.cache/bazel"
+          key: ${{ steps.cache-key.outputs.key }}
