@@ -69,8 +69,9 @@ class Logger {
   //! See the <a href="https://github.com/gabime/spdlog">spdlog</a>
   //! documentation for more advanced usage.
   static spdlog::logger *get() {
-    static spdlog::logger *logger_ = init_logger();
-    (void) logger_;
+    if (logger == nullptr) {
+      return init_logger();
+    }
     return logger;
   }
 
@@ -96,6 +97,8 @@ class Logger {
   static void unset_logger();
 
  private:
+  static void drop_logger();
+
   static spdlog::logger *init_logger();
 
   static spdlog::level::level_enum to_spd_level(LogLevel level);
