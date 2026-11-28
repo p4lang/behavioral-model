@@ -18,6 +18,8 @@
 #include <condition_variable>
 #include <mutex>
 
+#include "clock.h"
+
 namespace bm {
 
 //! Initializes and registers a task that is to be executed periodically
@@ -73,7 +75,7 @@ class PeriodicTask {
   void cancel();
 
   const std::function<void()> fn;
-  std::chrono::system_clock::time_point next;
+  ClockIface::clock::time_point next;
 };
 
 //! Singleton which stores and executes periodic tasks.
@@ -114,7 +116,7 @@ class PeriodicTaskList {
   std::thread periodic_thread;
   bool running;
   mutable std::mutex queue_mutex;
-  mutable std::condition_variable cv;
+  mutable ClockIface::Condvar cv;
 };
 
 }  // namespace bm

@@ -15,7 +15,7 @@ PeriodicTask::PeriodicTask(
     const std::string &name, std::function<void()> fn,
     std::chrono::milliseconds interval)
     : name(name), interval(interval), fn(fn),
-      next(std::chrono::system_clock::now() + interval) {
+      next(ClockIface::get()->now() + interval) {
   PeriodicTaskList::get_instance().register_task(this);
 }
 
@@ -31,7 +31,7 @@ PeriodicTask::cancel() {
 
 void
 PeriodicTask::reset_next() {
-  next = std::chrono::system_clock::now() + interval;
+  next = ClockIface::get()->now() + interval;
 }
 
 void
@@ -127,18 +127,18 @@ PeriodicTaskList::loop() {
       break;
     }
     if (task_queue.empty()) {
-      cv.wait(lk);
+      cv.wait(&lk);
       continue;
     }
-    std::chrono::system_clock::time_point& next = task_queue.top()->next;
-    if (cv.wait_until(lk, next) == std::cv_status::timeout) {
-      if (!task_queue.empty()) {
-        auto task = task_queue.top();
-        task_queue.pop();
-        task->execute();
-        task_queue.push(task);
-      }
+    ClockIface *time_base = ClockIface::get();
+    auto task = task_queue.top();
+    if (time_base->now() < task->next) {
+      cv.wait_until(&lk, task->next);
+      continue;
     }
+    task_queue.pop();
+    task->execute();
+    task_queue.push(task);
   }
 }
 

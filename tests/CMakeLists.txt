@@ -52,6 +52,7 @@ set(TESTS
   test_bm_apps
   test_calculations
   test_checksums
+  test_clock
   test_conditionals
   test_control_flow
   test_core_primitives
@@ -118,6 +119,7 @@ add_executable(test_all
   test_bm_apps.cpp
   test_calculations.cpp
   test_checksums.cpp
+  test_clock.cpp
   test_conditionals.cpp
   test_control_flow.cpp
   test_core_primitives.cpp

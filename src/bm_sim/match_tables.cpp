@@ -9,6 +9,7 @@
  */
 
 #include <bm/bm_sim/_assert.h>
+#include <bm/bm_sim/clock.h>
 #include <bm/bm_sim/match_tables.h>
 #include <bm/bm_sim/logger.h>
 #include <bm/bm_sim/event_logger.h>
@@ -333,7 +334,7 @@ MatchTableAbstract::set_entry_common_info(EntryCommon *entry) const {
   using std::chrono::milliseconds;
   // when retrieving many entries, the clock is read many times; but this is the
   // most readable solution IMO
-  auto tp = Packet::clock::now();
+  auto tp = ClockIface::get()->now();
   auto now_ms = duration_cast<milliseconds>(tp.time_since_epoch()).count();
   MatchUnit::EntryMeta &meta = match_unit_->get_entry_meta(entry->handle);
   entry->timeout_ms = meta.timeout_ms;

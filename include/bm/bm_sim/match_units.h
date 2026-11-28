@@ -212,7 +212,7 @@ struct EntryMeta {
 
   void reset() {
     counter.reset_counter();
-    ts.set(clock::now());
+    ts.set(ClockIface::get()->now());
   }
 };
 
